@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V150</title>
+<title>BOAT HUNTER V151</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -6081,7 +6081,7 @@ body.theme-ladies #simplePickPanel .axisChoice small{
 }
 
 
-/* ===== Vol.150 軸候補レイアウト修正 ===== */
+/* ===== Vol.151 軸候補レイアウト修正 ===== */
 
 /* 左の頭艇 → 矢印 → 軸艇 → 確率 を完全分離 */
 #simplePickPanel .headAxisRow{
@@ -6199,7 +6199,7 @@ body.theme-ladies #simplePickPanel .axisChoice small{
 }
 
 
-/* ===== Vol.150 HUNTER FINAL PICK 超強調デザイン ===== */
+/* ===== Vol.151 HUNTER FINAL PICK 超強調デザイン ===== */
 
 /* パネル全体を最終判定の主役に */
 #simplePickPanel{
@@ -6458,7 +6458,7 @@ body.theme-sg #simplePickPanel .headAxisArrow{
 }
 
 
-/* ===== Vol.150 音声入力 iPhone対応強化 ===== */
+/* ===== Vol.151 音声入力 iPhone対応強化 ===== */
 .voiceFallbackInput{
   width:calc(100% - 16px)!important;
   min-height:42px!important;
@@ -6494,6 +6494,199 @@ body.theme-sg .voiceFallbackInput{
   color:#5e3308!important;
 }
 
+
+/* ===== Vol.151 FINAL PICK 縦方向コンパクト化 ===== */
+
+/* 外枠 */
+#simplePickPanel{
+  margin-top:16px!important;
+  padding:12px!important;
+  border-radius:22px!important;
+}
+#simplePickPanel .simplePickTitle{
+  margin-bottom:8px!important;
+  font-size:11px!important;
+  line-height:1!important;
+}
+
+/* 1着候補 */
+#simpleHeadPick{
+  padding:11px!important;
+  border-radius:17px!important;
+}
+#simpleHeadPick .simplePickLabel{
+  margin-bottom:0!important;
+  font-size:16px!important;
+  line-height:1.05!important;
+}
+#simplePickPanel .headCandidateGrid{
+  margin-top:7px!important;
+  gap:7px!important;
+}
+#simplePickPanel .headCandidateRow{
+  min-height:64px!important;
+  padding:8px 10px!important;
+  border-radius:14px!important;
+}
+#simplePickPanel .headCandidateRow .boatText{
+  min-width:96px!important;
+  font-size:24px!important;
+  padding:8px 11px!important;
+  border-radius:11px!important;
+}
+#simplePickPanel .headMeta{
+  font-size:12px!important;
+  line-height:1.12!important;
+}
+#simplePickPanel .headDelta{
+  margin-top:0!important;
+  font-size:10px!important;
+  line-height:1.05!important;
+}
+#simplePickPanel .topConsensusBadge,
+#simplePickPanel .splitHunterBadge,
+#simplePickPanel .splitMarketBadge,
+#simplePickPanel .stableBadge,
+#simplePickPanel .attackPromoteBadge,
+#simplePickPanel .f2BehindBadge{
+  padding:2px 5px!important;
+  font-size:8px!important;
+}
+
+/* 軸候補 */
+#simpleAxisPick{
+  margin-top:8px!important;
+  padding:11px!important;
+  border-radius:17px!important;
+}
+#simpleAxisPick .simplePickLabel{
+  font-size:16px!important;
+  line-height:1.05!important;
+}
+#simplePickPanel .headAxisGrid{
+  margin-top:7px!important;
+  gap:7px!important;
+}
+#simplePickPanel .headAxisRow{
+  min-height:66px!important;
+  padding:8px 10px!important;
+  border-radius:14px!important;
+}
+#simplePickPanel .headAxisHead .boatText,
+#simplePickPanel .headAxisBoat .boatText{
+  min-width:78px!important;
+  font-size:21px!important;
+  padding:7px 9px!important;
+  border-radius:11px!important;
+}
+#simplePickPanel .headAxisArrow{
+  font-size:25px!important;
+}
+#simplePickPanel .headAxisRate{
+  font-size:22px!important;
+  line-height:1!important;
+}
+#simplePickPanel .headAxisRate small{
+  margin-top:2px!important;
+  font-size:7px!important;
+  line-height:1.05!important;
+}
+
+/* 切り艇 */
+#simpleCutPick{
+  margin-top:8px!important;
+  min-height:42px!important;
+  padding:7px 10px!important;
+  border-radius:13px!important;
+}
+#simpleCutPick .simplePickLabel{
+  font-size:12px!important;
+}
+#simpleCutPick .simplePickMain{
+  font-size:18px!important;
+}
+#simpleCutPick .simplePickSub{
+  font-size:8px!important;
+}
+
+/* 説明パッチも高さを詰める */
+#simplePickPanel .pickExplain{
+  padding:2px 6px!important;
+  font-size:7px!important;
+  line-height:1!important;
+}
+
+/* iPhone: 2・3着率を横に残して縦増加を抑える */
+@media(max-width:430px){
+  #simplePickPanel{
+    padding:10px!important;
+    border-radius:20px!important;
+  }
+
+  #simpleHeadPick,
+  #simpleAxisPick{
+    padding:9px!important;
+  }
+
+  #simplePickPanel .headCandidateRow{
+    min-height:58px!important;
+    padding:7px 8px!important;
+  }
+  #simplePickPanel .headCandidateRow .boatText{
+    min-width:86px!important;
+    font-size:22px!important;
+    padding:7px 9px!important;
+  }
+  #simplePickPanel .headMeta{
+    font-size:11px!important;
+  }
+  #simplePickPanel .headDelta{
+    font-size:9px!important;
+  }
+
+  #simplePickPanel .headAxisRow{
+    grid-template-columns:minmax(70px,1fr) 24px minmax(70px,1fr) minmax(62px,.8fr)!important;
+    min-height:58px!important;
+    gap:5px!important;
+    padding:7px 8px!important;
+  }
+  #simplePickPanel .headAxisHead .boatText,
+  #simplePickPanel .headAxisBoat .boatText{
+    min-width:66px!important;
+    font-size:19px!important;
+    padding:6px 7px!important;
+  }
+  #simplePickPanel .headAxisArrow{
+    width:24px!important;
+    min-width:24px!important;
+    font-size:22px!important;
+  }
+  #simplePickPanel .headAxisRate{
+    grid-column:auto!important;
+    margin-top:0!important;
+    padding-top:0!important;
+    border-top:0!important;
+    font-size:18px!important;
+    text-align:center!important;
+  }
+  #simplePickPanel .headAxisRate small{
+    font-size:6px!important;
+  }
+
+  #simplePickPanel .headAxisRow.axisSplit{
+    grid-template-columns:minmax(62px,.75fr) 22px minmax(136px,1.7fr) minmax(54px,.65fr)!important;
+  }
+  #simplePickPanel .headAxisRow.axisSplit .headAxisRate{
+    grid-column:auto!important;
+  }
+
+  #simpleCutPick{
+    margin-top:7px!important;
+    min-height:38px!important;
+    padding:6px 9px!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -6502,7 +6695,7 @@ body.theme-sg .voiceFallbackInput{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.150</div>
+  <div class="topVol">Vol.151</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -6851,7 +7044,7 @@ async function getRace(){
   window.decorateHunterSG?.();
   decorateRanks(rr);
   if($("getPreview"))$("getPreview").disabled=false;
-  /* Vol.150: AI解析ボタン自体は押せる。
+  /* Vol.151: AI解析ボタン自体は押せる。
      120通り未取得ならAI解析側で自動取得してから続行する。 */
   if($("aiAnalyze"))$("aiAnalyze").disabled=false;
   $("get")?.classList.add("done");
@@ -6889,7 +7082,7 @@ function stRanks(rs){
 function consumeHistoryDay(j,d,targets){
  if(!j)return;
 
- /* Vol.150
+ /* Vol.151
     過去最高階級は「特定日だけを間引き検索」せず、
     同コース過去20走取得で実際に読んだ全日付の出走表から拾う。
     これで過去A2/A1の取りこぼしを大幅に減らす。 */
@@ -7152,7 +7345,7 @@ async function toggleDetail(boatNo,number){
 function setTopTheme(type){
  const t=$("top");
 
- /* Vol.150:
+ /* Vol.151:
     テーマは「選択中のレース」ではなく、その日の全国開催全体を優先。
     SG開催が1場でもあればSG、SGなしでレディース開催が1場でもあればレディース。 */
  const globalType=window.__HUNTER_GLOBAL_THEME;
@@ -7221,7 +7414,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* Vol.150: 選手カードは初期状態で全艇コンパクト。
+/* Vol.151: 選手カードは初期状態で全艇コンパクト。
    ヘッダーを押すと1艇だけ展開し、他艇は自動で閉じる。 */
 (function(){
   function setupRacerAccordion(){
@@ -7253,7 +7446,7 @@ $('top').classList.remove('hide');
     });
   }
 
-  /* Vol.150: データ更新でカードが勝手に閉じないようMutationObserverを停止。
+  /* Vol.151: データ更新でカードが勝手に閉じないようMutationObserverを停止。
      新しいカード生成時だけ別監視でイベントを追加し、open状態は保持する。 */
   document.addEventListener('DOMContentLoaded',setupRacerAccordion);
   setTimeout(setupRacerAccordion,0);
@@ -7450,7 +7643,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* ===== Vol.150 今節得点率 / 得点順位 取得強化 ===== */
+/* ===== Vol.151 今節得点率 / 得点順位 取得強化 ===== */
 (function(){
   const $all=(sel,root=document)=>Array.from(root.querySelectorAll(sel));
 
@@ -7598,7 +7791,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 直前情報取得 / AI解析ゲート ===== */
+/* ===== Vol.151 直前情報取得 / AI解析ゲート ===== */
 (function(){
   let previewRows=null;
   let previewPromise=null;
@@ -7686,7 +7879,7 @@ $('top').classList.remove('hide');
       }
     }
     if(orig){
-      /* Vol.150 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
+      /* Vol.151 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
          まず「一周 / 回り / 直線」の見出し位置を探し、
          次に 1〜6号艇が4列間隔で並ぶデータ開始位置を自動検出する。 */
       const labels=orig
@@ -7926,7 +8119,7 @@ $('top').classList.remove('hide');
     window.buildRaceOutlook?.();
     ai.disabled=false;
   
-    /* Vol.150: AI解析完了後、そのまま5000回シミュレーションを実行 */
+    /* Vol.151: AI解析完了後、そのまま5000回シミュレーションを実行 */
     try{
       if(typeof window.runHunterSimulation==="function"){
         await window.runHunterSimulation({fromAI:true});
@@ -7961,7 +8154,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 進入設定 ===== */
+/* ===== Vol.151 進入設定 ===== */
 (function(){
   const DEFAULT_ENTRY=[1,2,3,4,5,6];
   let entryState=DEFAULT_ENTRY.map((boat,i)=>({
@@ -8116,9 +8309,9 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 HUNTER レース展望 ===== */
+/* ===== Vol.151 HUNTER レース展望 ===== */
 (function(){
-  /* Vol.150: レース展望専用ヘルパー
+  /* Vol.151: レース展望専用ヘルパー
      直前情報IIFE内のprivate関数に依存しない */
   function outlookNum(v){
     if(v==null||v==="")return null;
@@ -8205,7 +8398,7 @@ $('top').classList.remove('hide');
 
   async function getSui(){
     /*
-      Vol.150:
+      Vol.151:
       水面気象は自動更新・裏取得をしない。
       AI解析ボタンを押した瞬間にだけ1回取得し、
       次にAI解析を押すまでその値を固定する。
@@ -8444,7 +8637,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 選手カード優先表示 ===== */
+/* ===== Vol.151 選手カード優先表示 ===== */
 (function(){
   function reorderHunterSections(){
     const cards=document.getElementById("cards");
@@ -8482,7 +8675,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 24場 外部画像切替 ===== */
+/* ===== Vol.151 24場 外部画像切替 ===== */
 (function(){
   const VENUE_PHOTOS={
     "01":"images/venue_default.png","02":"images/venue_default.png","03":"images/venue_default.png",
@@ -8510,7 +8703,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 開催場選択：当日programs.stadiumsを正として表示 ===== */
+/* ===== Vol.151 開催場選択：当日programs.stadiumsを正として表示 ===== */
 (function(){
   const ALL_VENUES={
     "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
@@ -8702,7 +8895,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 F持ち / F後平均ST ===== */
+/* ===== Vol.151 F持ち / F後平均ST ===== */
 (function(){
   function n(v){
     if(v==null||v==="")return null;
@@ -8776,7 +8969,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 表示後デコレーション ===== */
+/* ===== Vol.151 表示後デコレーション ===== */
 (function(){
   function decorateF(){
     const cards=[...document.querySelectorAll("#cards .card,#cards .racerCard,#cards [data-entry]")];
@@ -8857,7 +9050,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 SGレーサー判定 =====
+/* ===== Vol.151 SGレーサー判定 =====
    銀SG = 現開催がSG、または全国近況5節にSG出場あり
    金SG = 全国近況5節のSG節で優勝戦[1]あり
 */
@@ -8978,7 +9171,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.150 BoatraceCSV od3 / 世間順位 ===== */
+/* ===== Vol.151 BoatraceCSV od3 / 世間順位 ===== */
 (function(){
   let oddsSnapshot=null;
 
@@ -9078,7 +9271,7 @@ $('top').classList.remove('hide');
   }
 
   
-  /* ===== Vol.150 本命10点生成 =====
+  /* ===== Vol.151 本命10点生成 =====
      HUNTER評価1位を主頭にし、決まり手・追走・条件付き2/3着を優先。イン逃げ時は2着候補の3着残存を確認して折り返しも採用。
      120通り一覧のパッチ表示にも同じ結果を使う。10点は上限であり、根拠が弱い候補は無理に入れない。 */
   function hunterMain10(){
@@ -9473,7 +9666,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.150 今節得点率 / 得点順位
+/* ===== Vol.151 今節得点率 / 得点順位
    1) BoatraceCSV tokuten_hayami を最優先
    2) 行が未公開なら公式 pointchart を低頻度フォールバック
    3) どちらも無ければ「未公開 / 対象外」
@@ -9620,7 +9813,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.150 HUNTER RACE ENGINE ===== */
+/* ===== Vol.151 HUNTER RACE ENGINE ===== */
 (function(){
   const N_SIM=5000;
   const venueCache={};
@@ -9837,7 +10030,7 @@ function renderOdds(odds){
     }
 
     raw.forEach((x,i)=>{
-      /* Vol.150
+      /* Vol.151
          START力: 直線タイムを採用
          1M攻撃力: 展示タイムを採用
          足力: 展示タイムを追加
@@ -9916,7 +10109,7 @@ function renderOdds(odds){
     return k;
   }
 
-  /* Vol.150 スリット→1M先制判定
+  /* Vol.151 スリット→1M先制判定
      展示タイムは150m計測として秒速化し、約120m地点までの到達時間を算出。
      到達差0.15秒 ≒ 1艇身として隣接実進入を比較する。 */
   function oneMarkArrival(x,starts){
@@ -10104,14 +10297,14 @@ function renderOdds(odds){
         else if(om?.state==="CONTEST")w*=1.10;
         else if(om?.state==="INNER")w*=.82;
 
-        /* Vol.150 展示0.15差以上を勝率側でも強く評価 */
+        /* Vol.151 展示0.15差以上を勝率側でも強く評価 */
         if(inner && Number.isFinite(Number(x.exhibition)) && Number.isFinite(Number(inner.exhibition))){
           const staticExGap=Number(inner.exhibition)-Number(x.exhibition);
           if(staticExGap>=0.18)w*=1.38;
           else if(staticExGap>=0.15)w*=1.28;
         }
 
-        /* Vol.150 F2/F3の直後は壁崩れまくりを強評価 */
+        /* Vol.151 F2/F3の直後は壁崩れまくりを強評価 */
         if(inner && Number(inner.fc)>=2){
           if(Number(x.hRank)<=3)w*=1.55;
           else if(Number(x.hRank)<=4)w*=1.35;
@@ -10515,7 +10708,7 @@ function renderOdds(odds){
       return;
     }
     const btn=$("runSimulation");
-    /* Vol.150: 手動シミュレーションボタンは廃止済み。
+    /* Vol.151: 手動シミュレーションボタンは廃止済み。
        AI自動実行時は btn が存在しないため、存在時だけ操作する。 */
     if(btn){
       btn.disabled=true;
@@ -10585,7 +10778,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.150 F持ち / 高チルト 警戒広告 ===== */
+/* ===== Vol.151 F持ち / 高チルト 警戒広告 ===== */
 (function(){
   function alertBoat(n){
     return `<span class="raceAlertBoat b${Number(n)}">${Number(n)}号艇</span>`;
@@ -10690,7 +10883,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.150 結果確認 / 状態保持 / 操作導線 ===== */
+/* ===== Vol.151 結果確認 / 状態保持 / 操作導線 ===== */
 (function(){
   const RESULT_KEY="BH_RESULT_CHECK_V1";
   const PRED_KEY="BH_PRED_SNAPSHOT_V1";
@@ -10847,7 +11040,7 @@ function renderOdds(odds){
 
     let heads=[];
 
-    /* Vol.150 ランキング割れ
+    /* Vol.151 ランキング割れ
        HUNTER1位と世間1位が違う時は、
        ① HUNTER1位
        ② 世間1位
@@ -10918,14 +11111,14 @@ function renderOdds(odds){
         .map(x=>toHead(x));
     }
 
-    /* Vol.150 展示差からの攻め昇格
+    /* Vol.151 展示差からの攻め昇格
        実進入で直内艇より展示が0.15秒以上速い艇は、
        5000回模擬で「まくり / まくり差し」が実際に発生しているか確認。
        発生していれば1着候補へ昇格する。 */
     const simTotal=Object.values(sim.headAxisCounts||{})
       .reduce((a,x)=>a+Number(x?.wins||0),0)||5000;
 
-    /* Vol.150 F2/F3の一個後ろは別ルートで頭昇格 */
+    /* Vol.151 F2/F3の一個後ろは別ルートで頭昇格 */
     const racerByBoat=(boat)=>{
       const rs=currentRace?.racers||currentRace?.program?.racers||{};
       return rs[String(boat)]||Object.values(rs).find(r=>Number(r?.entry_number)===Number(boat))||null;
@@ -11076,7 +11269,7 @@ function renderOdds(odds){
         h.axisRate=firstRate;
         h.axisScore=Number(a1.axisFinalScore||0);
 
-        /* Vol.150
+        /* Vol.151
            頭成立時2・3着率が40%未満なら、軸が割れていると判断し
            上位2艇まで表示。40%以上なら従来どおり1艇。 */
         if(firstRate<40.0 && a2){
@@ -11093,7 +11286,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.150 切り艇：さらに厳格化
+    /* Vol.151 切り艇：さらに厳格化
        弱いだけでは切らず、かなり消せる根拠が揃った場合だけ表示。
        全条件必須：
        1) HUNTER評価6位
@@ -11185,7 +11378,7 @@ function renderOdds(odds){
 
     panel.classList.remove("hide");
 
-    /* Vol.150：1着候補4艇なら「見 推奨」を盛大に表示 */
+    /* Vol.151：1着候補4艇なら「見 推奨」を盛大に表示 */
     const chaos=$("headChaosAlert");
     if(chaos){
       chaos.classList.toggle("hide",Number(p.heads?.length||0)!==4);
@@ -11550,7 +11743,7 @@ function renderOdds(odds){
     renderStats();
   });
 
-  /* Vol.150：5000回模擬レース全体をさらにコンパクト化 */
+  /* Vol.151：5000回模擬レース全体をさらにコンパクト化 */
   $("simMasterToggle")?.addEventListener("click",()=>{
     const body=$("simMasterBody");
     if(!body)return;
@@ -11735,7 +11928,7 @@ function renderOdds(odds){
   });
 
 
-  /* Vol.150: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
+  /* Vol.151: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
   $("getOdds120")?.addEventListener("click",()=>{
     const btn=$("getOdds120");
     if(btn){
