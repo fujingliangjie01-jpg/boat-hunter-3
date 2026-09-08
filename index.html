@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V157</title>
+<title>BOAT HUNTER V159</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -6081,7 +6081,7 @@ body.theme-ladies #simplePickPanel .axisChoice small{
 }
 
 
-/* ===== Vol.157 軸候補レイアウト修正 ===== */
+/* ===== Vol.159 軸候補レイアウト修正 ===== */
 
 /* 左の頭艇 → 矢印 → 軸艇 → 確率 を完全分離 */
 #simplePickPanel .headAxisRow{
@@ -6199,7 +6199,7 @@ body.theme-ladies #simplePickPanel .axisChoice small{
 }
 
 
-/* ===== Vol.157 HUNTER FINAL PICK 超強調デザイン ===== */
+/* ===== Vol.159 HUNTER FINAL PICK 超強調デザイン ===== */
 
 /* パネル全体を最終判定の主役に */
 #simplePickPanel{
@@ -6458,7 +6458,7 @@ body.theme-sg #simplePickPanel .headAxisArrow{
 }
 
 
-/* ===== Vol.157 音声入力 iPhone対応強化 ===== */
+/* ===== Vol.159 音声入力 iPhone対応強化 ===== */
 .voiceFallbackInput{
   width:calc(100% - 16px)!important;
   min-height:42px!important;
@@ -6495,7 +6495,7 @@ body.theme-sg .voiceFallbackInput{
 }
 
 
-/* ===== Vol.157 FINAL PICK 縦方向コンパクト化 ===== */
+/* ===== Vol.159 FINAL PICK 縦方向コンパクト化 ===== */
 
 /* 外枠 */
 #simplePickPanel{
@@ -6688,7 +6688,7 @@ body.theme-sg .voiceFallbackInput{
 }
 
 
-/* ===== Vol.157 FINAL PICK 左上見出し + 横幅フル活用 ===== */
+/* ===== Vol.159 FINAL PICK 左上見出し + 横幅フル活用 ===== */
 
 /* 1着候補・軸候補の見出しを左上に置いて、その下を全幅に */
 #simpleHeadPick,
@@ -6760,7 +6760,7 @@ body.theme-sg .voiceFallbackInput{
 }
 
 
-/* ===== Vol.157 軸候補に買い目の形を表示 ===== */
+/* ===== Vol.159 軸候補に買い目の形を表示 ===== */
 #simplePickPanel .axisChoiceBlock{
   display:flex!important;
   align-items:center!important;
@@ -6832,7 +6832,7 @@ body.theme-sg #simplePickPanel .axisShapes em{
 }
 
 
-/* ===== Vol.157 軸候補レイアウト完全整理 ===== */
+/* ===== Vol.159 軸候補レイアウト完全整理 ===== */
 
 /* 古い右側の大きい確率欄は廃止。1行をフル幅で使う */
 #simplePickPanel .headAxisRow{
@@ -7028,8 +7028,39 @@ body.theme-sg #simplePickPanel .axisShapes span{
   }
 }
 
+
+/* ===== Vol.159 現在級と過去最高級を分離 / 場選択時間帯表示 ===== */
+.venueTimeLegend{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:8px;
+  font-size:11px;
+  font-weight:900;
+  opacity:.9;
+}
+.venueTimeLegend span{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.75);
+  border:1px solid rgba(0,0,0,.08);
+}
+body.theme-sg .venueTimeLegend span{
+  background:rgba(0,0,0,.55);
+  border-color:rgba(255,190,70,.35);
+  color:#ffd27a;
+}
+body.theme-ladies .venueTimeLegend span{
+  background:#fff4f8;
+  border-color:#efb0ca;
+  color:#8d2454;
+}
+
 </style>
-<!-- Vol.157 BOAT HUNTER app icon -->
+<!-- Vol.159 BOAT HUNTER app icon -->
 <link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=157">
 <link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=157">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
@@ -7042,7 +7073,7 @@ body.theme-sg #simplePickPanel .axisShapes span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.157</div>
+  <div class="topVol">Vol.159</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -7059,7 +7090,7 @@ body.theme-sg #simplePickPanel .axisShapes span{
   <div class="head"><h2>出走表</h2><button type="button" id="back">トップへ</button></div>
   <div class="controls racePanel">
     <input id="date" type="hidden">
-    <div class="selectCard"><div class="selectEyebrow">VENUE</div><div class="selectLabel">開催場</div><select id="stadium" aria-label="開催場選択"></select></div>
+    <div class="selectCard"><div class="selectEyebrow">VENUE</div><div class="selectLabel">開催場</div><select id="stadium" aria-label="開催場選択"></select><div class="venueTimeLegend"><span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span></div></div>
     <div class="selectCard"><div class="selectEyebrow">RACE</div><div class="selectLabel">レース</div><select id="race" aria-label="レース選択"></select></div>
     <div class="voiceSelectGroup">
       <button type="button" id="voicePick" class="voicePick">🎙 音声で選ぶ</button>
@@ -7313,6 +7344,20 @@ body.theme-sg #simplePickPanel .axisShapes span{
 
 <script>
 const S={1:"桐生",2:"戸田",3:"江戸川",4:"平和島",5:"多摩川",6:"浜名湖",7:"蒲郡",8:"常滑",9:"津",10:"三国",11:"びわこ",12:"住之江",13:"尼崎",14:"鳴門",15:"丸亀",16:"児島",17:"宮島",18:"徳山",19:"下関",20:"若松",21:"芦屋",22:"福岡",23:"唐津",24:"大村"};
+const VENUE_TIME_TYPE={
+  1:"ナイター", 2:"デー", 3:"デー", 4:"ナイター", 5:"デー", 6:"デー",
+  7:"デー", 8:"デー", 9:"デー", 10:"デー", 11:"デー", 12:"デー",
+  13:"デー", 14:"デー", 15:"デー", 16:"デー", 17:"デー", 18:"デー",
+  19:"デー", 20:"デー", 21:"モーニング", 22:"デー", 23:"モーニング", 24:"デー"
+};
+function venueTimeLabel(no){
+  return VENUE_TIME_TYPE[Number(no)]||"デー";
+}
+function venueTimeIcon(no){
+  const t=venueTimeLabel(no);
+  return t==="モーニング"?"🌅":t==="ナイター"?"🌙":"🔵";
+}
+
 const R={1:"B2",2:"B1",3:"A2",4:"A1"};
 const T={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
 const $=x=>document.getElementById(x), n=x=>Number.isFinite(+x)?+x:null;
@@ -7331,11 +7376,15 @@ function today(){return new Date(Date.now()+32400000).toISOString().slice(0,10)}
 function url(d){let s=d.replaceAll("-","");return`https://boatraceopenapi.github.io/api/v1/${s.slice(0,4)}/${s}.json`}
 function raceOf(j,jo,r){const sj=String(Number(jo));const sr=String(Number(r));return j?.programs?.stadiums?.[sj]?.races?.[sr]||j?.programs?.stadiums?.[String(jo)]?.races?.[String(r)]||null}
 function racers(r){return Object.values(r?.racers||{}).sort((a,b)=>a.entry_number-b.entry_number)}
-function grade(r){return R[+r.rank_number]||"—"}
+function grade(r){return r.current_class||R[+r.rank_number]||"—"}
 
 function classToRank(v){
   const x=String(v||"").toUpperCase().replace(/級/g,"").trim();
   return x==="A1"?4:x==="A2"?3:x==="B1"?2:x==="B2"?1:0;
+}
+
+function currentClassRank(r){
+  return classToRank(r?.current_class)||(+r?.rank_number||0);
 }
 
 function parseClassCSV(text){
@@ -7358,7 +7407,7 @@ function parseClassCSV(text){
   return rows;
 }
 
-/* Vol.157 現在級別
+/* Vol.159 現在級別
    選手プロフィールへの個別アクセスは廃止。
    BoatraceCSV race_cards の「艇N_級別」を1日1ファイルだけ取得し、
    レースコード + 登録番号で一致した選手だけ級別を補正する。
@@ -7400,8 +7449,8 @@ async function patchCurrentClassesFromRaceCards(rr){
       const cls=byReg.get(no);
       const rank=classToRank(cls);
       if(rank){
-        r.rank_number=rank;
         r.current_class=cls;
+        r.current_class_rank=rank;
         r.class_source="race_cards";
       }
     });
@@ -7465,13 +7514,13 @@ async function getRace(){
   window.syncEntryFromPreview?.();
   setTopTheme(raceTheme(currentRace));
   let rr=racers(currentRace);if(rr.length!==6)throw Error(`${S[Number($("stadium").value)]||"開催場"} ${$("race").value}R：6艇を取得できません`);
-  $("status").textContent="出走表取得済み / 現在級別を照合中…";
+  $("status").textContent="出走表取得済み / 現在級別を照合中…（過去最高級とは別管理）";
   await patchCurrentClassesFromRaceCards(rr);
   $("cards").innerHTML=rr.map(card).join("");
   window.decorateHunterSG?.();
   decorateRanks(rr);
   if($("getPreview"))$("getPreview").disabled=false;
-  /* Vol.157: AI解析ボタン自体は押せる。
+  /* Vol.159: AI解析ボタン自体は押せる。
      120通り未取得ならAI解析側で自動取得してから続行する。 */
   if($("aiAnalyze"))$("aiAnalyze").disabled=false;
   $("get")?.classList.add("done");
@@ -7509,7 +7558,7 @@ function stRanks(rs){
 function consumeHistoryDay(j,d,targets){
  if(!j)return;
 
- /* Vol.157
+ /* Vol.159
     過去最高階級は「特定日だけを間引き検索」せず、
     同コース過去20走取得で実際に読んだ全日付の出走表から拾う。
     これで過去A2/A1の取りこぼしを大幅に減らす。 */
@@ -7772,7 +7821,7 @@ async function toggleDetail(boatNo,number){
 function setTopTheme(type){
  const t=$("top");
 
- /* Vol.157:
+ /* Vol.159:
     テーマは「選択中のレース」ではなく、その日の全国開催全体を優先。
     SG開催が1場でもあればSG、SGなしでレディース開催が1場でもあればレディース。 */
  const globalType=window.__HUNTER_GLOBAL_THEME;
@@ -7841,7 +7890,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* Vol.157: 選手カードは初期状態で全艇コンパクト。
+/* Vol.159: 選手カードは初期状態で全艇コンパクト。
    ヘッダーを押すと1艇だけ展開し、他艇は自動で閉じる。 */
 (function(){
   function setupRacerAccordion(){
@@ -7873,7 +7922,7 @@ $('top').classList.remove('hide');
     });
   }
 
-  /* Vol.157: データ更新でカードが勝手に閉じないようMutationObserverを停止。
+  /* Vol.159: データ更新でカードが勝手に閉じないようMutationObserverを停止。
      新しいカード生成時だけ別監視でイベントを追加し、open状態は保持する。 */
   document.addEventListener('DOMContentLoaded',setupRacerAccordion);
   setTimeout(setupRacerAccordion,0);
@@ -8070,7 +8119,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* ===== Vol.157 今節得点率 / 得点順位 取得強化 ===== */
+/* ===== Vol.159 今節得点率 / 得点順位 取得強化 ===== */
 (function(){
   const $all=(sel,root=document)=>Array.from(root.querySelectorAll(sel));
 
@@ -8218,7 +8267,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 直前情報取得 / AI解析ゲート ===== */
+/* ===== Vol.159 直前情報取得 / AI解析ゲート ===== */
 (function(){
   let previewRows=null;
   let previewPromise=null;
@@ -8306,7 +8355,7 @@ $('top').classList.remove('hide');
       }
     }
     if(orig){
-      /* Vol.157 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
+      /* Vol.159 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
          まず「一周 / 回り / 直線」の見出し位置を探し、
          次に 1〜6号艇が4列間隔で並ぶデータ開始位置を自動検出する。 */
       const labels=orig
@@ -8546,7 +8595,7 @@ $('top').classList.remove('hide');
     window.buildRaceOutlook?.();
     ai.disabled=false;
   
-    /* Vol.157: AI解析完了後、そのまま5000回シミュレーションを実行 */
+    /* Vol.159: AI解析完了後、そのまま5000回シミュレーションを実行 */
     try{
       if(typeof window.runHunterSimulation==="function"){
         await window.runHunterSimulation({fromAI:true});
@@ -8581,7 +8630,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 進入設定 ===== */
+/* ===== Vol.159 進入設定 ===== */
 (function(){
   const DEFAULT_ENTRY=[1,2,3,4,5,6];
   let entryState=DEFAULT_ENTRY.map((boat,i)=>({
@@ -8736,9 +8785,9 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 HUNTER レース展望 ===== */
+/* ===== Vol.159 HUNTER レース展望 ===== */
 (function(){
-  /* Vol.157: レース展望専用ヘルパー
+  /* Vol.159: レース展望専用ヘルパー
      直前情報IIFE内のprivate関数に依存しない */
   function outlookNum(v){
     if(v==null||v==="")return null;
@@ -8825,7 +8874,7 @@ $('top').classList.remove('hide');
 
   async function getSui(){
     /*
-      Vol.157:
+      Vol.159:
       水面気象は自動更新・裏取得をしない。
       AI解析ボタンを押した瞬間にだけ1回取得し、
       次にAI解析を押すまでその値を固定する。
@@ -9064,7 +9113,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 選手カード優先表示 ===== */
+/* ===== Vol.159 選手カード優先表示 ===== */
 (function(){
   function reorderHunterSections(){
     const cards=document.getElementById("cards");
@@ -9102,7 +9151,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 24場 外部画像切替 ===== */
+/* ===== Vol.159 24場 外部画像切替 ===== */
 (function(){
   const VENUE_PHOTOS={
     "01":"images/venue_default.png","02":"images/venue_default.png","03":"images/venue_default.png",
@@ -9130,7 +9179,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 開催場選択：当日programs.stadiumsを正として表示 ===== */
+/* ===== Vol.159 開催場選択：当日programs.stadiumsを正として表示 ===== */
 (function(){
   const ALL_VENUES={
     "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
@@ -9322,7 +9371,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 F持ち / F後平均ST ===== */
+/* ===== Vol.159 F持ち / F後平均ST ===== */
 (function(){
   function n(v){
     if(v==null||v==="")return null;
@@ -9396,7 +9445,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 表示後デコレーション ===== */
+/* ===== Vol.159 表示後デコレーション ===== */
 (function(){
   function decorateF(){
     const cards=[...document.querySelectorAll("#cards .card,#cards .racerCard,#cards [data-entry]")];
@@ -9477,7 +9526,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 SGレーサー判定 =====
+/* ===== Vol.159 SGレーサー判定 =====
    銀SG = 現開催がSG、または全国近況5節にSG出場あり
    金SG = 全国近況5節のSG節で優勝戦[1]あり
 */
@@ -9598,7 +9647,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.157 BoatraceCSV od3 / 世間順位 ===== */
+/* ===== Vol.159 BoatraceCSV od3 / 世間順位 ===== */
 (function(){
   let oddsSnapshot=null;
 
@@ -9698,7 +9747,7 @@ $('top').classList.remove('hide');
   }
 
   
-  /* ===== Vol.157 本命10点生成 =====
+  /* ===== Vol.159 本命10点生成 =====
      HUNTER評価1位を主頭にし、決まり手・追走・条件付き2/3着を優先。イン逃げ時は2着候補の3着残存を確認して折り返しも採用。
      120通り一覧のパッチ表示にも同じ結果を使う。10点は上限であり、根拠が弱い候補は無理に入れない。 */
   function hunterMain10(){
@@ -10093,7 +10142,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.157 今節得点率 / 得点順位
+/* ===== Vol.159 今節得点率 / 得点順位
    1) BoatraceCSV tokuten_hayami を最優先
    2) 行が未公開なら公式 pointchart を低頻度フォールバック
    3) どちらも無ければ「未公開 / 対象外」
@@ -10240,7 +10289,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.157 HUNTER RACE ENGINE ===== */
+/* ===== Vol.159 HUNTER RACE ENGINE ===== */
 (function(){
   const N_SIM=5000;
   const venueCache={};
@@ -10457,7 +10506,7 @@ function renderOdds(odds){
     }
 
     raw.forEach((x,i)=>{
-      /* Vol.157
+      /* Vol.159
          START力: 直線タイムを採用
          1M攻撃力: 展示タイムを採用
          足力: 展示タイムを追加
@@ -10536,7 +10585,7 @@ function renderOdds(odds){
     return k;
   }
 
-  /* Vol.157 スリット→1M先制判定
+  /* Vol.159 スリット→1M先制判定
      展示タイムは150m計測として秒速化し、約120m地点までの到達時間を算出。
      到達差0.15秒 ≒ 1艇身として隣接実進入を比較する。 */
   function oneMarkArrival(x,starts){
@@ -10724,14 +10773,14 @@ function renderOdds(odds){
         else if(om?.state==="CONTEST")w*=1.10;
         else if(om?.state==="INNER")w*=.82;
 
-        /* Vol.157 展示0.15差以上を勝率側でも強く評価 */
+        /* Vol.159 展示0.15差以上を勝率側でも強く評価 */
         if(inner && Number.isFinite(Number(x.exhibition)) && Number.isFinite(Number(inner.exhibition))){
           const staticExGap=Number(inner.exhibition)-Number(x.exhibition);
           if(staticExGap>=0.18)w*=1.38;
           else if(staticExGap>=0.15)w*=1.28;
         }
 
-        /* Vol.157 F2/F3の直後は壁崩れまくりを強評価 */
+        /* Vol.159 F2/F3の直後は壁崩れまくりを強評価 */
         if(inner && Number(inner.fc)>=2){
           if(Number(x.hRank)<=3)w*=1.55;
           else if(Number(x.hRank)<=4)w*=1.35;
@@ -11135,7 +11184,7 @@ function renderOdds(odds){
       return;
     }
     const btn=$("runSimulation");
-    /* Vol.157: 手動シミュレーションボタンは廃止済み。
+    /* Vol.159: 手動シミュレーションボタンは廃止済み。
        AI自動実行時は btn が存在しないため、存在時だけ操作する。 */
     if(btn){
       btn.disabled=true;
@@ -11205,7 +11254,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.157 F持ち / 高チルト 警戒広告 ===== */
+/* ===== Vol.159 F持ち / 高チルト 警戒広告 ===== */
 (function(){
   function alertBoat(n){
     return `<span class="raceAlertBoat b${Number(n)}">${Number(n)}号艇</span>`;
@@ -11310,7 +11359,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.157 結果確認 / 状態保持 / 操作導線 ===== */
+/* ===== Vol.159 結果確認 / 状態保持 / 操作導線 ===== */
 (function(){
   const RESULT_KEY="BH_RESULT_CHECK_V1";
   const PRED_KEY="BH_PRED_SNAPSHOT_V1";
@@ -11467,7 +11516,7 @@ function renderOdds(odds){
 
     let heads=[];
 
-    /* Vol.157 ランキング割れ
+    /* Vol.159 ランキング割れ
        HUNTER1位と世間1位が違う時は、
        ① HUNTER1位
        ② 世間1位
@@ -11538,14 +11587,14 @@ function renderOdds(odds){
         .map(x=>toHead(x));
     }
 
-    /* Vol.157 展示差からの攻め昇格
+    /* Vol.159 展示差からの攻め昇格
        実進入で直内艇より展示が0.15秒以上速い艇は、
        5000回模擬で「まくり / まくり差し」が実際に発生しているか確認。
        発生していれば1着候補へ昇格する。 */
     const simTotal=Object.values(sim.headAxisCounts||{})
       .reduce((a,x)=>a+Number(x?.wins||0),0)||5000;
 
-    /* Vol.157 F2/F3の一個後ろは別ルートで頭昇格 */
+    /* Vol.159 F2/F3の一個後ろは別ルートで頭昇格 */
     const racerByBoat=(boat)=>{
       const rs=currentRace?.racers||currentRace?.program?.racers||{};
       return rs[String(boat)]||Object.values(rs).find(r=>Number(r?.entry_number)===Number(boat))||null;
@@ -11703,7 +11752,7 @@ function renderOdds(odds){
         h.axisRate=firstRate;
         h.axisScore=Number(a1.axisFinalScore||0);
 
-        /* Vol.157
+        /* Vol.159
            頭成立時2・3着率が40%未満なら軸を上位2艇まで表示。
            さらに「頭-軸-○」「頭-○-軸」の形別率も保存する。 */
         if(firstRate<40.0 && a2){
@@ -11730,7 +11779,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.157 切り艇：さらに厳格化
+    /* Vol.159 切り艇：さらに厳格化
        弱いだけでは切らず、かなり消せる根拠が揃った場合だけ表示。
        全条件必須：
        1) HUNTER評価6位
@@ -11822,7 +11871,7 @@ function renderOdds(odds){
 
     panel.classList.remove("hide");
 
-    /* Vol.157：1着候補4艇なら「見 推奨」を盛大に表示 */
+    /* Vol.159：1着候補4艇なら「見 推奨」を盛大に表示 */
     const chaos=$("headChaosAlert");
     if(chaos){
       chaos.classList.toggle("hide",Number(p.heads?.length||0)!==4);
@@ -12200,7 +12249,7 @@ function renderOdds(odds){
     renderStats();
   });
 
-  /* Vol.157：5000回模擬レース全体をさらにコンパクト化 */
+  /* Vol.159：5000回模擬レース全体をさらにコンパクト化 */
   $("simMasterToggle")?.addEventListener("click",()=>{
     const body=$("simMasterBody");
     if(!body)return;
@@ -12385,7 +12434,7 @@ function renderOdds(odds){
   });
 
 
-  /* Vol.157: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
+  /* Vol.159: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
   $("getOdds120")?.addEventListener("click",()=>{
     const btn=$("getOdds120");
     if(btn){
