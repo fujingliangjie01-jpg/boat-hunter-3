@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V183</title>
+<title>BOAT HUNTER V185</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -7167,7 +7167,7 @@ body.theme-ladies .venueTimeLegend span{
 }
 
 
-/* ===== Vol.183 1号艇カードを白銀に固定 ===== */
+/* ===== Vol.185 1号艇カードを白銀に固定 ===== */
 /* 1艇目のカードそのものを明るい白銀にする */
 #racers > *:nth-child(1),
 #racerCards > *:nth-child(1),
@@ -7223,11 +7223,11 @@ body.theme-ladies .venueTimeLegend span{
 }
 
 </style>
-<!-- Vol.183 BOAT HUNTER app icon -->
-<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=183">
-<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=183">
-<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=183">
-<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=183">
+<!-- Vol.185 BOAT HUNTER app icon -->
+<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=185">
+<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=185">
+<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=185">
+<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=185">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
 <meta name="application-name" content="BOAT HUNTER">
 
@@ -7254,12 +7254,12 @@ body.theme-ladies .venueTimeLegend span{
   pointer-events:none!important;
   z-index:0!important;
 }
-#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=183")!important}
-#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=183")!important}
-#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=183")!important}
-#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=183")!important}
-#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=183")!important}
-#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=183")!important}
+#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=185")!important}
+#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=185")!important}
+#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=185")!important}
+#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=185")!important}
+#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=185")!important}
+#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=185")!important}
 
 /* keep text / badges / plus button above artwork */
 #cards .card .row,
@@ -7415,6 +7415,38 @@ body.theme-ladies .venueTimeLegend span{
 }
 .compareLegend .r{background:#ffd6d9}.compareLegend .y{background:#fff0a6}
 </style>
+<style>
+/* ===== V184 攻め=剣 / 守り=盾 ===== */
+.techChip{
+  position:relative!important;
+  border-radius:10px!important;
+  padding:4px 7px 4px 24px!important;
+}
+.techChip::before{
+  position:absolute;
+  left:6px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:13px;
+  line-height:1;
+}
+.techChip.attack{border-radius:7px 13px 13px 7px!important}
+.techChip.attack::before{content:"⚔";color:#c71932}
+.techChip.defense{border-radius:13px 7px 7px 13px!important}
+.techChip.defense::before{content:"🛡";font-size:12px}
+.techChip.attack.hot{box-shadow:inset 3px 0 0 #d3152f}
+.techChip.attack.avg{box-shadow:inset 3px 0 0 #e3bd20}
+.techChip.defense.hot{box-shadow:inset 3px 0 0 #176eb5}
+.techChip.defense.avg{box-shadow:inset 3px 0 0 #d7b321}
+.compareAssist .roleLegend{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap}
+.compareAssist .roleTag{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 7px;border-radius:999px;background:#fff;
+  border:1px solid rgba(0,0,0,.08);font-weight:900
+}
+.compareAssist .roleAttack{color:#b4172d}
+.compareAssist .roleDefense{color:#1765a5}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -7422,7 +7454,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.183</div>
+  <div class="topVol">Vol.185</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -7738,7 +7770,7 @@ function setupVenueSelectDisplay(){
 }
 
 
-/* Vol.183 OpenAPIの級別番号は 1=A1 / 2=A2 / 3=B1 / 4=B2 */
+/* Vol.185 OpenAPIの級別番号は 1=A1 / 2=A2 / 3=B1 / 4=B2 */
 const R={1:"A1",2:"A2",3:"B1",4:"B2"};
 /* 過去最高級の内部スコア用（大きいほど上位） */
 const CLASS_SCORE_LABEL={1:"B2",2:"B1",3:"A2",4:"A1"};
@@ -7795,7 +7827,7 @@ function parseClassCSV(text){
   return rows;
 }
 
-/* Vol.183 現在級別
+/* Vol.185 現在級別
    選手プロフィールへの個別アクセスは廃止。
    BoatraceCSV race_cards の「艇N_級別」を1日1ファイルだけ取得し、
    レースコード + 登録番号で一致した選手だけ級別を補正する。
@@ -7908,7 +7940,7 @@ async function getRace(){
   window.decorateHunterSG?.();
   decorateRanks(rr);
   if($("getPreview"))$("getPreview").disabled=false;
-  /* Vol.183: AI解析ボタン自体は押せる。
+  /* Vol.185: AI解析ボタン自体は押せる。
      120通り未取得ならAI解析側で自動取得してから続行する。 */
   if($("aiAnalyze"))$("aiAnalyze").disabled=false;
   $("get")?.classList.add("done");
@@ -7967,12 +7999,12 @@ function stRanks(rs){
 function consumeHistoryDay(j,d,targets){
  if(!j)return;
 
- /* Vol.183:
+ /* Vol.185:
     2026 API = programs.stadiums
     2025 legacy programs API = stadiums の場合もあるため両方読む。
     これがV165で橋本久和の2025年A2を拾えなかった原因。 */
 
- /* Vol.183
+ /* Vol.185
     過去最高階級は420日を連続確認する。現行APIだけでなく、2025年以前はlegacy programs APIも確認する。 */
  const sts=j?.programs?.stadiums||j?.stadiums||{};
  for(const st of Object.values(sts)){
@@ -8027,7 +8059,7 @@ async function buildHistory(){
  const BATCH=14,MAX_DAYS=420;
 
  for(let from=1;from<=MAX_DAYS;from+=BATCH){
-  /* Vol.183:
+  /* Vol.185:
      同コース20走が先に揃っても階級探索は止めない。
      過去最高級は420日分を最後まで確認する。
      2025年以前はlegacy programs APIへ自動フォールバック。 */
@@ -8237,7 +8269,7 @@ async function toggleDetail(boatNo,number){
 function setTopTheme(type){
  const t=$("top");
 
- /* Vol.183:
+ /* Vol.185:
     テーマは「選択中のレース」ではなく、その日の全国開催全体を優先。
     SG開催が1場でもあればSG、SGなしでレディース開催が1場でもあればレディース。 */
  const globalType=window.__HUNTER_GLOBAL_THEME;
@@ -8306,7 +8338,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* Vol.183: 選手カードは初期状態で全艇コンパクト。
+/* Vol.185: 選手カードは初期状態で全艇コンパクト。
    ヘッダーを押すと1艇だけ展開し、他艇は自動で閉じる。 */
 (function(){
   function setupRacerAccordion(){
@@ -8338,7 +8370,7 @@ $('top').classList.remove('hide');
     });
   }
 
-  /* Vol.183: データ更新でカードが勝手に閉じないようMutationObserverを停止。
+  /* Vol.185: データ更新でカードが勝手に閉じないようMutationObserverを停止。
      新しいカード生成時だけ別監視でイベントを追加し、open状態は保持する。 */
   document.addEventListener('DOMContentLoaded',setupRacerAccordion);
   setTimeout(setupRacerAccordion,0);
@@ -8535,7 +8567,7 @@ $('top').classList.remove('hide');
 </script>
 
 <script>
-/* ===== Vol.183 今節得点率 / 得点順位 取得強化 ===== */
+/* ===== Vol.185 今節得点率 / 得点順位 取得強化 ===== */
 (function(){
   const $all=(sel,root=document)=>Array.from(root.querySelectorAll(sel));
 
@@ -8683,7 +8715,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 直前情報取得 / AI解析ゲート ===== */
+/* ===== Vol.185 直前情報取得 / AI解析ゲート ===== */
 (function(){
   let previewRows=null;
   let previewPromise=null;
@@ -8771,7 +8803,7 @@ $('top').classList.remove('hide');
       }
     }
     if(orig){
-      /* Vol.183 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
+      /* Vol.185 original_exhibition.csv の列位置変更に耐えるよう固定indexを廃止。
          まず「一周 / 回り / 直線」の見出し位置を探し、
          次に 1〜6号艇が4列間隔で並ぶデータ開始位置を自動検出する。 */
       const labels=orig
@@ -9011,7 +9043,7 @@ $('top').classList.remove('hide');
     window.buildRaceOutlook?.();
     ai.disabled=false;
   
-    /* Vol.183: AI解析完了後、そのまま5000回シミュレーションを実行 */
+    /* Vol.185: AI解析完了後、そのまま5000回シミュレーションを実行 */
     try{
       if(typeof window.runHunterSimulation==="function"){
         await window.runHunterSimulation({fromAI:true});
@@ -9046,7 +9078,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 進入設定 ===== */
+/* ===== Vol.185 進入設定 ===== */
 (function(){
   const DEFAULT_ENTRY=[1,2,3,4,5,6];
   let entryState=DEFAULT_ENTRY.map((boat,i)=>({
@@ -9201,9 +9233,9 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 HUNTER レース展望 ===== */
+/* ===== Vol.185 HUNTER レース展望 ===== */
 (function(){
-  /* Vol.183: レース展望専用ヘルパー
+  /* Vol.185: レース展望専用ヘルパー
      直前情報IIFE内のprivate関数に依存しない */
   function outlookNum(v){
     if(v==null||v==="")return null;
@@ -9290,7 +9322,7 @@ $('top').classList.remove('hide');
 
   async function getSui(){
     /*
-      Vol.183:
+      Vol.185:
       水面気象は自動更新・裏取得をしない。
       AI解析ボタンを押した瞬間にだけ1回取得し、
       次にAI解析を押すまでその値を固定する。
@@ -9529,7 +9561,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 選手カード優先表示 ===== */
+/* ===== Vol.185 選手カード優先表示 ===== */
 (function(){
   function reorderHunterSections(){
     const cards=document.getElementById("cards");
@@ -9567,7 +9599,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 24場 外部画像切替 ===== */
+/* ===== Vol.185 24場 外部画像切替 ===== */
 (function(){
   const VENUE_PHOTOS={
     "01":"images/venue_default.png","02":"images/venue_default.png","03":"images/venue_default.png",
@@ -9595,7 +9627,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 開催場選択：当日programs.stadiumsを正として表示 ===== */
+/* ===== Vol.185 開催場選択：当日programs.stadiumsを正として表示 ===== */
 (function(){
   const ALL_VENUES={
     "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
@@ -9792,7 +9824,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 F持ち / F後平均ST ===== */
+/* ===== Vol.185 F持ち / F後平均ST ===== */
 (function(){
   function n(v){
     if(v==null||v==="")return null;
@@ -9866,7 +9898,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 表示後デコレーション ===== */
+/* ===== Vol.185 表示後デコレーション ===== */
 (function(){
   function decorateF(){
     const cards=[...document.querySelectorAll("#cards .card,#cards .racerCard,#cards [data-entry]")];
@@ -9947,7 +9979,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 SGレーサー判定 =====
+/* ===== Vol.185 SGレーサー判定 =====
    銀SG = 現開催がSG、または全国近況5節にSG出場あり
    金SG = 全国近況5節のSG節で優勝戦[1]あり
 */
@@ -10068,7 +10100,7 @@ $('top').classList.remove('hide');
 
 
 <script>
-/* ===== Vol.183 BoatraceCSV od3 / 世間順位 ===== */
+/* ===== Vol.185 BoatraceCSV od3 / 世間順位 ===== */
 (function(){
   let oddsSnapshot=null;
 
@@ -10168,7 +10200,7 @@ $('top').classList.remove('hide');
   }
 
   
-  /* ===== Vol.183 本命10点生成 =====
+  /* ===== Vol.185 本命10点生成 =====
      HUNTER評価1位を主頭にし、決まり手・追走・条件付き2/3着を優先。イン逃げ時は2着候補の3着残存を確認して折り返しも採用。
      120通り一覧のパッチ表示にも同じ結果を使う。10点は上限であり、根拠が弱い候補は無理に入れない。 */
   function hunterMain10(){
@@ -10563,7 +10595,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.183 今節得点率 / 得点順位
+/* ===== Vol.185 今節得点率 / 得点順位
    1) BoatraceCSV tokuten_hayami を最優先
    2) 行が未公開なら公式 pointchart を低頻度フォールバック
    3) どちらも無ければ「未公開 / 対象外」
@@ -10710,7 +10742,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.183 HUNTER RACE ENGINE ===== */
+/* ===== Vol.185 HUNTER RACE ENGINE ===== */
 (function(){
   const N_SIM=5000;
   const venueCache={};
@@ -10927,7 +10959,7 @@ function renderOdds(odds){
     }
 
     raw.forEach((x,i)=>{
-      /* Vol.183
+      /* Vol.185
          START力: 直線タイムを採用
          1M攻撃力: 展示タイムを採用
          足力: 展示タイムを追加
@@ -11006,7 +11038,7 @@ function renderOdds(odds){
     return k;
   }
 
-  /* Vol.183 スリット→1M先制判定
+  /* Vol.185 スリット→1M先制判定
      展示タイムは150m計測として秒速化し、約120m地点までの到達時間を算出。
      到達差0.15秒 ≒ 1艇身として隣接実進入を比較する。 */
   function oneMarkArrival(x,starts){
@@ -11108,7 +11140,7 @@ function renderOdds(odds){
   }
 
 
-  /* Vol.183
+  /* Vol.185
      上手い1C + 攻める3/4C + 上手い5C の展開を検出。
      3/4が1Mで仕掛けることで5Cのまくり差し場が開き、
      1-5 / 5-1 が残る形を5000回模擬へ直接反映する。 */
@@ -11285,14 +11317,14 @@ function renderOdds(odds){
         else if(om?.state==="CONTEST")w*=1.10;
         else if(om?.state==="INNER")w*=.82;
 
-        /* Vol.183 展示0.15差以上を勝率側でも強く評価 */
+        /* Vol.185 展示0.15差以上を勝率側でも強く評価 */
         if(inner && Number.isFinite(Number(x.exhibition)) && Number.isFinite(Number(inner.exhibition))){
           const staticExGap=Number(inner.exhibition)-Number(x.exhibition);
           if(staticExGap>=0.18)w*=1.38;
           else if(staticExGap>=0.15)w*=1.28;
         }
 
-        /* Vol.183 F2/F3の直後は壁崩れまくりを強評価 */
+        /* Vol.185 F2/F3の直後は壁崩れまくりを強評価 */
         if(inner && Number(inner.fc)>=2){
           if(Number(x.hRank)<=3)w*=1.55;
           else if(Number(x.hRank)<=4)w*=1.35;
@@ -11314,7 +11346,7 @@ function renderOdds(odds){
           w*=.96;
         }
 
-        /* Vol.183: 3/4の攻めで5Cまくり差し場が開く時は5Cの1着率を補正 */
+        /* Vol.185: 3/4の攻めで5Cまくり差し場が開く時は5Cの1着率を補正 */
         if(Number(x.course)===5){
           const fs=fiveMakuriSashiScenario(features,starts);
           if(fs.active){
@@ -11710,7 +11742,7 @@ function renderOdds(odds){
       return;
     }
     const btn=$("runSimulation");
-    /* Vol.183: 手動シミュレーションボタンは廃止済み。
+    /* Vol.185: 手動シミュレーションボタンは廃止済み。
        AI自動実行時は btn が存在しないため、存在時だけ操作する。 */
     if(btn){
       btn.disabled=true;
@@ -11786,7 +11818,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.183 F持ち / 高チルト 警戒広告 ===== */
+/* ===== Vol.185 F持ち / 高チルト 警戒広告 ===== */
 (function(){
   function alertBoat(n){
     return `<span class="raceAlertBoat b${Number(n)}">${Number(n)}号艇</span>`;
@@ -11891,7 +11923,7 @@ function renderOdds(odds){
 
 
 <script>
-/* ===== Vol.183 結果確認 / 状態保持 / 操作導線 ===== */
+/* ===== Vol.185 結果確認 / 状態保持 / 操作導線 ===== */
 (function(){
   const RESULT_KEY="BH_RESULT_CHECK_V1";
   const PRED_KEY="BH_PRED_SNAPSHOT_V1";
@@ -12048,7 +12080,7 @@ function renderOdds(odds){
 
     let heads=[];
 
-    /* Vol.183 ランキング割れ
+    /* Vol.185 ランキング割れ
        HUNTER1位と世間1位が違う時は、
        ① HUNTER1位
        ② 世間1位
@@ -12119,14 +12151,14 @@ function renderOdds(odds){
         .map(x=>toHead(x));
     }
 
-    /* Vol.183 展示差からの攻め昇格
+    /* Vol.185 展示差からの攻め昇格
        実進入で直内艇より展示が0.15秒以上速い艇は、
        5000回模擬で「まくり / まくり差し」が実際に発生しているか確認。
        発生していれば1着候補へ昇格する。 */
     const simTotal=Object.values(sim.headAxisCounts||{})
       .reduce((a,x)=>a+Number(x?.wins||0),0)||5000;
 
-    /* Vol.183 F2/F3の一個後ろは別ルートで頭昇格 */
+    /* Vol.185 F2/F3の一個後ろは別ルートで頭昇格 */
     const racerByBoat=(boat)=>{
       const rs=currentRace?.racers||currentRace?.program?.racers||{};
       return rs[String(boat)]||Object.values(rs).find(r=>Number(r?.entry_number)===Number(boat))||null;
@@ -12269,7 +12301,7 @@ function renderOdds(odds){
             Number(x.preEval?.base||50)*.25;
           let score=cond*.75+pre*.25;
 
-          /* Vol.183 軸再評価:
+          /* Vol.185 軸再評価:
              1-5 / 5-1 の展開が5000回模擬側で成立する場合、
              相手側を「展開軸」として補正する。 */
           const fs=sim.fiveMakuriSashiScenario;
@@ -12298,7 +12330,7 @@ function renderOdds(odds){
         h.axisRate=firstRate;
         h.axisScore=Number(a1.axisFinalScore||0);
 
-        /* Vol.183
+        /* Vol.185
            頭成立時2・3着率が40%未満なら軸を上位2艇まで表示。
            さらに「頭-軸-○」「頭-○-軸」の形別率も保存する。 */
         if(firstRate<40.0 && a2){
@@ -12325,7 +12357,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.183 切り艇：さらに厳格化
+    /* Vol.185 切り艇：さらに厳格化
        弱いだけでは切らず、かなり消せる根拠が揃った場合だけ表示。
        全条件必須：
        1) HUNTER評価6位
@@ -12417,7 +12449,7 @@ function renderOdds(odds){
 
     panel.classList.remove("hide");
 
-    /* Vol.183：1着候補4艇なら「見 推奨」を盛大に表示 */
+    /* Vol.185：1着候補4艇なら「見 推奨」を盛大に表示 */
     const chaos=$("headChaosAlert");
     if(chaos){
       chaos.classList.toggle("hide",Number(p.heads?.length||0)!==4);
@@ -12829,7 +12861,7 @@ function renderOdds(odds){
     renderStats();
   });
 
-  /* Vol.183：5000回模擬レース全体をさらにコンパクト化 */
+  /* Vol.185：5000回模擬レース全体をさらにコンパクト化 */
   $("simMasterToggle")?.addEventListener("click",()=>{
     const body=$("simMasterBody");
     if(!body)return;
@@ -13014,7 +13046,7 @@ function renderOdds(odds){
   });
 
 
-  /* Vol.183: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
+  /* Vol.185: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
   $("getOdds120")?.addEventListener("click",()=>{
     const btn=$("getOdds120");
     if(btn){
@@ -13053,7 +13085,7 @@ function renderOdds(odds){
   renderStats();
 })();
 
-/* Vol.183 native venue dropdown decoration */
+/* Vol.185 native venue dropdown decoration */
 setTimeout(()=>{ try{ setupVenueSelectDisplay(); decorateVenueOptions("closed"); }catch(e){} },0);
 
 </script>
@@ -13114,10 +13146,14 @@ function bhTechClass(course,key,val){
   if(val>=base*0.85)return "avg";
   return "";
 }
+function bhTechRole(key){
+  return ["nige","sashi","makuri","makurizashi"].includes(key) ? "attack" : "defense";
+}
 function bhTechChip(label,key,val,course){
-  if(!Number.isFinite(val))return `<span class="techChip">${label}<strong>—</strong></span>`;
+  const role=bhTechRole(key);
+  if(!Number.isFinite(val))return `<span class="techChip ${role}">${label}<strong>—</strong></span>`;
   const cls=bhTechClass(course,key,val);
-  return `<span class="techChip ${cls}">${label}<strong>${val.toFixed(1)}%</strong></span>`;
+  return `<span class="techChip ${role} ${cls}">${label}<strong>${val.toFixed(1)}%</strong></span>`;
 }
 
 /* 選手カードと同じ過去20走の数値を使用 */
@@ -13200,7 +13236,9 @@ function bhRenderCompare(){
   const assist=document.querySelector("#compareBody .compareAssist");
   if(assist){
     assist.innerHTML=`
-      <span>補助：
+      <span class="roleLegend">
+        <span class="roleTag roleAttack">⚔ 攻め</span>
+        <span class="roleTag roleDefense">🛡 守り</span>
         <span class="compareLegend"><i class="r"></i>圧倒的 / 1位</span>
         <span class="compareLegend"><i class="y"></i>平均級 / 2位</span>
       </span>
