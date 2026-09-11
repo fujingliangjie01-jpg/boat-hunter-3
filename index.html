@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.244</div>
+  <div class="topVol">Vol.243</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14317,41 +14317,49 @@ function renderOdds(odds){
     const code=String(date).replaceAll("-","")
       +String(Number(venue)).padStart(2,"0")
       +String(Number(raceNo)).padStart(2,"0");
-    /* Vol.242: GitHub Pages/CDN・Safariキャッシュ対策。毎回URLを変えて最新CSVを読む。 */
+    const venueCode=String(Number(venue)).padStart(2,"0");
+    const raceCode=String(Number(raceNo)).padStart(2,"0");
     const csvUrl=`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv?_bh=${Date.now()}`;
     try{
-      const res=await bhResultFetchText(csvUrl,4500);
-      const rows=parseCSV(res);
-      if(!Array.isArray(rows)||rows.length<2)return null;
+      const text=await bhResultFetchText(csvUrl,5000);
+      const rows=parseCSV(text);
+      if(!Array.isArray(rows)||rows.length<2){
+        window.__BH_RESULT_CSV_DEBUG={kind:'realtime',rows:rows?.length||0,code};
+        return null;
+      }
       const norm=v=>String(v??"").replace(/^\uFEFF/,"").replace(/[　\s]+/g,"").trim();
+      const digits=v=>norm(v).replace(/[^0-9]/g,"");
       const head=rows[0].map(norm);
       const idx=(...names)=>{for(const n of names){const i=head.indexOf(norm(n));if(i>=0)return i}return -1};
-      const codeIdx=idx("レースコード");
-      const venueIdx=idx("レース場","場名");
-      const raceIdx=idx("レース回","R","レース番号");
-      const venueName=norm(S[Number(venue)]||"");
-      const row=rows.slice(1).find(r=>{
-        const rc=norm(r?.[codeIdx>=0?codeIdx:0]);
-        if(rc===code)return true;
-        const rv=venueIdx>=0?norm(r?.[venueIdx]):"";
-        const rr=raceIdx>=0?Number(norm(r?.[raceIdx]).replace(/[^0-9]/g,"")):0;
-        return rv===venueName && rr===Number(raceNo);
+      const ci=idx("レースコード"), vi=idx("レース場","レース場コード","場コード"), ri=idx("レース回","R","レース番号");
+      const data=rows.slice(1).filter(r=>r?.length);
+      let row=data.find(r=>{
+        if(ci>=0 && digits(r[ci])===code)return true;
+        return r.some(c=>digits(c)===code);
       });
+      if(!row){
+        row=data.find(r=>{
+          const vc=vi>=0?digits(r[vi]).padStart(2,'0'):'';
+          const rr=ri>=0?digits(r[ri]).padStart(2,'0'):'';
+          return vc===venueCode && rr===raceCode;
+        });
+      }
+      window.__BH_RESULT_CSV_DEBUG={kind:'realtime',rows:data.length,code,ci,vi,ri,found:!!row,sample:data.slice(-3).map(r=>r.slice(0,8))};
       if(!row)return null;
       const get=(...names)=>{const i=idx(...names);return i>=0?row[i]:""};
       const racers={};
       for(let place=1;place<=6;place++){
-        const boat=Number(String(get(`${place}着_艇番`,`${place}着艇番`)).replace(/[^0-9]/g,""));
+        const boat=Number(digits(get(`${place}着_艇番`,`${place}着艇番`)));
         if(!(boat>=1&&boat<=6))continue;
         racers[String(boat)]={entry_number:boat,place_number:place};
       }
-      if(Object.keys(racers).length<3)return null;
+      const top=[1,2,3].map(place=>Object.values(racers).find(x=>Number(x.place_number)===place));
+      if(!top.every(Boolean))return null;
       const techText=String(get("決まり手")||"").trim();
       const techNo=Number(Object.keys(T||{}).find(k=>String(T[k]).trim()===techText)||0);
-      /* 着順CSVそのものが確定ソースなので、決まり手番号が取れなくても確定扱い。 */
       return {stadium_number:Number(venue),race_number:Number(raceNo),confirmed_result:true,__bhResultSource:"結果CSV",result:{technique_number:techNo,racers}};
     }catch(e){
-      console.warn("realtime result fallback:",e);
+      window.__BH_RESULT_CSV_DEBUG={kind:'realtime',code,error:String(e?.message||e)};
       return null;
     }
   }
@@ -14363,41 +14371,49 @@ function renderOdds(odds){
     const code=String(date).replaceAll("-","")
       +String(Number(venue)).padStart(2,"0")
       +String(Number(raceNo)).padStart(2,"0");
-    /* Vol.242: 3連単払戻を最優先の確定ソースとして利用。キャッシュバスター付き。 */
+    const venueCode=String(Number(venue)).padStart(2,"0");
+    const raceCode=String(Number(raceNo)).padStart(2,"0");
     const url=`https://boatracecsv.github.io/data/results/payouts/${y}/${m}/${d}.csv?_bh=${Date.now()}`;
     try{
-      const text=await bhResultFetchText(url,4500);
+      const text=await bhResultFetchText(url,5000);
       const rows=parseCSV(text);
-      if(!Array.isArray(rows)||rows.length<2)return null;
+      if(!Array.isArray(rows)||rows.length<2){
+        window.__BH_PAYOUT_CSV_DEBUG={rows:rows?.length||0,code};
+        return null;
+      }
       const norm=v=>String(v??"").replace(/^\uFEFF/,"").replace(/[　\s]+/g,"").trim();
+      const digits=v=>norm(v).replace(/[^0-9]/g,"");
       const head=rows[0].map(norm);
       const idx=(...names)=>{for(const n of names){const i=head.indexOf(norm(n));if(i>=0)return i}return -1};
-      const ci=idx("レースコード"),vi=idx("レース場","場名"),ri=idx("レース回","R","レース番号");
-      const venueName=norm(S[Number(venue)]||"");
-      const row=rows.slice(1).find(r=>{
-        const rc=norm(r?.[ci>=0?ci:0]);
-        if(rc===code)return true;
-        const rv=vi>=0?norm(r?.[vi]):"";
-        const rr=ri>=0?Number(norm(r?.[ri]).replace(/[^0-9]/g,"")):0;
-        return rv===venueName && rr===Number(raceNo);
+      const ci=idx("レースコード"),vi=idx("レース場","レース場コード","場コード"),ri=idx("レース回","R","レース番号");
+      const data=rows.slice(1).filter(r=>r?.length);
+      let row=data.find(r=>{
+        if(ci>=0 && digits(r[ci])===code)return true;
+        return r.some(c=>digits(c)===code);
       });
+      if(!row){
+        row=data.find(r=>{
+          const vc=vi>=0?digits(r[vi]).padStart(2,'0'):'';
+          const rr=ri>=0?digits(r[ri]).padStart(2,'0'):'';
+          return vc===venueCode && rr===raceCode;
+        });
+      }
+      window.__BH_PAYOUT_CSV_DEBUG={rows:data.length,code,ci,vi,ri,found:!!row,sample:data.slice(-3).map(r=>r.slice(0,8))};
       if(!row)return null;
       let oi=idx("3連単_組番","3連単組番","三連単_組番","三連単組番");
-      /* ヘッダ名が変わっても「3連単」かつ「組番」の列を探す。 */
       if(oi<0)oi=head.findIndex(h=>/3連単|三連単/.test(h)&&/組番/.test(h));
       if(oi<0)return null;
       const raw=String(row[oi]||"")
         .replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
         .replace(/[‐‑‒–—―ー－]/g,"-")
         .replace(/\s/g,"");
-      const nums=(raw.match(/[1-6]/g)||[]).map(Number);
-      const top=nums.slice(0,3);
-      if(top.length!==3||new Set(top).size!==3)return null;
+      const nums=(raw.match(/[1-6]/g)||[]).map(Number).slice(0,3);
+      if(nums.length!==3||new Set(nums).size!==3)return null;
       const racers={};
-      top.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
+      nums.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
       return {stadium_number:Number(venue),race_number:Number(raceNo),confirmed_result:true,__bhResultSource:"払戻CSV",result:{technique_number:0,racers}};
     }catch(e){
-      console.warn("payout result fallback:",e);
+      window.__BH_PAYOUT_CSV_DEBUG={code,error:String(e?.message||e)};
       return null;
     }
   }
@@ -14575,103 +14591,62 @@ function renderOdds(odds){
     return JSON.parse(txt);
   }
 
-  function bh244RaceDirect(j,venue,raceNo){
-    const v1=String(Number(venue));
-    const v2=v1.padStart(2,"0");
-    const r1=String(Number(raceNo));
-    const r2=r1.padStart(2,"0");
-    const sts=j?.programs?.stadiums||j?.stadiums||j?.results?.stadiums||{};
-    const st=sts?.[v1]||sts?.[v2]||null;
-    const rs=st?.races||st?.results||{};
-    return rs?.[r1]||rs?.[r2]||null;
-  }
-
-  function bh244DeepRace(root,venue,raceNo){
-    const wantV=Number(venue), wantR=Number(raceNo);
-    const seen=new Set(), q=[root];
-    let steps=0;
-    while(q.length && steps<10000){
-      const x=q.shift(); steps++;
-      if(!x||typeof x!=="object"||seen.has(x))continue;
-      seen.add(x);
-      const sv=Number(x.stadium_number??x.stadiumNumber??x.jcd??x.venue??x.place_code??x.placeCode);
-      const rr=Number(x.race_number??x.raceNumber??x.rno??x.race_no??x.raceNo);
-      if(sv===wantV && rr===wantR)return x;
-      if(Array.isArray(x)){
-        for(const z of x)if(z&&typeof z==="object")q.push(z);
-      }else{
-        for(const z of Object.values(x))if(z&&typeof z==="object")q.push(z);
-      }
-    }
-    return null;
-  }
-
-  function bh244CanonicalAny(raw,source){
-    if(!raw)return null;
-    const race=(raw.result||raw?.race?.result)?raw:{...raw,result:raw.result||raw?.race?.result};
-    const c=bhCanonicalResult(race,source);
-    if(c)return c;
-    if(actualCombo(race)){
-      race.confirmed_result=true;
-      race.__bhResultSource=source;
-      return race;
-    }
-    return null;
-  }
-
   async function fetchResultRace(date,venue,raceNo){
-    /* Vol.244: 結果確認エンジンをこの関数1本に固定。
-       旧追加スクリプトによる上書きは使わない。 */
-    const ymd=String(date).replaceAll("-","");
-    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
+    /* Vol.245: 結果確認を全24場共通で再構築。
+       事前情報API(api/v1)には結果が無いケースがあるため結果ソースとして使わない。
+       BoatraceCSVの確定結果/払戻を第一系統にし、旧Results APIと公式ページは補助だけにする。 */
+    const ymd=String(date).replaceAll('-','');
+    const y=ymd.slice(0,4);
+    const v=Number(venue), rn=Number(raceNo);
     const diagnostics=[];
 
-    const jsonSources=[
-      ["OpenAPI v1 date",`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
-      ["OpenAPI v1 today",`https://boatraceopenapi.github.io/v1/today.json`],
-      ["Results v3",`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
-      ["Results v2",`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
+    const first=[
+      ['払戻CSV',()=>fetchPayoutConfirmedRace(date,v,rn)],
+      ['結果CSV',()=>fetchRealtimeResultRace(date,v,rn)]
     ];
-
-    for(const [label,url] of jsonSources){
-      try{
-        const j=await bhFetchJsonNoStore(url,5000);
-        const raw=bh244RaceDirect(j,v,rn)||bh244DeepRace(j,v,rn);
-        const c=bh244CanonicalAny(raw,label);
-        diagnostics.push(`${label}:${c?"OK":raw?"RACE_FOUND_NO_RESULT":"NO_RACE"}`);
-        if(c){
-          c.__bhDiagnostics=diagnostics.slice();
-          c.__bhResultSource=label;
-          window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
-          return c;
-        }
-      }catch(e){
-        diagnostics.push(`${label}:ERR(${String(e?.message||e).slice(0,55)})`);
-      }
-    }
-
-    /* 公式結果ページを次に確認。OpenAPI反映遅延時の本命フォールバック。 */
-    const htmlSources=[
-      ["公式一覧",()=>fetchOfficialResultListRace(date,v,rn)],
-      ["公式個別",()=>fetchOfficialResultRace(date,v,rn)],
-      ["払戻CSV",()=>fetchPayoutConfirmedRace(date,v,rn)],
-      ["結果CSV",()=>fetchRealtimeResultRace(date,v,rn)]
-    ];
-    for(const [label,fn] of htmlSources){
+    for(const [label,fn] of first){
       try{
         const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),5500))]);
-        const c=bh244CanonicalAny(raw,label);
-        diagnostics.push(`${label}:${c?"OK":"NO_RESULT"}`);
-        if(c){
-          c.__bhDiagnostics=diagnostics.slice();
-          if(!c.__bhResultSource)c.__bhResultSource=label;
-          window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
-          return c;
-        }
-      }catch(e){ diagnostics.push(`${label}:ERR(${String(e?.message||e).slice(0,55)})`); }
+        const c=bhCanonicalResult(raw,label) || (actualCombo(raw)?raw:null);
+        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
+        if(c){ c.__bhDiagnostics=diagnostics.slice(); c.__bhResultSource=label; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
+      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
     }
 
-    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
+    const legacy=[
+      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
+      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
+    ];
+    for(const [label,url] of legacy){
+      try{
+        const j=await bhFetchJsonNoStore(url,4500);
+        const raw=raceOf(j,v,rn);
+        const c=bhCanonicalResult(raw,label);
+        diagnostics.push(label+':' +(c?'OK':raw?'RACE_FOUND_NO_RESULT':'NO_RACE'));
+        if(c){ c.__bhDiagnostics=diagnostics.slice(); window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
+      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
+    }
+
+    const htmlFallbacks=[
+      ['公式一覧',()=>fetchOfficialResultListRace(date,v,rn)],
+      ['公式個別',()=>fetchOfficialResultRace(date,v,rn)]
+    ];
+    for(const [label,fn] of htmlFallbacks){
+      try{
+        const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),4500))]);
+        const c=bhCanonicalResult(raw,label) || (actualCombo(raw)?raw:null);
+        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
+        if(c){ c.__bhDiagnostics=diagnostics.slice(); c.__bhResultSource=label; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
+      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
+    }
+
+    const csvDbg=window.__BH_RESULT_CSV_DEBUG||{};
+    const payDbg=window.__BH_PAYOUT_CSV_DEBUG||{};
+    if(csvDbg.error)diagnostics.push('結果CSV詳細:ERR '+csvDbg.error);
+    else diagnostics.push(`結果CSV詳細: rows=${csvDbg.rows??'?'} found=${csvDbg.found??false} code=${csvDbg.code||''}`);
+    if(payDbg.error)diagnostics.push('払戻CSV詳細:ERR '+payDbg.error);
+    else diagnostics.push(`払戻CSV詳細: rows=${payDbg.rows??'?'} found=${payDbg.found??false} code=${payDbg.code||''}`);
+    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()};
     return null;
   }
 
@@ -15668,7 +15643,100 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 
 
+<!-- Vol.243: 結果レスポンス構造診断 + 深層レース探索 -->
+<script id="bh-vol243-result-deep-diagnostic">
+(()=>{
+'use strict';
+function bh243NormNum(v){ const n=Number(String(v??'').replace(/[^0-9]/g,'')); return Number.isFinite(n)?n:null; }
+function bh243Summarize(obj){
+  try{
+    if(obj==null)return 'null';
+    if(Array.isArray(obj))return `Array(${obj.length})`;
+    if(typeof obj!=='object')return `${typeof obj}:${String(obj).slice(0,80)}`;
+    return 'keys='+Object.keys(obj).slice(0,18).join(',');
+  }catch(e){ return 'summary_error'; }
+}
+function bh243DeepFindRace(root,venue,raceNo){
+  const v=Number(venue), r=Number(raceNo);
+  const seen=new Set();
+  const q=[{x:root,path:'$'}];
+  let steps=0;
+  while(q.length && steps<12000){
+    const {x,path}=q.shift(); steps++;
+    if(!x || typeof x!=='object' || seen.has(x)) continue;
+    seen.add(x);
 
+    const sv=bh243NormNum(x.stadium_number ?? x.stadiumNumber ?? x.jcd ?? x.venue ?? x.stadium ?? x.place_code ?? x.placeCode);
+    const rr=bh243NormNum(x.race_number ?? x.raceNumber ?? x.rno ?? x.race_no ?? x.raceNo ?? x.race);
+    if(sv===v && rr===r){
+      return {race:x,path};
+    }
+
+    // key hierarchy common patterns: stadiums['02'].races['6'] / results['02']['6']
+    const stadiumKeys=[String(v),String(v).padStart(2,'0')];
+    for(const sk of stadiumKeys){
+      const st=x?.stadiums?.[sk] ?? x?.results?.stadiums?.[sk] ?? x?.programs?.stadiums?.[sk];
+      if(st){
+        const rk=[String(r),String(r).padStart(2,'0')];
+        for(const k of rk){
+          const cand=st?.races?.[k] ?? st?.results?.[k] ?? st?.[k];
+          if(cand && typeof cand==='object') return {race:cand,path:`${path}.stadiums[${sk}].races[${k}]`};
+        }
+      }
+    }
+
+    if(Array.isArray(x)){
+      for(let i=0;i<x.length;i++) if(x[i]&&typeof x[i]==='object') q.push({x:x[i],path:`${path}[${i}]`});
+    }else{
+      for(const [k,val] of Object.entries(x)){
+        if(val&&typeof val==='object') q.push({x:val,path:`${path}.${k}`});
+      }
+    }
+  }
+  return null;
+}
+window.bh243DeepFindRace=bh243DeepFindRace;
+window.bh243Summarize=bh243Summarize;
+
+const oldFetch=window.fetchResultRace;
+if(typeof oldFetch==='function'){
+  window.fetchResultRace=async function(date,venue,raceNo){
+    const ymd=String(date).replaceAll('-','');
+    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
+    const sources=[
+      ['OpenAPI v1 date',`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
+      ['OpenAPI v1 today','https://boatraceopenapi.github.io/api/v1/today.json'],
+      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
+      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
+    ];
+    const diag=[];
+    for(const [label,url] of sources){
+      try{
+        const j=await bhFetchJsonNoStore(url,4500);
+        const found=bh243DeepFindRace(j,v,rn);
+        const raw=found?.race||null;
+        const c=bhCanonicalResult(raw,label+' deep');
+        diag.push(`${label}:${c?'OK':found?'FOUND_NO_RESULT':'NO_MATCH'}${found?`@${found.path}`:''} [${bh243Summarize(j)}]`);
+        if(c){ c.__bhDiagnostics=diag.slice(); c.__bhResultSource=label+' deep'; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()}; return c; }
+      }catch(e){ diag.push(`${label}:ERR(${String(e?.message||e).slice(0,70)})`); }
+    }
+    try{
+      const fallback=await oldFetch(date,venue,raceNo);
+      if(fallback){
+        const prev=Array.isArray(fallback.__bhDiagnostics)?fallback.__bhDiagnostics:[];
+        fallback.__bhDiagnostics=[...diag,...prev];
+        window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:fallback.__bhDiagnostics,checkedAt:Date.now()};
+        return fallback;
+      }
+    }catch(e){ diag.push('legacy:ERR('+String(e?.message||e).slice(0,70)+')'); }
+    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()};
+    return null;
+  };
+}
+})();
+</script>
 </body>
 </html>
-<!-- Vol.244: 結果確認エンジンをmain IIFE内の単一fetchResultRaceへ一本化。 -->
+<!-- Vol.242: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
+
+<!-- Vol.245 result-engine rebuild: CSV race-code matching hardened; api/v1 removed from result sources -->
