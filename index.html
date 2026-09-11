@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V230</title>
+<title>BOAT HUNTER V231</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -984,7 +984,7 @@ body.top-open,body.race-open{overflow:auto!important}
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
 .controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
-/* Vol.230: レース±矢印。1R←12R / 12R→1Rで循環 */
+/* Vol.231: レース±矢印。1R←12R / 12R→1Rで循環 */
 .raceSelectCard:after{top:48px!important;bottom:auto!important}
 .raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
 .raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.230</div>
+  <div class="topVol">Vol.231</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9141,7 +9141,7 @@ $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
 
-/* Vol.230: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+/* Vol.231: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
   function stepRace(delta){
     const race=document.getElementById('race');
@@ -13703,6 +13703,36 @@ function renderOdds(odds){
     });
 
 
+    /* Vol.231: 1コース限定・頭候補2位以降の専用2着候補ルール
+       1コース艇が主頭ではなく「頭候補2位以降」に残った場合、通常の軸候補は使わない。
+       その1号艇が1着になった条件付きシミュレーションで、2着率22.0%以上の艇をすべて採用し、
+       「1-2着候補-○」だけを表示する。3着固定への折り返しは出さない。 */
+    headCandidates.forEach((h,headIndex)=>{
+      const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
+      const isOneCourseSecondary = Number(headRow?.course||0)===1 && headIndex>=1;
+      if(!isOneCourseSecondary)return;
+
+      const second22=(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
+        .filter(z=>Number(z.boat)!==Number(h.boat) && Number(z.second||0)>=22.0)
+        .sort((a,b)=>Number(b.second||0)-Number(a.second||0));
+
+      h.oneCourseSecondarySecondOnly=true;
+      h.axisPlacementMode='second_only';
+      h.axisFromHeadCandidate=false;
+      h.oneCourseEscapeRule=false;
+      h.passMultiAxis=false;
+      h.escapeSecondFixedBoats=[];
+      h.escapeSecondFixedRates=[];
+      h.axisBoat=second22[0]?Number(second22[0].boat):null;
+      h.axisBoats=second22.map(z=>Number(z.boat));
+      h.axisRate=second22[0]?Number(second22[0].second||0):0;
+      h.axisRates=second22.map(z=>Number(z.second||0));
+      h.axisSecondRates=second22.map(z=>Number(z.second||0));
+      h.axisThirdRates=second22.map(()=>0);
+      h.secondCandidateBoats=h.axisBoats.slice();
+      h.secondCandidateRates=h.axisSecondRates.slice();
+    });
+
     /* Vol.224 軸候補ルール
        通常：頭候補2位以降から最上位1艇だけを軸候補にする。
        見推奨（頭候補3艇以上）：頭候補2位以降をすべて軸候補として表示し、
@@ -13710,6 +13740,8 @@ function renderOdds(odds){
        頭候補2位以降が無い場合のみ、残り全艇から最上位1艇を選ぶ。 */
     headCandidates.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
+      /* Vol.231: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
+      if(h.oneCourseSecondarySecondOnly){ h.pairCuts={}; return; }
       const secondarySet=new Set(headCandidates.filter(x=>Number(x.boat)!==Number(h.boat)).map(x=>Number(x.boat)));
       const allRates=Array.isArray(h.axisAllRates)?h.axisAllRates:[];
       const isPassRace=headCandidateCount>=3;
@@ -13955,7 +13987,7 @@ function renderOdds(odds){
             const split=boats.length>=2;
             return `
             <div class="headAxisRow ${split?"axisSplit":""}">
-              <div class="candidateModeBadge">軸候補</div>
+              <div class="candidateModeBadge">${h.oneCourseSecondarySecondOnly?"2着候補":"軸候補"}</div>
               <div class="axisMainLine">
                 <div class="headAxisHead">${simpleBoatText(h.boat)}</div>
                 <div class="headAxisArrow" aria-hidden="true">→</div>
@@ -13970,10 +14002,11 @@ function renderOdds(odds){
                         ${h.axisPlacementMode!=="third_only"?`<span><b>${h.boat}-${b}-○</b><em>${Number(
                           (h.axisAllRates||[]).find(z=>Number(z.boat)===Number(b))?.second || secondRates[i] || 0
                         ).toFixed(1)}%</em></span>`:""}
-                        ${h.axisPlacementMode!=="none"?`<span><b>${h.boat}-○-${b}</b><em>${Number(
+                        ${(h.axisPlacementMode!=="none" && h.axisPlacementMode!=="second_only")?`<span><b>${h.boat}-○-${b}</b><em>${Number(
                           (h.axisAllRates||[]).find(z=>Number(z.boat)===Number(b))?.third || thirdRates[i] || 0
                         ).toFixed(1)}%</em></span>`:""}
                         ${h.axisPlacementMode==="third_only"?`<div class="specialAxisNote">軸候補1位：2着・3着の両方で折り返し</div>`:""}
+                        ${h.oneCourseSecondarySecondOnly?`<div class="specialAxisNote">1コース頭候補2位以降：2着率22%以上のみ → 1-2着候補-○</div>`:""}
                         ${(h.oneCourseEscapeRule && Array.isArray(h.escapeSecondFixedBoats) && h.escapeSecondFixedBoats.length)
                           ? h.escapeSecondFixedBoats.map((eb,ei)=>`<span><b>${h.boat}-${eb}-○</b><em>${Number(h.escapeSecondFixedRates?.[ei]||0).toFixed(1)}%</em></span>`).join("")
                           : ""}
@@ -14048,7 +14081,8 @@ function renderOdds(odds){
       venue:Number($("stadium")?.value||0),
       race:Number($("race")?.value||0),
       savedAt:Date.now(),
-      heads:(p.heads||[]).map((x,headIndex)=>({
+      /* Vol.231: 結果判定には表示中の全頭候補を保存する。主頭だけ保存すると頭候補2以降が的中しても不的中になる。 */
+      heads:((Array.isArray(p.headCandidates)&&p.headCandidates.length)?p.headCandidates:(p.heads||[])).map((x,headIndex)=>({
         boat:Number(x.boat),
         headIndex:Number(headIndex),
         hunterRank:Number(x.hunterRank),
@@ -14066,6 +14100,7 @@ function renderOdds(odds){
         secondCandidateRates:Array.isArray(x.secondCandidateRates)?x.secondCandidateRates.map(Number):[],
         axisPlacementMode:x.axisPlacementMode||"both",
         oneCourseEscapeRule:!!x.oneCourseEscapeRule,
+        oneCourseSecondarySecondOnly:!!x.oneCourseSecondarySecondOnly,
         escapeSecondFixedBoats:Array.isArray(x.escapeSecondFixedBoats)?x.escapeSecondFixedBoats.map(Number):[],
         escapeSecondFixedRates:Array.isArray(x.escapeSecondFixedRates)?x.escapeSecondFixedRates.map(Number):[],
         axisFromHeadCandidate:!!x.axisFromHeadCandidate,
@@ -14123,7 +14158,7 @@ function renderOdds(odds){
     const headBadge=rec.headTargetShown
       ?`<span class="resultBadge ${rec.headHit?"main":"miss"}">頭候補 ${rec.headHit?"的中":"不的中"}</span>`
       :`<span class="resultBadge miss">頭候補なし</span>`;
-    const axisLabel=rec.axisMode==="secondCandidates"?"2着候補":"軸候補";
+    const axisLabel=(rec.axisMode==="secondCandidates"||rec.axisMode==="second_only")?"2着候補":"軸候補";
     const axisBadge=rec.headHit
       ?rec.axisShown
         ?`<span class="resultBadge ${rec.axisHit?"ura":"miss"}">${axisLabel} ${rec.axisHit?"的中":"不的中"}</span>`
@@ -14340,7 +14375,11 @@ function renderOdds(odds){
       const axisBoat=matchedAxisBoats.length?Number(matchedAxisBoats[0]):null;
       const escapeSecondFixedBoats=matchedHead && Array.isArray(matchedHead.escapeSecondFixedBoats)
         ? matchedHead.escapeSecondFixedBoats.map(Number) : [];
-      const mainAxisHit=!!(axisShown && axisBoat && (axisBoat===actualSecond || axisBoat===actualThird));
+      const mainAxisHit=!!(axisShown && matchedAxisBoats.length && (
+        axisMode==="second_only"
+          ? matchedAxisBoats.includes(actualSecond)
+          : matchedAxisBoats.includes(actualSecond) || matchedAxisBoats.includes(actualThird)
+      ));
       const escapeSecondFixedHit=!!(matchedHead?.oneCourseEscapeRule && escapeSecondFixedBoats.includes(actualSecond));
       const axisHit=!!(mainAxisHit || escapeSecondFixedHit);
 
