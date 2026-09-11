@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.243</div>
+  <div class="topVol">Vol.248</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8415,37 +8415,57 @@ body.theme-ladies .venueTimeLegend span{
     <div id="simpleCutPick" class="simplePickRow simplePickRowLarge simplePickCut hide"></div>
   </section>
 
-<section id="resultPanel" class="resultPanel">
-    <button type="button" id="resultToggle" class="resultToggle">
-      <span>結果確認</span><span id="resultToggleSummary">未確認</span><span id="resultToggleIcon">＋</span>
-    </button>
-    <div id="resultBody" class="resultBody hide">
-      <div class="resultHead">
-        <div>
-          <div class="resultEyebrow">RESULT CHECK</div>
-          <h3>該当レースの結果</h3>
-        </div>
-        <div id="resultRaceTag" class="resultRaceTag">—</div>
-      </div>
-
-      <button type="button" id="checkResult" class="checkResult">このレースの結果を確認</button>
-      <div id="resultState" class="resultState">結果確認を押してください</div>
-      <div id="currentResult" class="currentResult"></div>
-
-      <div class="resultStatsTitle">予想結果集計</div>
-      <div id="simpleResultStats" class="simpleResultStats"></div>
-
-      <div class="resultStatsTitle">1着候補 不一致レース検証</div>
-      <div id="headMismatchStats" class="simpleResultStats"></div>
-
-      <div class="resultResetRow">
-        <button type="button" id="resetResultDay" class="resultReset">この日をリセット</button>
-        <button type="button" id="resetResultAll" class="resultReset danger">累計をリセット</button>
-      </div>
+<!-- Vol.248: 結果確認をゼロから再構築。旧結果コードは使用しない。 -->
+<style id="bh-result-v248-style">
+#resultPanelV248{margin:14px 0 10px;padding:14px;border-radius:18px;background:linear-gradient(180deg,#15191d,#0d1013);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 24px rgba(0,0,0,.22);color:#fff}
+#resultPanelV248 .rv248Head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+#resultPanelV248 .rv248Eyebrow{font-size:10px;letter-spacing:.18em;color:#73c9ef;font-weight:950}
+#resultPanelV248 .rv248Title{font-size:21px;font-weight:1000;line-height:1.1;margin-top:2px;user-select:none;-webkit-user-select:none}
+#resultPanelV248 .rv248Race{font-size:13px;font-weight:950;color:#ffd777;white-space:nowrap}
+#resultFetchBtnV248{width:100%;border:0;border-radius:13px;padding:12px 10px;background:#1787d4;color:#fff;font-size:15px;font-weight:1000;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+#resultFetchBtnV248:disabled{opacity:.55}
+#resultStatusV248{margin:9px 0 0;padding:9px 10px;border-radius:10px;background:#080a0c;color:#aeb9c2;font-size:12px;font-weight:850;line-height:1.45}
+#resultCurrentV248{margin-top:10px}
+.rv248ResultCard{padding:12px;border-radius:14px;background:#f7f8fa;color:#111;border:1px solid #dfe4e8}
+.rv248Combo{font-size:28px;font-weight:1000;letter-spacing:.04em}
+.rv248Meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rv248Chip{padding:5px 8px;border-radius:999px;background:#e9edf1;font-size:11px;font-weight:950;color:#222}
+.rv248EvalGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.rv248Eval{border-radius:12px;padding:9px 5px;text-align:center;background:#20262c;border:1px solid rgba(255,255,255,.1)}
+.rv248Eval b{display:block;font-size:15px}.rv248Eval span{display:block;font-size:10px;margin-top:2px;color:#aeb9c2;font-weight:850}
+.rv248Eval.hit{background:#173822}.rv248Eval.miss{background:#431f24}.rv248Eval.na{background:#24282c}
+.rv248CumTitle{margin-top:12px;font-size:12px;font-weight:1000;color:#dbe5ec}
+#resultStatsV248{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px}
+.rv248Stat{padding:9px 5px;border-radius:12px;text-align:center;background:#080a0c;border:1px solid rgba(255,255,255,.1)}
+.rv248Stat strong{display:block;font-size:18px}.rv248Stat small{display:block;color:#8998a3;font-size:9px;font-weight:900;margin-top:2px}
+#resultHistoryV248{margin-top:9px;display:grid;gap:6px}
+.rv248Hist{display:grid;grid-template-columns:1.15fr .8fr .72fr;gap:7px;align-items:center;padding:8px 9px;border-radius:10px;background:#101418;font-size:11px;font-weight:850}
+.rv248Hist .combo{font-size:14px;font-weight:1000}.rv248Hist .eval{text-align:right;letter-spacing:.05em}
+#resultResetWrapV248{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.18)}
+#resultResetWrapV248.show{display:block}
+#resultResetBtnV248{width:100%;border:1px solid #80434a;border-radius:11px;background:#2d1519;color:#ffc8cc;padding:10px;font-size:12px;font-weight:1000}
+#backToTopFromResult{width:100%;margin-top:10px;border:0;border-radius:11px;padding:9px;background:#2b3035;color:#fff;font-weight:900}
+@media(max-width:420px){#resultPanelV248{padding:12px}.rv248Combo{font-size:25px}.rv248Stat strong{font-size:16px}}
+</style>
+<section id="resultPanelV248">
+  <div class="rv248Head">
+    <div id="resultSecretHotspotV248">
+      <div class="rv248Eyebrow">RESULT CHECK</div>
+      <div class="rv248Title">結果確認</div>
     </div>
-  </section>
-
-  <button type="button" id="backToTopFromResult" class="backToTopFromResult">↑ 上に戻る</button>
+    <div id="resultRaceTitleV248" class="rv248Race">—</div>
+  </div>
+  <button type="button" id="resultFetchBtnV248">このレースの結果を取得</button>
+  <div id="resultStatusV248">結果未取得</div>
+  <div id="resultCurrentV248"></div>
+  <div class="rv248CumTitle">累計成績</div>
+  <div id="resultStatsV248"></div>
+  <div id="resultHistoryV248"></div>
+  <div id="resultResetWrapV248">
+    <button type="button" id="resultResetBtnV248">累計結果をリセット</button>
+  </div>
+  <button type="button" id="backToTopFromResult">↑ 上に戻る</button>
+</section>
 
   <section id="outlookPanel" class="outlookPanel hide">
     <div class="outlookHead">
@@ -12879,10 +12899,7 @@ function renderOdds(odds){
 <script>
 /* ===== Vol.215 結果確認 / 状態保持 / 操作導線 ===== */
 (function(){
-  const RESULT_KEY="BH_RESULT_CHECK_V1";
   const PRED_KEY="BH_PRED_SNAPSHOT_V1";
-  const PANEL_KEY="BH_RESULT_PANEL_OPEN_V1";
-  const HIDDEN_DAY_KEY="BH_RESULT_HIDDEN_DAYS_V1";
 
   function readJSON(key,fallback){
     try{return JSON.parse(localStorage.getItem(key)||"") ?? fallback}catch(e){return fallback}
@@ -14124,699 +14141,250 @@ function renderOdds(odds){
   window.renderSimplePrediction=renderSimplePrediction;
   window.saveHunterPredictionSnapshot=savePredictionSnapshot;
 
-  function resultRacers(r){
-    return Object.values(r?.result?.racers||{}).sort((a,b)=>Number(a.place_number)-Number(b.place_number));
+  /* ===== Vol.248 新・結果確認エンジン =====
+     旧結果コードは一切流用しない。BoatraceCSVの realtime / payouts のみで完結する。 */
+  const RESULT_STORE_KEY_V248="BH_RESULT_CUMULATIVE_V1";
+
+  function rv248RaceCode(){
+    const ymd=String($("date")?.value||"").replaceAll("-","");
+    const jo=String(Number($("stadium")?.value||0)).padStart(2,"0");
+    const rr=String(Number($("race")?.value||0)).padStart(2,"0");
+    return ymd+jo+rr;
   }
-  function actualCombo(r){
-    const result=r?.result;
-    const rs=resultRacers(r);
-
-    /* V213:
-       未確定時にresult.racersの仮値が 1-2-3 のように見えるケースを除外。
-       正式結果として扱うのは、
-       ・決まり手番号が確定済み
-       ・1～3着のplace_numberが実在
-       ・1～3着艇が重複なし
-       の全条件を満たした時だけ。 */
-    const technique=Number(result?.technique_number);
-    /* Vol.233: 払戻CSVの3連単組番から確定結果を復元した場合は、
-       決まり手未取得でも「確定済み結果」として着順判定を許可する。 */
-    if(!(technique>=1 && technique<=6) && !r?.confirmed_result)return null;
-
-    const placed=[1,2,3].map(place=>
-      rs.find(x=>Number(x?.place_number)===place)
-    );
-    if(placed.some(x=>!x))return null;
-
-    const top=placed.map(x=>Number(x.entry_number));
-    if(!top.every(x=>x>=1&&x<=6))return null;
-    if(new Set(top).size!==3)return null;
-
-    return top.join("-");
+  function rv248Urls(){
+    const [y,m,d]=String($("date")?.value||"").split("-");
+    const stamp=Date.now();
+    return {
+      result:`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv?v=${stamp}`,
+      payout:`https://boatracecsv.github.io/data/results/payouts/${y}/${m}/${d}.csv?v=${stamp}`
+    };
   }
-
-  function renderCurrent(rec,tech){
-    const root=$("currentResult");if(!root)return;
-    const headBadge=rec.headTargetShown
-      ?`<span class="resultBadge ${rec.headHit?"main":"miss"}">頭候補 ${rec.headHit?"的中":"不的中"}</span>`
-      :`<span class="resultBadge miss">頭候補なし</span>`;
-    const axisLabel=(rec.axisMode==="secondCandidates"||rec.axisMode==="second_only")?"2着候補":"軸候補";
-    const axisBadge=rec.headHit
-      ?rec.axisShown
-        ?`<span class="resultBadge ${rec.axisHit?"ura":"miss"}">${axisLabel} ${rec.axisHit?"的中":"不的中"}</span>`
-        :`<span class="resultBadge miss">${axisLabel}なし</span>`
-      :"";
-    const cutBadge=rec.cutShown
-      ?`<span class="resultBadge ${rec.cutSuccess?"cutok":"miss"}">切り艇 ${rec.cutSuccess?"成功":"失敗"}</span>`
-      :`<span class="resultBadge miss">切り艇なし</span>`;
-    const pairCutBadge=rec.pairCutShown
-      ?`<span class="resultBadge ${rec.pairCutSuccess?"cutok":"miss"}">個別切り ${rec.pairCutBoat}号艇 ${rec.pairCutSuccess?"成功":"失敗"}</span>`
-      :"";
-    root.innerHTML=`
-      <div class="resultHitCard">
-        <div class="resultCombo">${rec.combo}</div>
-        <div class="resultMeta">${S[rec.venue]||""} ${rec.race}R${tech?` / 決まり手 ${tech}`:""}${rec.popularity?` / ${rec.popularity}番人気`:""}${rec.resultOdds?` / ${Number(rec.resultOdds).toFixed(1)}倍`:""}</div>
-        <div class="resultBadges">${headBadge}${axisBadge}${cutBadge}${pairCutBadge}</div>
-      </div>`;
-  }
-
-  function records(){return readJSON(RESULT_KEY,[])}
-  function setRecords(a){writeJSON(RESULT_KEY,a)}
-
-  function statPack(arr){
-    const total=arr.length;
-    const main=arr.filter(x=>x.mainHit).length;
-    const ura=arr.filter(x=>x.uraHit).length;
-    const hole=arr.filter(x=>x.holeHit).length;
-    const any=arr.filter(x=>x.mainHit||x.uraHit||x.holeHit).length;
-    return {total,main,ura,hole,any};
-  }
-
-
-  function payoutBucket(odds){
-    const o=Number(odds);
-    if(!Number.isFinite(o)||o<=0)return null;
-    if(o<10)return "10倍以下";
-    if(o<30)return "10〜30倍";
-    if(o<60)return "30〜60倍";
-    if(o<100)return "60〜100倍";
-    if(o<200)return "100〜200倍";
-    if(o<500)return "200〜500倍";
-    return "500倍以上";
-  }
-
-  function venueDayPack(arr,date){
-    const dayRows=arr.filter(x=>x.date===date);
-    const map=new Map();
-    dayRows.forEach(x=>{
-      const j=Number(x.venue);
-      if(!map.has(j))map.set(j,{venue:j,total:0,hit:0});
-      const z=map.get(j); z.total++;
-      if(x.mainHit||x.uraHit||x.holeHit)z.hit++;
-    });
-    return [...map.values()].sort((a,b)=>a.venue-b.venue);
-  }
-
-  function bucketPack(arr){
-    const labels=["10倍以下","10〜30倍","30〜60倍","60〜100倍","100〜200倍","200〜500倍","500倍以上"];
-    const out={};labels.forEach(k=>out[k]={races:0,hits:0});
-    arr.forEach(x=>{
-      const b=payoutBucket(x.hitOdds);
-      if(!b)return;
-      out[b].races++;
-      if(x.mainHit||x.uraHit||x.holeHit)out[b].hits++;
-    });
-    return {labels,out};
-  }
-
-  function renderStats(){
-    /* Vol.242: 確定済み結果だけを集計。未確定・旧バグ記録は完全除外。 */
-    const all=records().filter(x=>x&&x.confirmed===true&&/^([1-6])-([1-6])-([1-6])$/.test(String(x.combo||'')));
-    const headTarget=all.filter(x=>x.headTargetShown);
-    const headHit=headTarget.filter(x=>x.headHit).length;
-    const axisTarget=all.filter(x=>x.headHit&&x.axisShown);
-    const axisHit=axisTarget.filter(x=>x.axisHit).length;
-
-    const root=$("simpleResultStats");
-    if(root){
-      root.innerHTML=`
-        <div class="simpleResultStat">
-          <b>${pct(headHit,headTarget.length)}</b>
-          <span>頭候補 的中 ${headHit}/${headTarget.length}R</span>
-        </div>
-        <div class="simpleResultStat">
-          <b>${pct(axisHit,axisTarget.length)}</b>
-          <span>軸候補 的中 ${axisHit}/${axisTarget.length}R</span>
-        </div>
-        <div class="simpleResultStat">
-          <b>${pct(
-            all.filter(x=>x.cutShown&&x.cutSuccess).length+all.filter(x=>x.pairCutShown&&x.pairCutSuccess).length,
-            all.filter(x=>x.cutShown).length+all.filter(x=>x.pairCutShown).length
-          )}</b>
-          <span>切り艇 成功 ${
-            all.filter(x=>x.cutShown&&x.cutSuccess).length+all.filter(x=>x.pairCutShown&&x.pairCutSuccess).length
-          }/${
-            all.filter(x=>x.cutShown).length+all.filter(x=>x.pairCutShown).length
-          }件</span>
-        </div>`;
-    }
-
-    const mm=$("headMismatchStats");
-    if(mm){mm.innerHTML="";mm.classList.add("hide");}
-
-    const cutTarget=all.filter(x=>x.cutShown);
-    const pairCutTarget=all.filter(x=>x.pairCutShown);
-    const cutTotal=cutTarget.length+pairCutTarget.length;
-    const cutSuccess=cutTarget.filter(x=>x.cutSuccess).length+
-      pairCutTarget.filter(x=>x.pairCutSuccess).length;
-
-    const sum=$("resultToggleSummary");
-    if(sum)sum.textContent=`頭 ${pct(headHit,headTarget.length)} / 軸 ${pct(axisHit,axisTarget.length)} / 切 ${pct(cutSuccess,cutTotal)}`;
-  }
-
-
-  async function resultOddsInfo(combo){
-    try{
-      let arr=Array.isArray(window.__HUNTER_ODDS120?.odds)?window.__HUNTER_ODDS120.odds:null;
-
-      if(!arr?.length){
-        /* Vol.242: 結果確認をオッズ取得待ちで固めない。
-           Safari/CORSでod3Urlが返らなくても2.5秒で打ち切る。 */
-        try{
-          const txt=await bhResultFetchText(od3Url(),2500);
-          const snap=extractOdds(parseCSV(txt));
-          if(snap?.odds?.length) arr=snap.odds;
-        }catch(_e){
-          /* オッズは付加情報。取れなくても結果判定は続行する */
-        }
-      }
-
-      if(!arr?.length)return {popularity:null,odds:null};
-
-      const sorted=[...arr]
-        .filter(x=>Number(x?.odds)>0)
-        .sort((a,b)=>Number(a.odds)-Number(b.odds));
-
-      const idx=sorted.findIndex(x=>String(x.combo)===String(combo));
-      if(idx<0)return {popularity:null,odds:null};
-
-      return {
-        popularity:idx+1,
-        odds:Number(sorted[idx].odds)
-      };
-    }catch(e){
-      return {popularity:null,odds:null};
-    }
-  }
-
-  /* Vol.233: 当日結果取得を強化。
-     OpenAPIの日次JSONだけに依存すると、開催途中で一部R以降のresult反映が遅れる場合がある。
-     BoatraceCSV realtime results を併用し、レースコード単位で現在Rを直接拾う。 */
-  async function fetchRealtimeResultRace(date,venue,raceNo){
-    const [y,m,d]=String(date).split("-");
-    const code=String(date).replaceAll("-","")
-      +String(Number(venue)).padStart(2,"0")
-      +String(Number(raceNo)).padStart(2,"0");
-    const venueCode=String(Number(venue)).padStart(2,"0");
-    const raceCode=String(Number(raceNo)).padStart(2,"0");
-    const csvUrl=`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv?_bh=${Date.now()}`;
-    try{
-      const text=await bhResultFetchText(csvUrl,5000);
-      const rows=parseCSV(text);
-      if(!Array.isArray(rows)||rows.length<2){
-        window.__BH_RESULT_CSV_DEBUG={kind:'realtime',rows:rows?.length||0,code};
-        return null;
-      }
-      const norm=v=>String(v??"").replace(/^\uFEFF/,"").replace(/[　\s]+/g,"").trim();
-      const digits=v=>norm(v).replace(/[^0-9]/g,"");
-      const head=rows[0].map(norm);
-      const idx=(...names)=>{for(const n of names){const i=head.indexOf(norm(n));if(i>=0)return i}return -1};
-      const ci=idx("レースコード"), vi=idx("レース場","レース場コード","場コード"), ri=idx("レース回","R","レース番号");
-      const data=rows.slice(1).filter(r=>r?.length);
-      let row=data.find(r=>{
-        if(ci>=0 && digits(r[ci])===code)return true;
-        return r.some(c=>digits(c)===code);
-      });
-      if(!row){
-        row=data.find(r=>{
-          const vc=vi>=0?digits(r[vi]).padStart(2,'0'):'';
-          const rr=ri>=0?digits(r[ri]).padStart(2,'0'):'';
-          return vc===venueCode && rr===raceCode;
-        });
-      }
-      window.__BH_RESULT_CSV_DEBUG={kind:'realtime',rows:data.length,code,ci,vi,ri,found:!!row,sample:data.slice(-3).map(r=>r.slice(0,8))};
-      if(!row)return null;
-      const get=(...names)=>{const i=idx(...names);return i>=0?row[i]:""};
-      const racers={};
-      for(let place=1;place<=6;place++){
-        const boat=Number(digits(get(`${place}着_艇番`,`${place}着艇番`)));
-        if(!(boat>=1&&boat<=6))continue;
-        racers[String(boat)]={entry_number:boat,place_number:place};
-      }
-      const top=[1,2,3].map(place=>Object.values(racers).find(x=>Number(x.place_number)===place));
-      if(!top.every(Boolean))return null;
-      const techText=String(get("決まり手")||"").trim();
-      const techNo=Number(Object.keys(T||{}).find(k=>String(T[k]).trim()===techText)||0);
-      return {stadium_number:Number(venue),race_number:Number(raceNo),confirmed_result:true,__bhResultSource:"結果CSV",result:{technique_number:techNo,racers}};
-    }catch(e){
-      window.__BH_RESULT_CSV_DEBUG={kind:'realtime',code,error:String(e?.message||e)};
-      return null;
-    }
-  }
-
-  /* Vol.233: realtime着順CSVが未反映でも、払戻CSVに3連単結果があれば確定結果を復元する。
-     これで開催途中に「6R以降だけ未確定」のような片側CSVの反映差を吸収する。 */
-  async function fetchPayoutConfirmedRace(date,venue,raceNo){
-    const [y,m,d]=String(date).split("-");
-    const code=String(date).replaceAll("-","")
-      +String(Number(venue)).padStart(2,"0")
-      +String(Number(raceNo)).padStart(2,"0");
-    const venueCode=String(Number(venue)).padStart(2,"0");
-    const raceCode=String(Number(raceNo)).padStart(2,"0");
-    const url=`https://boatracecsv.github.io/data/results/payouts/${y}/${m}/${d}.csv?_bh=${Date.now()}`;
-    try{
-      const text=await bhResultFetchText(url,5000);
-      const rows=parseCSV(text);
-      if(!Array.isArray(rows)||rows.length<2){
-        window.__BH_PAYOUT_CSV_DEBUG={rows:rows?.length||0,code};
-        return null;
-      }
-      const norm=v=>String(v??"").replace(/^\uFEFF/,"").replace(/[　\s]+/g,"").trim();
-      const digits=v=>norm(v).replace(/[^0-9]/g,"");
-      const head=rows[0].map(norm);
-      const idx=(...names)=>{for(const n of names){const i=head.indexOf(norm(n));if(i>=0)return i}return -1};
-      const ci=idx("レースコード"),vi=idx("レース場","レース場コード","場コード"),ri=idx("レース回","R","レース番号");
-      const data=rows.slice(1).filter(r=>r?.length);
-      let row=data.find(r=>{
-        if(ci>=0 && digits(r[ci])===code)return true;
-        return r.some(c=>digits(c)===code);
-      });
-      if(!row){
-        row=data.find(r=>{
-          const vc=vi>=0?digits(r[vi]).padStart(2,'0'):'';
-          const rr=ri>=0?digits(r[ri]).padStart(2,'0'):'';
-          return vc===venueCode && rr===raceCode;
-        });
-      }
-      window.__BH_PAYOUT_CSV_DEBUG={rows:data.length,code,ci,vi,ri,found:!!row,sample:data.slice(-3).map(r=>r.slice(0,8))};
-      if(!row)return null;
-      let oi=idx("3連単_組番","3連単組番","三連単_組番","三連単組番");
-      if(oi<0)oi=head.findIndex(h=>/3連単|三連単/.test(h)&&/組番/.test(h));
-      if(oi<0)return null;
-      const raw=String(row[oi]||"")
-        .replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
-        .replace(/[‐‑‒–—―ー－]/g,"-")
-        .replace(/\s/g,"");
-      const nums=(raw.match(/[1-6]/g)||[]).map(Number).slice(0,3);
-      if(nums.length!==3||new Set(nums).size!==3)return null;
-      const racers={};
-      nums.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
-      return {stadium_number:Number(venue),race_number:Number(raceNo),confirmed_result:true,__bhResultSource:"払戻CSV",result:{technique_number:0,racers}};
-    }catch(e){
-      window.__BH_PAYOUT_CSV_DEBUG={code,error:String(e?.message||e)};
-      return null;
-    }
-  }
-
-
-  /* Vol.242: 結果取得専用のタイムアウト付きfetch。
-     iPhone SafariでCORSプロキシが応答しない場合も「結果取得中…」のまま固まらせない。 */
-  async function bhResultFetchText(url,timeoutMs=3500){
-    const ac=new AbortController();
-    const timer=setTimeout(()=>ac.abort(),timeoutMs);
-    try{
-      const r=await fetch(url,{cache:"no-store",signal:ac.signal});
-      if(!r.ok)throw new Error("http "+r.status);
-      return await r.text();
-    }finally{clearTimeout(timer)}
-  }
-
-  /* 公式ページ取得は3経路を同時に投げ、最初に本文が取れたものを採用する。
-     1経路が固まっても他経路を待たせない。 */
-  async function bhResultOfficialText(target){
-    const proxied=[
-      "https://api.allorigins.win/raw?url="+encodeURIComponent(target),
-      "https://corsproxy.io/?url="+encodeURIComponent(target),
-      "https://r.jina.ai/http://"+target.replace(/^https?:\/\//,"")
-    ];
-    return new Promise((resolve,reject)=>{
-      let left=proxied.length,done=false;
-      proxied.forEach(u=>{
-        bhResultFetchText(u,3500).then(t=>{
-          if(done)return;
-          if(t&&t.length>200){done=true;resolve(t);return;}
-          if(--left===0&&!done)reject(new Error("official result fetch failed"));
-        }).catch(()=>{if(--left===0&&!done)reject(new Error("official result fetch failed"));});
-      });
-    });
-  }
-
-  /* Vol.242: 公式BOAT RACE結果ページを最優先フォールバックとして追加。
-     GitHub CSV / OpenAPI が開催途中に反映遅延・CORS失敗しても、
-     公式 racerresult の確定着順を直接読む。既存 fetchTextCors を使うため、
-     出走表取得系の fetch 設定には一切触れない。 */
-  async function fetchOfficialResultRace(date,venue,raceNo){
-    const hd=String(date).replaceAll("-","");
-    const jcd=String(Number(venue)).padStart(2,"0");
-    const rno=String(Number(raceNo));
-    const target=`https://www.boatrace.jp/owpc/pc/race/raceresult?hd=${hd}&jcd=${jcd}&rno=${rno}`;
-    try{
-      const html=await bhResultOfficialText(target);
-      if(!html||html.length<500)return null;
-      const doc=new DOMParser().parseFromString(html,"text/html");
-      const fw=s=>String(s||"").replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/\s+/g," ").trim();
-      const byPlace=new Map();
-      for(const tr of [...doc.querySelectorAll("tr")]){
-        const cells=[...tr.querySelectorAll("th,td")].map(x=>fw(x.textContent));
-        if(cells.length<2)continue;
-        const place=Number(cells[0].replace(/[^0-9]/g,""));
-        const boat=Number(cells[1].replace(/[^0-9]/g,""));
-        if(place>=1&&place<=6&&boat>=1&&boat<=6&&!byPlace.has(place)){
-          byPlace.set(place,boat);
-        }
-      }
-      if(!(byPlace.has(1)&&byPlace.has(2)&&byPlace.has(3)))return null;
-      const racers={};
-      [...byPlace.entries()].sort((a,b)=>a[0]-b[0]).forEach(([place,boat])=>{
-        racers[String(boat)]={entry_number:boat,place_number:place};
-      });
-      if(Object.keys(racers).length<3)return null;
-      const body=fw(doc.body?.textContent||"");
-      let techNo=0;
-      for(const [k,v] of Object.entries(T||{})){
-        if(v&&body.includes(String(v))){techNo=Number(k)||0;break;}
-      }
-      return {
-        stadium_number:Number(venue),
-        race_number:Number(raceNo),
-        confirmed_result:true,
-        result:{technique_number:techNo,racers}
-      };
-    }catch(e){
-      console.warn("official result fallback:",e);
-      return null;
-    }
-  }
-
-
-  /* Vol.242: BOAT RACE公式「結果一覧」から3連単確定結果を直接取得。
-     racerresult個別ページより静的HTMLが単純で、開催途中の結果確認に強い。 */
-  async function fetchOfficialResultListRace(date,venue,raceNo){
-    const hd=String(date).replaceAll("-","");
-    const jcd=String(Number(venue)).padStart(2,"0");
-    const target=`https://www.boatrace.jp/owpc/pc/race/resultlist?hd=${hd}&jcd=${jcd}`;
-    try{
-      const html=await bhResultOfficialText(target);
-      if(!html||html.length<500)return null;
-      const doc=new DOMParser().parseFromString(html,"text/html");
-      const want=Number(raceNo);
-      for(const tr of [...doc.querySelectorAll("tr")]){
-        const cells=[...tr.querySelectorAll("th,td")].map(x=>String(x.textContent||"").replace(/\s+/g," ").trim());
-        if(!cells.length)continue;
-        const rn=Number(String(cells[0]||"").replace(/[^0-9]/g,""));
-        if(rn!==want)continue;
-        let combo=null;
-        for(const c of cells){
-          const m=String(c).match(/([1-6])\s*[-－ー]\s*([1-6])\s*[-－ー]\s*([1-6])/);
-          if(m){ combo=[Number(m[1]),Number(m[2]),Number(m[3])]; break; }
-        }
-        if(!combo||new Set(combo).size!==3)continue;
-        const racers={};
-        combo.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
-        return {stadium_number:Number(venue),race_number:want,confirmed_result:true,result:{technique_number:0,racers}};
-      }
-      return null;
-    }catch(e){
-      console.warn("official result-list fallback:",e);
-      return null;
-    }
-  }
-  /* Vol.242: 結果確認専用。出走表取得とは完全分離して、後継API v1を no-store で再取得する。
-     dayJson() は過去データ用途で force-cache のため、開催途中の結果確認には使わない。 */
-  async function fetchFreshApiV1Result(date,venue,raceNo){
-    const ymd=String(date).replaceAll("-","");
-    const y=ymd.slice(0,4);
-    const u=`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json?_bh=${Date.now()}`;
-    try{
-      const txt=await bhResultFetchText(u,5000);
-      const j=JSON.parse(txt);
-      const r=raceOf(j,venue,raceNo);
-      if(actualCombo(r)){
-        r.confirmed_result=true;
-        r.__bhResultSource="OpenAPI v1 fresh";
-        return r;
-      }
-      return null;
-    }catch(e){
-      console.warn("fresh api v1 result:",e);
-      return null;
-    }
-  }
-
-  function bhCanonicalResult(r,source){
-    if(!r)return null;
-    const result=r.result||r?.race?.result||null;
-    if(!result)return null;
-
-    /* Vol.242: 3連単払戻の組番を最優先で確定着順として採用。
-       racer place_number の表記揺れや決まり手欠損に依存しない。 */
-    const tri=result?.payouts?.trifecta;
-    if(Array.isArray(tri) && tri.length){
-      const raw=String(tri[0]?.combination||'')
-        .replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
-        .replace(/[‐‑‒–—―ー－]/g,'-')
-        .replace(/\s/g,'');
-      const m=raw.match(/^([1-6])-([1-6])-([1-6])$/);
-      if(m && new Set([m[1],m[2],m[3]]).size===3){
-        const racers={};
-        [m[1],m[2],m[3]].forEach((b,i)=>racers[String(Number(b))]={entry_number:Number(b),place_number:i+1});
-        return {...r,confirmed_result:true,__bhResultSource:source||'OpenAPI',result:{...result,racers}};
-      }
-    }
-
-    /* 払戻が未掲載でも、1〜3着が揃えば確定。決まり手は必須にしない。 */
-    const vals=Object.values(result?.racers||{});
-    const top=[1,2,3].map(place=>vals.find(x=>Number(x?.place_number)===place));
-    if(top.every(Boolean)){
-      const boats=top.map(x=>Number(x.entry_number));
-      if(boats.every(x=>x>=1&&x<=6) && new Set(boats).size===3){
-        return {...r,confirmed_result:true,__bhResultSource:source||'OpenAPI'};
-      }
-    }
-    return null;
-  }
-
-  async function bhFetchJsonNoStore(url,timeoutMs=5000){
-    const txt=await bhResultFetchText(url+(url.includes('?')?'&':'?')+'_bh='+Date.now(),timeoutMs);
-    return JSON.parse(txt);
-  }
-
-  async function fetchResultRace(date,venue,raceNo){
-    /* Vol.245: 結果確認を全24場共通で再構築。
-       事前情報API(api/v1)には結果が無いケースがあるため結果ソースとして使わない。
-       BoatraceCSVの確定結果/払戻を第一系統にし、旧Results APIと公式ページは補助だけにする。 */
-    const ymd=String(date).replaceAll('-','');
-    const y=ymd.slice(0,4);
-    const v=Number(venue), rn=Number(raceNo);
-    const diagnostics=[];
-
-    const first=[
-      ['払戻CSV',()=>fetchPayoutConfirmedRace(date,v,rn)],
-      ['結果CSV',()=>fetchRealtimeResultRace(date,v,rn)]
-    ];
-    for(const [label,fn] of first){
-      try{
-        const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),5500))]);
-        const c=bhCanonicalResult(raw,label) || (actualCombo(raw)?raw:null);
-        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
-        if(c){ c.__bhDiagnostics=diagnostics.slice(); c.__bhResultSource=label; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
-      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
-    }
-
-    const legacy=[
-      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
-      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
-    ];
-    for(const [label,url] of legacy){
-      try{
-        const j=await bhFetchJsonNoStore(url,4500);
-        const raw=raceOf(j,v,rn);
-        const c=bhCanonicalResult(raw,label);
-        diagnostics.push(label+':' +(c?'OK':raw?'RACE_FOUND_NO_RESULT':'NO_RACE'));
-        if(c){ c.__bhDiagnostics=diagnostics.slice(); window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
-      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
-    }
-
-    const htmlFallbacks=[
-      ['公式一覧',()=>fetchOfficialResultListRace(date,v,rn)],
-      ['公式個別',()=>fetchOfficialResultRace(date,v,rn)]
-    ];
-    for(const [label,fn] of htmlFallbacks){
-      try{
-        const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),4500))]);
-        const c=bhCanonicalResult(raw,label) || (actualCombo(raw)?raw:null);
-        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
-        if(c){ c.__bhDiagnostics=diagnostics.slice(); c.__bhResultSource=label; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()}; return c; }
-      }catch(e){ diagnostics.push(label+':ERR('+String(e?.message||e).slice(0,50)+')'); }
-    }
-
-    const csvDbg=window.__BH_RESULT_CSV_DEBUG||{};
-    const payDbg=window.__BH_PAYOUT_CSV_DEBUG||{};
-    if(csvDbg.error)diagnostics.push('結果CSV詳細:ERR '+csvDbg.error);
-    else diagnostics.push(`結果CSV詳細: rows=${csvDbg.rows??'?'} found=${csvDbg.found??false} code=${csvDbg.code||''}`);
-    if(payDbg.error)diagnostics.push('払戻CSV詳細:ERR '+payDbg.error);
-    else diagnostics.push(`払戻CSV詳細: rows=${payDbg.rows??'?'} found=${payDbg.found??false} code=${payDbg.code||''}`);
-    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()};
-    return null;
-  }
-
-  async function checkResult(){
-
-    const state=$("resultState"),btn=$("checkResult");
-    if(!state||!btn)return;
-    btn.disabled=true;
-    state.textContent="結果を取得中…";
-    if($("currentResult"))$("currentResult").innerHTML="";
-    try{
-      /* 現在の予想を保存できる状態なら先に凍結 */
-      savePredictionSnapshot();
-
-      const d=$("date").value;
-      const r=await fetchResultRace(d,$("stadium").value,$("race").value);
-      const combo=actualCombo(r);
-      if(!combo)throw new Error("unpublished");
-      const oddsInfo=await resultOddsInfo(combo);
-
-      const preds=readJSON(PRED_KEY,{});
-      const pred=preds[raceKey()];
-      if(!pred){
-        state.textContent=`結果 ${combo}${r?.__bhResultSource?` / ${r.__bhResultSource}`:""} / 予想パッチ保存がないため的中判定できません`;
-        $("currentResult").innerHTML=`<div class="resultHitCard"><div class="resultCombo">${combo}</div><div class="resultMeta">結果は取得済み${oddsInfo.popularity?` / ${oddsInfo.popularity}番人気`:""}${oddsInfo.odds?` / ${Number(oddsInfo.odds).toFixed(1)}倍`:""} / 予想スナップショットなし</div></div>`;
-        return;
-      }
-
-      /* V205: 見推奨レースは結果だけ確認可能。累計には絶対に入れない。
-         以前の不具合で同じレースが保存済みなら、その記録もここで除去する。 */
-      const excluded=!!(pred.excludedFromResults || window.__HUNTER_PASS_RACE);
-      if(excluded){
-        const arr=records().filter(x=>x.key!==raceKey());
-        setRecords(arr);
-        renderStats();
-
-        const tech=T[Number(r?.result?.technique_number)]||"";
-        $("currentResult").innerHTML=`
-          <div class="resultHitCard passResultCard">
-            <div class="resultCombo">${combo}</div>
-            <div class="resultMeta">${S[Number($("stadium").value)]||""} ${Number($("race").value)}R${tech?` / 決まり手 ${tech}`:""}${oddsInfo.popularity?` / ${oddsInfo.popularity}番人気`:""}${oddsInfo.odds?` / ${Number(oddsInfo.odds).toFixed(1)}倍`:""}</div>
-            <div class="passResultNotice">見推奨レースのため、このレースは結果集計に含めません。</div>
-          </div>`;
-        state.textContent=`結果確認：${combo}（見推奨・集計対象外）`;
-        return;
-      }
-
-      const actualParts=String(combo).split("-").map(Number);
-      const actualHead=actualParts[0];
-      const actualSecond=actualParts[1];
-      const actualThird=actualParts[2];
-
-      const heads=Array.isArray(pred.heads)?pred.heads:[];
-      const matchedHead=heads.find(x=>Number(x.boat)===actualHead)||null;
-      const headTargetShown=heads.length>0;
-      const headHit=!!matchedHead;
-      const secondCandidates=matchedHead && Array.isArray(matchedHead.secondCandidateBoats)
-        ? matchedHead.secondCandidateBoats.map(Number)
-        : [];
-      const matchedAxisBoats=secondCandidates.length
-        ? secondCandidates
-        : matchedHead
-          ? (Array.isArray(matchedHead.axisBoats)&&matchedHead.axisBoats.length
-              ? matchedHead.axisBoats.map(Number)
-              : matchedHead.axisBoat?[Number(matchedHead.axisBoat)]:[])
-          : [];
-      const axisShown=matchedAxisBoats.length>0;
-
-      /* Vol.224 結果確認：
-         主軸1艇は2着/3着の折り返し。
-         1コース逃げ限定で追加した「軸以外・2着率22%以上」は2着固定として照合する。 */
-      const axisMode=matchedHead?.axisPlacementMode||"both";
-      const axisBoat=matchedAxisBoats.length?Number(matchedAxisBoats[0]):null;
-      const escapeSecondFixedBoats=matchedHead && Array.isArray(matchedHead.escapeSecondFixedBoats)
-        ? matchedHead.escapeSecondFixedBoats.map(Number) : [];
-      const mainAxisHit=!!(axisShown && matchedAxisBoats.length && (
-        axisMode==="second_only"
-          ? matchedAxisBoats.includes(actualSecond)
-          : matchedAxisBoats.includes(actualSecond) || matchedAxisBoats.includes(actualThird)
-      ));
-      const escapeSecondFixedHit=!!(matchedHead?.oneCourseEscapeRule && escapeSecondFixedBoats.includes(actualSecond));
-      const axisHit=!!(mainAxisHit || escapeSecondFixedHit);
-
-      const cutBoat=pred.cutBoat?Number(pred.cutBoat):null;
-      const cutShown=!!cutBoat;
-      const cutSuccess=!!(
-        cutShown &&
-        !actualParts.includes(cutBoat)
-      );
-
-      /* V215: 個別切りは廃止。完全切りのみ結果確認する。 */
-      const pairCutBoat=null;
-      const pairCutCandidate=null;
-      const pairCutShown=false;
-      const pairCutSuccess=false;
-
-      const rec={
-        key:raceKey(),date:d,
-        venue:Number($("stadium").value),race:Number($("race").value),
-        combo,heads,
-        matchedHead:matchedHead?Number(matchedHead.boat):null,
-        axisBoat:matchedHead?.axisBoat||null,
-        axisBoats:matchedAxisBoats,
-        cutBoat,
-        headTargetShown,axisShown,headHit,axisHit,
-        axisMode:matchedHead?.axisPlacementMode||"both",
-        escapeSecondFixedBoats,escapeSecondFixedHit,
-        cutShown,cutSuccess,
-        pairCutBoat,pairCutCandidate,pairCutShown,pairCutSuccess,
-        popularity:oddsInfo.popularity,
-        resultOdds:oddsInfo.odds,
-        confirmed:true,
-        resultSource:r?.__bhResultSource||'',
-        checkedAt:Date.now()
-      };
-
-      const arr=records();
-      const idx=arr.findIndex(x=>x.key===rec.key);
-      if(idx>=0)arr[idx]=rec; else arr.push(rec);
-      setRecords(arr);
-
-      const tech=T[Number(r?.result?.technique_number)]||"";
-      renderCurrent(rec,tech);
-      renderStats();
-      state.textContent=`確認完了：${combo}${r?.__bhResultSource?` / ${r.__bhResultSource}`:""}${oddsInfo.popularity?` / ${oddsInfo.popularity}番人気`:""}${oddsInfo.odds?` / ${Number(oddsInfo.odds).toFixed(1)}倍`:""}`;
-    }catch(e){
-      if(e?.message==="unpublished"){
-        const dg=window.__BH_RESULT_DIAGNOSTICS?.diagnostics||[];
-        state.textContent=dg.length?`結果未取得｜診断 ${dg.join(" / ")}`:"結果はまだ未確定です";
+  function rv248ParseCSV(text){
+    const rows=[]; let row=[], cell="", quoted=false;
+    const src=String(text||"").replace(/^\uFEFF/,"");
+    for(let i=0;i<src.length;i++){
+      const ch=src[i];
+      if(quoted){
+        if(ch==='"' && src[i+1]==='"'){ cell+='"'; i++; }
+        else if(ch==='"'){ quoted=false; }
+        else cell+=ch;
       }else{
-        state.textContent="結果取得に失敗しました";
+        if(ch==='"') quoted=true;
+        else if(ch===','){ row.push(cell); cell=""; }
+        else if(ch==='\n'){
+          row.push(cell.replace(/\r$/, "")); rows.push(row); row=[]; cell="";
+        }else cell+=ch;
       }
+    }
+    if(cell.length||row.length){ row.push(cell.replace(/\r$/, "")); rows.push(row); }
+    return rows.filter(r=>r.some(v=>String(v||"").trim()!==""));
+  }
+  function rv248Norm(v){ return String(v??"").replace(/^\uFEFF/,"").replace(/[\s　]+/g,"").trim(); }
+  function rv248Table(text){
+    const rows=rv248ParseCSV(text);
+    if(rows.length<2)return {head:[],rows:[]};
+    return {head:rows[0].map(rv248Norm),rows:rows.slice(1)};
+  }
+  function rv248Cell(table,row,name){
+    const idx=table.head.findIndex(h=>h===rv248Norm(name));
+    return idx>=0 ? String(row?.[idx]??"").trim() : "";
+  }
+  function rv248FindRow(table,code){
+    const idx=table.head.findIndex(h=>h==="レースコード");
+    if(idx<0)return null;
+    return table.rows.find(r=>String(r[idx]||"").trim()===code)||null;
+  }
+  function rv248Num(v){
+    const n=Number(String(v??"").replace(/[^0-9.\-]/g,""));
+    return Number.isFinite(n)?n:null;
+  }
+  async function rv248FetchText(url){
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),6500);
+    try{
+      const res=await fetch(url,{cache:"no-store",signal:ctrl.signal});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    }finally{ clearTimeout(timer); }
+  }
+  function rv248PredForCurrent(){
+    try{ savePredictionSnapshot(); }catch(e){}
+    return readJSON(PRED_KEY,{})[raceKey()]||null;
+  }
+  function rv248Evaluate(pred,result){
+    if(!pred)return {headHit:null,axisHit:null,cutHit:null,excluded:false,reason:"予想保存なし"};
+    const heads=Array.isArray(pred.heads)?pred.heads:[];
+    const first=Number(result.first), second=Number(result.second), third=Number(result.third);
+    const headHit=heads.length ? heads.some(h=>Number(h.boat)===first) : null;
+    const winnerHead=heads.find(h=>Number(h.boat)===first)||null;
+    const anyAxis=heads.some(h=>{
+      const a=Array.isArray(h.axisBoats)?h.axisBoats:[];
+      const b=Array.isArray(h.secondCandidateBoats)?h.secondCandidateBoats:[];
+      return a.length||b.length||Number(h.axisBoat)>0;
+    });
+    let axisHit=anyAxis?false:null;
+    if(winnerHead && anyAxis){
+      const regular=[...(Array.isArray(winnerHead.axisBoats)?winnerHead.axisBoats:[])];
+      if(!regular.length && Number(winnerHead.axisBoat)>0)regular.push(Number(winnerHead.axisBoat));
+      const secondOnly=[...(Array.isArray(winnerHead.secondCandidateBoats)?winnerHead.secondCandidateBoats:[])];
+      if(winnerHead.oneCourseSecondarySecondOnly){
+        const target=secondOnly.length?secondOnly:regular;
+        axisHit=target.map(Number).includes(second);
+      }else{
+        axisHit=regular.map(Number).includes(second)||regular.map(Number).includes(third);
+      }
+    }
+    const cutBoat=Number(pred.cutBoat||0);
+    const cutHit=cutBoat ? ![first,second,third].includes(cutBoat) : null;
+    return {
+      headHit,axisHit,cutHit,
+      excluded:!!pred.excludedFromResults,
+      reason:pred.exclusionReason||""
+    };
+  }
+  function rv248ReadStore(){ return readJSON(RESULT_STORE_KEY_V248,{records:{}}); }
+  function rv248WriteStore(store){ writeJSON(RESULT_STORE_KEY_V248,store); }
+  function rv248SaveRecord(record){
+    const store=rv248ReadStore();
+    if(!store.records||typeof store.records!=="object")store.records={};
+    store.records[record.key]=record; // 同一レースは上書き。二重計上しない。
+    rv248WriteStore(store);
+  }
+  function rv248Pct(hit,total){ return total?`${(hit/total*100).toFixed(1)}%`:`—`; }
+  function rv248EvalClass(v){ return v===true?"hit":v===false?"miss":"na"; }
+  function rv248EvalText(v){ return v===true?"的中":v===false?"不的中":"対象なし"; }
+  function rv248RenderStats(){
+    const root=$("resultStatsV248"), hist=$("resultHistoryV248");
+    if(!root||!hist)return;
+    const records=Object.values(rv248ReadStore().records||{}).sort((a,b)=>Number(b.savedAt||0)-Number(a.savedAt||0));
+    const counted=records.filter(r=>!r.excluded);
+    const calc=(key)=>{
+      const rows=counted.filter(r=>typeof r?.evaluation?.[key]==="boolean");
+      const hit=rows.filter(r=>r.evaluation[key]===true).length;
+      return {hit,total:rows.length,pct:rv248Pct(hit,rows.length)};
+    };
+    const h=calc("headHit"), a=calc("axisHit"), c=calc("cutHit");
+    root.innerHTML=`
+      <div class="rv248Stat"><strong>${h.pct}</strong><small>頭 ${h.hit}/${h.total}R</small></div>
+      <div class="rv248Stat"><strong>${a.pct}</strong><small>軸 ${a.hit}/${a.total}R</small></div>
+      <div class="rv248Stat"><strong>${c.pct}</strong><small>切り艇 ${c.hit}/${c.total}R</small></div>`;
+    hist.innerHTML=records.slice(0,8).map(r=>{
+      const e=r.evaluation||{};
+      const icon=v=>v===true?"○":v===false?"×":"－";
+      return `<div class="rv248Hist">
+        <div>${r.venueName||"—"} ${r.race||"—"}R<br><small>${r.date||""}</small></div>
+        <div><span class="combo">${r.combo||"—"}</span><br><small>${Number(r.multiple||0)>0?Number(r.multiple).toFixed(1)+"倍":"—"}</small></div>
+        <div class="eval">頭${icon(e.headHit)} 軸${icon(e.axisHit)} 切${icon(e.cutHit)}${r.excluded?"<br><small>集計外</small>":""}</div>
+      </div>`;
+    }).join("") || `<div style="color:#76848e;font-size:11px;padding:4px 2px">保存済み結果なし</div>`;
+  }
+  function rv248RenderRaceLabel(){
+    const el=$("resultRaceTitleV248"); if(el)el.textContent=currentRaceLabel();
+  }
+  function rv248RenderCurrent(record){
+    const root=$("resultCurrentV248"); if(!root)return;
+    const e=record.evaluation||{};
+    root.innerHTML=`<div class="rv248ResultCard">
+      <div class="rv248Combo">${record.first}-${record.second}-${record.third}</div>
+      <div class="rv248Meta">
+        <span class="rv248Chip">${record.method||"決まり手—"}</span>
+        <span class="rv248Chip">3連単 ${record.payout?Number(record.payout).toLocaleString()+"円":"—"}</span>
+        <span class="rv248Chip">${record.multiple?Number(record.multiple).toFixed(1)+"倍":"倍率—"}</span>
+        ${record.popularity?`<span class="rv248Chip">${record.popularity}人気</span>`:""}
+      </div>
+    </div>
+    <div class="rv248EvalGrid">
+      <div class="rv248Eval ${rv248EvalClass(e.headHit)}"><b>頭 ${rv248EvalText(e.headHit)}</b><span>1着候補</span></div>
+      <div class="rv248Eval ${rv248EvalClass(e.axisHit)}"><b>軸 ${rv248EvalText(e.axisHit)}</b><span>軸候補</span></div>
+      <div class="rv248Eval ${rv248EvalClass(e.cutHit)}"><b>切り艇 ${rv248EvalText(e.cutHit)}</b><span>3着内除外</span></div>
+    </div>
+    ${record.excluded?`<div id="resultStatusV248Note" style="margin-top:7px;font-size:10px;color:#e5b66d;font-weight:900">${record.exclusionReason||"見推奨"}のため累計集計には含めません</div>`:""}`;
+  }
+  async function rv248FetchCurrentResult(){
+    const btn=$("resultFetchBtnV248"), status=$("resultStatusV248");
+    rv248RenderRaceLabel();
+    const date=$("date")?.value, venue=Number($("stadium")?.value||0), race=Number($("race")?.value||0);
+    if(!date||!venue||!race){ if(status)status.textContent="日付・場・レースを選択してください"; return; }
+    if(btn){btn.disabled=true;btn.textContent="結果取得中…";}
+    if(status)status.textContent="結果CSV・払戻CSVを確認中…";
+    try{
+      const urls=rv248Urls(), code=rv248RaceCode();
+      const [resR,resP]=await Promise.allSettled([rv248FetchText(urls.result),rv248FetchText(urls.payout)]);
+      const rt=resR.status==="fulfilled"?rv248Table(resR.value):{head:[],rows:[]};
+      const pt=resP.status==="fulfilled"?rv248Table(resP.value):{head:[],rows:[]};
+      const rr=rv248FindRow(rt,code), pr=rv248FindRow(pt,code);
+      if(!rr && !pr){
+        if(status)status.textContent="結果はまだ反映されていません。数分後に再取得してください。";
+        return;
+      }
+      let first=rr?rv248Num(rv248Cell(rt,rr,"1着_艇番")):null;
+      let second=rr?rv248Num(rv248Cell(rt,rr,"2着_艇番")):null;
+      let third=rr?rv248Num(rv248Cell(rt,rr,"3着_艇番")):null;
+      const tri=pr?rv248Cell(pt,pr,"3連単_組番"):"";
+      const tm=String(tri||"").match(/([1-6])\s*[-－]\s*([1-6])\s*[-－]\s*([1-6])/);
+      if((!first||!second||!third)&&tm){ first=Number(tm[1]);second=Number(tm[2]);third=Number(tm[3]); }
+      if(!first||!second||!third){
+        if(status)status.textContent="データは見つかりましたが、1〜3着がまだ確定していません。";
+        return;
+      }
+      const payout=pr?rv248Num(rv248Cell(pt,pr,"3連単_払戻金")):null;
+      const popularity=pr?rv248Num(rv248Cell(pt,pr,"3連単_人気")):null;
+      const method=rr?rv248Cell(rt,rr,"決まり手"):"";
+      const pred=rv248PredForCurrent();
+      const result={first,second,third};
+      const evaluation=rv248Evaluate(pred,result);
+      const record={
+        key:raceKey(),date,venue,race,venueName:S[venue]||String(venue),
+        savedAt:Date.now(),first,second,third,combo:`${first}-${second}-${third}`,
+        payout:Number(payout||0),multiple:payout?Number(payout)/100:0,popularity:Number(popularity||0),method,
+        evaluation,excluded:!!evaluation.excluded,exclusionReason:evaluation.reason||""
+      };
+      rv248SaveRecord(record);
+      rv248RenderCurrent(record);
+      rv248RenderStats();
+      if(status)status.textContent=`結果確定・保存済み（${rr?"着順CSV":"3連単組番"}${pr?"＋払戻CSV":""}）`;
+    }catch(e){
+      console.error("V248 result",e);
+      if(status)status.textContent=`結果取得エラー：${e?.name==="AbortError"?"通信タイムアウト":"通信に失敗しました"}`;
     }finally{
-      btn.disabled=false;
+      if(btn){btn.disabled=false;btn.textContent="このレースの結果を取得";}
     }
   }
 
-  function syncResultRaceTag(){
-    if($("resultRaceTag"))$("resultRaceTag").textContent=currentRaceLabel();
-  }
+  $("resultFetchBtnV248")?.addEventListener("click",rv248FetchCurrentResult);
+  $("stadium")?.addEventListener("change",rv248RenderRaceLabel);
+  $("race")?.addEventListener("change",rv248RenderRaceLabel);
+  $("date")?.addEventListener("change",rv248RenderRaceLabel);
 
-  /* 結果パネルの開閉状態も保持 */
-  function applyPanelState(){
-    const open=localStorage.getItem(PANEL_KEY)==="1";
-    $("resultBody")?.classList.toggle("hide",!open);
-    if($("resultToggleIcon"))$("resultToggleIcon").textContent=open?"−":"＋";
-  }
-  $("resultToggle")?.addEventListener("click",()=>{
-    const opening=$("resultBody")?.classList.contains("hide");
-    localStorage.setItem(PANEL_KEY,opening?"1":"0");
-    applyPanelState();
+  /* リセットは通常非表示。RESULT CHECKタイトルを約1.3秒長押しした時だけ10秒間表示。 */
+  let rv248HoldTimer=null, rv248HideTimer=null;
+  const secret=$("resultSecretHotspotV248");
+  const reveal=()=>{
+    clearTimeout(rv248HoldTimer);
+    rv248HoldTimer=setTimeout(()=>{
+      const wrap=$("resultResetWrapV248"); if(!wrap)return;
+      wrap.classList.add("show");
+      clearTimeout(rv248HideTimer);
+      rv248HideTimer=setTimeout(()=>wrap.classList.remove("show"),10000);
+    },1300);
+  };
+  const cancelReveal=()=>{clearTimeout(rv248HoldTimer);};
+  secret?.addEventListener("pointerdown",reveal);
+  secret?.addEventListener("pointerup",cancelReveal);
+  secret?.addEventListener("pointercancel",cancelReveal);
+  secret?.addEventListener("pointerleave",cancelReveal);
+  $("resultResetBtnV248")?.addEventListener("click",()=>{
+    if(!confirm("累計結果をすべてリセットします。よろしいですか？"))return;
+    localStorage.removeItem(RESULT_STORE_KEY_V248);
+    $("resultCurrentV248").innerHTML="";
+    $("resultStatusV248").textContent="累計結果をリセットしました";
+    $("resultResetWrapV248")?.classList.remove("show");
+    rv248RenderStats();
   });
 
-  $("checkResult")?.addEventListener("click",checkResult);
-  $("resetResultDay")?.addEventListener("click",()=>{
-    const d=$("date")?.value||today();
-    const hidden=readJSON(HIDDEN_DAY_KEY,[]);
-    if(!hidden.includes(d))hidden.push(d);
-    writeJSON(HIDDEN_DAY_KEY,hidden);
-    $("currentResult").innerHTML="";
-    $("resultState").textContent="この日の表示集計をリセットしました（バックデータは保持）";
-    renderStats();
-  });
-  $("resetResultAll")?.addEventListener("click",()=>{
-    setRecords([]);
-    writeJSON(HIDDEN_DAY_KEY,[]);
-    $("currentResult").innerHTML="";
-    $("resultState").textContent="1着候補・軸候補の累計結果をリセットしました";
-    renderStats();
-  });
+  window.fetchHunterResultV248=rv248FetchCurrentResult;
+  rv248RenderRaceLabel();
+  rv248RenderStats();
 
   /* Vol.215：5000回模擬レース全体をさらにコンパクト化 */
   $("simMasterToggle")?.addEventListener("click",()=>{
@@ -14880,7 +14448,6 @@ function renderOdds(odds){
     }
 
     box.classList.remove("hide");
-    syncResultRaceTag();
   }
 
   window.updateRaceFloat=updateRaceFloat;
@@ -14892,8 +14459,6 @@ function renderOdds(odds){
   ["stadium","race","date"].forEach(id=>{
     $(id)?.addEventListener("change",()=>{
       updateRaceFloat(true);
-      if($("currentResult"))$("currentResult").innerHTML="";
-      if($("resultState"))$("resultState").textContent="結果確認を押してください";
     });
     $(id)?.addEventListener("input",()=>updateRaceFloat(true));
   });
@@ -14949,8 +14514,6 @@ function renderOdds(odds){
       $("getOdds120").textContent="必須：オッズ120通り取得";
     }
 
-    if($("currentResult"))$("currentResult").innerHTML="";
-    if($("resultState"))$("resultState").textContent="結果確認を押してください";
 
     /* カード/プレビューも古いレースを残さない */
     try{
@@ -15643,100 +15206,5 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 
 
-<!-- Vol.243: 結果レスポンス構造診断 + 深層レース探索 -->
-<script id="bh-vol243-result-deep-diagnostic">
-(()=>{
-'use strict';
-function bh243NormNum(v){ const n=Number(String(v??'').replace(/[^0-9]/g,'')); return Number.isFinite(n)?n:null; }
-function bh243Summarize(obj){
-  try{
-    if(obj==null)return 'null';
-    if(Array.isArray(obj))return `Array(${obj.length})`;
-    if(typeof obj!=='object')return `${typeof obj}:${String(obj).slice(0,80)}`;
-    return 'keys='+Object.keys(obj).slice(0,18).join(',');
-  }catch(e){ return 'summary_error'; }
-}
-function bh243DeepFindRace(root,venue,raceNo){
-  const v=Number(venue), r=Number(raceNo);
-  const seen=new Set();
-  const q=[{x:root,path:'$'}];
-  let steps=0;
-  while(q.length && steps<12000){
-    const {x,path}=q.shift(); steps++;
-    if(!x || typeof x!=='object' || seen.has(x)) continue;
-    seen.add(x);
-
-    const sv=bh243NormNum(x.stadium_number ?? x.stadiumNumber ?? x.jcd ?? x.venue ?? x.stadium ?? x.place_code ?? x.placeCode);
-    const rr=bh243NormNum(x.race_number ?? x.raceNumber ?? x.rno ?? x.race_no ?? x.raceNo ?? x.race);
-    if(sv===v && rr===r){
-      return {race:x,path};
-    }
-
-    // key hierarchy common patterns: stadiums['02'].races['6'] / results['02']['6']
-    const stadiumKeys=[String(v),String(v).padStart(2,'0')];
-    for(const sk of stadiumKeys){
-      const st=x?.stadiums?.[sk] ?? x?.results?.stadiums?.[sk] ?? x?.programs?.stadiums?.[sk];
-      if(st){
-        const rk=[String(r),String(r).padStart(2,'0')];
-        for(const k of rk){
-          const cand=st?.races?.[k] ?? st?.results?.[k] ?? st?.[k];
-          if(cand && typeof cand==='object') return {race:cand,path:`${path}.stadiums[${sk}].races[${k}]`};
-        }
-      }
-    }
-
-    if(Array.isArray(x)){
-      for(let i=0;i<x.length;i++) if(x[i]&&typeof x[i]==='object') q.push({x:x[i],path:`${path}[${i}]`});
-    }else{
-      for(const [k,val] of Object.entries(x)){
-        if(val&&typeof val==='object') q.push({x:val,path:`${path}.${k}`});
-      }
-    }
-  }
-  return null;
-}
-window.bh243DeepFindRace=bh243DeepFindRace;
-window.bh243Summarize=bh243Summarize;
-
-const oldFetch=window.fetchResultRace;
-if(typeof oldFetch==='function'){
-  window.fetchResultRace=async function(date,venue,raceNo){
-    const ymd=String(date).replaceAll('-','');
-    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
-    const sources=[
-      ['OpenAPI v1 date',`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
-      ['OpenAPI v1 today','https://boatraceopenapi.github.io/api/v1/today.json'],
-      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
-      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
-    ];
-    const diag=[];
-    for(const [label,url] of sources){
-      try{
-        const j=await bhFetchJsonNoStore(url,4500);
-        const found=bh243DeepFindRace(j,v,rn);
-        const raw=found?.race||null;
-        const c=bhCanonicalResult(raw,label+' deep');
-        diag.push(`${label}:${c?'OK':found?'FOUND_NO_RESULT':'NO_MATCH'}${found?`@${found.path}`:''} [${bh243Summarize(j)}]`);
-        if(c){ c.__bhDiagnostics=diag.slice(); c.__bhResultSource=label+' deep'; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()}; return c; }
-      }catch(e){ diag.push(`${label}:ERR(${String(e?.message||e).slice(0,70)})`); }
-    }
-    try{
-      const fallback=await oldFetch(date,venue,raceNo);
-      if(fallback){
-        const prev=Array.isArray(fallback.__bhDiagnostics)?fallback.__bhDiagnostics:[];
-        fallback.__bhDiagnostics=[...diag,...prev];
-        window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:fallback.__bhDiagnostics,checkedAt:Date.now()};
-        return fallback;
-      }
-    }catch(e){ diag.push('legacy:ERR('+String(e?.message||e).slice(0,70)+')'); }
-    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()};
-    return null;
-  };
-}
-})();
-</script>
 </body>
 </html>
-<!-- Vol.242: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
-
-<!-- Vol.245 result-engine rebuild: CSV race-code matching hardened; api/v1 removed from result sources -->
