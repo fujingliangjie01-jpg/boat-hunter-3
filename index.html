@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.242</div>
+  <div class="topVol">Vol.243</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15610,6 +15610,100 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
 <script id="bh-vol228-tokuten-fix">
 /* Vol.228: 0.00/全員1位を未成立値として排除。勝負掛けはtokuten_hayamiヘッダ名で厳密参照。 */
 window.__BH_VOL228_TOKUTEN_FIX=true;
+</script>
+
+
+<!-- Vol.243: 結果レスポンス構造診断 + 深層レース探索 -->
+<script id="bh-vol243-result-deep-diagnostic">
+(()=>{
+'use strict';
+function bh243NormNum(v){ const n=Number(String(v??'').replace(/[^0-9]/g,'')); return Number.isFinite(n)?n:null; }
+function bh243Summarize(obj){
+  try{
+    if(obj==null)return 'null';
+    if(Array.isArray(obj))return `Array(${obj.length})`;
+    if(typeof obj!=='object')return `${typeof obj}:${String(obj).slice(0,80)}`;
+    return 'keys='+Object.keys(obj).slice(0,18).join(',');
+  }catch(e){ return 'summary_error'; }
+}
+function bh243DeepFindRace(root,venue,raceNo){
+  const v=Number(venue), r=Number(raceNo);
+  const seen=new Set();
+  const q=[{x:root,path:'$'}];
+  let steps=0;
+  while(q.length && steps<12000){
+    const {x,path}=q.shift(); steps++;
+    if(!x || typeof x!=='object' || seen.has(x)) continue;
+    seen.add(x);
+
+    const sv=bh243NormNum(x.stadium_number ?? x.stadiumNumber ?? x.jcd ?? x.venue ?? x.stadium ?? x.place_code ?? x.placeCode);
+    const rr=bh243NormNum(x.race_number ?? x.raceNumber ?? x.rno ?? x.race_no ?? x.raceNo ?? x.race);
+    if(sv===v && rr===r){
+      return {race:x,path};
+    }
+
+    // key hierarchy common patterns: stadiums['02'].races['6'] / results['02']['6']
+    const stadiumKeys=[String(v),String(v).padStart(2,'0')];
+    for(const sk of stadiumKeys){
+      const st=x?.stadiums?.[sk] ?? x?.results?.stadiums?.[sk] ?? x?.programs?.stadiums?.[sk];
+      if(st){
+        const rk=[String(r),String(r).padStart(2,'0')];
+        for(const k of rk){
+          const cand=st?.races?.[k] ?? st?.results?.[k] ?? st?.[k];
+          if(cand && typeof cand==='object') return {race:cand,path:`${path}.stadiums[${sk}].races[${k}]`};
+        }
+      }
+    }
+
+    if(Array.isArray(x)){
+      for(let i=0;i<x.length;i++) if(x[i]&&typeof x[i]==='object') q.push({x:x[i],path:`${path}[${i}]`});
+    }else{
+      for(const [k,val] of Object.entries(x)){
+        if(val&&typeof val==='object') q.push({x:val,path:`${path}.${k}`});
+      }
+    }
+  }
+  return null;
+}
+window.bh243DeepFindRace=bh243DeepFindRace;
+window.bh243Summarize=bh243Summarize;
+
+const oldFetch=window.fetchResultRace;
+if(typeof oldFetch==='function'){
+  window.fetchResultRace=async function(date,venue,raceNo){
+    const ymd=String(date).replaceAll('-','');
+    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
+    const sources=[
+      ['OpenAPI v1 date',`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
+      ['OpenAPI v1 today','https://boatraceopenapi.github.io/api/v1/today.json'],
+      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
+      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
+    ];
+    const diag=[];
+    for(const [label,url] of sources){
+      try{
+        const j=await bhFetchJsonNoStore(url,4500);
+        const found=bh243DeepFindRace(j,v,rn);
+        const raw=found?.race||null;
+        const c=bhCanonicalResult(raw,label+' deep');
+        diag.push(`${label}:${c?'OK':found?'FOUND_NO_RESULT':'NO_MATCH'}${found?`@${found.path}`:''} [${bh243Summarize(j)}]`);
+        if(c){ c.__bhDiagnostics=diag.slice(); c.__bhResultSource=label+' deep'; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()}; return c; }
+      }catch(e){ diag.push(`${label}:ERR(${String(e?.message||e).slice(0,70)})`); }
+    }
+    try{
+      const fallback=await oldFetch(date,venue,raceNo);
+      if(fallback){
+        const prev=Array.isArray(fallback.__bhDiagnostics)?fallback.__bhDiagnostics:[];
+        fallback.__bhDiagnostics=[...diag,...prev];
+        window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:fallback.__bhDiagnostics,checkedAt:Date.now()};
+        return fallback;
+      }
+    }catch(e){ diag.push('legacy:ERR('+String(e?.message||e).slice(0,70)+')'); }
+    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()};
+    return null;
+  };
+}
+})();
 </script>
 </body>
 </html>
