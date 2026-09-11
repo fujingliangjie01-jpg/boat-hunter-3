@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.255</div>
+  <div class="topVol">Vol.256</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15403,6 +15403,16 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
   window.addEventListener('load',moveResultAbsoluteBottom,{once:true});
 })();
 </script>
+
+<!-- Vol.256: RESULT CHECK flex order fix - actual page bottom -->
+<style id="bh-vol256-result-real-bottom">
+/* #main>.wrap is flex. DOMの末尾移動だけでは既存order指定に負けるため、結果確認を最大orderで固定。 */
+#main>.wrap>#resultPanelV248{
+  order:99999!important;
+  width:100%!important;
+  align-self:stretch!important;
+}
+</style>
 </body>
 </html>
 
