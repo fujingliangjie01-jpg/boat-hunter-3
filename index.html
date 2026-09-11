@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V231</title>
+<title>BOAT HUNTER V232</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -984,7 +984,7 @@ body.top-open,body.race-open{overflow:auto!important}
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
 .controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
-/* Vol.231: レース±矢印。1R←12R / 12R→1Rで循環 */
+/* Vol.232: レース±矢印。1R←12R / 12R→1Rで循環 */
 .raceSelectCard:after{top:48px!important;bottom:auto!important}
 .raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
 .raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.231</div>
+  <div class="topVol">Vol.232</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9141,7 +9141,7 @@ $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
 
-/* Vol.231: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+/* Vol.232: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
   function stepRace(delta){
     const race=document.getElementById('race');
@@ -13703,7 +13703,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.231: 1コース限定・頭候補2位以降の専用2着候補ルール
+    /* Vol.232: 1コース限定・頭候補2位以降の専用2着候補ルール
        1コース艇が主頭ではなく「頭候補2位以降」に残った場合、通常の軸候補は使わない。
        その1号艇が1着になった条件付きシミュレーションで、2着率22.0%以上の艇をすべて採用し、
        「1-2着候補-○」だけを表示する。3着固定への折り返しは出さない。 */
@@ -13740,7 +13740,7 @@ function renderOdds(odds){
        頭候補2位以降が無い場合のみ、残り全艇から最上位1艇を選ぶ。 */
     headCandidates.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
-      /* Vol.231: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
+      /* Vol.232: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
       if(h.oneCourseSecondarySecondOnly){ h.pairCuts={}; return; }
       const secondarySet=new Set(headCandidates.filter(x=>Number(x.boat)!==Number(h.boat)).map(x=>Number(x.boat)));
       const allRates=Array.isArray(h.axisAllRates)?h.axisAllRates:[];
@@ -14081,7 +14081,7 @@ function renderOdds(odds){
       venue:Number($("stadium")?.value||0),
       race:Number($("race")?.value||0),
       savedAt:Date.now(),
-      /* Vol.231: 結果判定には表示中の全頭候補を保存する。主頭だけ保存すると頭候補2以降が的中しても不的中になる。 */
+      /* Vol.232: 結果判定には表示中の全頭候補を保存する。主頭だけ保存すると頭候補2以降が的中しても不的中になる。 */
       heads:((Array.isArray(p.headCandidates)&&p.headCandidates.length)?p.headCandidates:(p.heads||[])).map((x,headIndex)=>({
         boat:Number(x.boat),
         headIndex:Number(headIndex),
@@ -14302,6 +14302,67 @@ function renderOdds(odds){
     }
   }
 
+  /* Vol.232: 当日結果取得を強化。
+     OpenAPIの日次JSONだけに依存すると、開催途中で一部R以降のresult反映が遅れる場合がある。
+     BoatraceCSV realtime results を併用し、レースコード単位で現在Rを直接拾う。 */
+  async function fetchRealtimeResultRace(date,venue,raceNo){
+    const [y,m,d]=String(date).split("-");
+    const code=String(date).replaceAll("-","")
+      +String(Number(venue)).padStart(2,"0")
+      +String(Number(raceNo)).padStart(2,"0");
+    const csvUrl=`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv`;
+    try{
+      const res=await fetch(csvUrl,{cache:"no-store"});
+      if(!res.ok)return null;
+      const rows=parseCSV(await res.text());
+      if(!Array.isArray(rows)||rows.length<2)return null;
+      const head=rows[0].map(x=>String(x||"").trim());
+      const row=rows.slice(1).find(r=>String(r?.[0]||"").trim()===code);
+      if(!row)return null;
+      const get=(name)=>{
+        const i=head.indexOf(name);
+        return i>=0?row[i]:"";
+      };
+      const techText=String(get("決まり手")||"").trim();
+      const techNo=Number(Object.keys(T).find(k=>T[k]===techText)||0);
+      if(!(techNo>=1&&techNo<=6))return null;
+      const racers={};
+      for(let place=1;place<=6;place++){
+        const boat=Number(get(`${place}着_艇番`));
+        if(!(boat>=1&&boat<=6))continue;
+        racers[String(boat)]={
+          entry_number:boat,
+          place_number:place
+        };
+      }
+      if(Object.keys(racers).length<3)return null;
+      return {
+        stadium_number:Number(venue),
+        race_number:Number(raceNo),
+        result:{technique_number:techNo,racers}
+      };
+    }catch(e){
+      console.warn("realtime result fallback:",e);
+      return null;
+    }
+  }
+
+  async function fetchResultRace(date,venue,raceNo){
+    /* まず準リアルタイム結果を確認。開催途中の取りこぼし対策。 */
+    const realtime=await fetchRealtimeResultRace(date,venue,raceNo);
+    if(actualCombo(realtime))return realtime;
+
+    /* 次に既存OpenAPIを複数URLで確認。 */
+    try{
+      const j=await dayJson(date);
+      const r=raceOf(j,venue,raceNo);
+      if(actualCombo(r))return r;
+    }catch(e){}
+
+    /* CSVが数分遅れて追記される場合もあるため最後にno-storeで再取得。 */
+    return await fetchRealtimeResultRace(date,venue,raceNo);
+  }
+
   async function checkResult(){
 
     const state=$("resultState"),btn=$("checkResult");
@@ -14314,8 +14375,7 @@ function renderOdds(odds){
       savePredictionSnapshot();
 
       const d=$("date").value;
-      const j=await fetch(url(d),{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error("result");return r.json()});
-      const r=raceOf(j,$("stadium").value,$("race").value);
+      const r=await fetchResultRace(d,$("stadium").value,$("race").value);
       const combo=actualCombo(r);
       if(!combo)throw new Error("unpublished");
       const oddsInfo=await resultOddsInfo(combo);
