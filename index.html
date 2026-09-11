@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.224</div>
+  <div class="topVol">Vol.225</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13097,6 +13097,98 @@ function renderOdds(odds){
       }
     }
 
+    /* Vol.225: 1号艇の負け筋一致艇を「頭候補1」争いへ強制参加
+       3号艇限定ではなく、2〜6コースすべて共通。
+
+       基本条件（すべて必須）
+       1) 1号艇の負け筋TOP3
+       2) その負け筋が7.0%以上
+       3) 攻め艇の全国勝率 >= 1号艇の全国勝率
+       4) 世間評価3位以内
+       5) HUNTER評価3位以内
+
+       強化条件
+       ・負け筋1位かつ9.0%以上 → 強補正
+       ・1号艇がA1以外で、一周タイム1位ではない → さらに強補正
+         ※ A1は展示で仕上げを見せ切らないケースを考慮し、一周順位ペナルティ対象外。 */
+    {
+      const lossTotal225=Object.values(sim.headAxisCounts||{})
+        .reduce((a,x)=>a+Number(x?.wins||0),0)||5000;
+      const lossTop225=(sim.loss1||[]).slice(0,3);
+      const oneRow225=evalRows.find(x=>Number(x.course)===1)||evalRows.find(x=>Number(x.boat)===1)||null;
+      const oneNational225=Number(oneRow225?.national);
+      const oneClass225=String(grade(oneRow225?.r)||'').toUpperCase();
+
+      const lapRows225=evalRows
+        .filter(x=>Number.isFinite(Number(x.lap)))
+        .sort((a,b)=>Number(a.lap)-Number(b.lap));
+      const oneLapIndex225=oneRow225
+        ? lapRows225.findIndex(x=>Number(x.boat)===Number(oneRow225.boat))
+        : -1;
+      const oneLapRank225=oneLapIndex225>=0?oneLapIndex225+1:null;
+      const oneLapWeak225=oneClass225!=='A1' && oneLapRank225!=null && oneLapRank225>1;
+
+      const byCourse225={};
+      evalRows.forEach(x=>{ byCourse225[Number(x.course)]=x; });
+
+      lossTop225.forEach(([label,count],idx)=>{
+        const m=String(label||'').match(/^(\d)C\s*(逃げ|差し|まくり差し|まくり)/);
+        if(!m)return;
+        const course=Number(m[1]);
+        if(course<=1)return;
+        const x=byCourse225[course];
+        if(!x)return;
+
+        const lossPct=lossTotal225?Number(count||0)/lossTotal225*100:0;
+        const national=Number(x.national);
+        if(lossPct<7.0)return;
+        if(!Number.isFinite(national)||!Number.isFinite(oneNational225)||national<oneNational225)return;
+        if(Number(x.marketRank)>3 || Number(x.hunterRank)>3)return;
+
+        const lossRank=idx+1;
+        const strong=lossRank===1 && lossPct>=9.0;
+        let lapBoost=0;
+        if(oneLapWeak225){
+          lapBoost=oneLapRank225===2?4:(oneLapRank225<=4?7:10);
+        }
+
+        let h=heads.find(z=>Number(z.boat)===Number(x.boat));
+        if(!h){
+          h=toHead(x);
+          /* 最大4艇。満杯ならH1/世間1を保護しつつ最弱候補と入替。 */
+          if(heads.length<4){
+            heads.push(h);
+          }else{
+            const replaceable=heads.map((z,i)=>({z,i}))
+              .filter(o=>Number(o.z.hunterRank)!==1 && Number(o.z.marketRank)!==1)
+              .sort((a,b)=>
+                Number(b.z.hunterRank)-Number(a.z.hunterRank) ||
+                Number(b.z.marketRank)-Number(a.z.marketRank) ||
+                Number(a.z.p1||0)-Number(b.z.p1||0)
+              )[0];
+            if(!replaceable)return;
+            heads.splice(replaceable.i,1,h);
+          }
+        }
+
+        h.lossMatchPromotion=true;
+        h.lossMatchLabel=String(label);
+        h.lossMatchPct=Number(lossPct);
+        h.lossMatchRank=lossRank;
+        h.lossMatchStrong=strong;
+        h.lossMatchNational=Number(national);
+        h.lossMatchOneNational=Number(oneNational225);
+        h.oneClassForLoss=oneClass225||'—';
+        h.oneLapRankForLoss=oneLapRank225;
+        h.oneLapWeakBoost=Number(lapBoost);
+
+        /* 頭候補1決定スコアへ直接効かせる加点。
+           TOP3一致7%以上 = 8点、負け筋1位 = +4、1位かつ9%以上 = +4。
+           A1以外の1号艇で一周1位でなければ +4〜10点。 */
+        h.lossMatchHeadBonus=8 + (lossRank===1?4:0) + (strong?4:0) + lapBoost;
+      });
+    }
+
     /* V211: 頭候補1の優先補正
        頭候補1が場平均以下、かつHUNTER1位でも世間1位でもない時、
        場平均を上回る既存頭候補があれば、その最上位を頭候補1へ昇格する。 */
@@ -13352,7 +13444,10 @@ function renderOdds(odds){
       const candidateMax=Math.max(...heads.map(z=>Number(bh218Row(z.boat)?.p1||0)),1);
       const simScore=10*bh218Clamp(p1/candidateMax);
 
-      const total=attack+collapse+courseScore+quality+simScore;
+      /* Vol.225: 1号艇の負け筋と攻め艇の勝ち筋が一致した場合は、
+         HUNTER順位だけでは埋もれないよう頭候補1決定スコアへ直接加点。 */
+      const lossMatchBonus=Number(h.lossMatchHeadBonus||0);
+      const total=attack+collapse+courseScore+quality+simScore+lossMatchBonus;
       return {
         total:Number(total.toFixed(2)),
         attack:Number(attack.toFixed(2)),
@@ -13360,6 +13455,7 @@ function renderOdds(odds){
         course:Number(courseScore.toFixed(2)),
         quality:Number(quality.toFixed(2)),
         sim:Number(simScore.toFixed(2)),
+        lossMatch:Number(lossMatchBonus.toFixed(2)),
         techRate:Number(techRate.toFixed(2)),
         exGapInner:Number(exGapInner.toFixed(3))
       };
@@ -13662,7 +13758,9 @@ function renderOdds(odds){
             <div class="headCandidateRow headHoldBlock ${idx===0?'bh219PrimaryHead':''}" data-head-boat="${h.boat}">
               <div class="headHoldTarget" title="長押しで他艇の率">${simpleBoatText(h.boat)}</div>
               <span class="headMeta">${Number(p.headCandidateCount||0)>=3 && idx===0?'<b class="bh219PrimaryBadge">主頭</b> ':''}決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
-                h.f2BehindPromotion
+                h.lossMatchPromotion
+                  ? ` <b class="attackPromoteBadge">負け筋一致${h.lossMatchStrong?'・強':''}</b>`
+                  : h.f2BehindPromotion
                   ? ` <b class="f2BehindBadge">F${h.f2InnerCount}後ろ攻め</b>`
                   : h.attackPromotion
                     ? ` <b class="attackPromoteBadge">攻め昇格</b>`
@@ -13678,7 +13776,9 @@ function renderOdds(odds){
               }</span>
               <span class="headDelta ${
                 h.topConsensus && h.delta<0 ? "headDeltaWarn" : ""
-              }">${h.attackPromotion
+              }">${h.lossMatchPromotion
+                ? `${h.lossMatchLabel} ${Number(h.lossMatchPct||0).toFixed(1)}% / 全国 ${Number(h.lossMatchNational||0).toFixed(2)}≥1号艇${Number(h.lossMatchOneNational||0).toFixed(2)}${h.oneClassForLoss!=='A1'&&h.oneLapRankForLoss>1?` / 1号艇一周${h.oneLapRankForLoss}位補正`:''}`
+                : h.attackPromotion
                 ? `展示差 +${h.exGap.toFixed(2)}秒 / まくり ${h.attackRate.toFixed(1)}%`
                 : h.topConsensus && h.delta<0
                   ? `場差 ${h.delta.toFixed(1)}pt / 場平均割れ注意`
