@@ -984,7 +984,7 @@ body.top-open,body.race-open{overflow:auto!important}
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
 .controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
-/* Vol.237: レース±矢印。1R←12R / 12R→1Rで循環 */
+/* Vol.238: レース±矢印。1R←12R / 12R→1Rで循環 */
 .raceSelectCard:after{top:48px!important;bottom:auto!important}
 .raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
 .raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.237</div>
+  <div class="topVol">Vol.238</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9141,7 +9141,7 @@ $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
 
-/* Vol.237: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+/* Vol.238: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
   function stepRace(delta){
     const race=document.getElementById('race');
@@ -14399,7 +14399,39 @@ function renderOdds(odds){
   }
 
 
-  /* Vol.237: 公式BOAT RACE結果ページを最優先フォールバックとして追加。
+  /* Vol.238: 結果取得専用のタイムアウト付きfetch。
+     iPhone SafariでCORSプロキシが応答しない場合も「結果取得中…」のまま固まらせない。 */
+  async function bhResultFetchText(url,timeoutMs=3500){
+    const ac=new AbortController();
+    const timer=setTimeout(()=>ac.abort(),timeoutMs);
+    try{
+      const r=await fetch(url,{cache:"no-store",signal:ac.signal});
+      if(!r.ok)throw new Error("http "+r.status);
+      return await r.text();
+    }finally{clearTimeout(timer)}
+  }
+
+  /* 公式ページ取得は3経路を同時に投げ、最初に本文が取れたものを採用する。
+     1経路が固まっても他経路を待たせない。 */
+  async function bhResultOfficialText(target){
+    const proxied=[
+      "https://api.allorigins.win/raw?url="+encodeURIComponent(target),
+      "https://corsproxy.io/?url="+encodeURIComponent(target),
+      "https://r.jina.ai/http://"+target.replace(/^https?:\/\//,"")
+    ];
+    return new Promise((resolve,reject)=>{
+      let left=proxied.length,done=false;
+      proxied.forEach(u=>{
+        bhResultFetchText(u,3500).then(t=>{
+          if(done)return;
+          if(t&&t.length>200){done=true;resolve(t);return;}
+          if(--left===0&&!done)reject(new Error("official result fetch failed"));
+        }).catch(()=>{if(--left===0&&!done)reject(new Error("official result fetch failed"));});
+      });
+    });
+  }
+
+  /* Vol.238: 公式BOAT RACE結果ページを最優先フォールバックとして追加。
      GitHub CSV / OpenAPI が開催途中に反映遅延・CORS失敗しても、
      公式 racerresult の確定着順を直接読む。既存 fetchTextCors を使うため、
      出走表取得系の fetch 設定には一切触れない。 */
@@ -14409,7 +14441,7 @@ function renderOdds(odds){
     const rno=String(Number(raceNo));
     const target=`https://www.boatrace.jp/owpc/pc/race/raceresult?hd=${hd}&jcd=${jcd}&rno=${rno}`;
     try{
-      const html=await fetchTextCors(target);
+      const html=await bhResultOfficialText(target);
       if(!html||html.length<500)return null;
       const doc=new DOMParser().parseFromString(html,"text/html");
       const fw=s=>String(s||"").replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/\s+/g," ").trim();
@@ -14447,14 +14479,14 @@ function renderOdds(odds){
   }
 
 
-  /* Vol.237: BOAT RACE公式「結果一覧」から3連単確定結果を直接取得。
+  /* Vol.238: BOAT RACE公式「結果一覧」から3連単確定結果を直接取得。
      racerresult個別ページより静的HTMLが単純で、開催途中の結果確認に強い。 */
   async function fetchOfficialResultListRace(date,venue,raceNo){
     const hd=String(date).replaceAll("-","");
     const jcd=String(Number(venue)).padStart(2,"0");
     const target=`https://www.boatrace.jp/owpc/pc/race/resultlist?hd=${hd}&jcd=${jcd}`;
     try{
-      const html=await fetchTextCors(target);
+      const html=await bhResultOfficialText(target);
       if(!html||html.length<500)return null;
       const doc=new DOMParser().parseFromString(html,"text/html");
       const want=Number(raceNo);
@@ -14480,33 +14512,27 @@ function renderOdds(odds){
     }
   }
   async function fetchResultRace(date,venue,raceNo){
-    /* Vol.237: 公式結果一覧を最優先。3連単組番だけで確定着順を復元できる。 */
-    const officialList=await fetchOfficialResultListRace(date,venue,raceNo);
-    if(actualCombo(officialList))return officialList;
-
-    /* 個別公式結果ページ。 */
-    const official=await fetchOfficialResultRace(date,venue,raceNo);
-    if(actualCombo(official))return official;
-
-    /* 次に準リアルタイム結果。 */
-    const realtime=await fetchRealtimeResultRace(date,venue,raceNo);
-    if(actualCombo(realtime))return realtime;
-
-    /* OpenAPIは既存 dayJson をそのまま使用。 */
-    try{
-      const j=await dayJson(date);
-      const r=raceOf(j,venue,raceNo);
-      if(actualCombo(r))return r;
-    }catch(e){}
-
-    /* 払戻CSVから3連単組番を復元。 */
-    const payout=await fetchPayoutConfirmedRace(date,venue,raceNo);
-    if(actualCombo(payout))return payout;
-
-    /* 最後に公式をもう一度確認。 */
-    const officialRetry=await fetchOfficialResultRace(date,venue,raceNo);
-    if(actualCombo(officialRetry))return officialRetry;
-    return null;
+    /* Vol.238: 全取得先を直列待ちしない。
+       公式/CSV/OpenAPIを並列で確認し、確定結果を最初に返す。最大約5秒で必ず終了する。 */
+    const jobs=[
+      ()=>fetchOfficialResultListRace(date,venue,raceNo),
+      ()=>fetchOfficialResultRace(date,venue,raceNo),
+      ()=>fetchRealtimeResultRace(date,venue,raceNo),
+      ()=>fetchPayoutConfirmedRace(date,venue,raceNo),
+      async()=>{try{const j=await dayJson(date);return raceOf(j,venue,raceNo)}catch(e){return null}}
+    ];
+    return await new Promise(resolve=>{
+      let pending=jobs.length,finished=false;
+      const finish=v=>{if(finished)return;finished=true;clearTimeout(limit);resolve(v||null)};
+      const limit=setTimeout(()=>finish(null),5200);
+      jobs.forEach(fn=>{
+        Promise.resolve().then(fn).then(r=>{
+          if(finished)return;
+          if(actualCombo(r))return finish(r);
+          if(--pending===0)finish(null);
+        }).catch(()=>{if(!finished&&--pending===0)finish(null)});
+      });
+    });
   }
 
   async function checkResult(){
@@ -15495,4 +15521,4 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 </body>
 </html>
-<!-- Vol.237: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
+<!-- Vol.238: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
