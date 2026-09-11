@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.248</div>
+  <div class="topVol">Vol.252</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8358,6 +8358,17 @@ body.theme-ladies .venueTimeLegend span{
       <span class="lg lg1">1位</span><span class="lg lg2">2位</span><span class="lg lgLast">最下位</span><span class="lg lgF">F</span>
     </div>
   </section>
+
+<section id="comparePanel" class="comparePanel">
+  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
+    <span><b>6艇 比較表</b><small>平均ST・平均ST順位・モーター3連対率・勝ち方/負け方</small></span>
+    <b id="compareToggleIcon">＋</b>
+  </button>
+  <div id="compareBody" class="compareBody hide">
+    <div class="compareAssist"><span>補助：ST上位・モーター上位を自動強調</span><span>勝ち方/負け方＝同コース直近20走</span></div>
+    <div class="compareScroll"><table class="compareTable"><thead><tr><th>艇</th><th>平均ST</th><th>ST順位</th><th>モーター3連対率</th><th>今コース<br>1着率</th><th>今コース<br>3連対率</th><th>コース別データ</th></tr></thead><tbody id="compareRows"><tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr></tbody></table></div>
+  </div>
+</section>
   <section id="aiPanel" class="aiPanel hide">
     <div class="aiReadyMark">AI</div>
     <div><b id="aiModeTitle">解析データ準備完了</b><small id="aiModeSub">HUNTER解析用データを固定しました</small></div>
@@ -8447,25 +8458,7 @@ body.theme-ladies .venueTimeLegend span{
 #backToTopFromResult{width:100%;margin-top:10px;border:0;border-radius:11px;padding:9px;background:#2b3035;color:#fff;font-weight:900}
 @media(max-width:420px){#resultPanelV248{padding:12px}.rv248Combo{font-size:25px}.rv248Stat strong{font-size:16px}}
 </style>
-<section id="resultPanelV248">
-  <div class="rv248Head">
-    <div id="resultSecretHotspotV248">
-      <div class="rv248Eyebrow">RESULT CHECK</div>
-      <div class="rv248Title">結果確認</div>
-    </div>
-    <div id="resultRaceTitleV248" class="rv248Race">—</div>
-  </div>
-  <button type="button" id="resultFetchBtnV248">このレースの結果を取得</button>
-  <div id="resultStatusV248">結果未取得</div>
-  <div id="resultCurrentV248"></div>
-  <div class="rv248CumTitle">累計成績</div>
-  <div id="resultStatsV248"></div>
-  <div id="resultHistoryV248"></div>
-  <div id="resultResetWrapV248">
-    <button type="button" id="resultResetBtnV248">累計結果をリセット</button>
-  </div>
-  <button type="button" id="backToTopFromResult">↑ 上に戻る</button>
-</section>
+
 
   <section id="outlookPanel" class="outlookPanel hide">
     <div class="outlookHead">
@@ -8530,19 +8523,6 @@ body.theme-ladies .venueTimeLegend span{
     </div>
   </section>
 
-
-  
-<section id="comparePanel" class="comparePanel">
-  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
-    <span><b>6艇 比較表</b><small>平均ST・平均ST順位・モーター3連対率・勝ち方/負け方</small></span>
-    <b id="compareToggleIcon">＋</b>
-  </button>
-  <div id="compareBody" class="compareBody hide">
-    <div class="compareAssist"><span>補助：ST上位・モーター上位を自動強調</span><span>勝ち方/負け方＝同コース直近20走</span></div>
-    <div class="compareScroll"><table class="compareTable"><thead><tr><th>艇</th><th>平均ST</th><th>ST順位</th><th>モーター3連対率</th><th>今コース<br>1着率</th><th>今コース<br>3連対率</th><th>コース別データ</th></tr></thead><tbody id="compareRows"><tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr></tbody></table></div>
-  </div>
-</section>
-
 <section id="simPanel" class="simPanel">
     <div class="simHead">
       <div>
@@ -8595,6 +8575,26 @@ body.theme-ladies .venueTimeLegend span{
   </section>
 
   <div id="cards" class="cards"></div>
+
+<section id="resultPanelV248">
+  <div class="rv248Head">
+    <div id="resultSecretHotspotV248">
+      <div class="rv248Eyebrow">RESULT CHECK</div>
+      <div class="rv248Title">結果確認</div>
+    </div>
+    <div id="resultRaceTitleV248" class="rv248Race">—</div>
+  </div>
+  <button type="button" id="resultFetchBtnV248">このレースの結果を取得</button>
+  <div id="resultStatusV248">結果未取得</div>
+  <div id="resultCurrentV248"></div>
+  <div class="rv248CumTitle">累計成績</div>
+  <div id="resultStatsV248"></div>
+  <div id="resultHistoryV248"></div>
+  <div id="resultResetWrapV248">
+    <button type="button" id="resultResetBtnV248">累計結果をリセット</button>
+  </div>
+  <button type="button" id="backToTopFromResult">↑ 上に戻る</button>
+</section>
 </div>
 </section>
 
@@ -13757,8 +13757,20 @@ function renderOdds(odds){
        頭候補2位以降が無い場合のみ、残り全艇から最上位1艇を選ぶ。 */
     headCandidates.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
-      /* Vol.233: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
-      if(h.oneCourseSecondarySecondOnly){ h.pairCuts={}; return; }
+      /* Vol.233: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。
+         Vol.252: ただし切り候補は、この1号艇頭の2着率＋3着率で独立判定する。 */
+      if(h.oneCourseSecondarySecondOnly){
+        h.pairCuts={};
+        (Array.isArray(h.axisAllRates)?h.axisAllRates:[]).forEach(z=>{
+          const boat=Number(z.boat);
+          if(!boat || boat===Number(h.boat))return;
+          const second=Number(z.second||0);
+          const third=Number(z.third||0);
+          const sum=second+third;
+          if(sum<21.0)h.pairCuts[boat]={boat,second,third,sum};
+        });
+        return;
+      }
       const secondarySet=new Set(headCandidates.filter(x=>Number(x.boat)!==Number(h.boat)).map(x=>Number(x.boat)));
       const allRates=Array.isArray(h.axisAllRates)?h.axisAllRates:[];
       const isPassRace=headCandidateCount>=3;
@@ -13813,8 +13825,21 @@ function renderOdds(odds){
         h.escapeSecondFixedBoats=[];h.escapeSecondFixedRates=[];
         h.passMultiAxis=false;
       }
-      /* 個別切りは廃止。完全切りだけを使用。 */
+      /* Vol.252: 各頭候補ごとに切り候補を完全独立判定。
+         その頭が1着になった条件付き5000回模擬で、各相手艇の
+         「2着率＋3着率」が21.0%未満なら、その頭専用の切り候補。
+         別の頭候補側の数値とは合算・相殺しない。 */
       h.pairCuts={};
+      (Array.isArray(h.axisAllRates)?h.axisAllRates:[]).forEach(z=>{
+        const boat=Number(z.boat);
+        if(!boat || boat===Number(h.boat))return;
+        const second=Number(z.second||0);
+        const third=Number(z.third||0);
+        const sum=second+third;
+        if(sum<21.0){
+          h.pairCuts[boat]={boat,second,third,sum};
+        }
+      });
     });
 
     /* Vol.226: 表示・買い目の主頭は従来どおり頭候補1。
@@ -14048,42 +14073,22 @@ function renderOdds(odds){
                     </div>`).join("")
                   : "なし"}</div>
               </div>
+              ${(()=>{
+                const cuts=Object.values(h.pairCuts||{}).sort((a,b)=>Number(a.sum)-Number(b.sum));
+                if(!cuts.length)return `<div class="pairCutLine"><b>切り候補</b><span>なし</span><em>2着率＋3着率 21%以上</em></div>`;
+                return `<div class="pairCutLine"><b>切り候補</b><span>${cuts.map(c=>`${c.boat}号艇`).join("・")}</span><em>${cuts.map(c=>`${c.boat}号艇 ${Number(c.second).toFixed(1)}+${Number(c.third).toFixed(1)}=${Number(c.sum).toFixed(1)}%`).join(" / ")}</em></div>`;
+              })()}
             </div>`;
           }).join("")}
         </div>`;
     }
 
     cut.classList.remove("hide");
-    if(p.cutBoat && p.cutInfo){
-      cut.innerHTML=`
-        <div class="simplePickLabel">切り艇 <span class="pickExplain">条件外</span></div>
-        <div class="simplePickMain">${simpleBoatText(p.cutBoat)}
-          <div class="simplePickSub">
-            世間${p.cutInfo.marketRank}位 / HUNTER${p.cutInfo.hunterRank}位 ・
-            1着${p.cutInfo.p1.toFixed(1)}% / 2着${p.cutInfo.p2.toFixed(1)}% / 3着${p.cutInfo.p3.toFixed(1)}%
-          </div>
-        </div>`;
-    }else{
-      cut.innerHTML=`
-        <div class="simplePickLabel">切り艇 <span class="pickExplain">該当なし</span></div>
-        <div class="simplePickMain">なし
-          <div class="simplePickSub">条件該当なし</div>
-        </div>`;
-    }
-    /* 最終防御：頭/軸と切り艇が重なった場合は切り表示を消す */
-    const protectedFinal=new Set([
-      ...(p.headCandidates||p.heads||[]).map(x=>Number(x.boat)),
-      ...(p.headCandidates||p.heads||[]).flatMap(x=>Array.isArray(x.axisBoats)&&x.axisBoats.length?x.axisBoats:[x.axisBoat]).map(Number).filter(Boolean)
-    ]);
-    if(p.cutBoat && protectedFinal.has(Number(p.cutBoat))){
-      p.cutBoat=null;
-      p.cutInfo=null;
-      cut.innerHTML=`
-        <div class="simplePickLabel">切り艇 <span class="pickExplain">該当なし</span></div>
-        <div class="simplePickMain">なし
-          <div class="simplePickSub">頭候補・軸候補を優先</div>
-        </div>`;
-    }
+    cut.innerHTML=`
+      <div class="simplePickLabel">切り候補 <span class="pickExplain">頭候補ごとに個別判定</span></div>
+      <div class="simplePickMain">各軸候補内に表示
+        <div class="simplePickSub">その頭が1着時の「2着率＋3着率」が21.0%未満の艇だけを、その頭専用の切り候補として表示。頭候補間ではまとめません。</div>
+      </div>`;
 
     window.__HUNTER_SIMPLE_PICK=p;
     renderRankingCompare();
@@ -14122,7 +14127,9 @@ function renderOdds(odds){
         escapeSecondFixedRates:Array.isArray(x.escapeSecondFixedRates)?x.escapeSecondFixedRates.map(Number):[],
         axisFromHeadCandidate:!!x.axisFromHeadCandidate,
         passMultiAxis:!!x.passMultiAxis,
-        pairCuts:{},
+        pairCuts:Object.fromEntries(Object.entries(x.pairCuts||{}).map(([k,v])=>[k,{
+          boat:Number(v.boat||k),second:Number(v.second||0),third:Number(v.third||0),sum:Number(v.sum||0)
+        }])) ,
         attackPromotion:!!x.attackPromotion,
         attackRate:Number(x.attackRate||0),
         exGap:Number(x.exGap||0)
@@ -14144,6 +14151,22 @@ function renderOdds(odds){
   /* ===== Vol.248 新・結果確認エンジン =====
      旧結果コードは一切流用しない。BoatraceCSVの realtime / payouts のみで完結する。 */
   const RESULT_STORE_KEY_V248="BH_RESULT_CUMULATIVE_V1";
+  const RESULT_DAY_KEY_V250="BH_RESULT_DISPLAY_DAY_V250";
+  function rv250LocalToday(){
+    const d=new Date();
+    const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  function rv250PrepareDailyView(){
+    const today=rv250LocalToday();
+    const prev=localStorage.getItem(RESULT_DAY_KEY_V250);
+    if(prev!==today){
+      localStorage.setItem(RESULT_DAY_KEY_V250,today);
+      const cur=$("resultCurrentV248"); if(cur)cur.innerHTML="";
+      const st=$("resultStatusV248"); if(st)st.textContent="結果未取得";
+    }
+    return today;
+  }
 
   function rv248RaceCode(){
     const ymd=String($("date")?.value||"").replaceAll("-","");
@@ -14234,8 +14257,14 @@ function renderOdds(odds){
         axisHit=regular.map(Number).includes(second)||regular.map(Number).includes(third);
       }
     }
-    const cutBoat=Number(pred.cutBoat||0);
-    const cutHit=cutBoat ? ![first,second,third].includes(cutBoat) : null;
+    /* Vol.252: 切り艇評価も頭候補ごとに独立。
+       実際に1着になった頭候補の pairCuts だけを評価し、
+       その頭専用の切り候補が全て3着外なら「切り艇的中」。 */
+    let cutHit=null;
+    if(winnerHead){
+      const cuts=Object.values(winnerHead.pairCuts||{}).map(v=>Number(v?.boat||0)).filter(Boolean);
+      if(cuts.length)cutHit=cuts.every(b=>![first,second,third].includes(b));
+    }
     return {
       headHit,axisHit,cutHit,
       excluded:!!pred.excludedFromResults,
@@ -14268,7 +14297,9 @@ function renderOdds(odds){
       <div class="rv248Stat"><strong>${h.pct}</strong><small>頭 ${h.hit}/${h.total}R</small></div>
       <div class="rv248Stat"><strong>${a.pct}</strong><small>軸 ${a.hit}/${a.total}R</small></div>
       <div class="rv248Stat"><strong>${c.pct}</strong><small>切り艇 ${c.hit}/${c.total}R</small></div>`;
-    hist.innerHTML=records.slice(0,8).map(r=>{
+    const today=rv250PrepareDailyView();
+    const dailyRecords=records.filter(r=>String(r.date||"")===today);
+    hist.innerHTML=dailyRecords.slice(0,8).map(r=>{
       const e=r.evaluation||{};
       const icon=v=>v===true?"○":v===false?"×":"－";
       return `<div class="rv248Hist">
@@ -14276,7 +14307,7 @@ function renderOdds(odds){
         <div><span class="combo">${r.combo||"—"}</span><br><small>${Number(r.multiple||0)>0?Number(r.multiple).toFixed(1)+"倍":"—"}</small></div>
         <div class="eval">頭${icon(e.headHit)} 軸${icon(e.axisHit)} 切${icon(e.cutHit)}${r.excluded?"<br><small>集計外</small>":""}</div>
       </div>`;
-    }).join("") || `<div style="color:#76848e;font-size:11px;padding:4px 2px">保存済み結果なし</div>`;
+    }).join("") || `<div style="color:#76848e;font-size:11px;padding:4px 2px">今日の保存済み結果なし</div>`;
   }
   function rv248RenderRaceLabel(){
     const el=$("resultRaceTitleV248"); if(el)el.textContent=currentRaceLabel();
@@ -14354,7 +14385,12 @@ function renderOdds(odds){
   $("resultFetchBtnV248")?.addEventListener("click",rv248FetchCurrentResult);
   $("stadium")?.addEventListener("change",rv248RenderRaceLabel);
   $("race")?.addEventListener("change",rv248RenderRaceLabel);
-  $("date")?.addEventListener("change",rv248RenderRaceLabel);
+  $("date")?.addEventListener("change",()=>{
+    rv248RenderRaceLabel();
+    const cur=$("resultCurrentV248"); if(cur)cur.innerHTML="";
+    const st=$("resultStatusV248"); if(st)st.textContent="結果未取得";
+    rv248RenderStats();
+  });
 
   /* リセットは通常非表示。RESULT CHECKタイトルを約1.3秒長押しした時だけ10秒間表示。 */
   let rv248HoldTimer=null, rv248HideTimer=null;
@@ -14383,6 +14419,7 @@ function renderOdds(odds){
   });
 
   window.fetchHunterResultV248=rv248FetchCurrentResult;
+  rv250PrepareDailyView();
   rv248RenderRaceLabel();
   rv248RenderStats();
 
@@ -15208,3 +15245,32 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 
 </body>
 </html>
+
+<!-- Vol.250 RESULT CHECK visibility override: presentation only -->
+<style>
+/* RESULT CHECK: contrast/readability only. No logic changes. */
+#resultCheckSection .result-eval.hit,
+#resultCheckSection .hit,
+.result-check .result-eval.hit,
+.result-check .hit { color:#fff !important; }
+#resultCheckSection .result-eval.miss,
+.result-check .result-eval.miss { color:#fff !important; }
+#resultCheckSection .result-eval.none,
+.result-check .result-eval.none { color:#fff !important; }
+#resultCheckSection .result-stat,
+#resultCheckSection .result-history,
+#resultCheckSection .result-history *,
+.result-check .result-stat,
+.result-check .result-history,
+.result-check .result-history * { color:#fff !important; }
+#resultCheckSection .result-history .sub,
+.result-check .result-history .sub { color:#f2f2f2 !important; }
+#resultCheckSection .result-total-title,
+.result-check .result-total-title { color:#8d174d !important; opacity:1 !important; }
+
+/* Vol.252 頭候補ごとの独立切り候補 */
+.pairCutLine{margin-top:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.24);border-radius:10px;background:rgba(28,10,20,.82);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;color:#fff}
+.pairCutLine>b{font-size:12px;color:#ffd4e3}
+.pairCutLine>span{font-size:14px;font-weight:900;color:#fff}
+.pairCutLine>em{width:100%;font-style:normal;font-size:11px;line-height:1.45;color:#f7dfe8}
+</style>
