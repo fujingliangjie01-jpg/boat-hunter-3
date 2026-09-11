@@ -7224,10 +7224,10 @@ body.theme-ladies .venueTimeLegend span{
 
 </style>
 <!-- Vol.215 BOAT HUNTER app icon -->
-<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=218">
-<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=218">
-<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=218">
-<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=218">
+<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=219">
+<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=219">
+<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=219">
+<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=219">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
 <meta name="application-name" content="BOAT HUNTER">
 
@@ -7254,12 +7254,12 @@ body.theme-ladies .venueTimeLegend span{
   pointer-events:none!important;
   z-index:0!important;
 }
-#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=218")!important}
-#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=218")!important}
-#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=218")!important}
-#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=218")!important}
-#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=218")!important}
-#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=218")!important}
+#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=219")!important}
+#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=219")!important}
+#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=219")!important}
+#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=219")!important}
+#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=219")!important}
+#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=219")!important}
 
 /* keep text / badges / plus button above artwork */
 #cards .card .row,
@@ -8271,6 +8271,14 @@ body.theme-ladies .venueTimeLegend span{
   letter-spacing:.04em!important;
 }
 </style>
+
+<style id="bh-vol219-pass-heads">
+/* Vol.219 見推奨でも頭候補を全表示 */
+#simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateGrid{display:grid!important;gap:10px!important}
+#simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateRow{display:grid!important}
+#simplePickPanel[data-pass-race="1"] #simpleHeadPick .bh219PrimaryHead{outline:3px solid #f0b21b!important;box-shadow:0 0 0 4px rgba(240,178,27,.14)!important}
+.bh219PrimaryBadge{display:inline-block;padding:2px 7px;border-radius:999px;background:#8b1550;color:#fff;font-size:11px;font-weight:1000;vertical-align:1px}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -8281,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.218</div>
+  <div class="topVol">Vol.219</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13212,7 +13220,7 @@ function renderOdds(odds){
       })
       .slice(0,4);
 
-    /* Vol.218: 頭候補1 決定スコア（100点）
+    /* Vol.219: 頭候補1 決定スコア（100点）
        頭候補フィルターを通過した艇だけを再比較する。
        SIM1着率だけで決めず、1M先制・攻撃力を最重視する。
 
@@ -13457,7 +13465,7 @@ function renderOdds(odds){
         h.secondCandidateRates=[Number(pick.second||0)];
         h.axisFromHeadCandidate=secondarySet.has(boat);
         h.oneCourseEscapeRule=Number(headRow?.course||0)===1;
-        /* Vol.218:
+        /* Vol.219:
            主軸1艇は必ず「頭-軸-○ / 頭-○-軸」で折り返す。
            さらに1コース逃げ（主頭が1コース）の時だけ、主軸以外で
            条件付き2着率22%以上の艇を「頭-○-艇」の3着固定で追加する。 */
@@ -13592,13 +13600,18 @@ function renderOdds(odds){
         </div>`;
       axis.classList.add("hide");
     }else{
+      /* Vol.219: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
+         フィルター通過した頭候補を全艇表示する。買い目の主頭は p.heads[0] のまま。 */
+      const displayHeads=(Number(p.headCandidateCount||0)>=3 && Array.isArray(p.headCandidates) && p.headCandidates.length)
+        ? p.headCandidates
+        : p.heads;
       head.innerHTML=`
-        <div class="simplePickLabel">頭 <span class="pickExplain">頭候補${Number(p.headCandidateCount||0)}艇から主頭1艇</span></div>
+        <div class="simplePickLabel">${Number(p.headCandidateCount||0)>=3?'頭候補':'頭'} <span class="pickExplain">${Number(p.headCandidateCount||0)>=3?`見推奨・候補${Number(p.headCandidateCount||0)}艇を全表示`:`頭候補${Number(p.headCandidateCount||0)}艇から主頭1艇`}</span></div>
         <div class="headCandidateGrid">
-          ${p.heads.map(h=>`
-            <div class="headCandidateRow headHoldBlock" data-head-boat="${h.boat}">
+          ${displayHeads.map((h,idx)=>`
+            <div class="headCandidateRow headHoldBlock ${idx===0?'bh219PrimaryHead':''}" data-head-boat="${h.boat}">
               <div class="headHoldTarget" title="長押しで他艇の率">${simpleBoatText(h.boat)}</div>
-              <span class="headMeta">決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
+              <span class="headMeta">${Number(p.headCandidateCount||0)>=3 && idx===0?'<b class="bh219PrimaryBadge">主頭</b> ':''}決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
                 h.f2BehindPromotion
                   ? ` <b class="f2BehindBadge">F${h.f2InnerCount}後ろ攻め</b>`
                   : h.attackPromotion
@@ -14030,7 +14043,7 @@ function renderOdds(odds){
           : [];
       const axisShown=matchedAxisBoats.length>0;
 
-      /* Vol.218 結果確認：
+      /* Vol.219 結果確認：
          主軸1艇は2着/3着の折り返し。
          1コース逃げ限定で追加した「軸以外・2着率22%以上」は3着固定として照合する。 */
       const axisMode=matchedHead?.axisPlacementMode||"both";
