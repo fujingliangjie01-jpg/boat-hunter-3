@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.228</div>
+  <div class="topVol">Vol.229</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13539,6 +13539,52 @@ function renderOdds(odds){
       Number(a.hunterRank||9)-Number(b.hunterRank||9) ||
       Number(b.p1||0)-Number(a.p1||0)
     );
+
+    /* Vol.229: 1C 50%残留を最終段で保証。
+       途中の頭候補生成・昇格・並び替えで消えるケースを禁止する。
+       条件は画面のHUNTERランキングと同じp1を使う。
+       p1>=50.0 / HUNTER2位以内 / 世間2位以内。
+       他艇が負け筋一致・攻め昇格で主頭になっている場合、1号艇は主頭を奪わず2位以降へ残す。 */
+    {
+      const oneFinalRow=evalRows.find(x=>Number(x.course)===1)||evalRows.find(x=>Number(x.boat)===1)||null;
+      const keepOne=!!(
+        oneFinalRow &&
+        Number(oneFinalRow.p1||0)>=50.0 &&
+        Number(oneFinalRow.hunterRank)<=2 &&
+        Number(oneFinalRow.marketRank)<=2
+      );
+
+      if(keepOne){
+        let oneHead=heads.find(h=>Number(h.boat)===Number(oneFinalRow.boat));
+        if(!oneHead){
+          oneHead=toHead(oneFinalRow,{oneCourse50Retention:true});
+          const sc=bh218ScoreHead(oneHead);
+          oneHead.headDecisionScore=sc.total;
+          oneHead.headDecisionBreakdown=sc;
+          heads.push(oneHead);
+        }
+        oneHead.oneCourse50Retention=true;
+
+        // 1号艇以外に「主頭へ昇格する明確な根拠」がある場合、その艇を先頭に固定。
+        const promotedOther=heads
+          .filter(h=>Number(h.boat)!==Number(oneFinalRow.boat))
+          .filter(h=>h.lossMatchPromotion || h.attackPromotion || h.f2BehindPromotion || h.secondConsensusPromotion)
+          .sort((a,b)=>
+            Number(b.headDecisionScore||0)-Number(a.headDecisionScore||0) ||
+            Number(a.hunterRank||9)-Number(b.hunterRank||9) ||
+            Number(b.p1||0)-Number(a.p1||0)
+          )[0]||null;
+
+        if(promotedOther){
+          heads=heads.filter(h=>Number(h.boat)!==Number(promotedOther.boat) && Number(h.boat)!==Number(oneFinalRow.boat));
+          heads.unshift(promotedOther,oneHead);
+        }else{
+          // 通常時は既存の主頭順位を維持しつつ、1号艇が消えないことだけ保証。
+          const idx=heads.findIndex(h=>Number(h.boat)===Number(oneFinalRow.boat));
+          if(idx<0)heads.push(oneHead);
+        }
+      }
+    }
 
     const headCandidates=[...heads];
     const headCandidateCount=headCandidates.length;
