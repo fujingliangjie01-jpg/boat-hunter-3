@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.252</div>
+  <div class="topVol">Vol.253</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15243,6 +15243,89 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 
 
+
+<!-- Vol.253: 切り候補の視認性改善 + 結果確認をページ最下部へ固定 -->
+<style id="bh-vol253-cut-visibility">
+/* 各頭候補ごとの切り候補をスマホでも確実に読めるようにする */
+#simpleAxisPick .pairCutLine{
+  margin-top:10px!important;
+  padding:10px 12px!important;
+  border:2px solid #e85f9e!important;
+  border-radius:12px!important;
+  background:#fff7fb!important;
+  box-shadow:0 2px 8px rgba(109,20,66,.10)!important;
+  color:#5a1737!important;
+  display:grid!important;
+  grid-template-columns:auto 1fr!important;
+  gap:5px 10px!important;
+  align-items:center!important;
+  opacity:1!important;
+}
+#simpleAxisPick .pairCutLine>b{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:#9b1f58!important;
+  color:#fff!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:1000!important;
+  opacity:1!important;
+}
+#simpleAxisPick .pairCutLine>span{
+  color:#7b1745!important;
+  font-size:15px!important;
+  line-height:1.25!important;
+  font-weight:1000!important;
+  opacity:1!important;
+  white-space:normal!important;
+}
+#simpleAxisPick .pairCutLine>em{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  margin-top:2px!important;
+  padding-top:6px!important;
+  border-top:1px solid #efbdd5!important;
+  color:#4b2437!important;
+  font-size:12px!important;
+  line-height:1.55!important;
+  font-style:normal!important;
+  font-weight:850!important;
+  opacity:1!important;
+}
+/* 下段の総括切り候補も潰れないようにする */
+#simpleCutPick{
+  background:#fff8fb!important;
+  border:2px solid #d95b95!important;
+  color:#5d1738!important;
+}
+#simpleCutPick .simplePickLabel,
+#simpleCutPick .simplePickMain,
+#simpleCutPick .simplePickSub{
+  color:#5d1738!important;
+  opacity:1!important;
+}
+@media(max-width:520px){
+  #simpleAxisPick .pairCutLine{padding:9px 10px!important}
+  #simpleAxisPick .pairCutLine>span{font-size:14px!important}
+  #simpleAxisPick .pairCutLine>em{font-size:11px!important}
+}
+</style>
+<script id="bh-vol253-result-bottom">
+(()=>{
+  function moveResultToBottom(){
+    const result=document.getElementById('resultPanelV248');
+    const wrap=document.querySelector('.wrap');
+    if(!result||!wrap)return;
+    if(wrap.lastElementChild!==result)wrap.appendChild(result);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',moveResultToBottom,{once:true});
+  else moveResultToBottom();
+  window.addEventListener('load',moveResultToBottom,{once:true});
+})();
+</script>
 </body>
 </html>
 
