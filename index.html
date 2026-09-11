@@ -7224,10 +7224,10 @@ body.theme-ladies .venueTimeLegend span{
 
 </style>
 <!-- Vol.215 BOAT HUNTER app icon -->
-<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=219">
-<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=219">
-<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=219">
-<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=219">
+<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=221">
+<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=221">
+<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=221">
+<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=221">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
 <meta name="application-name" content="BOAT HUNTER">
 
@@ -7254,12 +7254,12 @@ body.theme-ladies .venueTimeLegend span{
   pointer-events:none!important;
   z-index:0!important;
 }
-#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=219")!important}
-#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=219")!important}
-#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=219")!important}
-#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=219")!important}
-#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=219")!important}
-#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=219")!important}
+#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=221")!important}
+#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=221")!important}
+#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=221")!important}
+#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=221")!important}
+#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=221")!important}
+#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=221")!important}
 
 /* keep text / badges / plus button above artwork */
 #cards .card .row,
@@ -8273,7 +8273,7 @@ body.theme-ladies .venueTimeLegend span{
 </style>
 
 <style id="bh-vol219-pass-heads">
-/* Vol.219 見推奨でも頭候補を全表示 */
+/* Vol.221 見推奨でも頭候補を全表示 */
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateGrid{display:grid!important;gap:10px!important}
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateRow{display:grid!important}
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .bh219PrimaryHead{outline:3px solid #f0b21b!important;box-shadow:0 0 0 4px rgba(240,178,27,.14)!important}
@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.219</div>
+  <div class="topVol">Vol.221</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8303,7 +8303,7 @@ body.theme-ladies .venueTimeLegend span{
 
 <section id="main" class="hide">
 <div class="wrap">
-  <div class="head"><h2>出走表</h2><button type="button" id="back">トップへ</button></div>
+  <div class="head bh221Head"><h2>出走表</h2><div id="bh221RaceTicker" class="bh221RaceTicker" aria-live="polite"><div class="bh221NextLine"><span class="bh221Label">NEXT</span><span id="bh221NextRaces">取得中…</span></div><div id="bh221SpecialLine" class="bh221SpecialLine"></div></div><button type="button" id="back">トップへ</button></div>
   <div class="controls racePanel">
     <input id="date" type="hidden">
     <div class="selectCard"><div class="selectEyebrow">VENUE</div><div class="selectLabel">開催場</div><select id="stadium" aria-label="開催場選択"></select><div class="venueTimeLegend"><span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span></div></div>
@@ -13220,7 +13220,7 @@ function renderOdds(odds){
       })
       .slice(0,4);
 
-    /* Vol.219: 頭候補1 決定スコア（100点）
+    /* Vol.221: 頭候補1 決定スコア（100点）
        頭候補フィルターを通過した艇だけを再比較する。
        SIM1着率だけで決めず、1M先制・攻撃力を最重視する。
 
@@ -13436,55 +13436,68 @@ function renderOdds(odds){
     });
 
 
-    /* V215: 軸候補は1艇だけ。
-       頭候補2位以降が存在する場合は、その中から主頭成立時の
-       条件付き2着率+3着率が最も高い艇を優先する。
-       頭候補2位以降が無い場合は、残り全艇から同基準で1艇を選ぶ。
-       軸候補の最上位1艇は必ず折り返し対象とし、
-       「頭-軸-○」「頭-○-軸」の両方を採用する。 */
+    /* Vol.221 軸候補ルール
+       通常：頭候補2位以降から最上位1艇だけを軸候補にする。
+       見推奨（頭候補3艇以上）：頭候補2位以降をすべて軸候補として表示し、
+       それぞれ「頭-軸-○」「頭-○-軸」の両方を採用する。
+       頭候補2位以降が無い場合のみ、残り全艇から最上位1艇を選ぶ。 */
     heads.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
       const secondarySet=new Set(headCandidates.slice(1).map(x=>Number(x.boat)));
       const allRates=Array.isArray(h.axisAllRates)?h.axisAllRates:[];
-      let pool=allRates.filter(z=>secondarySet.has(Number(z.boat)));
-      if(!pool.length)pool=[...allRates];
-      pool=pool
-        .filter(z=>Number(z.boat)!==Number(h.boat))
+      const isPassRace=headCandidateCount>=3;
+
+      let secondaryPool=allRates
+        .filter(z=>secondarySet.has(Number(z.boat)) && Number(z.boat)!==Number(h.boat))
         .sort((a,b)=>(Number(b.second||0)+Number(b.third||0))-(Number(a.second||0)+Number(a.third||0)) || Number(b.total||0)-Number(a.total||0));
 
-      const pick=pool[0]||null;
+      let selected=[];
+      if(isPassRace && secondaryPool.length){
+        // 見推奨時は頭候補2位以降を全艇、軸候補として残す。
+        // 表示順は頭候補順位そのものを優先する。
+        const rankMap=new Map(headCandidates.slice(1).map((x,i)=>[Number(x.boat),i]));
+        selected=[...secondaryPool].sort((a,b)=>(rankMap.get(Number(a.boat))??99)-(rankMap.get(Number(b.boat))??99));
+      }else if(secondaryPool.length){
+        selected=[secondaryPool[0]];
+      }else{
+        const fallback=[...allRates]
+          .filter(z=>Number(z.boat)!==Number(h.boat))
+          .sort((a,b)=>(Number(b.second||0)+Number(b.third||0))-(Number(a.second||0)+Number(a.third||0)) || Number(b.total||0)-Number(a.total||0));
+        if(fallback[0])selected=[fallback[0]];
+      }
+
+      const pick=selected[0]||null;
       if(pick){
-        const boat=Number(pick.boat);
-        h.axisBoat=boat;
-        h.axisBoats=[boat];
+        h.axisBoat=Number(pick.boat);
+        h.axisBoats=selected.map(z=>Number(z.boat));
         h.axisRate=Number(pick.total||0);
-        h.axisRates=[Number(pick.total||0)];
-        h.axisSecondRates=[Number(pick.second||0)];
-        h.axisThirdRates=[Number(pick.third||0)];
-        h.secondCandidateBoats=[boat];
-        h.secondCandidateRates=[Number(pick.second||0)];
-        h.axisFromHeadCandidate=secondarySet.has(boat);
-        h.oneCourseEscapeRule=Number(headRow?.course||0)===1;
-        /* Vol.219:
-           主軸1艇は必ず「頭-軸-○ / 頭-○-軸」で折り返す。
-           さらに1コース逃げ（主頭が1コース）の時だけ、主軸以外で
-           条件付き2着率22%以上の艇を「頭-○-艇」の3着固定で追加する。 */
+        h.axisRates=selected.map(z=>Number(z.total||0));
+        h.axisSecondRates=selected.map(z=>Number(z.second||0));
+        h.axisThirdRates=selected.map(z=>Number(z.third||0));
+        h.secondCandidateBoats=h.axisBoats.slice();
+        h.secondCandidateRates=h.axisSecondRates.slice();
+        h.axisFromHeadCandidate=true;
         h.axisPlacementMode='both';
+        h.oneCourseEscapeRule=Number(headRow?.course||0)===1;
+        h.passMultiAxis=!!isPassRace;
+
         h.escapeThirdFixedBoats=[];
         h.escapeThirdFixedRates=[];
         if(h.oneCourseEscapeRule){
+          const selectedSet=new Set(h.axisBoats.map(Number));
           const extraThird=allRates
-            .filter(z=>Number(z.boat)!==boat && Number(z.boat)!==Number(h.boat) && Number(z.second||0)>=22.0)
+            .filter(z=>!selectedSet.has(Number(z.boat)) && Number(z.boat)!==Number(h.boat) && Number(z.second||0)>=22.0)
             .sort((a,b)=>Number(b.second||0)-Number(a.second||0));
           h.escapeThirdFixedBoats=extraThird.map(z=>Number(z.boat));
           h.escapeThirdFixedRates=extraThird.map(z=>Number(z.second||0));
         }
       }else{
-        h.axisBoat=null;h.axisBoats=[];h.secondCandidateBoats=[];
+        h.axisBoat=null;h.axisBoats=[];h.axisRates=[];h.axisSecondRates=[];h.axisThirdRates=[];h.secondCandidateBoats=[];
         h.axisPlacementMode='none';
         h.escapeThirdFixedBoats=[];h.escapeThirdFixedRates=[];
+        h.passMultiAxis=false;
       }
-      /* V215: 個別切りは廃止。完全切りだけを使用。 */
+      /* 個別切りは廃止。完全切りだけを使用。 */
       h.pairCuts={};
     });
 
@@ -13600,7 +13613,7 @@ function renderOdds(odds){
         </div>`;
       axis.classList.add("hide");
     }else{
-      /* Vol.219: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
+      /* Vol.221: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
          フィルター通過した頭候補を全艇表示する。買い目の主頭は p.heads[0] のまま。 */
       const displayHeads=(Number(p.headCandidateCount||0)>=3 && Array.isArray(p.headCandidates) && p.headCandidates.length)
         ? p.headCandidates
@@ -13651,7 +13664,7 @@ function renderOdds(odds){
 
       axis.classList.remove("hide");
       axis.innerHTML=`
-        <div class="simplePickLabel">軸候補 <span class="pickExplain">頭候補2位以降優先・1艇選定</span></div>
+        <div class="simplePickLabel">軸候補 <span class="pickExplain">${Number(p.headCandidateCount||0)>=3?"見推奨：頭候補2位以降を全艇表示":"頭候補2位以降優先・1艇選定"}</span></div>
         <div class="headAxisGrid">
           ${p.heads.map((h,headIndex)=>{
             const allSecond=Array.isArray(h.secondCandidateBoats)&&h.secondCandidateBoats.length
@@ -13780,6 +13793,7 @@ function renderOdds(odds){
         escapeThirdFixedBoats:Array.isArray(x.escapeThirdFixedBoats)?x.escapeThirdFixedBoats.map(Number):[],
         escapeThirdFixedRates:Array.isArray(x.escapeThirdFixedRates)?x.escapeThirdFixedRates.map(Number):[],
         axisFromHeadCandidate:!!x.axisFromHeadCandidate,
+        passMultiAxis:!!x.passMultiAxis,
         pairCuts:{},
         attackPromotion:!!x.attackPromotion,
         attackRate:Number(x.attackRate||0),
@@ -14043,7 +14057,7 @@ function renderOdds(odds){
           : [];
       const axisShown=matchedAxisBoats.length>0;
 
-      /* Vol.219 結果確認：
+      /* Vol.221 結果確認：
          主軸1艇は2着/3着の折り返し。
          1コース逃げ限定で追加した「軸以外・2着率22%以上」は3着固定として照合する。 */
       const axisMode=matchedHead?.axisPlacementMode||"both";
@@ -14811,6 +14825,111 @@ updateMainHistory=function(rr,map){
  document.addEventListener("DOMContentLoaded",()=>setTimeout(apply,300));
  setTimeout(apply,1000);
  window.__bhBindFinalPickV201=apply;
+})();
+</script>
+
+<style id="bh221-next-race-style">
+/* ===== Vol.221 出走表横：全国NEXT3 + SG/LADIES専用 ===== */
+.bh221Head{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important}
+.bh221Head>h2{flex:0 0 auto!important;margin-right:2px!important}
+.bh221RaceTicker{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:2px;line-height:1.15;font-size:10px;font-weight:900;letter-spacing:0;overflow:hidden}
+.bh221NextLine,.bh221SpecialLine{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bh221Label{font-size:8px;letter-spacing:.08em;opacity:.62;flex:0 0 auto}
+#bh221NextRaces,#bh221SpecialLine{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.bh221RaceLink{appearance:none;border:0;background:transparent;padding:1px 2px;margin:0;color:inherit;font:inherit;font-weight:950;line-height:1.2;border-radius:4px;cursor:pointer;vertical-align:baseline}
+.bh221RaceLink:active{transform:scale(.97);opacity:.72}
+.bh221Sep{opacity:.28;margin:0 1px}
+.bh221Sg{color:#b57a00!important;background:rgba(255,205,64,.12)!important}
+.bh221Ladies{color:#c72b74!important;background:rgba(255,80,154,.10)!important}
+body.theme-sg .bh221RaceTicker{color:#5b3a00}
+body.theme-ladies .bh221RaceTicker{color:#8f2457}
+@media(max-width:520px){
+ .bh221Head{gap:6px!important}
+ .bh221Head>h2{font-size:24px!important}
+ .bh221RaceTicker{font-size:9px}
+ .bh221Label{font-size:7px}
+ .bh221RaceLink{padding:1px}
+}
+</style>
+<script id="bh221-next-race-script">
+(()=>{
+ const V=221;
+ const VENUES={1:'桐生',2:'戸田',3:'江戸川',4:'平和島',5:'多摩川',6:'浜名湖',7:'蒲郡',8:'常滑',9:'津',10:'三国',11:'びわこ',12:'住之江',13:'尼崎',14:'鳴門',15:'丸亀',16:'児島',17:'宮島',18:'徳山',19:'下関',20:'若松',21:'芦屋',22:'福岡',23:'唐津',24:'大村'};
+ let cache=null,cacheAt=0,timer=0;
+ const $=id=>document.getElementById(id);
+ function dateStr(){return String($('date')?.value||new Date(Date.now()+32400000).toISOString().slice(0,10));}
+ function api(){const y=dateStr().replaceAll('-','');return `https://boatraceopenapi.github.io/api/v1/${y.slice(0,4)}/${y}.json`;}
+ function getRace(j,venue,rn){
+   const sts=j?.programs?.stadiums||j?.stadiums||{};
+   const st=sts?.[String(venue)]||sts?.[String(Number(venue)).padStart(2,'0')];
+   const rs=st?.races||{};
+   return rs?.[String(rn)]||rs?.[String(Number(rn)).padStart(2,'0')]||null;
+ }
+ function themeOf(r){
+   try{return typeof raceTheme==='function'?raceTheme(r):'normal'}catch(e){return 'normal'}
+ }
+ function raceTime(r){
+   const raw=r?.closed_at||r?.close_at||r?.deadline_at||r?.start_at||'';
+   const t=Date.parse(String(raw));
+   return Number.isFinite(t)?t:null;
+ }
+ function hhmm(t){
+   const d=new Date(t);
+   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+ }
+ function allUpcoming(j){
+   const now=Date.now(),out=[];
+   for(let v=1;v<=24;v++){
+     if(!VENUES[v])continue;
+     for(let rn=1;rn<=12;rn++){
+       const r=getRace(j,v,rn);if(!r)continue;
+       const t=raceTime(r);if(t==null||t<=now)continue;
+       out.push({venue:v,name:VENUES[v],race:rn,time:t,theme:themeOf(r)});
+     }
+   }
+   return out.sort((a,b)=>a.time-b.time||a.venue-b.venue||a.race-b.race);
+ }
+ function jump(x){
+   const vs=$('stadium'),rs=$('race');if(!vs||!rs)return;
+   vs.value=String(Number(x.venue));
+   try{vs.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+   const apply=()=>{
+     rs.value=String(Number(x.race));
+     try{rs.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+     try{document.querySelector('.racePanel')?.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
+   };
+   setTimeout(apply,180);setTimeout(apply,700);
+ }
+ function btn(x,cls=''){
+   const b=document.createElement('button');b.type='button';b.className=`bh221RaceLink ${cls}`.trim();
+   b.textContent=`${x.name}${hhmm(x.time)}`;b.title=`${x.name} ${x.race}R ${hhmm(x.time)}`;b.onclick=()=>jump(x);return b;
+ }
+ function sep(){const s=document.createElement('span');s.className='bh221Sep';s.textContent='｜';return s;}
+ function render(j){
+   const next=$('bh221NextRaces'),special=$('bh221SpecialLine');if(!next||!special)return;
+   const all=allUpcoming(j),top=all.slice(0,3);
+   next.innerHTML='';
+   if(!top.length){next.textContent='本日終了';}
+   else top.forEach((x,i)=>{if(i)next.appendChild(sep());next.appendChild(btn(x));});
+   special.innerHTML='';
+   const sg=all.find(x=>x.theme==='sg');
+   const ld=all.find(x=>x.theme==='ladies');
+   if(sg){const lab=document.createElement('span');lab.className='bh221Label';lab.textContent='SG';special.appendChild(lab);special.appendChild(btn(sg,'bh221Sg'));}
+   if(ld){if(sg)special.appendChild(sep());const lab=document.createElement('span');lab.className='bh221Label';lab.textContent='LADIES';special.appendChild(lab);special.appendChild(btn(ld,'bh221Ladies'));}
+   special.style.display=(sg||ld)?'flex':'none';
+ }
+ async function load(force=false){
+   try{
+     if(!force&&cache&&Date.now()-cacheAt<30000){render(cache);return;}
+     const r=await fetch(api(),{cache:'no-store'});if(!r.ok)throw Error(String(r.status));
+     cache=await r.json();cacheAt=Date.now();render(cache);
+   }catch(e){const n=$('bh221NextRaces');if(n)n.textContent='—';}
+ }
+ function start(){clearInterval(timer);load(true);timer=setInterval(()=>load(true),30000);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+ $('date')?.addEventListener('change',()=>{cache=null;cacheAt=0;load(true)});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(true)});
+ window.BH_VOL221_NEXT={version:V,refresh:()=>load(true)};
 })();
 </script>
 
