@@ -7224,10 +7224,10 @@ body.theme-ladies .venueTimeLegend span{
 
 </style>
 <!-- Vol.215 BOAT HUNTER app icon -->
-<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=215">
-<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=215">
-<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=215">
-<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=215">
+<link rel="icon" type="image/png" sizes="512x512" href="images/boat-hunter-icon.png?v=218">
+<link rel="shortcut icon" href="images/boat-hunter-icon.png?v=218">
+<link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=218">
+<link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=218">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
 <meta name="application-name" content="BOAT HUNTER">
 
@@ -7254,12 +7254,12 @@ body.theme-ladies .venueTimeLegend span{
   pointer-events:none!important;
   z-index:0!important;
 }
-#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=215")!important}
-#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=215")!important}
-#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=215")!important}
-#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=215")!important}
-#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=215")!important}
-#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=215")!important}
+#cards .card.b1 .boatArt{background-image:url("images/final_boat_1.png?v=218")!important}
+#cards .card.b2 .boatArt{background-image:url("images/final_boat_2.png?v=218")!important}
+#cards .card.b3 .boatArt{background-image:url("images/final_boat_3.png?v=218")!important}
+#cards .card.b4 .boatArt{background-image:url("images/final_boat_4.png?v=218")!important}
+#cards .card.b5 .boatArt{background-image:url("images/final_boat_5.png?v=218")!important}
+#cards .card.b6 .boatArt{background-image:url("images/final_boat_6.png?v=218")!important}
 
 /* keep text / badges / plus button above artwork */
 #cards .card .row,
@@ -8281,7 +8281,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.215</div>
+  <div class="topVol">Vol.218</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13212,9 +13212,130 @@ function renderOdds(odds){
       })
       .slice(0,4);
 
-    /* V215: 頭候補フィルター通過艇は順位を保持するが、実際の主頭は1艇だけ。
-       頭候補2位以降は「頭」ではなく軸選定プールへ回す。
-       3艇以上通過した時は後段で見推奨にする。 */
+    /* Vol.218: 頭候補1 決定スコア（100点）
+       頭候補フィルターを通過した艇だけを再比較する。
+       SIM1着率だけで決めず、1M先制・攻撃力を最重視する。
+
+       35点: 1M先制・攻撃力
+       20点: 相手側が崩れる条件
+       15点: コース別1着実績・決まり手成立
+       20点: 展示・ST・機力・選手力
+       10点: SIM1着率（最終補強）
+    */
+    const bh218Clamp=(v,lo=0,hi=1)=>Math.max(lo,Math.min(hi,Number(v)||0));
+    const bh218Row=(boat)=>evalRows.find(x=>Number(x.boat)===Number(boat))||null;
+    const bh218TechniqueRate=(row)=>{
+      if(!row)return 0;
+      const total=Object.values(sim.headAxisCounts||{}).reduce((a,x)=>a+Number(x?.wins||0),0)||5000;
+      const c=Number(row.course||0);
+      const b=Number(row.boat||0);
+      let n=0;
+      if(c===1){
+        n=Number(sim.techCount?.get?.(`${b}:逃げ`)||0);
+      }else if(c===2){
+        n=Number(sim.techCount?.get?.(`${b}:差し`)||0)+Number(sim.techCount?.get?.(`${b}:まくり`)||0)*0.35;
+      }else if(c===3){
+        n=Number(sim.techCount?.get?.(`${b}:まくり`)||0)+Number(sim.techCount?.get?.(`${b}:まくり差し`)||0);
+      }else if(c===4){
+        n=Number(sim.techCount?.get?.(`${b}:まくり`)||0)+Number(sim.techCount?.get?.(`${b}:まくり差し`)||0)+Number(sim.techCount?.get?.(`${b}:差し`)||0)*0.35;
+      }else{
+        n=Number(sim.techCount?.get?.(`${b}:まくり差し`)||0)+Number(sim.techCount?.get?.(`${b}:差し`)||0)*0.55;
+      }
+      return total?Math.max(0,n/total*100):0;
+    };
+    const bh218ScoreHead=(h)=>{
+      const row=bh218Row(h.boat);
+      if(!row)return {total:0,attack:0,collapse:0,course:0,quality:0,sim:0};
+      const course=Number(row.course||0);
+      const p1=Number(row.p1||0);
+      const base=Math.max(.01,Number(row.baseP1||0));
+      const ratio=p1/base;
+      const inner=course>1?evalRows.find(z=>Number(z.course)===course-1):null;
+      const outer=course<6?evalRows.find(z=>Number(z.course)===course+1):null;
+      const ex=Number(row.exhibition);
+      const innerEx=Number(inner?.exhibition);
+      const outerEx=Number(outer?.exhibition);
+      const exGapInner=(Number.isFinite(ex)&&Number.isFinite(innerEx))?innerEx-ex:0;
+      const exGapOuter=(Number.isFinite(ex)&&Number.isFinite(outerEx))?outerEx-ex:0;
+      const techRate=bh218TechniqueRate(row);
+
+      /* 1) 1M先制・攻撃力 35 */
+      let attackBase=0;
+      if(course===1){
+        // インは「逃げが場平均以上」＋2Cより展示優位なら加点。SIM絶対値は使いすぎない。
+        attackBase=bh218Clamp((ratio-.85)/.55);
+        if(exGapOuter>0.05)attackBase=Math.min(1,attackBase+.12);
+        if(exGapOuter<-0.10)attackBase=Math.max(0,attackBase-.20);
+      }else{
+        // 外は直内艇への展示先制と実際の攻め決まり手を重視。
+        const exPart=bh218Clamp((exGapInner+0.05)/0.23);
+        const techPart=bh218Clamp(techRate/12);
+        attackBase=exPart*.58+techPart*.42;
+        if(h.attackPromotion)attackBase=Math.min(1,attackBase+.14);
+      }
+      const attack=35*bh218Clamp(attackBase);
+
+      /* 2) 相手側が崩れる条件 20 */
+      let collapseBase=0;
+      if(course===1){
+        const two=outer;
+        const twoRatio=two?Number(two.p1||0)/Math.max(.01,Number(two.baseP1||0)):1;
+        collapseBase=bh218Clamp((1.20-twoRatio)/.55);
+        if(exGapOuter>0.10)collapseBase=Math.min(1,collapseBase+.18);
+      }else{
+        const innerRatio=inner?Number(inner.p1||0)/Math.max(.01,Number(inner.baseP1||0)):1;
+        collapseBase=bh218Clamp((1.18-innerRatio)/.50);
+        if(h.f2BehindPromotion)collapseBase=Math.min(1,collapseBase+.35);
+        if(exGapInner>=0.15)collapseBase=Math.min(1,collapseBase+.25);
+      }
+      const collapse=20*bh218Clamp(collapseBase);
+
+      /* 3) コース別1着実績・決まり手 15 */
+      const relWin=bh218Clamp((ratio-.70)/.85);
+      const tech=bh218Clamp(techRate/10);
+      const courseScore=15*(relWin*.58+tech*.42);
+
+      /* 4) 展示・ST・機力・選手力 20
+         preEvalを主体に、HUNTER総合順位は補助だけにする。 */
+      const pre=Number(row.preEval?.turn||50)*.40+Number(row.preEval?.foot||50)*.35+Number(row.preEval?.base||50)*.25;
+      const preNorm=bh218Clamp((pre-35)/45);
+      const rankNorm=bh218Clamp((7-Number(row.hunterRank||6))/6);
+      const exBonus=course>1?bh218Clamp((exGapInner+.08)/.28):bh218Clamp((exGapOuter+.08)/.28);
+      const quality=20*(preNorm*.62+rankNorm*.18+exBonus*.20);
+
+      /* 5) SIM1着率 10 — 候補内相対値のみ */
+      const candidateMax=Math.max(...heads.map(z=>Number(bh218Row(z.boat)?.p1||0)),1);
+      const simScore=10*bh218Clamp(p1/candidateMax);
+
+      const total=attack+collapse+courseScore+quality+simScore;
+      return {
+        total:Number(total.toFixed(2)),
+        attack:Number(attack.toFixed(2)),
+        collapse:Number(collapse.toFixed(2)),
+        course:Number(courseScore.toFixed(2)),
+        quality:Number(quality.toFixed(2)),
+        sim:Number(simScore.toFixed(2)),
+        techRate:Number(techRate.toFixed(2)),
+        exGapInner:Number(exGapInner.toFixed(3))
+      };
+    };
+
+    heads.forEach(h=>{
+      const sc=bh218ScoreHead(h);
+      h.headDecisionScore=sc.total;
+      h.headDecisionBreakdown=sc;
+    });
+
+    /* 頭候補1は100点スコア最上位。
+       同点時だけ 1M攻撃力 → 相手崩れ → HUNTER順位 → SIM1着率 の順で決着。 */
+    heads.sort((a,b)=>
+      Number(b.headDecisionScore||0)-Number(a.headDecisionScore||0) ||
+      Number(b.headDecisionBreakdown?.attack||0)-Number(a.headDecisionBreakdown?.attack||0) ||
+      Number(b.headDecisionBreakdown?.collapse||0)-Number(a.headDecisionBreakdown?.collapse||0) ||
+      Number(a.hunterRank||9)-Number(b.hunterRank||9) ||
+      Number(b.p1||0)-Number(a.p1||0)
+    );
+
     const headCandidates=[...heads];
     const headCandidateCount=headCandidates.length;
     const primaryHead=headCandidates[0]||null;
@@ -13311,8 +13432,7 @@ function renderOdds(odds){
        頭候補2位以降が存在する場合は、その中から主頭成立時の
        条件付き2着率+3着率が最も高い艇を優先する。
        頭候補2位以降が無い場合は、残り全艇から同基準で1艇を選ぶ。
-       1コース主頭時、軸艇の条件付き2着率が22%以上なら
-       「頭-○-軸」の3着固定だけを採用。それ以外は
+       軸候補の最上位1艇は必ず折り返し対象とし、
        「頭-軸-○」「頭-○-軸」の両方を採用する。 */
     heads.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
@@ -13337,12 +13457,24 @@ function renderOdds(odds){
         h.secondCandidateRates=[Number(pick.second||0)];
         h.axisFromHeadCandidate=secondarySet.has(boat);
         h.oneCourseEscapeRule=Number(headRow?.course||0)===1;
-        h.axisPlacementMode=(h.oneCourseEscapeRule && Number(pick.second||0)>=22)
-          ? 'third_only'
-          : 'both';
+        /* Vol.218:
+           主軸1艇は必ず「頭-軸-○ / 頭-○-軸」で折り返す。
+           さらに1コース逃げ（主頭が1コース）の時だけ、主軸以外で
+           条件付き2着率22%以上の艇を「頭-○-艇」の3着固定で追加する。 */
+        h.axisPlacementMode='both';
+        h.escapeThirdFixedBoats=[];
+        h.escapeThirdFixedRates=[];
+        if(h.oneCourseEscapeRule){
+          const extraThird=allRates
+            .filter(z=>Number(z.boat)!==boat && Number(z.boat)!==Number(h.boat) && Number(z.second||0)>=22.0)
+            .sort((a,b)=>Number(b.second||0)-Number(a.second||0));
+          h.escapeThirdFixedBoats=extraThird.map(z=>Number(z.boat));
+          h.escapeThirdFixedRates=extraThird.map(z=>Number(z.second||0));
+        }
       }else{
         h.axisBoat=null;h.axisBoats=[];h.secondCandidateBoats=[];
         h.axisPlacementMode='none';
+        h.escapeThirdFixedBoats=[];h.escapeThirdFixedRates=[];
       }
       /* V215: 個別切りは廃止。完全切りだけを使用。 */
       h.pairCuts={};
@@ -13466,7 +13598,7 @@ function renderOdds(odds){
           ${p.heads.map(h=>`
             <div class="headCandidateRow headHoldBlock" data-head-boat="${h.boat}">
               <div class="headHoldTarget" title="長押しで他艇の率">${simpleBoatText(h.boat)}</div>
-              <span class="headMeta">H${h.hunterRank}位 / 世間${h.marketRank}位${
+              <span class="headMeta">決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
                 h.f2BehindPromotion
                   ? ` <b class="f2BehindBadge">F${h.f2InnerCount}後ろ攻め</b>`
                   : h.attackPromotion
@@ -13539,7 +13671,13 @@ function renderOdds(odds){
                         ${h.axisPlacementMode!=="none"?`<span><b>${h.boat}-○-${b}</b><em>${Number(
                           (h.axisAllRates||[]).find(z=>Number(z.boat)===Number(b))?.third || thirdRates[i] || 0
                         ).toFixed(1)}%</em></span>`:""}
-                        ${h.axisPlacementMode==="third_only"?`<div class="specialAxisNote">1コース逃げ専用：軸の2着率22%以上 → 3着固定</div>`:""}
+                        ${h.axisPlacementMode==="third_only"?`<div class="specialAxisNote">軸候補1位：2着・3着の両方で折り返し</div>`:""}
+                        ${(h.oneCourseEscapeRule && Array.isArray(h.escapeThirdFixedBoats) && h.escapeThirdFixedBoats.length)
+                          ? h.escapeThirdFixedBoats.map((eb,ei)=>`<span><b>${h.boat}-○-${eb}</b><em>${Number(h.escapeThirdFixedRates?.[ei]||0).toFixed(1)}%</em></span>`).join("")
+                          : ""}
+                        ${(h.oneCourseEscapeRule && Array.isArray(h.escapeThirdFixedBoats) && h.escapeThirdFixedBoats.length)
+                          ? `<div class="specialAxisNote">1コース逃げ限定：軸以外で2着率22%以上 → 3着固定</div>`
+                          : ""}
                       </div>
                       <div class="axisOtherRates">
                         <div class="axisOtherTitle"><span>他の相手率</span><span class="axisCols"><strong>2着</strong><strong>3着</strong><em>合計</em></span></div>
@@ -13626,6 +13764,8 @@ function renderOdds(odds){
         secondCandidateRates:Array.isArray(x.secondCandidateRates)?x.secondCandidateRates.map(Number):[],
         axisPlacementMode:x.axisPlacementMode||"both",
         oneCourseEscapeRule:!!x.oneCourseEscapeRule,
+        escapeThirdFixedBoats:Array.isArray(x.escapeThirdFixedBoats)?x.escapeThirdFixedBoats.map(Number):[],
+        escapeThirdFixedRates:Array.isArray(x.escapeThirdFixedRates)?x.escapeThirdFixedRates.map(Number):[],
         axisFromHeadCandidate:!!x.axisFromHeadCandidate,
         pairCuts:{},
         attackPromotion:!!x.attackPromotion,
@@ -13890,18 +14030,16 @@ function renderOdds(odds){
           : [];
       const axisShown=matchedAxisBoats.length>0;
 
-      /* V215: 結果確認は予想時に保存した軸配置ルールをそのまま使用。
-         both       = 頭-軸-○ / 頭-○-軸 の両方
-         third_only = 頭-○-軸 のみ（1コース逃げ専用22%ルール） */
+      /* Vol.218 結果確認：
+         主軸1艇は2着/3着の折り返し。
+         1コース逃げ限定で追加した「軸以外・2着率22%以上」は3着固定として照合する。 */
       const axisMode=matchedHead?.axisPlacementMode||"both";
       const axisBoat=matchedAxisBoats.length?Number(matchedAxisBoats[0]):null;
-      const axisHit=!!(
-        axisShown && axisBoat && (
-          axisMode==="third_only"
-            ? axisBoat===actualThird
-            : (axisBoat===actualSecond || axisBoat===actualThird)
-        )
-      );
+      const escapeThirdFixedBoats=matchedHead && Array.isArray(matchedHead.escapeThirdFixedBoats)
+        ? matchedHead.escapeThirdFixedBoats.map(Number) : [];
+      const mainAxisHit=!!(axisShown && axisBoat && (axisBoat===actualSecond || axisBoat===actualThird));
+      const escapeThirdFixedHit=!!(matchedHead?.oneCourseEscapeRule && escapeThirdFixedBoats.includes(actualThird));
+      const axisHit=!!(mainAxisHit || escapeThirdFixedHit);
 
       const cutBoat=pred.cutBoat?Number(pred.cutBoat):null;
       const cutShown=!!cutBoat;
@@ -13926,6 +14064,7 @@ function renderOdds(odds){
         cutBoat,
         headTargetShown,axisShown,headHit,axisHit,
         axisMode:matchedHead?.axisPlacementMode||"both",
+        escapeThirdFixedBoats,escapeThirdFixedHit,
         cutShown,cutSuccess,
         pairCutBoat,pairCutCandidate,pairCutShown,pairCutSuccess,
         popularity:oddsInfo.popularity,
