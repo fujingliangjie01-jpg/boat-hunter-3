@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.254</div>
+  <div class="topVol">Vol.255</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15371,7 +15371,39 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
   window.addEventListener('load',move,{once:true});
   setTimeout(move,300); setTimeout(move,1200);
 })();
-</script>\n</body>
+</script>\n\n<!-- Vol.255: RESULT CHECKを常にページ最下部へ固定 -->
+<script id="bh-vol255-result-absolute-bottom">
+(()=>{
+  const RESULT_ID='resultPanelV248';
+  let moving=false;
+  function moveResultAbsoluteBottom(){
+    if(moving)return;
+    const result=document.getElementById(RESULT_ID);
+    if(!result)return;
+    const wrap=document.querySelector('.wrap');
+    if(!wrap)return;
+    if(wrap.lastElementChild===result)return;
+    moving=true;
+    wrap.appendChild(result);
+    moving=false;
+  }
+  function start(){
+    moveResultAbsoluteBottom();
+    const wrap=document.querySelector('.wrap');
+    if(!wrap)return;
+    const observer=new MutationObserver(()=>{
+      requestAnimationFrame(moveResultAbsoluteBottom);
+    });
+    observer.observe(wrap,{childList:true});
+    window.__BH_RESULT_BOTTOM_OBSERVER=observer;
+    [100,300,700,1500,3000].forEach(ms=>setTimeout(moveResultAbsoluteBottom,ms));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+  window.addEventListener('load',moveResultAbsoluteBottom,{once:true});
+})();
+</script>
+</body>
 </html>
 
 <!-- Vol.250 RESULT CHECK visibility override: presentation only -->
