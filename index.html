@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.227</div>
+  <div class="topVol">Vol.228</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -10148,7 +10148,9 @@ $('top').classList.remove('hide');
       const r=await fetch(outlookCsvUrl(kind),{cache:"no-store"});
       if(!r.ok)return null;
       const rows=outlookParseCSV(await r.text()), code=outlookRaceCode();
-      return rows.find((x,i)=>i>0&&String(x[0]).trim()===code)||null;
+      const row=rows.find((x,i)=>i>0&&String(x[0]).trim()===code)||null;
+      if(kind==="tokuten_hayami" && row) return {head:rows[0]||[],row};
+      return row;
     }catch(e){return null}
   }
 
@@ -10356,46 +10358,54 @@ $('top').classList.remove('hide');
     return tokutenCache;
   }
 
-  function kachigakeHtml(row){
-    if(!row)return `<span class="muted">勝負掛けデータは未公開です</span>`;
-    /*
-      CSVは共通6列 + ボーダー順位 + 1着点..6着点 + 6艇の詳細。
-      選手ブロックは 21列: 級別,登録番号,選手名,得点率,順位,ボーダー状態,早見,
-      1着時得点率,1着時状態 ... 6着時得点率,6着時状態
-    */
-    const border=Number(row[6]),pointByPlace=[1,2,3,4,5,6].map(i=>outlookNum(row[6+i]));
-    const base=13, width=19;
+  function kachigakeHtml(data){
+    if(!data)return `<span class="muted">勝負掛けデータは未公開です</span>`;
+    const row=Array.isArray(data)?data:data.row;
+    const head=Array.isArray(data?.head)?data.head:[];
+    if(!row||!head.length)return `<span class="muted">勝負掛けデータ未取得</span>`;
+
+    const idx=(...names)=>{
+      for(const n of names){const i=head.indexOf(n);if(i>=0)return i}
+      return -1;
+    };
+    const borderIdx=idx('ボーダー順位','予選ボーダー順位');
+    const border=borderIdx>=0?outlookNum(row[borderIdx]):null;
     const hits=[];
+    const pointMap={1:10,2:8,3:6,4:4,5:2,6:1};
+
     for(let b=1;b<=6;b++){
-      const o=base+(b-1)*width;
-      const name=String(row[o+2]||"").trim();
-      const rate=outlookNum(row[o+3]),rank=outlookNum(row[o+4]),hayami=String(row[o+6]||"").trim();
-      if(!name||rate==null||rank==null)continue;
+      const nameI=idx(`艇${b}_選手名`), rateI=idx(`艇${b}_得点率`), rankI=idx(`艇${b}_順位`), hayamiI=idx(`艇${b}_早見`);
+      if(nameI<0||rateI<0||rankI<0)continue;
+      const name=String(row[nameI]||'').trim();
+      const rate=outlookNum(row[rateI]), rank=outlookNum(row[rankI]);
+      if(!name||rate==null||rank==null||rate<=0)continue; // 0.00は未成立値として勝負掛けに使わない
+
       let needPlace=null;
       for(let k=1;k<=6;k++){
-        const state=String(row[o+6+(k*2)]||"");
-        if(/[1245]/.test(state)&&state!=="00"){needPlace=k;break}
+        const stateI=idx(`艇${b}_${k}着時状態`,`艇${b}_${k}着状態`);
+        const state=stateI>=0?String(row[stateI]||'').trim():'';
+        if(state && state!=='00' && /[1245]/.test(state)){needPlace=k;break}
       }
+      const hayami=hayamiI>=0?String(row[hayamiI]||'').trim():'';
       const remaining=hayami?2:1;
-      if(rank<=border+8 || needPlace){
+      if((border!=null && rank<=border+8) || needPlace){
         hits.push({b,name,rate,rank,remaining,needPlace});
       }
     }
-    if(!hits.length)return `<span class="muted">明確な勝負掛け艇なし</span>`;
+    if(!hits.length)return `<span class="muted">明確な勝負掛け艇なし / 得点データ確定待ち</span>`;
+    hits.sort((a,b)=>(a.needPlace??99)-(b.needPlace??99)||a.rank-b.rank||b.rate-a.rate);
     const picked=hits.slice(0,4);
-    return `<div class="kachiCompact ${picked.length>=3?"many":""}">`+
+    return `<div class="kachiCompact ${picked.length>=3?'many':''}">`+
       picked.map(x=>{
-        const pointMap={1:10,2:8,3:6,4:4,5:2,6:1};
         const needPoint=x.needPlace?pointMap[x.needPlace]:null;
-        const need=needPoint!=null?`必要 ${needPoint}pt`:`ボーダー${border}位`;
+        const need=needPoint!=null?`必要 ${needPoint}pt`:(border!=null?`ボーダー${border}位`:'ボーダー確認中');
         return `<div class="kachiItem">
           <div class="kachiTop"><span class="boatPill b${x.b}">${x.b}</span><b>${x.name}</b></div>
           <div class="kachiMeta">${x.rank}位 / ${x.rate.toFixed(2)}</div>
           <div class="kachiNeed">${need}</div>
           <div class="kachiRemain">残り${x.remaining}走</div>
         </div>`;
-      }).join("")+
-    `</div>`;
+      }).join('')+`</div>`;
   }
 
   function venueHtml(){
@@ -11592,6 +11602,12 @@ function renderOdds(odds){
         rank: /^\d+$/.test(rank) ? rank+"位" : (rank || "対象外")
       });
     }
+    if(found.size){
+      const vals=Array.from(found.values());
+      const allZero=vals.length>=2 && vals.every(v=>Number(String(v.rate).replace(/[^\d.]/g,''))===0);
+      const allRankOne=vals.length>=2 && vals.every(v=>String(v.rank).replace(/[^\d]/g,'')==='1');
+      if(allZero && allRankOne) return null; // 0.00/全員1位は未成立データ。実順位として採用しない
+    }
     return found.size ? found : null;
   }
 
@@ -11629,6 +11645,12 @@ function renderOdds(odds){
 
     /* tokuten_hayami がまだ無い時間帯・対象外節だけ公式を1回確認 */
     await officialFallbackV047(rr);
+
+    const snap=rr.map(r=>({a:$("meetPts"+r.entry_number),b:$("meetRank"+r.entry_number)}));
+    const placeholder=snap.length>=2 && snap.every(x=>Number(String(x.a?.textContent||'').replace(/[^\d.]/g,''))===0) && snap.every(x=>String(x.b?.textContent||'').replace(/[^\d]/g,'')==='1');
+    if(placeholder){
+      snap.forEach(x=>{if(x.a){x.a.textContent='未公開';x.a.classList.add('na')} if(x.b){x.b.textContent='未公開';x.b.classList.add('na')}});
+    }
 
     rr.forEach(r=>{
       const a=$("meetPts"+r.entry_number),b=$("meetRank"+r.entry_number);
@@ -13355,7 +13377,7 @@ function renderOdds(odds){
        “頭で押す根拠”としては弱いため頭候補から除外し、軸候補側では評価を残す。 */
     heads=heads.filter(h=>Number(h.hunterRank)<=2 || Number(h.marketRank)<=2);
 
-    /* Vol.227: 1コース50%残留ルール
+    /* Vol.228: 1コース50%残留ルール
        他艇が負け筋一致などで主頭へ昇格しても、1コース艇が
        1) HUNTER 1着率 50.0%以上
        2) HUNTER評価2位以内
@@ -13792,7 +13814,7 @@ function renderOdds(odds){
         </div>`;
       axis.classList.add("hide");
     }else{
-      /* Vol.227: 頭候補が2艇以上なら、見推奨でなくても候補を全表示する。
+      /* Vol.228: 頭候補が2艇以上なら、見推奨でなくても候補を全表示する。
          3艇以上だけ従来どおり「見推奨」。2艇時は主頭＋残留頭を明示する。 */
       const hasMultiHeads=Number(p.headCandidateCount||0)>=2 && Array.isArray(p.headCandidates) && p.headCandidates.length;
       const displayHeads=hasMultiHeads?p.headCandidates:p.heads;
@@ -15152,5 +15174,9 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
   }
 }
 </style>
+<script id="bh-vol228-tokuten-fix">
+/* Vol.228: 0.00/全員1位を未成立値として排除。勝負掛けはtokuten_hayamiヘッダ名で厳密参照。 */
+window.__BH_VOL228_TOKUTEN_FIX=true;
+</script>
 </body>
 </html>
