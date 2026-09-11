@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.226</div>
+  <div class="topVol">Vol.227</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13355,6 +13355,41 @@ function renderOdds(odds){
        “頭で押す根拠”としては弱いため頭候補から除外し、軸候補側では評価を残す。 */
     heads=heads.filter(h=>Number(h.hunterRank)<=2 || Number(h.marketRank)<=2);
 
+    /* Vol.227: 1コース50%残留ルール
+       他艇が負け筋一致などで主頭へ昇格しても、1コース艇が
+       1) HUNTER 1着率 50.0%以上
+       2) HUNTER評価2位以内
+       3) 世間評価2位以内
+       をすべて満たす場合は、頭候補2位以降に必ず残す。
+       「他艇を主頭へ昇格」と「強い1号艇を頭候補から消す」は別判定にする。 */
+    {
+      const oneKeepRow=evalRows.find(x=>Number(x.course)===1)||evalRows.find(x=>Number(x.boat)===1)||null;
+      if(
+        oneKeepRow &&
+        Number(oneKeepRow.p1||0)>=50.0 &&
+        Number(oneKeepRow.hunterRank)<=2 &&
+        Number(oneKeepRow.marketRank)<=2
+      ){
+        let oneKeep=heads.find(h=>Number(h.boat)===Number(oneKeepRow.boat));
+        if(!oneKeep){
+          oneKeep=toHead(oneKeepRow,{oneCourse50Retention:true});
+          if(heads.length<4){
+            heads.push(oneKeep);
+          }else{
+            const replaceable=heads.map((h,i)=>({h,i}))
+              .filter(z=>Number(z.h.boat)!==Number(oneKeepRow.boat))
+              .sort((a,b)=>
+                Number(b.h.hunterRank)-Number(a.h.hunterRank) ||
+                Number(b.h.marketRank)-Number(a.h.marketRank) ||
+                Number(a.h.p1||0)-Number(b.h.p1||0)
+              )[0];
+            if(replaceable)heads.splice(replaceable.i,1,oneKeep);
+          }
+        }
+        if(oneKeep)oneKeep.oneCourse50Retention=true;
+      }
+    }
+
     /* Vol.224: 頭候補1 決定スコア（100点）
        頭候補フィルターを通過した艇だけを再比較する。
        SIM1着率だけで決めず、1M先制・攻撃力を最重視する。
@@ -13757,20 +13792,21 @@ function renderOdds(odds){
         </div>`;
       axis.classList.add("hide");
     }else{
-      /* Vol.224: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
-         フィルター通過した頭候補を全艇表示する。買い目の主頭は p.heads[0] のまま。 */
-      const displayHeads=(Number(p.headCandidateCount||0)>=3 && Array.isArray(p.headCandidates) && p.headCandidates.length)
-        ? p.headCandidates
-        : p.heads;
+      /* Vol.227: 頭候補が2艇以上なら、見推奨でなくても候補を全表示する。
+         3艇以上だけ従来どおり「見推奨」。2艇時は主頭＋残留頭を明示する。 */
+      const hasMultiHeads=Number(p.headCandidateCount||0)>=2 && Array.isArray(p.headCandidates) && p.headCandidates.length;
+      const displayHeads=hasMultiHeads?p.headCandidates:p.heads;
       head.innerHTML=`
-        <div class="simplePickLabel">${Number(p.headCandidateCount||0)>=3?'頭候補':'頭'} <span class="pickExplain">${Number(p.headCandidateCount||0)>=3?`見推奨・候補${Number(p.headCandidateCount||0)}艇を全表示`:`頭候補${Number(p.headCandidateCount||0)}艇から主頭1艇`}</span></div>
+        <div class="simplePickLabel">${hasMultiHeads?'頭候補':'頭'} <span class="pickExplain">${Number(p.headCandidateCount||0)>=3?`見推奨・候補${Number(p.headCandidateCount||0)}艇を全表示`:hasMultiHeads?`候補${Number(p.headCandidateCount||0)}艇を表示・主頭1艇`:`頭候補${Number(p.headCandidateCount||0)}艇から主頭1艇`}</span></div>
         <div class="headCandidateGrid">
           ${displayHeads.map((h,idx)=>`
             <div class="headCandidateRow headHoldBlock ${idx===0?'bh219PrimaryHead':''}" data-head-boat="${h.boat}">
               <div class="headHoldTarget" title="長押しで他艇の率">${simpleBoatText(h.boat)}</div>
-              <span class="headMeta">${Number(p.headCandidateCount||0)>=3 && idx===0?'<b class="bh219PrimaryBadge">主頭</b> ':''}決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
+              <span class="headMeta">${hasMultiHeads && idx===0?'<b class="bh219PrimaryBadge">主頭</b> ':''}決定${Number(h.headDecisionScore||0).toFixed(1)}点 / H${h.hunterRank}位 / 世間${h.marketRank}位${
                 h.lossMatchPromotion
                   ? ` <b class="attackPromoteBadge">負け筋一致${h.lossMatchStrong?'・強':''}</b>`
+                  : h.oneCourse50Retention
+                  ? ` <b class="topConsensusBadge">1C 50%残留</b>`
                   : h.f2BehindPromotion
                   ? ` <b class="f2BehindBadge">F${h.f2InnerCount}後ろ攻め</b>`
                   : h.attackPromotion
