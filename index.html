@@ -8471,6 +8471,161 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 }
 </style>
 
+
+<style id="bh-vol261-formation-ui">
+/* Vol.261: 3連単フォーメーションを着順別カードで明快に表示 */
+.formationTitle{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin-bottom:10px!important;
+}
+.formationGrid{
+  display:grid!important;
+  gap:14px!important;
+}
+.formationCard{
+  background:linear-gradient(180deg,#fff 0%,#fff8fb 100%)!important;
+  border:2px solid #ef9ec1!important;
+  border-radius:18px!important;
+  padding:12px!important;
+  box-shadow:0 8px 20px rgba(120,31,78,.10)!important;
+}
+.formationHead{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:2px 2px 10px!important;
+  border-bottom:1px solid #f1c7d9!important;
+  margin-bottom:10px!important;
+}
+.formationHeadLabel{
+  font-size:10px!important;
+  letter-spacing:.18em!important;
+  font-weight:1000!important;
+  color:#a42e63!important;
+}
+.formationMain,
+.formationHole{
+  border-radius:14px!important;
+  padding:10px!important;
+}
+.formationMain{
+  background:linear-gradient(180deg,#fff7fb,#fff)!important;
+  border:1.5px solid #efbfd3!important;
+}
+.formationHole{
+  margin-top:10px!important;
+  background:linear-gradient(180deg,#fff8dc,#fffef4)!important;
+  border:1.5px solid #d6a400!important;
+}
+.formationMuted{opacity:.72!important}
+.formationSectionTitle{
+  font-size:12px!important;
+  font-weight:1000!important;
+  color:#8e1d52!important;
+  margin-bottom:7px!important;
+}
+.formationHole .formationSectionTitle{color:#6e5200!important}
+.formationStepRow{
+  display:grid!important;
+  grid-template-columns:48px 1fr!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:42px!important;
+}
+.formationStepRow + .formationStepRow{
+  border-top:1px dashed rgba(145,61,99,.14)!important;
+}
+.formationStepLabel{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:28px!important;
+  border-radius:8px!important;
+  background:#8e1d52!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-weight:1000!important;
+}
+.formationHole .formationStepLabel{
+  background:#8a6a00!important;
+}
+.formationStepBoats{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+.formationBoatChip{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:54px!important;
+  height:30px!important;
+  padding:0 8px!important;
+  border-radius:9px!important;
+  border:2px solid rgba(0,0,0,.18)!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 2px 5px rgba(0,0,0,.10)!important;
+}
+.formationBoatChip.boat1{background:#fff!important;color:#111!important;border-color:#222!important}
+.formationBoatChip.boat2{background:#111!important;color:#fff!important;border-color:#111!important}
+.formationBoatChip.boat3{background:#df2632!important;color:#fff!important;border-color:#bd101b!important}
+.formationBoatChip.boat4{background:#1973d2!important;color:#fff!important;border-color:#0f5dac!important}
+.formationBoatChip.boat5{background:#f0da27!important;color:#111!important;border-color:#c7ad00!important}
+.formationBoatChip.boat6{background:#20a34b!important;color:#fff!important;border-color:#15803a!important}
+.formationCut{
+  margin-top:10px!important;
+  padding:9px 10px!important;
+  border:1.5px solid #ec72aa!important;
+  border-radius:12px!important;
+  background:#fff7fb!important;
+  display:grid!important;
+  grid-template-columns:70px 1fr!important;
+  gap:8px!important;
+  align-items:center!important;
+}
+.formationCutLabel{
+  font-size:11px!important;
+  font-weight:1000!important;
+  color:#98245b!important;
+}
+.formationCutBoats{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+}
+.cutChip{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+}
+.cutChip b{
+  font-size:11px!important;
+  color:#9b315e!important;
+}
+.formationNone,.formationNoneLine{
+  color:#a58a98!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+.formationNoneLine{padding:6px 0 2px!important}
+@media(max-width:430px){
+  .formationCard{padding:10px!important;border-radius:16px!important}
+  .formationStepRow{grid-template-columns:44px 1fr!important;gap:6px!important}
+  .formationBoatChip{
+    min-width:49px!important;
+    height:29px!important;
+    padding:0 6px!important;
+    font-size:11px!important;
+  }
+  .formationCut{grid-template-columns:62px 1fr!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -8481,7 +8636,7 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.259</div>
+  <div class="topVol">Vol.261</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -10099,21 +10254,13 @@ $('top').classList.remove('hide');
       $("status").textContent="先に出走表を取得してください";
       return;
     }
-    if(!window.__HUNTER_ODDS120?.odds?.length){
-      $("status").textContent="世間評価120通りを自動取得中…";
-      const ob=$("getOdds120");
-      ob?.classList.add("oddsRequiredNow");
+    /* Vol.260: オッズは任意。未取得でもAI解析を続行 */
+    const hasOdds120=!!window.__HUNTER_ODDS120?.odds?.length;
+    if(!hasOdds120){
+      $("status").textContent="オッズ未取得：HUNTERデータのみでAI解析を開始します";
       try{
-        if(typeof window.getOdds120==="function"){
-          await window.getOdds120();
-        }
+        if($("oddsState")) $("oddsState").textContent="オッズ未取得 / 世間評価なしでAI解析可能";
       }catch(e){}
-      ob?.classList.remove("oddsRequiredNow");
-
-      if(!window.__HUNTER_ODDS120?.odds?.length){
-        $("status").textContent="オッズ120通りを取得できないためAI解析を開始できません";
-        return;
-      }
     }
     const ai=$("aiAnalyze");
     ai.disabled=true;
@@ -14237,51 +14384,66 @@ function renderOdds(odds){
 
       axis.classList.remove("hide");
       axis.innerHTML=`
-        <div class="simplePickLabel">3連単フォーメーション <span class="pickExplain">各頭候補の2着率・3着率から自動生成</span></div>
-        <div class="headAxisGrid">
+        <div class="simplePickLabel formationTitle">3連単フォーメーション
+          <span class="pickExplain">各頭候補ごとに着順別で表示</span>
+        </div>
+        <div class="headAxisGrid formationGrid">
           ${(Array.isArray(p.headCandidates)&&p.headCandidates.length?p.headCandidates:p.heads).map(h=>{
             const s2=Array.isArray(h.formationSecondBoats)?h.formationSecondBoats:[];
             const s3=Array.isArray(h.formationThirdBoats)?h.formationThirdBoats:[];
             const hole=Number(h.holeSecondBoat||0);
             const hole3=Array.isArray(h.holeThirdBoats)?h.holeThirdBoats:[];
             const cuts=Object.values(h.pairCuts||{}).sort((a,b)=>Number(a.sum)-Number(b.sum));
-            const fmt=arr=>arr.length?arr.join("・"):"—";
+            const chip=(b)=>`<span class="formationBoatChip boat${Number(b)}">${Number(b)}号艇</span>`;
             return `
-            <div class="headAxisRow formationRow">
-              <div class="candidateModeBadge">本線</div>
-              <div class="axisMainLine">
-                <div class="headAxisHead">${simpleBoatText(h.boat)}</div>
-                <div class="headAxisArrow">→</div>
-                <div class="headAxisBoat">
-                  <div class="axisChoiceBlock">
-                    <div class="axisShapes">
-                      <span><b>${h.boat} - ${fmt(s2)} - ${fmt(s3)}</b></span>
-                    </div>
-                    <div class="axisOtherRates">
-                      <div class="axisOtherTitle"><span>相手率</span><span class="axisCols"><strong>2着</strong><strong>3着</strong><em>合計</em></span></div>
-                      <div class="axisOtherList">
-                        ${(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
-                          .filter(z=>Number(z.boat)!==Number(h.boat))
-                          .sort((a,b)=>Number(b.total||0)-Number(a.total||0))
-                          .map(z=>`<div class="axisOtherItem">
-                            <span class="ob">${z.boat}号艇</span>
-                            <b class="axisPlaceRate">${Number(z.second||0).toFixed(1)}%</b>
-                            <b class="axisPlaceRate">${Number(z.third||0).toFixed(1)}%</b>
-                            <b class="axisSumRate">${(Number(z.second||0)+Number(z.third||0)).toFixed(1)}%</b>
-                          </div>`).join("")}
-                      </div>
-                    </div>
-                  </div>
+            <div class="formationCard">
+              <div class="formationHead">
+                <span class="formationHeadLabel">HEAD</span>
+                ${chip(h.boat)}
+              </div>
+
+              <div class="formationMain">
+                <div class="formationSectionTitle">本線</div>
+                <div class="formationStepRow">
+                  <span class="formationStepLabel">1着</span>
+                  <div class="formationStepBoats">${chip(h.boat)}</div>
+                </div>
+                <div class="formationStepRow">
+                  <span class="formationStepLabel">2着</span>
+                  <div class="formationStepBoats">${s2.length?s2.map(chip).join(""):'<span class="formationNone">—</span>'}</div>
+                </div>
+                <div class="formationStepRow">
+                  <span class="formationStepLabel">3着</span>
+                  <div class="formationStepBoats">${s3.length?s3.map(chip).join(""):'<span class="formationNone">—</span>'}</div>
                 </div>
               </div>
-              ${hole && hole3.length ? `
-                <div class="pairCutLine" style="border-color:#b78a00!important;background:#fff9df!important;color:#5f4800!important">
-                  <b>穴目</b><span>${h.boat} - ${hole} - ${fmt(hole3)}</span>
-                </div>` : `
-                <div class="pairCutLine"><b>穴目</b><span>なし</span></div>`}
-              ${cuts.length
-                ? `<div class="pairCutLine"><b>切り候補</b><span>${cuts.map(c=>`${c.boat}号艇 ${Number(c.sum).toFixed(1)}%`).join(" ・ ")}</span></div>`
-                : `<div class="pairCutLine"><b>切り候補</b><span>なし</span></div>`}
+
+              <div class="formationHole ${hole&&hole3.length?'':'formationMuted'}">
+                <div class="formationSectionTitle">穴目</div>
+                ${hole&&hole3.length?`
+                  <div class="formationStepRow">
+                    <span class="formationStepLabel">1着</span>
+                    <div class="formationStepBoats">${chip(h.boat)}</div>
+                  </div>
+                  <div class="formationStepRow">
+                    <span class="formationStepLabel">2着</span>
+                    <div class="formationStepBoats">${chip(hole)}</div>
+                  </div>
+                  <div class="formationStepRow">
+                    <span class="formationStepLabel">3着</span>
+                    <div class="formationStepBoats">${hole3.map(chip).join("")}</div>
+                  </div>`:
+                  `<div class="formationNoneLine">穴目なし</div>`}
+              </div>
+
+              <div class="formationCut">
+                <span class="formationCutLabel">切り候補</span>
+                <div class="formationCutBoats">
+                  ${cuts.length
+                    ? cuts.map(c=>`<span class="cutChip">${chip(c.boat)}<b>${Number(c.sum).toFixed(1)}%</b></span>`).join("")
+                    : '<span class="formationNone">なし</span>'}
+                </div>
+              </div>
             </div>`;
           }).join("")}
         </div>`;
@@ -14822,7 +14984,7 @@ function renderOdds(odds){
   });
 
 
-  /* Vol.215: 120通り取得を必須工程化。取得完了後だけAI解析を解放 */
+  /* Vol.260: オッズは任意。取得時のみ世間評価へ反映 */
   $("getOdds120")?.addEventListener("click",()=>{
     const btn=$("getOdds120");
     if(btn){
@@ -14843,7 +15005,7 @@ function renderOdds(odds){
           $("aiAnalyze").classList.add("readyAfterOdds");
         }
         if($("oddsState") && !$("oddsState").textContent.includes("取得")){
-          $("oddsState").textContent="✓ 世間評価取得完了 / AI解析へ進めます";
+          $("oddsState").textContent="✓ 世間評価取得完了";
         }
       }
     },180);
@@ -14851,7 +15013,7 @@ function renderOdds(odds){
       clearInterval(watch);
       if(!window.__HUNTER_ODDS120?.odds?.length && btn){
         btn.classList.remove("oddsLoading");
-        btn.textContent="必須：オッズ120通り取得";
+        btn.textContent="オッズ120通り取得";
       }
     },12000);
   });
