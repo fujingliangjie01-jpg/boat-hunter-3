@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.243</div>
+  <div class="topVol">Vol.244</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14575,48 +14575,103 @@ function renderOdds(odds){
     return JSON.parse(txt);
   }
 
+  function bh244RaceDirect(j,venue,raceNo){
+    const v1=String(Number(venue));
+    const v2=v1.padStart(2,"0");
+    const r1=String(Number(raceNo));
+    const r2=r1.padStart(2,"0");
+    const sts=j?.programs?.stadiums||j?.stadiums||j?.results?.stadiums||{};
+    const st=sts?.[v1]||sts?.[v2]||null;
+    const rs=st?.races||st?.results||{};
+    return rs?.[r1]||rs?.[r2]||null;
+  }
+
+  function bh244DeepRace(root,venue,raceNo){
+    const wantV=Number(venue), wantR=Number(raceNo);
+    const seen=new Set(), q=[root];
+    let steps=0;
+    while(q.length && steps<10000){
+      const x=q.shift(); steps++;
+      if(!x||typeof x!=="object"||seen.has(x))continue;
+      seen.add(x);
+      const sv=Number(x.stadium_number??x.stadiumNumber??x.jcd??x.venue??x.place_code??x.placeCode);
+      const rr=Number(x.race_number??x.raceNumber??x.rno??x.race_no??x.raceNo);
+      if(sv===wantV && rr===wantR)return x;
+      if(Array.isArray(x)){
+        for(const z of x)if(z&&typeof z==="object")q.push(z);
+      }else{
+        for(const z of Object.values(x))if(z&&typeof z==="object")q.push(z);
+      }
+    }
+    return null;
+  }
+
+  function bh244CanonicalAny(raw,source){
+    if(!raw)return null;
+    const race=(raw.result||raw?.race?.result)?raw:{...raw,result:raw.result||raw?.race?.result};
+    const c=bhCanonicalResult(race,source);
+    if(c)return c;
+    if(actualCombo(race)){
+      race.confirmed_result=true;
+      race.__bhResultSource=source;
+      return race;
+    }
+    return null;
+  }
+
   async function fetchResultRace(date,venue,raceNo){
-    /* Vol.242: 全24場共通・結果取得エンジンを一本化。
-       まず後継OpenAPI v1（約3分更新）の当日/日付JSONを直接確認し、
-       その race.result を唯一の正規形へ変換。CSV/旧API/公式HTMLはフォールバックのみ。 */
-    const ymd=String(date).replaceAll('-','');
-    const y=ymd.slice(0,4);
-    const v=Number(venue), rn=Number(raceNo);
+    /* Vol.244: 結果確認エンジンをこの関数1本に固定。
+       旧追加スクリプトによる上書きは使わない。 */
+    const ymd=String(date).replaceAll("-","");
+    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
     const diagnostics=[];
 
     const jsonSources=[
-      ['OpenAPI v1 date',`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
-      ['OpenAPI v1 today','https://boatraceopenapi.github.io/api/v1/today.json'],
-      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
-      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
+      ["OpenAPI v1 date",`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
+      ["OpenAPI v1 today",`https://boatraceopenapi.github.io/v1/today.json`],
+      ["Results v3",`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
+      ["Results v2",`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
     ];
 
     for(const [label,url] of jsonSources){
       try{
-        const j=await bhFetchJsonNoStore(url,4500);
-        const raw=raceOf(j,v,rn);
-        const c=bhCanonicalResult(raw,label);
-        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
-        if(c){ c.__bhDiagnostics=diagnostics.slice(); return c; }
-      }catch(e){ diagnostics.push(label+':ERR'); }
+        const j=await bhFetchJsonNoStore(url,5000);
+        const raw=bh244RaceDirect(j,v,rn)||bh244DeepRace(j,v,rn);
+        const c=bh244CanonicalAny(raw,label);
+        diagnostics.push(`${label}:${c?"OK":raw?"RACE_FOUND_NO_RESULT":"NO_RACE"}`);
+        if(c){
+          c.__bhDiagnostics=diagnostics.slice();
+          c.__bhResultSource=label;
+          window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
+          return c;
+        }
+      }catch(e){
+        diagnostics.push(`${label}:ERR(${String(e?.message||e).slice(0,55)})`);
+      }
     }
 
-    const fallbacks=[
-      ['払戻CSV',()=>fetchPayoutConfirmedRace(date,v,rn)],
-      ['結果CSV',()=>fetchRealtimeResultRace(date,v,rn)],
-      ['公式一覧',()=>fetchOfficialResultListRace(date,v,rn)],
-      ['公式個別',()=>fetchOfficialResultRace(date,v,rn)]
+    /* 公式結果ページを次に確認。OpenAPI反映遅延時の本命フォールバック。 */
+    const htmlSources=[
+      ["公式一覧",()=>fetchOfficialResultListRace(date,v,rn)],
+      ["公式個別",()=>fetchOfficialResultRace(date,v,rn)],
+      ["払戻CSV",()=>fetchPayoutConfirmedRace(date,v,rn)],
+      ["結果CSV",()=>fetchRealtimeResultRace(date,v,rn)]
     ];
-    for(const [label,fn] of fallbacks){
+    for(const [label,fn] of htmlSources){
       try{
-        const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),5000))]);
-        const c=bhCanonicalResult(raw,label) || (actualCombo(raw)?raw:null);
-        diagnostics.push(label+':' +(c?'OK':'NO_RESULT'));
-        if(c){ c.__bhDiagnostics=diagnostics.slice(); if(!c.__bhResultSource)c.__bhResultSource=label; return c; }
-      }catch(e){ diagnostics.push(label+':ERR'); }
+        const raw=await Promise.race([fn(),new Promise(res=>setTimeout(()=>res(null),5500))]);
+        const c=bh244CanonicalAny(raw,label);
+        diagnostics.push(`${label}:${c?"OK":"NO_RESULT"}`);
+        if(c){
+          c.__bhDiagnostics=diagnostics.slice();
+          if(!c.__bhResultSource)c.__bhResultSource=label;
+          window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
+          return c;
+        }
+      }catch(e){ diagnostics.push(`${label}:ERR(${String(e?.message||e).slice(0,55)})`); }
     }
 
-    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics,checkedAt:Date.now()};
+    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diagnostics.slice(),checkedAt:Date.now()};
     return null;
   }
 
@@ -15613,98 +15668,7 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 
 
-<!-- Vol.243: 結果レスポンス構造診断 + 深層レース探索 -->
-<script id="bh-vol243-result-deep-diagnostic">
-(()=>{
-'use strict';
-function bh243NormNum(v){ const n=Number(String(v??'').replace(/[^0-9]/g,'')); return Number.isFinite(n)?n:null; }
-function bh243Summarize(obj){
-  try{
-    if(obj==null)return 'null';
-    if(Array.isArray(obj))return `Array(${obj.length})`;
-    if(typeof obj!=='object')return `${typeof obj}:${String(obj).slice(0,80)}`;
-    return 'keys='+Object.keys(obj).slice(0,18).join(',');
-  }catch(e){ return 'summary_error'; }
-}
-function bh243DeepFindRace(root,venue,raceNo){
-  const v=Number(venue), r=Number(raceNo);
-  const seen=new Set();
-  const q=[{x:root,path:'$'}];
-  let steps=0;
-  while(q.length && steps<12000){
-    const {x,path}=q.shift(); steps++;
-    if(!x || typeof x!=='object' || seen.has(x)) continue;
-    seen.add(x);
 
-    const sv=bh243NormNum(x.stadium_number ?? x.stadiumNumber ?? x.jcd ?? x.venue ?? x.stadium ?? x.place_code ?? x.placeCode);
-    const rr=bh243NormNum(x.race_number ?? x.raceNumber ?? x.rno ?? x.race_no ?? x.raceNo ?? x.race);
-    if(sv===v && rr===r){
-      return {race:x,path};
-    }
-
-    // key hierarchy common patterns: stadiums['02'].races['6'] / results['02']['6']
-    const stadiumKeys=[String(v),String(v).padStart(2,'0')];
-    for(const sk of stadiumKeys){
-      const st=x?.stadiums?.[sk] ?? x?.results?.stadiums?.[sk] ?? x?.programs?.stadiums?.[sk];
-      if(st){
-        const rk=[String(r),String(r).padStart(2,'0')];
-        for(const k of rk){
-          const cand=st?.races?.[k] ?? st?.results?.[k] ?? st?.[k];
-          if(cand && typeof cand==='object') return {race:cand,path:`${path}.stadiums[${sk}].races[${k}]`};
-        }
-      }
-    }
-
-    if(Array.isArray(x)){
-      for(let i=0;i<x.length;i++) if(x[i]&&typeof x[i]==='object') q.push({x:x[i],path:`${path}[${i}]`});
-    }else{
-      for(const [k,val] of Object.entries(x)){
-        if(val&&typeof val==='object') q.push({x:val,path:`${path}.${k}`});
-      }
-    }
-  }
-  return null;
-}
-window.bh243DeepFindRace=bh243DeepFindRace;
-window.bh243Summarize=bh243Summarize;
-
-const oldFetch=window.fetchResultRace;
-if(typeof oldFetch==='function'){
-  window.fetchResultRace=async function(date,venue,raceNo){
-    const ymd=String(date).replaceAll('-','');
-    const y=ymd.slice(0,4), v=Number(venue), rn=Number(raceNo);
-    const sources=[
-      ['OpenAPI v1 date',`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`],
-      ['OpenAPI v1 today','https://boatraceopenapi.github.io/api/v1/today.json'],
-      ['Results v3',`https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`],
-      ['Results v2',`https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`]
-    ];
-    const diag=[];
-    for(const [label,url] of sources){
-      try{
-        const j=await bhFetchJsonNoStore(url,4500);
-        const found=bh243DeepFindRace(j,v,rn);
-        const raw=found?.race||null;
-        const c=bhCanonicalResult(raw,label+' deep');
-        diag.push(`${label}:${c?'OK':found?'FOUND_NO_RESULT':'NO_MATCH'}${found?`@${found.path}`:''} [${bh243Summarize(j)}]`);
-        if(c){ c.__bhDiagnostics=diag.slice(); c.__bhResultSource=label+' deep'; window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()}; return c; }
-      }catch(e){ diag.push(`${label}:ERR(${String(e?.message||e).slice(0,70)})`); }
-    }
-    try{
-      const fallback=await oldFetch(date,venue,raceNo);
-      if(fallback){
-        const prev=Array.isArray(fallback.__bhDiagnostics)?fallback.__bhDiagnostics:[];
-        fallback.__bhDiagnostics=[...diag,...prev];
-        window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:fallback.__bhDiagnostics,checkedAt:Date.now()};
-        return fallback;
-      }
-    }catch(e){ diag.push('legacy:ERR('+String(e?.message||e).slice(0,70)+')'); }
-    window.__BH_RESULT_DIAGNOSTICS={date,venue:v,race:rn,diagnostics:diag,checkedAt:Date.now()};
-    return null;
-  };
-}
-})();
-</script>
 </body>
 </html>
-<!-- Vol.242: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
+<!-- Vol.244: 結果確認エンジンをmain IIFE内の単一fetchResultRaceへ一本化。 -->
