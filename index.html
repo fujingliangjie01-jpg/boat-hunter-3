@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V233</title>
+<title>BOAT HUNTER V232</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -984,7 +984,7 @@ body.top-open,body.race-open{overflow:auto!important}
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
 .controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
-/* Vol.233: レース±矢印。1R←12R / 12R→1Rで循環 */
+/* Vol.234: レース±矢印。1R←12R / 12R→1Rで循環 */
 .raceSelectCard:after{top:48px!important;bottom:auto!important}
 .raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
 .raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.233</div>
+  <div class="topVol">Vol.234</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8813,14 +8813,17 @@ function dateMinus(s,days){
 async function dayJson(date){
  const ymd=String(date).replaceAll("-","");
  const y=ymd.slice(0,4);
+ const bust=`v=${Date.now()}`;
  const urls=[
-   `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
-   `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json`,
-   `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json`
+   `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json?${bust}`,
+   `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json?${bust}`,
+   `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json?${bust}`,
+   `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json?${bust}`,
+   `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json?${bust}`
  ];
  for(const u of urls){
    try{
-     const x=await fetch(u,{cache:"force-cache"});
+     const x=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}});
      if(x.ok){
        const j=await x.json();
        if(j)return j;
@@ -9141,7 +9144,7 @@ $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
 
-/* Vol.233: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+/* Vol.234: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
   function stepRace(delta){
     const race=document.getElementById('race');
@@ -13703,7 +13706,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.233: 1コース限定・頭候補2位以降の専用2着候補ルール
+    /* Vol.234: 1コース限定・頭候補2位以降の専用2着候補ルール
        1コース艇が主頭ではなく「頭候補2位以降」に残った場合、通常の軸候補は使わない。
        その1号艇が1着になった条件付きシミュレーションで、2着率22.0%以上の艇をすべて採用し、
        「1-2着候補-○」だけを表示する。3着固定への折り返しは出さない。 */
@@ -13740,7 +13743,7 @@ function renderOdds(odds){
        頭候補2位以降が無い場合のみ、残り全艇から最上位1艇を選ぶ。 */
     headCandidates.forEach((h)=>{
       const headRow=evalRows.find(x=>Number(x.boat)===Number(h.boat))||null;
-      /* Vol.233: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
+      /* Vol.234: 1C頭候補2位以降は上で「2着率22%以上」専用化済み。通常軸で上書きしない。 */
       if(h.oneCourseSecondarySecondOnly){ h.pairCuts={}; return; }
       const secondarySet=new Set(headCandidates.filter(x=>Number(x.boat)!==Number(h.boat)).map(x=>Number(x.boat)));
       const allRates=Array.isArray(h.axisAllRates)?h.axisAllRates:[];
@@ -14081,7 +14084,7 @@ function renderOdds(odds){
       venue:Number($("stadium")?.value||0),
       race:Number($("race")?.value||0),
       savedAt:Date.now(),
-      /* Vol.233: 結果判定には表示中の全頭候補を保存する。主頭だけ保存すると頭候補2以降が的中しても不的中になる。 */
+      /* Vol.234: 結果判定には表示中の全頭候補を保存する。主頭だけ保存すると頭候補2以降が的中しても不的中になる。 */
       heads:((Array.isArray(p.headCandidates)&&p.headCandidates.length)?p.headCandidates:(p.heads||[])).map((x,headIndex)=>({
         boat:Number(x.boat),
         headIndex:Number(headIndex),
@@ -14139,9 +14142,7 @@ function renderOdds(odds){
        ・1～3着艇が重複なし
        の全条件を満たした時だけ。 */
     const technique=Number(result?.technique_number);
-    /* Vol.233: 払戻CSVの3連単組番から確定結果を復元した場合は、
-       決まり手未取得でも「確定済み結果」として着順判定を許可する。 */
-    if(!(technique>=1 && technique<=6) && !r?.confirmed_result)return null;
+    if(!(technique>=1 && technique<=6))return null;
 
     const placed=[1,2,3].map(place=>
       rs.find(x=>Number(x?.place_number)===place)
@@ -14304,120 +14305,117 @@ function renderOdds(odds){
     }
   }
 
-  /* Vol.233: 当日結果取得を強化。
-     OpenAPIの日次JSONだけに依存すると、開催途中で一部R以降のresult反映が遅れる場合がある。
-     BoatraceCSV realtime results を併用し、レースコード単位で現在Rを直接拾う。 */
-  async function fetchRealtimeResultRace(date,venue,raceNo){
-    const [y,m,d]=String(date).split("-");
-    const code=String(date).replaceAll("-","")
+  /* Vol.234: 結果取得を再設計。
+     原因: dayJson が force-cache で当日途中の古いJSONを掴み続けることがあり、
+     5Rまで入ったスナップショットのまま6R以降を「未確定」と判定していた。
+     no-store + cache-buster + results専用API + realtime CSV をレース単位で照合する。 */
+  function resultCode(date,venue,raceNo){
+    return String(date).replaceAll("-","")
       +String(Number(venue)).padStart(2,"0")
       +String(Number(raceNo)).padStart(2,"0");
-    const csvUrl=`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv`;
+  }
+
+  function normalizeResultCsvRows(text){
+    const rows=parseCSV(text);
+    if(!Array.isArray(rows)||rows.length<2)return [];
+    const head=rows[0].map(x=>String(x??"").replace(/^\uFEFF/,"").trim());
+    return rows.slice(1).map(row=>({head,row}));
+  }
+
+  function csvValue(head,row,names){
+    for(const name of names){
+      const i=head.findIndex(h=>h===name);
+      if(i>=0)return row[i];
+    }
+    return "";
+  }
+
+  function techniqueNoFromText(v){
+    const t=String(v||"").trim();
+    const map={"逃げ":1,"差し":2,"まくり":3,"まくり差し":4,"抜き":5,"恵まれ":6};
+    return Number(map[t]||0);
+  }
+
+  async function fetchRealtimeResultRace(date,venue,raceNo){
+    const [y,m,d]=String(date).split("-");
+    const code=resultCode(date,venue,raceNo);
+    const csvUrl=`https://boatracecsv.github.io/data/results/realtime/${y}/${m}/${d}.csv?v=${Date.now()}`;
     try{
-      const res=await fetch(csvUrl,{cache:"no-store"});
+      const res=await fetch(csvUrl,{cache:"no-store",headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}});
       if(!res.ok)return null;
-      const rows=parseCSV(await res.text());
-      if(!Array.isArray(rows)||rows.length<2)return null;
-      const head=rows[0].map(x=>String(x||"").trim());
-      const codeIdx=head.indexOf("レースコード");
-      const venueIdx=head.indexOf("レース場");
-      const raceIdx=head.indexOf("レース回");
-      const venueName=(S[Number(venue)]||"").trim();
-      const row=rows.slice(1).find(r=>{
-        const rc=String(r?.[codeIdx>=0?codeIdx:0]||"").replace(/^\uFEFF/,"").trim();
+      const items=normalizeResultCsvRows(await res.text());
+      const hit=items.find(({head,row})=>{
+        const rc=String(csvValue(head,row,["レースコード","race_code"])||row?.[0]||"").trim();
         if(rc===code)return true;
-        /* レースコード表記差対策：場名＋Rでも照合 */
-        const rv=venueIdx>=0?String(r?.[venueIdx]||"").trim():"";
-        const rr=raceIdx>=0?Number(String(r?.[raceIdx]||"").replace(/[^0-9]/g,"")):0;
-        return !!venueName && rv===venueName && rr===Number(raceNo);
+        const jo=Number(csvValue(head,row,["レース場","場コード","stadium_number"]));
+        const rr=Number(String(csvValue(head,row,["レース回","レース番号","race_number"])).replace(/R/gi,""));
+        return jo===Number(venue)&&rr===Number(raceNo);
       });
-      if(!row)return null;
-      const get=(name)=>{
-        const i=head.indexOf(name);
-        return i>=0?row[i]:"";
-      };
-      const techText=String(get("決まり手")||"").trim();
-      const techNo=Number(Object.keys(T).find(k=>T[k]===techText)||0);
+      if(!hit)return null;
+      const {head,row}=hit;
+      const techNo=techniqueNoFromText(csvValue(head,row,["決まり手","technique"]));
       if(!(techNo>=1&&techNo<=6))return null;
       const racers={};
       for(let place=1;place<=6;place++){
-        const boat=Number(get(`${place}着_艇番`));
+        const boat=Number(csvValue(head,row,[`${place}着_艇番`,`${place}着艇番`,`${place}着`])) || Number(row?.[7+(place-1)*3]);
         if(!(boat>=1&&boat<=6))continue;
-        racers[String(boat)]={
-          entry_number:boat,
-          place_number:place
-        };
+        racers[String(boat)]={entry_number:boat,place_number:place};
       }
       if(Object.keys(racers).length<3)return null;
-      return {
-        stadium_number:Number(venue),
-        race_number:Number(raceNo),
-        result:{technique_number:techNo,racers}
-      };
+      return {stadium_number:Number(venue),race_number:Number(raceNo),result:{technique_number:techNo,racers}};
     }catch(e){
       console.warn("realtime result fallback:",e);
       return null;
     }
   }
 
-  /* Vol.233: realtime着順CSVが未反映でも、払戻CSVに3連単結果があれば確定結果を復元する。
-     これで開催途中に「6R以降だけ未確定」のような片側CSVの反映差を吸収する。 */
-  async function fetchPayoutConfirmedRace(date,venue,raceNo){
-    const [y,m,d]=String(date).split("-");
-    const code=String(date).replaceAll("-","")
-      +String(Number(venue)).padStart(2,"0")
-      +String(Number(raceNo)).padStart(2,"0");
-    const url=`https://boatracecsv.github.io/data/results/payouts/${y}/${m}/${d}.csv`;
-    try{
-      const res=await fetch(url,{cache:"no-store"});
-      if(!res.ok)return null;
-      const rows=parseCSV(await res.text());
-      if(!Array.isArray(rows)||rows.length<2)return null;
-      const head=rows[0].map(x=>String(x||"").replace(/^\uFEFF/,"").trim());
-      const ci=head.indexOf("レースコード"), vi=head.indexOf("レース場"), ri=head.indexOf("レース回");
-      const venueName=(S[Number(venue)]||"").trim();
-      const row=rows.slice(1).find(r=>{
-        const rc=String(r?.[ci>=0?ci:0]||"").replace(/^\uFEFF/,"").trim();
-        if(rc===code)return true;
-        const rv=vi>=0?String(r?.[vi]||"").trim():"";
-        const rr=ri>=0?Number(String(r?.[ri]||"").replace(/[^0-9]/g,"")):0;
-        return !!venueName && rv===venueName && rr===Number(raceNo);
-      });
-      if(!row)return null;
-      const oi=head.indexOf("3連単_組番");
-      if(oi<0)return null;
-      const combo=String(row[oi]||"").replace(/\s/g,"").replace(/[＝=]/g,"-");
-      const top=combo.split("-").map(Number);
-      if(top.length!==3||!top.every(n=>n>=1&&n<=6)||new Set(top).size!==3)return null;
-      const racers={};
-      top.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
-      return {stadium_number:Number(venue),race_number:Number(raceNo),confirmed_result:true,result:{technique_number:0,racers}};
-    }catch(e){
-      console.warn("payout result fallback:",e);
-      return null;
+  function raceFromAnyJson(j,venue,raceNo){
+    if(!j)return null;
+    const direct=raceOf(j,venue,raceNo);
+    if(direct)return direct;
+    const sts=j?.results?.stadiums||j?.programs?.stadiums||j?.stadiums;
+    const st=sts?.[String(Number(venue))]||sts?.[String(venue).padStart(2,"0")];
+    return st?.races?.[String(Number(raceNo))]||st?.races?.[String(raceNo).padStart(2,"0")]||null;
+  }
+
+  async function fetchResultJsonDirect(date,venue,raceNo){
+    const ymd=String(date).replaceAll("-","");
+    const y=ymd.slice(0,4);
+    const urls=[
+      `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
+      `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
+      `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`
+    ];
+    for(const base of urls){
+      try{
+        const u=`${base}?v=${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const res=await fetch(u,{cache:"no-store",headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}});
+        if(!res.ok)continue;
+        const j=await res.json();
+        const r=raceFromAnyJson(j,venue,raceNo);
+        if(actualCombo(r))return r;
+      }catch(e){}
     }
+    return null;
   }
 
   async function fetchResultRace(date,venue,raceNo){
-    /* まず準リアルタイム結果を確認。開催途中の取りこぼし対策。 */
-    const realtime=await fetchRealtimeResultRace(date,venue,raceNo);
-    if(actualCombo(realtime))return realtime;
+    /* 1. 結果専用API / 後継APIを毎回キャッシュ無効で直接確認 */
+    let r=await fetchResultJsonDirect(date,venue,raceNo);
+    if(actualCombo(r))return r;
 
-    /* 次に既存OpenAPIを複数URLで確認。 */
+    /* 2. BoatraceCSV realtime を確認 */
+    r=await fetchRealtimeResultRace(date,venue,raceNo);
+    if(actualCombo(r))return r;
+
+    /* 3. 既存dayJson経路もno-store化済みなので最後に確認 */
     try{
       const j=await dayJson(date);
-      const r=raceOf(j,venue,raceNo);
+      r=raceFromAnyJson(j,venue,raceNo);
       if(actualCombo(r))return r;
     }catch(e){}
 
-    /* 着順CSVと払戻CSVは独立更新。片方だけ先に反映された場合は3連単組番から確定着順を復元。 */
-    const payout=await fetchPayoutConfirmedRace(date,venue,raceNo);
-    if(actualCombo(payout))return payout;
-
-    /* CSVが数分遅れて追記される場合もあるため最後にno-storeで再取得。 */
-    const retry=await fetchRealtimeResultRace(date,venue,raceNo);
-    if(actualCombo(retry))return retry;
-    return await fetchPayoutConfirmedRace(date,venue,raceNo);
+    return null;
   }
 
   async function checkResult(){
@@ -15406,3 +15404,4 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 </body>
 </html>
+<!-- Vol.234 result-fetch cache fix: no-store + cache-buster + results/v3/v2 + realtime CSV -->
