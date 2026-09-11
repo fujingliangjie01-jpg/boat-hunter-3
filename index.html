@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.256</div>
+  <div class="topVol">Vol.258</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13767,7 +13767,7 @@ function renderOdds(odds){
           const second=Number(z.second||0);
           const third=Number(z.third||0);
           const sum=second+third;
-          if(sum<21.0)h.pairCuts[boat]={boat,second,third,sum};
+          if(sum<=26.9)h.pairCuts[boat]={boat,second,third,sum};
         });
         return;
       }
@@ -13827,7 +13827,7 @@ function renderOdds(odds){
       }
       /* Vol.252: 各頭候補ごとに切り候補を完全独立判定。
          その頭が1着になった条件付き5000回模擬で、各相手艇の
-         「2着率＋3着率」が21.0%未満なら、その頭専用の切り候補。
+         「2着率＋3着率」が26.9%以下なら、その頭専用の切り候補。
          別の頭候補側の数値とは合算・相殺しない。 */
       h.pairCuts={};
       (Array.isArray(h.axisAllRates)?h.axisAllRates:[]).forEach(z=>{
@@ -13836,14 +13836,53 @@ function renderOdds(odds){
         const second=Number(z.second||0);
         const third=Number(z.third||0);
         const sum=second+third;
-        if(sum<21.0){
+        if(sum<=26.9){
           h.pairCuts[boat]={boat,second,third,sum};
         }
       });
     });
 
+    /* Vol.258: 軸候補/2着候補を廃止し、頭候補ごとの3連単フォーメーションへ統一。
+       本線:
+       - 2+3着率 >=40% は2着・3着の両方へ
+       - 2着率 >=22% は2着へ
+       - 3着率 >=22% は3着へ
+       - 2+3着率 <=26.9% は切り候補として本線/穴から除外
+       穴:
+       - 本線2着に入らず、3着率>=22%の「3着型」を2着へ1段昇格
+       - 3着は本線3着候補から穴2着艇自身を除外 */
+    headCandidates.forEach(h=>{
+      const rates=(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
+        .filter(z=>Number(z.boat)!==Number(h.boat))
+        .map(z=>({
+          boat:Number(z.boat),
+          second:Number(z.second||0),
+          third:Number(z.third||0),
+          total:Number(z.second||0)+Number(z.third||0)
+        }));
+
+      const usable=rates.filter(z=>z.total>26.9);
+      const secondMain=usable.filter(z=>z.total>=40.0 || z.second>=22.0)
+        .sort((a,b)=>b.second-a.second || b.total-a.total);
+      const thirdMain=usable.filter(z=>z.total>=40.0 || z.third>=22.0)
+        .sort((a,b)=>b.third-a.third || b.total-a.total);
+
+      h.formationSecondBoats=secondMain.map(z=>z.boat);
+      h.formationThirdBoats=thirdMain.map(z=>z.boat);
+
+      const secondSet=new Set(h.formationSecondBoats);
+      const hole=usable
+        .filter(z=>!secondSet.has(z.boat) && z.third>=22.0)
+        .sort((a,b)=>b.third-a.third || b.total-a.total)[0]||null;
+
+      h.holeSecondBoat=hole?hole.boat:null;
+      h.holeThirdBoats=hole
+        ? h.formationThirdBoats.filter(b=>Number(b)!==Number(hole.boat))
+        : [];
+    });
+
     /* Vol.226: 表示・買い目の主頭は従来どおり頭候補1。
-       ただし headCandidates 側には全頭候補の専用軸情報を保持する。 */
+       ただし headCandidates 側には全頭候補の専用情報を保持する。 */
     heads=primaryHead?[primaryHead]:[];
 
     /* V215: 個別切り艇は使用しない。完全切りのみ継続。 */
@@ -14014,70 +14053,51 @@ function renderOdds(odds){
 
       axis.classList.remove("hide");
       axis.innerHTML=`
-        <div class="simplePickLabel">軸候補 <span class="pickExplain">各頭候補ごとに専用軸を算出</span></div>
+        <div class="simplePickLabel">3連単フォーメーション <span class="pickExplain">各頭候補の2着率・3着率から自動生成</span></div>
         <div class="headAxisGrid">
-          ${(Array.isArray(p.headCandidates)&&p.headCandidates.length?p.headCandidates:p.heads).map((h,headIndex)=>{
-            const allSecond=Array.isArray(h.secondCandidateBoats)&&h.secondCandidateBoats.length
-              ? h.secondCandidateBoats
-              : (Array.isArray(h.axisBoats)&&h.axisBoats.length?h.axisBoats:(h.axisBoat?[h.axisBoat]:[]));
-            const boats=headIndex===0
-              ? allSecond
-              : (h.axisBoat?[Number(h.axisBoat)]:(allSecond.length?[Number(allSecond[0])]:[]));
-            const rates=Array.isArray(h.axisRates)&&h.axisRates.length?h.axisRates:(h.axisBoat?[h.axisRate]:[]);
-            const secondRates=Array.isArray(h.axisSecondRates)?h.axisSecondRates:[];
-            const thirdRates=Array.isArray(h.axisThirdRates)?h.axisThirdRates:[];
-            const split=boats.length>=2;
+          ${(Array.isArray(p.headCandidates)&&p.headCandidates.length?p.headCandidates:p.heads).map(h=>{
+            const s2=Array.isArray(h.formationSecondBoats)?h.formationSecondBoats:[];
+            const s3=Array.isArray(h.formationThirdBoats)?h.formationThirdBoats:[];
+            const hole=Number(h.holeSecondBoat||0);
+            const hole3=Array.isArray(h.holeThirdBoats)?h.holeThirdBoats:[];
+            const cuts=Object.values(h.pairCuts||{}).sort((a,b)=>Number(a.sum)-Number(b.sum));
+            const fmt=arr=>arr.length?arr.join("・"):"—";
             return `
-            <div class="headAxisRow ${split?"axisSplit":""}">
-              <div class="candidateModeBadge">${h.oneCourseSecondarySecondOnly?"2着候補":"軸候補"}</div>
+            <div class="headAxisRow formationRow">
+              <div class="candidateModeBadge">本線</div>
               <div class="axisMainLine">
                 <div class="headAxisHead">${simpleBoatText(h.boat)}</div>
-                <div class="headAxisArrow" aria-hidden="true">→</div>
-                <div class="headAxisBoat">${boats.length
-                  ? boats.map((b,i)=>`
-                    <div class="axisChoiceBlock" data-axis-head="${h.boat}" data-axis-boat="${b}">
-                      <div class="axisTop axisHoldTarget" title="長押しで他の率">
-                        ${simpleBoatText(b)}
-                        <span class="axisTotal">計 ${Number(rates[i]||0).toFixed(1)}%</span>
+                <div class="headAxisArrow">→</div>
+                <div class="headAxisBoat">
+                  <div class="axisChoiceBlock">
+                    <div class="axisShapes">
+                      <span><b>${h.boat} - ${fmt(s2)} - ${fmt(s3)}</b></span>
+                    </div>
+                    <div class="axisOtherRates">
+                      <div class="axisOtherTitle"><span>相手率</span><span class="axisCols"><strong>2着</strong><strong>3着</strong><em>合計</em></span></div>
+                      <div class="axisOtherList">
+                        ${(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
+                          .filter(z=>Number(z.boat)!==Number(h.boat))
+                          .sort((a,b)=>Number(b.total||0)-Number(a.total||0))
+                          .map(z=>`<div class="axisOtherItem">
+                            <span class="ob">${z.boat}号艇</span>
+                            <b class="axisPlaceRate">${Number(z.second||0).toFixed(1)}%</b>
+                            <b class="axisPlaceRate">${Number(z.third||0).toFixed(1)}%</b>
+                            <b class="axisSumRate">${(Number(z.second||0)+Number(z.third||0)).toFixed(1)}%</b>
+                          </div>`).join("")}
                       </div>
-                      <div class="axisShapes">
-                        ${h.axisPlacementMode!=="third_only"?`<span><b>${h.boat}-${b}-○</b><em>${Number(
-                          (h.axisAllRates||[]).find(z=>Number(z.boat)===Number(b))?.second || secondRates[i] || 0
-                        ).toFixed(1)}%</em></span>`:""}
-                        ${(h.axisPlacementMode!=="none" && h.axisPlacementMode!=="second_only")?`<span><b>${h.boat}-○-${b}</b><em>${Number(
-                          (h.axisAllRates||[]).find(z=>Number(z.boat)===Number(b))?.third || thirdRates[i] || 0
-                        ).toFixed(1)}%</em></span>`:""}
-                        ${h.axisPlacementMode==="third_only"?`<div class="specialAxisNote">軸候補1位：2着・3着の両方で折り返し</div>`:""}
-                        ${h.oneCourseSecondarySecondOnly?`<div class="specialAxisNote">1コース頭候補2位以降：2着率22%以上のみ → 1-2着候補-○</div>`:""}
-                        ${(h.oneCourseEscapeRule && Array.isArray(h.escapeSecondFixedBoats) && h.escapeSecondFixedBoats.length)
-                          ? h.escapeSecondFixedBoats.map((eb,ei)=>`<span><b>${h.boat}-${eb}-○</b><em>${Number(h.escapeSecondFixedRates?.[ei]||0).toFixed(1)}%</em></span>`).join("")
-                          : ""}
-                        ${(h.oneCourseEscapeRule && Array.isArray(h.escapeSecondFixedBoats) && h.escapeSecondFixedBoats.length)
-                          ? `<div class="specialAxisNote">1コース逃げ限定：軸以外で2着率22%以上 → 2着固定</div>`
-                          : ""}
-                      </div>
-                      <div class="axisOtherRates">
-                        <div class="axisOtherTitle"><span>他の相手率</span><span class="axisCols"><strong>2着</strong><strong>3着</strong><em>合計</em></span></div>
-                        <div class="axisOtherList">
-                          ${(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
-                            .filter(z=>Number(z.boat)!==Number(b))
-                            .map(z=>`<div class="axisOtherItem">
-                              <span class="ob">${z.boat}号艇</span>
-                              <b class="axisPlaceRate">${Number(z.second||0).toFixed(1)}%</b>
-                              <b class="axisPlaceRate">${Number(z.third||0).toFixed(1)}%</b>
-                              <b class="axisSumRate">${Number(z.total||0).toFixed(1)}%</b>
-                            </div>`).join("")}
-                        </div>
-                        <div class="axisOtherHint">軸艇をもう一度長押しで閉じる</div>
-                      </div>
-                    </div>`).join("")
-                  : "なし"}</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              ${(()=>{
-                const cuts=Object.values(h.pairCuts||{}).sort((a,b)=>Number(a.sum)-Number(b.sum));
-                if(!cuts.length)return `<div class="pairCutLine"><b>切り候補</b><span>なし</span></div>`;
-                return `<div class="pairCutLine"><b>切り候補</b><span>${cuts.map(c=>`${c.boat}号艇 ${Number(c.sum).toFixed(1)}%`).join(" ・ ")}</span></div>`;
-              })()}
+              ${hole && hole3.length ? `
+                <div class="pairCutLine" style="border-color:#b78a00!important;background:#fff9df!important;color:#5f4800!important">
+                  <b>穴目</b><span>${h.boat} - ${hole} - ${fmt(hole3)}</span>
+                </div>` : `
+                <div class="pairCutLine"><b>穴目</b><span>なし</span></div>`}
+              ${cuts.length
+                ? `<div class="pairCutLine"><b>切り候補</b><span>${cuts.map(c=>`${c.boat}号艇 ${Number(c.sum).toFixed(1)}%`).join(" ・ ")}</span></div>`
+                : `<div class="pairCutLine"><b>切り候補</b><span>なし</span></div>`}
             </div>`;
           }).join("")}
         </div>`;
@@ -14124,6 +14144,10 @@ function renderOdds(odds){
         escapeSecondFixedRates:Array.isArray(x.escapeSecondFixedRates)?x.escapeSecondFixedRates.map(Number):[],
         axisFromHeadCandidate:!!x.axisFromHeadCandidate,
         passMultiAxis:!!x.passMultiAxis,
+        formationSecondBoats:Array.isArray(x.formationSecondBoats)?x.formationSecondBoats.map(Number):[],
+        formationThirdBoats:Array.isArray(x.formationThirdBoats)?x.formationThirdBoats.map(Number):[],
+        holeSecondBoat:x.holeSecondBoat?Number(x.holeSecondBoat):null,
+        holeThirdBoats:Array.isArray(x.holeThirdBoats)?x.holeThirdBoats.map(Number):[],
         pairCuts:Object.fromEntries(Object.entries(x.pairCuts||{}).map(([k,v])=>[k,{
           boat:Number(v.boat||k),second:Number(v.second||0),third:Number(v.third||0),sum:Number(v.sum||0)
         }])) ,
@@ -14237,33 +14261,31 @@ function renderOdds(odds){
     const first=Number(result.first), second=Number(result.second), third=Number(result.third);
     const headHit=heads.length ? heads.some(h=>Number(h.boat)===first) : null;
     const winnerHead=heads.find(h=>Number(h.boat)===first)||null;
-    const anyAxis=heads.some(h=>{
-      const a=Array.isArray(h.axisBoats)?h.axisBoats:[];
-      const b=Array.isArray(h.secondCandidateBoats)?h.secondCandidateBoats:[];
-      return a.length||b.length||Number(h.axisBoat)>0;
-    });
-    let axisHit=anyAxis?false:null;
-    if(winnerHead && anyAxis){
-      const regular=[...(Array.isArray(winnerHead.axisBoats)?winnerHead.axisBoats:[])];
-      if(!regular.length && Number(winnerHead.axisBoat)>0)regular.push(Number(winnerHead.axisBoat));
-      const secondOnly=[...(Array.isArray(winnerHead.secondCandidateBoats)?winnerHead.secondCandidateBoats:[])];
-      if(winnerHead.oneCourseSecondarySecondOnly){
-        const target=secondOnly.length?secondOnly:regular;
-        axisHit=target.map(Number).includes(second);
-      }else{
-        axisHit=regular.map(Number).includes(second)||regular.map(Number).includes(third);
-      }
+
+    /* Vol.258: 結果確認もフォーメーション基準。
+       頭が的中し、実2着がformationSecondBoats、実3着がformationThirdBoatsなら本線的中。
+       穴目は holeSecondBoat + holeThirdBoats で別判定し、どちらか当たればフォーメーション的中。 */
+    let axisHit=null;
+    let mainFormationHit=false, holeFormationHit=false;
+    if(winnerHead){
+      const s2=(winnerHead.formationSecondBoats||[]).map(Number);
+      const s3=(winnerHead.formationThirdBoats||[]).map(Number);
+      const hs=Number(winnerHead.holeSecondBoat||0);
+      const h3=(winnerHead.holeThirdBoats||[]).map(Number);
+      const hasFormation=s2.length&&s3.length;
+      const hasHole=hs>0&&h3.length;
+      mainFormationHit=!!(hasFormation && s2.includes(second) && s3.includes(third) && second!==third);
+      holeFormationHit=!!(hasHole && hs===second && h3.includes(third) && second!==third);
+      axisHit=(hasFormation||hasHole)?(mainFormationHit||holeFormationHit):null;
     }
-    /* Vol.252: 切り艇評価も頭候補ごとに独立。
-       実際に1着になった頭候補の pairCuts だけを評価し、
-       その頭専用の切り候補が全て3着外なら「切り艇的中」。 */
+
     let cutHit=null;
     if(winnerHead){
       const cuts=Object.values(winnerHead.pairCuts||{}).map(v=>Number(v?.boat||0)).filter(Boolean);
       if(cuts.length)cutHit=cuts.every(b=>![first,second,third].includes(b));
     }
     return {
-      headHit,axisHit,cutHit,
+      headHit,axisHit,cutHit,mainFormationHit,holeFormationHit,
       excluded:!!pred.excludedFromResults,
       reason:pred.exclusionReason||""
     };
@@ -14292,7 +14314,7 @@ function renderOdds(odds){
     const h=calc("headHit"), a=calc("axisHit"), c=calc("cutHit");
     root.innerHTML=`
       <div class="rv248Stat"><strong>${h.pct}</strong><small>頭 ${h.hit}/${h.total}R</small></div>
-      <div class="rv248Stat"><strong>${a.pct}</strong><small>軸 ${a.hit}/${a.total}R</small></div>
+      <div class="rv248Stat"><strong>${a.pct}</strong><small>フォーメーション ${a.hit}/${a.total}R</small></div>
       <div class="rv248Stat"><strong>${c.pct}</strong><small>切り艇 ${c.hit}/${c.total}R</small></div>`;
     const today=rv250PrepareDailyView();
     const dailyRecords=records.filter(r=>String(r.date||"")===today);
@@ -14302,7 +14324,7 @@ function renderOdds(odds){
       return `<div class="rv248Hist">
         <div>${r.venueName||"—"} ${r.race||"—"}R<br><small>${r.date||""}</small></div>
         <div><span class="combo">${r.combo||"—"}</span><br><small>${Number(r.multiple||0)>0?Number(r.multiple).toFixed(1)+"倍":"—"}</small></div>
-        <div class="eval">頭${icon(e.headHit)} 軸${icon(e.axisHit)} 切${icon(e.cutHit)}${r.excluded?"<br><small>集計外</small>":""}</div>
+        <div class="eval">頭${icon(e.headHit)} 組${icon(e.axisHit)} 切${icon(e.cutHit)}${r.excluded?"<br><small>集計外</small>":""}</div>
       </div>`;
     }).join("") || `<div style="color:#76848e;font-size:11px;padding:4px 2px">今日の保存済み結果なし</div>`;
   }
@@ -14323,7 +14345,7 @@ function renderOdds(odds){
     </div>
     <div class="rv248EvalGrid">
       <div class="rv248Eval ${rv248EvalClass(e.headHit)}"><b>頭 ${rv248EvalText(e.headHit)}</b><span>1着候補</span></div>
-      <div class="rv248Eval ${rv248EvalClass(e.axisHit)}"><b>軸 ${rv248EvalText(e.axisHit)}</b><span>軸候補</span></div>
+      <div class="rv248Eval ${rv248EvalClass(e.axisHit)}"><b>組 ${rv248EvalText(e.axisHit)}</b><span>フォーメーション</span></div>
       <div class="rv248Eval ${rv248EvalClass(e.cutHit)}"><b>切り艇 ${rv248EvalText(e.cutHit)}</b><span>3着内除外</span></div>
     </div>
     ${record.excluded?`<div id="resultStatusV248Note" style="margin-top:7px;font-size:10px;color:#e5b66d;font-weight:900">${record.exclusionReason||"見推奨"}のため累計集計には含めません</div>`:""}`;
@@ -15404,8 +15426,8 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 })();
 </script>
 
-<!-- Vol.256: RESULT CHECK flex order fix - actual page bottom -->
-<style id="bh-vol256-result-real-bottom">
+<!-- Vol.257: RESULT CHECK axis evaluation fix + actual page bottom -->
+<style id="bh-vol257-result-real-bottom">
 /* #main>.wrap is flex. DOMの末尾移動だけでは既存order指定に負けるため、結果確認を最大orderで固定。 */
 #main>.wrap>#resultPanelV248{
   order:99999!important;
