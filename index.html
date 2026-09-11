@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V214</title>
+<title>BOAT HUNTER V230</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -983,7 +983,15 @@ body.top-open,body.race-open{overflow:auto!important}
 }
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
-.controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}.voicePick{grid-column:1/-1!important;min-height:50px!important;border-radius:15px!important;border:1.5px solid #8fcdef6b!important;background:linear-gradient(180deg,#1f3949,#0b1b26)!important;color:#eefaff!important;font-size:15px!important;font-weight:900!important}.voicePick.listening{border-color:#ff5963!important}.voiceStatus{grid-column:1/-1!important;font-size:11px!important;color:#7893a5!important;text-align:center!important}#get{grid-column:1/-1!important;margin-top:2px!important}
+.controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
+/* Vol.230: レース±矢印。1R←12R / 12R→1Rで循環 */
+.raceSelectCard:after{top:48px!important;bottom:auto!important}
+.raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
+.raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+.raceStepBtn:active{transform:translateY(1px) scale(.985)!important}
+body.theme-ladies .raceStepBtn{background:linear-gradient(180deg,#c34d83,#9d2d64)!important;border-color:#dc81ab!important;color:#fff!important}
+body.theme-sg .raceStepBtn{background:linear-gradient(180deg,#7a5511,#4e3306)!important;border-color:#d3a542!important;color:#fff7d3!important}
+.voicePick{grid-column:1/-1!important;min-height:50px!important;border-radius:15px!important;border:1.5px solid #8fcdef6b!important;background:linear-gradient(180deg,#1f3949,#0b1b26)!important;color:#eefaff!important;font-size:15px!important;font-weight:900!important}.voicePick.listening{border-color:#ff5963!important}.voiceStatus{grid-column:1/-1!important;font-size:11px!important;color:#7893a5!important;text-align:center!important}#get{grid-column:1/-1!important;margin-top:2px!important}
 
 .rank,
 .motorBadge,
@@ -8289,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.229</div>
+  <div class="topVol">Vol.230</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8307,7 +8315,7 @@ body.theme-ladies .venueTimeLegend span{
   <div class="controls racePanel">
     <input id="date" type="hidden">
     <div class="selectCard"><div class="selectEyebrow">VENUE</div><div class="selectLabel">開催場</div><select id="stadium" aria-label="開催場選択"></select><div class="venueTimeLegend"><span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span></div></div>
-    <div class="selectCard"><div class="selectEyebrow">RACE</div><div class="selectLabel">レース</div><select id="race" aria-label="レース選択"></select></div>
+    <div class="selectCard raceSelectCard"><div class="selectEyebrow">RACE</div><div class="selectLabel">レース</div><select id="race" aria-label="レース選択"></select><div class="raceStep"><button type="button" id="racePrev" class="raceStepBtn" aria-label="1つ前のレース">←</button><button type="button" id="raceNext" class="raceStepBtn" aria-label="1つ次のレース">→</button></div></div>
     <div class="voiceSelectGroup">
       <button type="button" id="voicePick" class="voicePick">🎙 音声で選ぶ</button>
       <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
@@ -9132,6 +9140,22 @@ function applyVenueTheme(){
 $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
+
+/* Vol.230: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+(function(){
+  function stepRace(delta){
+    const race=document.getElementById('race');
+    if(!race)return;
+    let n=parseInt(race.value,10);
+    if(!Number.isFinite(n)||n<1||n>12)n=1;
+    n=((n-1+delta+12)%12)+1;
+    race.value=String(n);
+    race.dispatchEvent(new Event('change',{bubbles:true}));
+    if(window.updateRaceFloat)window.updateRaceFloat(true);
+  }
+  document.getElementById('racePrev')?.addEventListener('click',()=>stepRace(-1));
+  document.getElementById('raceNext')?.addEventListener('click',()=>stepRace(1));
+})();
 function showRaceScreen(){
  $("top").classList.remove("hide");
  $("main").classList.remove("hide");
