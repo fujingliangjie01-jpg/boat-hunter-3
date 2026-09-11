@@ -984,7 +984,7 @@ body.top-open,body.race-open{overflow:auto!important}
 
 .card .row{cursor:pointer!important;min-height:52px!important;align-items:center!important}.card .row:after{content:"＋"!important;margin-left:10px!important;width:34px!important;height:34px!important;flex:0 0 34px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:50%!important;background:rgba(5,16,24,.72)!important;border:1.5px solid #ffffffaa!important;color:#fff!important;font-size:22px!important}.card.open .row:after{content:"−"!important}.card:not(.open) .big,.card:not(.open) .stQuick,.card:not(.open) .small,.card:not(.open) .more,.card:not(.open) .detail{display:none!important}
 .controls.racePanel{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;padding:14px!important}.controls.racePanel:before{grid-column:1/-1!important;margin-bottom:0!important}.selectCard{position:relative!important;padding:12px!important;border-radius:17px!important;background:linear-gradient(160deg,#182c3b,#07121b)!important;border:1.5px solid #66bcf23d!important}.selectCard:after{content:"⌄"!important;position:absolute!important;right:13px!important;bottom:13px!important;color:#73c7f8!important;pointer-events:none!important}.selectEyebrow{font-size:9px!important;letter-spacing:.18em!important;font-weight:900!important;color:#5f8ea9!important}.selectLabel{font-size:12px!important;font-weight:800!important;color:#a9bbc7!important;margin:3px 0 2px!important}.selectCard select{width:100%!important;min-height:42px!important;padding:0 28px 0 0!important;background:transparent!important;border:0!important;color:#fff!important;font-size:19px!important;font-weight:950!important;appearance:none!important;-webkit-appearance:none!important}
-/* Vol.236: レース±矢印。1R←12R / 12R→1Rで循環 */
+/* Vol.237: レース±矢印。1R←12R / 12R→1Rで循環 */
 .raceSelectCard:after{top:48px!important;bottom:auto!important}
 .raceStep{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:8px!important}
 .raceStepBtn{min-height:38px!important;padding:0!important;border-radius:11px!important;border:1.5px solid rgba(102,188,242,.32)!important;background:linear-gradient(180deg,#17374b,#0b2230)!important;color:#fff!important;font-size:24px!important;font-weight:1000!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
@@ -8297,7 +8297,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.236</div>
+  <div class="topVol">Vol.237</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9141,7 +9141,7 @@ $("date").value=today();
 $("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
 
-/* Vol.236: レース矢印切替。変更時は既存のchange処理をすべて発火 */
+/* Vol.237: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
   function stepRace(delta){
     const race=document.getElementById('race');
@@ -14399,7 +14399,7 @@ function renderOdds(odds){
   }
 
 
-  /* Vol.236: 公式BOAT RACE結果ページを最優先フォールバックとして追加。
+  /* Vol.237: 公式BOAT RACE結果ページを最優先フォールバックとして追加。
      GitHub CSV / OpenAPI が開催途中に反映遅延・CORS失敗しても、
      公式 racerresult の確定着順を直接読む。既存 fetchTextCors を使うため、
      出走表取得系の fetch 設定には一切触れない。 */
@@ -14446,8 +14446,45 @@ function renderOdds(odds){
     }
   }
 
+
+  /* Vol.237: BOAT RACE公式「結果一覧」から3連単確定結果を直接取得。
+     racerresult個別ページより静的HTMLが単純で、開催途中の結果確認に強い。 */
+  async function fetchOfficialResultListRace(date,venue,raceNo){
+    const hd=String(date).replaceAll("-","");
+    const jcd=String(Number(venue)).padStart(2,"0");
+    const target=`https://www.boatrace.jp/owpc/pc/race/resultlist?hd=${hd}&jcd=${jcd}`;
+    try{
+      const html=await fetchTextCors(target);
+      if(!html||html.length<500)return null;
+      const doc=new DOMParser().parseFromString(html,"text/html");
+      const want=Number(raceNo);
+      for(const tr of [...doc.querySelectorAll("tr")]){
+        const cells=[...tr.querySelectorAll("th,td")].map(x=>String(x.textContent||"").replace(/\s+/g," ").trim());
+        if(!cells.length)continue;
+        const rn=Number(String(cells[0]||"").replace(/[^0-9]/g,""));
+        if(rn!==want)continue;
+        let combo=null;
+        for(const c of cells){
+          const m=String(c).match(/([1-6])\s*[-－ー]\s*([1-6])\s*[-－ー]\s*([1-6])/);
+          if(m){ combo=[Number(m[1]),Number(m[2]),Number(m[3])]; break; }
+        }
+        if(!combo||new Set(combo).size!==3)continue;
+        const racers={};
+        combo.forEach((boat,i)=>{racers[String(boat)]={entry_number:boat,place_number:i+1};});
+        return {stadium_number:Number(venue),race_number:want,confirmed_result:true,result:{technique_number:0,racers}};
+      }
+      return null;
+    }catch(e){
+      console.warn("official result-list fallback:",e);
+      return null;
+    }
+  }
   async function fetchResultRace(date,venue,raceNo){
-    /* Vol.236: まず公式結果ページ。ここが確定していれば他ソースの反映待ちをしない。 */
+    /* Vol.237: 公式結果一覧を最優先。3連単組番だけで確定着順を復元できる。 */
+    const officialList=await fetchOfficialResultListRace(date,venue,raceNo);
+    if(actualCombo(officialList))return officialList;
+
+    /* 個別公式結果ページ。 */
     const official=await fetchOfficialResultRace(date,venue,raceNo);
     if(actualCombo(official))return official;
 
@@ -15458,4 +15495,4 @@ window.__BH_VOL228_TOKUTEN_FIX=true;
 </script>
 </body>
 </html>
-<!-- Vol.236: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
+<!-- Vol.237: V234で出走表取得を壊したdayJson変更を完全撤回。V233の正常な出走表取得 + 結果フォールバックを維持。 -->
