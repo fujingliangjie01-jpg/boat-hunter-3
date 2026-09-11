@@ -8273,7 +8273,7 @@ body.theme-ladies .venueTimeLegend span{
 </style>
 
 <style id="bh-vol219-pass-heads">
-/* Vol.223 見推奨でも頭候補を全表示 */
+/* Vol.224 見推奨でも頭候補を全表示 */
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateGrid{display:grid!important;gap:10px!important}
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .headCandidateRow{display:grid!important}
 #simplePickPanel[data-pass-race="1"] #simpleHeadPick .bh219PrimaryHead{outline:3px solid #f0b21b!important;box-shadow:0 0 0 4px rgba(240,178,27,.14)!important}
@@ -8289,7 +8289,7 @@ body.theme-ladies .venueTimeLegend span{
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.223</div>
+  <div class="topVol">Vol.224</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13060,6 +13060,43 @@ function renderOdds(odds){
     }
 
 
+    /* Vol.224: HUNTER2位 × 世間2位の一致艇を頭候補2へ救済
+       条件:
+       1) HUNTER評価2位
+       2) 世間評価2位
+       3) HUNTER 1着率(p1)が10.0%以上
+       4) 主頭を除く他艇に p1 10.0%以上の艇が存在しない
+       → 全条件成立時、その艇を頭候補へ追加する。
+       ※ 2〜6号艇共通。すでに頭候補なら重複追加しない。 */
+    {
+      const consensusSecond=evalRows.find(x=>
+        Number(x.hunterRank)===2 &&
+        Number(x.marketRank)===2 &&
+        Number(x.p1||0)>=10.0
+      )||null;
+
+      if(consensusSecond){
+        const primaryBoat=Number(heads[0]?.boat||hunterTop?.boat||0);
+        const otherTenPlus=evalRows.some(x=>
+          Number(x.boat)!==primaryBoat &&
+          Number(x.boat)!==Number(consensusSecond.boat) &&
+          Number(x.p1||0)>=10.0
+        );
+
+        if(!otherTenPlus){
+          const already=heads.some(h=>Number(h.boat)===Number(consensusSecond.boat));
+          if(!already){
+            heads.push(toHead(consensusSecond,{
+              secondConsensusPromotion:true
+            }));
+          }else{
+            const h=heads.find(h=>Number(h.boat)===Number(consensusSecond.boat));
+            if(h)h.secondConsensusPromotion=true;
+          }
+        }
+      }
+    }
+
     /* V211: 頭候補1の優先補正
        頭候補1が場平均以下、かつHUNTER1位でも世間1位でもない時、
        場平均を上回る既存頭候補があれば、その最上位を頭候補1へ昇格する。 */
@@ -13220,7 +13257,7 @@ function renderOdds(odds){
       })
       .slice(0,4);
 
-    /* Vol.223: 頭候補1 決定スコア（100点）
+    /* Vol.224: 頭候補1 決定スコア（100点）
        頭候補フィルターを通過した艇だけを再比較する。
        SIM1着率だけで決めず、1M先制・攻撃力を最重視する。
 
@@ -13436,7 +13473,7 @@ function renderOdds(odds){
     });
 
 
-    /* Vol.223 軸候補ルール
+    /* Vol.224 軸候補ルール
        通常：頭候補2位以降から最上位1艇だけを軸候補にする。
        見推奨（頭候補3艇以上）：頭候補2位以降をすべて軸候補として表示し、
        それぞれ「頭-軸-○」「頭-○-軸」の両方を採用する。
@@ -13613,7 +13650,7 @@ function renderOdds(odds){
         </div>`;
       axis.classList.add("hide");
     }else{
-      /* Vol.223: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
+      /* Vol.224: 見推奨（頭候補3艇以上）の時は、主頭だけでなく
          フィルター通過した頭候補を全艇表示する。買い目の主頭は p.heads[0] のまま。 */
       const displayHeads=(Number(p.headCandidateCount||0)>=3 && Array.isArray(p.headCandidates) && p.headCandidates.length)
         ? p.headCandidates
@@ -14057,7 +14094,7 @@ function renderOdds(odds){
           : [];
       const axisShown=matchedAxisBoats.length>0;
 
-      /* Vol.223 結果確認：
+      /* Vol.224 結果確認：
          主軸1艇は2着/3着の折り返し。
          1コース逃げ限定で追加した「軸以外・2着率22%以上」は2着固定として照合する。 */
       const axisMode=matchedHead?.axisPlacementMode||"both";
@@ -14829,7 +14866,7 @@ updateMainHistory=function(rr,map){
 </script>
 
 <style id="bh221-next-race-style">
-/* ===== Vol.223 出走表横：全国NEXT3 + SG/LADIES専用 ===== */
+/* ===== Vol.224 出走表横：全国NEXT3 + SG/LADIES専用 ===== */
 .bh221Head{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important}
 .bh221Head>h2{flex:0 0 auto!important;margin-right:2px!important}
 .bh221RaceTicker{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:2px;line-height:1.15;font-size:10px;font-weight:900;letter-spacing:0;overflow:hidden}
@@ -14935,7 +14972,7 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
 
 
 <style id="bh-vol222-next-race-size">
-/* Vol.223: NEXT / SG / LADIES をスマホで一目で読めるサイズへ */
+/* Vol.224: NEXT / SG / LADIES をスマホで一目で読めるサイズへ */
 #bh221RaceTicker,
 .bh221RaceTicker{
   font-size:13px!important;
