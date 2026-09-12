@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V320</title>
+<title>BOAT HUNTER V321</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14725,6 +14725,13 @@ input,
 }
 </style>
 
+
+<style id="bh-vol321-result-ui">
+#hunterFinalResult{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:2!important}
+#hfrFetch{font-size:15px!important;font-weight:1000!important;min-height:48px!important}
+#hfrStatus{font-size:10px!important;min-height:34px!important;padding:5px 8px!important;text-align:center!important}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14735,7 +14742,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.320</div>
+  <div class="topVol">Vol.321</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15219,7 +15226,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.320: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.321: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15886,7 +15893,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.320 場時間帯補正
+/* Vol.321 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20263,6 +20270,13 @@ function draw(){
     const main=unique(f.cls.main,seen);
     const cover=unique(f.cls.cover,seen);
     const value=unique(f.cls.value,seen);
+    /* V321: 結果確認は画面に実際に出した買い目だけを照合する */
+    f.displayPicks={main:[...main],cover:[...cover],value:[...value]};
+    f.displayCombos=[
+      ...main.map(x=>x.combo),
+      ...cover.map(x=>x.combo),
+      ...value.map(x=>x.combo)
+    ];
     const points=a=>a?.length||0;
     return `
     <article class="hfdHeadGroup">
@@ -20402,21 +20416,66 @@ window.bhRenderFinalFormation=draw;
     return `${$("date")?.value||""}_${$("stadium")?.value||""}_${$("race")?.value||""}`;
   }
 
-  function comboExists(pack,a,b,c){
-    if(!pack?.forms?.length)return false;
-    return pack.forms.some(f=>{
-      return Number(f.h?.boat)===a &&
-        Array.isArray(f.a2) && f.a2.includes(b) &&
-        Array.isArray(f.a3) && f.a3.includes(c) &&
-        b!==c && a!==b && a!==c;
-    });
+  function comboMatch(pack,a,b,c){
+    const combo=`${a}-${b}-${c}`;
+    if(!pack?.forms?.length)return null;
+    for(const f of pack.forms){
+      const d=f.displayPicks||{};
+      for(const [kind,label] of [["main","本線"],["cover","押さえ"],["value","期待値"]]){
+        const hit=(d[kind]||[]).find(x=>String(x?.combo||"")===combo);
+        if(hit)return {hit:true,kind,label,head:Number(f.h?.boat||0),item:hit};
+      }
+      /* V320以前の保存状態への互換 */
+      if(Array.isArray(f.displayCombos)&&f.displayCombos.includes(combo))
+        return {hit:true,kind:"formation",label:"買い目",head:Number(f.h?.boat||0)};
+    }
+    return {hit:false,combo};
+  }
+
+  function raceFlexible(j,jo,rn){
+    const sts=j?.programs?.stadiums||j?.stadiums||{};
+    const st=sts?.[String(jo)]||sts?.[String(jo).padStart(2,"0")]||
+      Object.values(sts).find(x=>Number(x?.stadium_number||x?.number||0)===Number(jo));
+    const races=st?.races||{};
+    return races?.[String(rn)]||races?.[String(rn).padStart(2,"0")]||
+      Object.values(races).find(x=>Number(x?.race_number||x?.number||0)===Number(rn))||null;
+  }
+
+  function parseResult(race){
+    const result=race?.result||race?.results||race?.race_result||null;
+    if(!result)return null;
+
+    const raw=result?.racers||result?.boats||result?.entries||result?.result_racers||{};
+    const arr=(Array.isArray(raw)?raw:Object.values(raw||{})).filter(Boolean);
+
+    const norm=arr.map(x=>({
+      entry:Number(x.entry_number??x.boat_number??x.entry??x.number??x.boat),
+      place:Number(x.place_number??x.place??x.rank??x.arrival??x.finish_order),
+      raw:x
+    })).filter(x=>x.entry>=1&&x.entry<=6&&x.place>=1&&x.place<=6)
+      .sort((a,b)=>a.place-b.place);
+
+    const top3=norm.filter(x=>x.place<=3).slice(0,3);
+    if(top3.length<3)return null;
+
+    const techNo=Number(
+      result.technique_number??result.winning_technique_number??result.technique??result.kimarite_number
+    );
+    const techText=String(
+      result.technique_name??result.winning_technique??result.kimarite_name??""
+    ).trim();
+
+    return {
+      top3:top3.map(x=>x.entry),
+      technique:techText||({1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"})[techNo]||"—"
+    };
   }
 
   async function fetchResult(){
     syncRace();
     const pack=window.__HUNTER_FINAL_FORMATION;
-    if(!pack){
-      $("hfrStatus").textContent="最終フォーメーション未生成";
+    if(!pack?.forms?.length){
+      $("hfrStatus").textContent="現在の買い目がまだ生成されていません";
       return;
     }
 
@@ -20427,12 +20486,31 @@ window.bhRenderFinalFormation=draw;
       const d=$("date")?.value;
       const jo=Number($("stadium")?.value);
       const rn=Number($("race")?.value);
-      const j=await dayJson(d);
-      const race=raceOf(j,jo,rn);
-      const result=race?.result;
 
-      if(!result?.racers){
-        $("hfrStatus").textContent="まだ結果が出ていません";
+      /* 最新結果を取りやすいようキャッシュを避ける */
+      let j=null;
+      try{
+        const ymd=String(d||"").replaceAll("-","");
+        const y=ymd.slice(0,4);
+        const urls=[
+          `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json?t=${Date.now()}`,
+          `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json?t=${Date.now()}`,
+          `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json?t=${Date.now()}`
+        ];
+        for(const u of urls){
+          try{
+            const res=await fetch(u,{cache:"no-store"});
+            if(res.ok){j=await res.json(); if(j)break}
+          }catch(e){}
+        }
+      }catch(e){}
+      if(!j)j=await dayJson(d);
+
+      const race=raceFlexible(j,jo,rn);
+      const parsed=parseResult(race);
+
+      if(!parsed){
+        $("hfrStatus").textContent="まだ確定結果が出ていません";
         $("hfrCombo").textContent="—";
         $("hfrTechnique").textContent="—";
         $("hfrJudge").className="hfrJudge";
@@ -20440,47 +20518,42 @@ window.bhRenderFinalFormation=draw;
         return;
       }
 
-      const rs=Object.values(result.racers||{})
-        .filter(x=>Number(x.place_number)>=1&&Number(x.place_number)<=3)
-        .sort((a,b)=>Number(a.place_number)-Number(b.place_number));
-
-      if(rs.length<3){
-        $("hfrStatus").textContent="確定着順を取得できません";
-        return;
-      }
-
-      const a=Number(rs[0].entry_number);
-      const b=Number(rs[1].entry_number);
-      const c=Number(rs[2].entry_number);
-      const technique=({1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"})[Number(result.technique_number)]||"—";
-
+      const [a,b,c]=parsed.top3;
       $("hfrCombo").textContent=`${a}-${b}-${c}`;
-      $("hfrTechnique").textContent=technique;
+      $("hfrTechnique").textContent=parsed.technique;
 
       const pass=!!pack.pass;
-      const hit=!pass && comboExists(pack,a,b,c);
+      const match=comboMatch(pack,a,b,c);
+      const hit=!pass&&!!match?.hit;
 
       if(pass){
         $("hfrJudge").className="hfrJudge pass";
         $("hfrJudgeText").textContent="見";
-        $("hfrStatus").textContent="見レース：成績集計対象外";
+        $("hfrStatus").textContent=
+          match?.hit ? `見レース｜参考買い目 ${match.label} 的中（集計外）`
+                     : "見レース｜成績集計対象外";
       }else if(hit){
         $("hfrJudge").className="hfrJudge hit";
         $("hfrJudgeText").textContent="的中";
-        $("hfrStatus").textContent="最終フォーメーション的中";
+        $("hfrStatus").textContent=`${match.label} 的中｜頭候補 ${match.head}号艇`;
       }else{
         $("hfrJudge").className="hfrJudge miss";
         $("hfrJudgeText").textContent="不的中";
-        $("hfrStatus").textContent="最終フォーメーション不的中";
+        $("hfrStatus").textContent="現在表示中の本線・押さえ・期待値には該当なし";
       }
 
-      /* 見レースは集計しない。同一レースの二重集計も防止。 */
+      /* 見は集計外 / 同一レース二重集計なし */
       if(!pass){
         const st=loadStats();
         const key=raceKey();
         if(!st.seen)st.seen={};
         if(!st.seen[key]){
-          st.seen[key]={hit,combo:`${a}-${b}-${c}`};
+          st.seen[key]={
+            hit,
+            combo:`${a}-${b}-${c}`,
+            category:match?.label||"不的中",
+            head:match?.head||null
+          };
           st.count=(st.count||0)+1;
           if(hit)st.hits=(st.hits||0)+1;
           saveStats(st);
@@ -20489,18 +20562,18 @@ window.bhRenderFinalFormation=draw;
       }
 
       window.__HUNTER_LAST_RESULT={
-        combo:[a,b,c],technique,hit,pass,
+        combo:[a,b,c],technique:parsed.technique,hit,pass,
+        category:match?.label||null,head:match?.head||null,
         formation:pack
       };
 
     }catch(e){
-      console.error("RESULT CHECK",e);
-      $("hfrStatus").textContent="結果取得失敗";
+      console.error("RESULT CHECK V321",e);
+      $("hfrStatus").textContent="結果取得失敗："+(e?.message||"不明");
     }finally{
       $("hfrFetch").disabled=false;
     }
   }
-
   function bind(){
     $("hfrFetch")?.addEventListener("click",fetchResult);
     $("hunterBackTop")?.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
@@ -20736,6 +20809,30 @@ window.bhRenderFinalFormation=draw;
    btn.dataset.bh318="1";btn.addEventListener("click",record,false);
  }
  setInterval(()=>{hook();render()},1000);
+})();
+</script>
+
+
+<script id="bh-vol321-result-bottom-fix">
+(function(){
+ function stopLegacy(){
+   try{window.__BH_RESULT_BOTTOM_OBSERVER?.disconnect?.()}catch(e){}
+   const old=document.getElementById("resultPanelV248");
+   if(old){old.style.display="none";old.setAttribute("aria-hidden","true")}
+ }
+ function place(){
+   stopLegacy();
+   const wrap=document.querySelector("#main .wrap")||document.querySelector(".wrap");
+   const panel=document.getElementById("hunterFinalResult");
+   const top=document.getElementById("hunterBackTop");
+   if(!wrap||!panel||!top)return;
+   wrap.appendChild(panel);
+   wrap.appendChild(top);
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(place,50),{once:true});
+ else setTimeout(place,50);
+ window.addEventListener("load",()=>setTimeout(place,200),{once:true});
+ setInterval(place,2500);
 })();
 </script>
 
