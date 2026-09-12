@@ -8626,6 +8626,60 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 }
 </style>
 
+
+<style id="bh-vol263-rate-toggle">
+.formationRateToggle{
+  width:100%!important;
+  margin-top:10px!important;
+  min-height:40px!important;
+  border-radius:11px!important;
+  border:1.5px solid rgba(121,45,82,.25)!important;
+  background:linear-gradient(180deg,#fff,#f8edf2)!important;
+  color:#752145!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+}
+.formationRateToggle b{font-size:19px!important;line-height:1!important}
+.formationRateDetail{
+  margin-top:6px!important;
+  padding:8px!important;
+  border:1px solid rgba(121,45,82,.18)!important;
+  border-radius:11px!important;
+  background:#fff!important;
+}
+.formationRateDetail.hide{display:none!important}
+.formationRateHead,.formationRateRow{
+  display:grid!important;
+  grid-template-columns:minmax(72px,1.3fr) repeat(3,minmax(48px,.8fr))!important;
+  gap:5px!important;
+  align-items:center!important;
+  text-align:right!important;
+}
+.formationRateHead{
+  padding:0 3px 5px!important;
+  color:#9a7184!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+.formationRateHead span:first-child{text-align:left!important}
+.formationRateRow{
+  min-height:37px!important;
+  padding:4px 3px!important;
+  border-top:1px solid #f1e4ea!important;
+  font-size:11px!important;
+}
+.formationRateRow>span{text-align:left!important}
+.formationRateRow .formationBoatChip{
+  min-width:48px!important;height:27px!important;font-size:10px!important;
+}
+.formationRateRow b{color:#333!important}
+.formationRateRow strong{color:#971d54!important;font-size:12px!important}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -8636,7 +8690,7 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.261</div>
+  <div class="topVol">Vol.263</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14175,8 +14229,8 @@ function renderOdds(odds){
 
     /* Vol.258: 軸候補/2着候補を廃止し、頭候補ごとの3連単フォーメーションへ統一。
        本線:
-       - 2+3着率 >=40% は2着・3着の両方へ
-       - 2着率 >=22% は2着へ
+       - 2+3着率 >=42% は2着・3着の両方へ
+       - 2着率 >=25% は2着へ
        - 3着率 >=22% は3着へ
        - 2+3着率 <=26.9% は切り候補として本線/穴から除外
        穴:
@@ -14193,9 +14247,9 @@ function renderOdds(odds){
         }));
 
       const usable=rates.filter(z=>z.total>26.9);
-      const secondMain=usable.filter(z=>z.total>=40.0 || z.second>=22.0)
+      const secondMain=usable.filter(z=>z.total>=42.0 || z.second>=25.0)
         .sort((a,b)=>b.second-a.second || b.total-a.total);
-      const thirdMain=usable.filter(z=>z.total>=40.0 || z.third>=22.0)
+      const thirdMain=usable.filter(z=>z.total>=42.0 || z.third>=22.0)
         .sort((a,b)=>b.third-a.third || b.total-a.total);
 
       h.formationSecondBoats=secondMain.map(z=>z.boat);
@@ -14434,6 +14488,23 @@ function renderOdds(odds){
                     <div class="formationStepBoats">${hole3.map(chip).join("")}</div>
                   </div>`:
                   `<div class="formationNoneLine">穴目なし</div>`}
+              </div>
+
+              <button type="button" class="formationRateToggle"
+                onclick="const d=this.nextElementSibling;const o=d.classList.toggle('hide');this.querySelector('b').textContent=o?'＋':'−';">
+                <span>各艇の確率を見る</span><b>＋</b>
+              </button>
+              <div class="formationRateDetail hide">
+                <div class="formationRateHead"><span>艇</span><span>2着率</span><span>3着率</span><span>合計</span></div>
+                ${(Array.isArray(h.axisAllRates)?h.axisAllRates:[])
+                  .filter(z=>Number(z.boat)!==Number(h.boat))
+                  .sort((a,b)=>(Number(b.second||0)+Number(b.third||0))-(Number(a.second||0)+Number(a.third||0)))
+                  .map(z=>`<div class="formationRateRow">
+                    <span>${chip(z.boat)}</span>
+                    <b>${Number(z.second||0).toFixed(1)}%</b>
+                    <b>${Number(z.third||0).toFixed(1)}%</b>
+                    <strong>${(Number(z.second||0)+Number(z.third||0)).toFixed(1)}%</strong>
+                  </div>`).join("")}
               </div>
 
               <div class="formationCut">
@@ -14683,7 +14754,7 @@ function renderOdds(odds){
     root.innerHTML=`<div class="rv248ResultCard">
       <div class="rv248Combo">${record.first}-${record.second}-${record.third}</div>
       <div class="rv248Meta">
-        <span class="rv248Chip">${record.method||"決まり手—"}</span>
+        <span class="rv248Chip">${record.method?`決まり手 ${record.method}`:"決まり手 未取得"}</span>
         <span class="rv248Chip">3連単 ${record.payout?Number(record.payout).toLocaleString()+"円":"—"}</span>
         <span class="rv248Chip">${record.multiple?Number(record.multiple).toFixed(1)+"倍":"倍率—"}</span>
         ${record.popularity?`<span class="rv248Chip">${record.popularity}人気</span>`:""}
@@ -14725,7 +14796,17 @@ function renderOdds(odds){
       }
       const payout=pr?rv248Num(rv248Cell(pt,pr,"3連単_払戻金")):null;
       const popularity=pr?rv248Num(rv248Cell(pt,pr,"3連単_人気")):null;
-      const method=rr?rv248Cell(rt,rr,"決まり手"):"";
+      /* Vol.263: 決まり手CSVの列名差を吸収。着順側を優先し、無ければ払戻側も確認。 */
+      const methodKeys=["決まり手","勝利方法","勝ち方","決り手","決まりて"];
+      const readMethod=(table,row)=>{
+        if(!table||!row)return "";
+        for(const k of methodKeys){
+          const v=String(rv248Cell(table,row,k)||"").trim();
+          if(v && v!=="—" && v!=="-")return v;
+        }
+        return "";
+      };
+      const method=readMethod(rt,rr)||readMethod(pt,pr)||"";
       const pred=rv248PredForCurrent();
       const result={first,second,third};
       const evaluation=rv248Evaluate(pred,result);
