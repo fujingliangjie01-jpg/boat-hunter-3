@@ -13390,6 +13390,25 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol301-no-doubletap-zoom">
+/* Vol.301: iPhone Safariのダブルタップ拡大を抑止 */
+html,body{
+  touch-action:manipulation!important;
+}
+button,
+select,
+a,
+input,
+[role="button"],
+.raceStepBtn,
+.venueVoiceBtn,
+.compactDetailBtn,
+.compareToggle{
+  touch-action:manipulation!important;
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13400,7 +13419,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.300</div>
+  <div class="topVol">Vol.301</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18044,6 +18063,32 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 </script>
 
 
+
+
+<script id="bh-vol301-doubletap-guard">
+(function(){
+  let lastTouchEnd=0;
+
+  document.addEventListener('touchend',function(e){
+    const now=Date.now();
+    if(now-lastTouchEnd<=320){
+      e.preventDefault();
+    }
+    lastTouchEnd=now;
+  },{passive:false});
+
+  /* iOS Safari gesture zoom guard */
+  document.addEventListener('gesturestart',function(e){
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('gesturechange',function(e){
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('gestureend',function(e){
+    e.preventDefault();
+  },{passive:false});
+})();
+</script>
 
 </body>
 </html>
