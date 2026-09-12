@@ -12264,6 +12264,95 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol291-venue-balance">
+/* Vol.291 開催場選択を隣のレース選択と同じ存在感へ */
+.raceSelectGrid{
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important;
+}
+.venueBox,.raceBox{
+  min-height:116px!important;
+  height:116px!important;
+  padding:10px 11px!important;
+  border:2px solid rgba(255,255,255,.70)!important;
+  border-radius:14px!important;
+}
+.venueBox .venueName,
+.venueBox .venueValue,
+.venueBox .selectValue,
+.raceBox .raceValue,
+.raceBox .selectValue{
+  font-size:24px!important;
+  font-weight:1000!important;
+  line-height:1.05!important;
+}
+.venueBox select,.raceBox select{
+  min-height:52px!important;
+  font-size:21px!important;
+  font-weight:1000!important;
+}
+.venueBox .venueBadges{
+  margin-top:8px!important;
+  gap:5px!important;
+}
+@media(max-width:430px){
+  .venueBox,.raceBox{
+    min-height:108px!important;
+    height:108px!important;
+    padding:8px!important;
+  }
+  .venueBox .venueName,
+  .venueBox .venueValue,
+  .venueBox .selectValue,
+  .raceBox .raceValue,
+  .raceBox .selectValue{
+    font-size:20px!important;
+  }
+}
+</style>
+
+
+<style id="bh-vol292-attack-visible">
+/* Vol.292 攻撃・守備の中身を各艇セル内に明示 */
+#comparePanel .compareRoleCell{
+  padding:5px 2px!important;
+}
+#comparePanel .compareRoleCell small{
+  display:block!important;
+  min-height:20px!important;
+  margin-bottom:3px!important;
+  color:#9fc4d8!important;
+  font-size:6.5px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+}
+#comparePanel .compareRoleCell strong{
+  display:block!important;
+  font-size:14px!important;
+}
+#comparePanel .compareRank1 small,
+#comparePanel .compareRank2 small{
+  color:inherit!important;
+}
+#comparePanel .compareNoDefense{
+  background:#26323a!important;
+  color:#b8c2c8!important;
+}
+#comparePanel .compareNoDefense small{
+  color:#9ca8ae!important;
+}
+@media(max-width:430px){
+  #comparePanel .compareRoleCell small{
+    min-height:18px!important;
+    font-size:5.5px!important;
+  }
+  #comparePanel .compareRoleCell strong{
+    font-size:12px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12274,7 +12363,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.290</div>
+  <div class="topVol">Vol.292</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15959,6 +16048,9 @@ function bhRenderCompare(){
         Number(x.winnerCourse)>=4 &&
         Number(x.winnerCourse)<=6
       );
+    }else{
+      /* 4・5・6コースは守備評価なし */
+      defenseRate=null;
     }
 
     return {
@@ -16690,6 +16782,166 @@ setTimeout(bhApplyTokuyamaDayFix,0);
   }
 })();
 </script>
+
+
+<script id="bh-vol292-compare-authoritative">
+(function(){
+  function N(v){
+    const n=Number(String(v??"").replace(/[^\d.\-]/g,""));
+    return Number.isFinite(n)?n:null;
+  }
+  function P(v){ return Number.isFinite(v)?v.toFixed(1)+"%":"—"; }
+  function ST(v){ return Number.isFinite(v)?v.toFixed(3):"—"; }
+  function RK(v){ return Number.isFinite(v)?v.toFixed(2)+"位":"—"; }
+
+  function courseRates(h,boat){
+    const n=h.length||0;
+    const rate=fn=>n?h.filter(fn).length/n*100:null;
+
+    const nige = rate(x=>Number(x.place)===1 && Number(x.tech)===1);
+    const sashi = rate(x=>Number(x.place)===1 && Number(x.tech)===2);
+    const makuri = rate(x=>Number(x.place)===1 && Number(x.tech)===3);
+    const makurizashi = rate(x=>Number(x.place)===1 && Number(x.tech)===4);
+
+    let attack=null,attackLabel="";
+    if(boat===1){
+      attack=nige;
+      attackLabel="逃げ";
+    }else if(boat===2){
+      attack=(Number.isFinite(sashi)?sashi:0)+(Number.isFinite(makuri)?makuri:0);
+      attackLabel="差し＋まくり";
+    }else{
+      attack=(Number.isFinite(sashi)?sashi:0)+(Number.isFinite(makuri)?makuri:0)+(Number.isFinite(makurizashi)?makurizashi:0);
+      attackLabel="差し＋まくり＋まくり差し";
+    }
+
+    let defense=null,defenseLabel="—";
+    if(boat===1){
+      const sasare=rate(x=>Number(x.place)!==1 && Number(x.tech)===2);
+      const makurare=rate(x=>Number(x.place)!==1 && Number(x.tech)===3);
+      const makurizasare=rate(x=>Number(x.place)!==1 && Number(x.tech)===4);
+      defense=(Number.isFinite(sasare)?sasare:0)+(Number.isFinite(makurare)?makurare:0)+(Number.isFinite(makurizasare)?makurizasare:0);
+      defenseLabel="差され＋まくられ＋まくり差され";
+    }else if(boat===2){
+      defense=rate(x=>Number(x.place)!==1 && Number(x.tech)===3 && Number(x.winnerCourse)>=3 && Number(x.winnerCourse)<=6);
+      defenseLabel="3〜6Cからまくられ";
+    }else if(boat===3){
+      defense=rate(x=>Number(x.place)!==1 && Number(x.tech)===3 && Number(x.winnerCourse)>=4 && Number(x.winnerCourse)<=6);
+      defenseLabel="4〜6Cからまくられ";
+    }
+
+    return {attack,attackLabel,defense,defenseLabel};
+  }
+
+  window.bhRenderCompare=function(){
+    const tbody=document.getElementById("compareRows");
+    if(!tbody)return;
+
+    let rr=[];
+    try{rr=racers(currentRace)||[]}catch(e){}
+    if(!rr.length){
+      tbody.innerHTML='<tr><td class="compareWait">出走表取得後に表示</td></tr>';
+      return;
+    }
+
+    const rows=rr.map(r=>{
+      const boat=Number(r.entry_number);
+      const h=(historyCache instanceof Map ? historyCache.get(Number(r.number))?.rows : [])||[];
+      const m=histMetrics(h),n=h.length||0;
+      const rate=fn=>n?h.filter(fn).length/n*100:null;
+      const cr=courseRates(h,boat);
+
+      return {
+        boat,
+        name:r.name||"—",
+        courseWin:rate(x=>Number(x.place)===1),
+        courseThird:rate(x=>Number(x.place)===3),
+        avgST:m.avgST,
+        avgRank:m.avgRank,
+        motor2:N(r.motor_top_2_percent),
+        motor3:N(r.motor_top_3_percent),
+        attack:cr.attack,
+        attackLabel:cr.attackLabel,
+        defense:cr.defense,
+        defenseLabel:cr.defenseLabel
+      };
+    });
+
+    function rankClasses(key,lower=false){
+      const vals=rows.map((x,i)=>({i,v:Number(x[key])}))
+        .filter(x=>Number.isFinite(x.v))
+        .sort((a,b)=>lower?a.v-b.v:b.v-a.v);
+      const distinct=[];
+      for(const x of vals){
+        if(!distinct.some(v=>Math.abs(v-x.v)<1e-9))distinct.push(x.v);
+        if(distinct.length===2)break;
+      }
+      return rows.map(x=>{
+        const v=Number(x[key]);
+        if(!Number.isFinite(v))return "";
+        if(Number.isFinite(distinct[0])&&Math.abs(v-distinct[0])<1e-9)return "compareRank1";
+        if(Number.isFinite(distinct[1])&&Math.abs(v-distinct[1])<1e-9)return "compareRank2";
+        return "";
+      });
+    }
+
+    const defs=[
+      ["今コース勝率","courseWin",P,false],
+      ["今コース3着率","courseThird",P,false],
+      ["平均ST","avgST",ST,true],
+      ["平均ST順位","avgRank",RK,true],
+      ["モーター2連対率","motor2",P,false],
+      ["モーター3連対率","motor3",P,false]
+    ];
+
+    let html='<tr class="compareBoatHeader"><th>項目</th>'+
+      rows.map(x=>`<td><span class="matrixBoat b${x.boat}">${x.boat}</span><span class="compareRacerName">${x.name}</span></td>`).join("")+'</tr>';
+
+    for(const [label,key,fmt,lower] of defs){
+      const cls=rankClasses(key,lower);
+      html+=`<tr><th>${label}</th>${rows.map((x,i)=>`<td class="${cls[i]}"><strong>${fmt(Number(x[key]))}</strong></td>`).join("")}</tr>`;
+    }
+
+    // 攻撃: visible definition per course
+    {
+      const cls=rankClasses("attack",false);
+      html+=`<tr><th>攻撃</th>${rows.map((x,i)=>`
+        <td class="${cls[i]} compareRoleCell">
+          <small>${x.attackLabel}</small>
+          <strong>${P(Number(x.attack))}</strong>
+        </td>`).join("")}</tr>`;
+    }
+
+    // 守備: 4/5/6 are explicitly "なし"
+    {
+      const cls=rankClasses("defense",false);
+      html+=`<tr><th>守備</th>${rows.map((x,i)=>`
+        <td class="${cls[i]} compareRoleCell ${x.boat>=4?'compareNoDefense':''}">
+          <small>${x.boat>=4?'守備なし':x.defenseLabel}</small>
+          <strong>${x.boat>=4?'—':P(Number(x.defense))}</strong>
+        </td>`).join("")}</tr>`;
+    }
+
+    tbody.innerHTML=html;
+
+    const assist=document.querySelector("#comparePanel .compareAssist");
+    if(assist){
+      assist.innerHTML=`
+        <span class="compareLegend"><i class="legendRed"></i>1位</span>
+        <span class="compareLegend"><i class="legendYellow"></i>2位</span>
+        <span class="compareFormula">攻撃は艇ごとに決まり手を明示 / 4〜6Cの守備はなし</span>`;
+    }
+  };
+
+  const rerender=()=>{ try{window.bhRenderCompare()}catch(e){} };
+  document.addEventListener("click",e=>{
+    if(e.target.closest("#get,#getPreview,#aiAnalyze")) setTimeout(rerender,350);
+  });
+  setTimeout(rerender,0);
+})();
+</script>
+
+
 </body>
 </html>
 
