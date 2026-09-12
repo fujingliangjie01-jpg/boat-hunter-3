@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V318</title>
+<title>BOAT HUNTER V319</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14548,6 +14548,9 @@ input,
 .bh318Consistency.show{display:block}
 </style>
 
+<style id="bh-v319-fix">
+.hfdVal small{display:block;font-size:6px;line-height:1;color:#7db7d3;font-weight:900}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14558,7 +14561,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.318</div>
+  <div class="topVol">Vol.319</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15042,7 +15045,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.318: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.319: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15069,7 +15072,21 @@ async function bhRefreshHeldVenues(){
     }
     held.sort((a,b)=>a-b);
     const prev=Number(stadiumEl.value||0);
-    stadiumEl.innerHTML=held.map(jcd=>`<option value="${jcd}">${venueTimeIcon(jcd)} ${S[jcd]||jcd}</option>`).join("");
+    function dayLabel(jcd){
+      const v=Object.values(sts).find(x=>Number(x?.stadium_number||x?.number||0)===Number(jcd))||{};
+      const norm=x=>String(x||"").replace(/[^\d]/g,"").slice(0,8);
+      const today=norm(date);
+      const start=norm(v.start_date||v.meeting_start_date||v.first_date||v.start);
+      const end=norm(v.end_date||v.meeting_end_date||v.last_date||v.end);
+      if(!start||start.length!==8||!today)return "";
+      const D=x=>new Date(+x.slice(0,4),+x.slice(4,6)-1,+x.slice(6,8));
+      const n=Math.floor((D(today)-D(start))/86400000)+1;
+      if(n<1)return "";
+      if(end&&today===end)return "｜最終日";
+      if(n===1)return "｜初日";
+      return `｜${n}日目`;
+    }
+    stadiumEl.innerHTML=held.map(jcd=>`<option value="${jcd}">${venueTimeIcon(jcd)} ${S[jcd]||jcd}${dayLabel(jcd)}</option>`).join("");
     if(held.includes(prev))stadiumEl.value=String(prev);
     else if(held.length)stadiumEl.value=String(held[0]);
     try{setupVenueSelectDisplay?.();decorateVenueOptions?.("closed");}catch(e){}
@@ -15695,7 +15712,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.318 場時間帯補正
+/* Vol.319 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -19832,10 +19849,33 @@ function mb(r){
 }
 function va(c,k="p1"){
   try{
-    const j=String(+$("stadium").value).padStart(2,"0");
-    const v=+VENUE_BASE_202606_08?.[j]?.[String(c)]?.[k];
-    return Number.isFinite(v)?v:null;
-  }catch(e){return null}
+    const j=String(+$("stadium").value).padStart(2,"0"), cc=String(c);
+    const roots=[
+      window.VENUE_BASE_202606_08,window.VENUE_BASE,window.VENUE_COURSE_BASE,
+      window.HUNTER_VENUE_BASE,window.__HUNTER_VENUE_BASE
+    ].filter(Boolean);
+    const aliases={
+      p1:["p1","win","win_rate","first","first_rate","1着率"],
+      p2:["p2","top2","quinella","top2_rate","2連対率"],
+      p3:["p3","top3","trio","top3_rate","3連対率"]
+    }[k]||[k];
+    for(const root of roots){
+      const venue=root?.[j]??root?.[Number(j)]??root?.stadiums?.[j]??root?.venues?.[j];
+      const course=venue?.[cc]??venue?.courses?.[cc]??venue?.course?.[cc];
+      for(const a of aliases){
+        const v=Number(course?.[a]);
+        if(Number.isFinite(v))return v;
+      }
+    }
+    /* Existing app helper fallback, if present. */
+    for(const fn of ["getVenueCourseBase","bhVenueCourseBase","venueCourseAverage"]){
+      if(typeof window[fn]==="function"){
+        const v=Number(window[fn](Number(j),Number(c),k));
+        if(Number.isFinite(v))return v;
+      }
+    }
+  }catch(e){}
+  return null;
 }
 function pre(){
   return R().map(met).map(x=>{
@@ -19843,7 +19883,7 @@ function pre(){
     if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
     s=Math.max(0,Math.min(100,s));
     const base=va(x.boat,"p1");
-    return {...x,score:s,diff:base==null?null:s-base};
+    return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.diff??-999)-(a.diff??-999));
 }
 function market(){
@@ -19861,7 +19901,7 @@ function sim(){
 }
 function rank(id,a,type){
   const e=$(id);if(!e)return;
-  e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(1)+"%"):type==="p"?P(x.diff):((x.v??0).toFixed(1)+"%")}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`;
+  e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(1)+"%"):type==="p"?(x.basePending?`${x.score.toFixed(1)}<small>基準待</small>`:P(x.diff)):((x.v??0).toFixed(1)+"%")}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`;
 }
 function move(head){
   if(head.boat===1)return "逃げ";
@@ -19879,7 +19919,7 @@ function axis(head,all){
       if(mv==="まくり差し"&&(x.boat===1||x.boat===2))s+=5;
     }
     const base=va(x.boat,"p2");
-    return {...x,axisScore:s,ad:base==null?null:s-base};
+    return {...x,axisScore:s,axisBase:base,ad:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.ad??-999)-(a.ad??-999));
 }
 function simCombo(combo){
@@ -19908,7 +19948,7 @@ function chooseHeads(p){
 }
 function thirdDiff(x){
   const base=va(x.boat,"p3");
-  return base==null?null:(x.p3??0)-base;
+  return base==null?(x.p3??0):(x.p3??0)-base;
 }
 function cutForHead(head,all,axes){
   const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
