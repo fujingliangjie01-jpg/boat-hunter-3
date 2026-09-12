@@ -9451,6 +9451,408 @@ body:not(.theme-ladies):not(.theme-sg){
 }
 </style>
 
+
+<style id="bh-vol271-three-stage-racer-ui">
+/* =========================================================
+   Vol.271 三段構え
+   1) 6艇コンパクト出走表
+   2) 選択艇の詳細 + 直近20走
+   3) 6艇比較
+   ========================================================= */
+
+/* 出走表: 6艇を必ず横1列 */
+#cards.cards{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  gap:4px!important;
+  overflow:visible!important;
+  padding:0 0 10px!important;
+}
+
+#cards .compactRacerCard{
+  min-width:0!important;
+  min-height:0!important;
+  padding:0 0 5px!important;
+  border:1.5px solid var(--c)!important;
+  border-radius:9px!important;
+  background:linear-gradient(180deg,#0b2434 0%,#061722 100%)!important;
+  overflow:hidden!important;
+  box-shadow:0 4px 11px rgba(0,0,0,.25)!important;
+}
+#cards .compactRacerCard.selected{
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 18px color-mix(in srgb,var(--c) 70%,#16b8ff)!important;
+  transform:translateY(-1px)!important;
+}
+#cards .compactRacerCard:before,
+#cards .compactRacerCard:after{display:none!important}
+
+.compactPhotoWrap{
+  position:relative!important;
+  height:68px!important;
+  overflow:hidden!important;
+  background:#0a1c28!important;
+}
+.compactPhotoWrap .racerPhoto{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center 10%!important;
+  display:block!important;
+}
+.compactBoatNo{
+  position:absolute!important;
+  left:3px!important;
+  top:3px!important;
+  width:24px!important;
+  height:24px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:6px!important;
+  border:1.5px solid #111!important;
+  background:var(--c)!important;
+  color:var(--t)!important;
+  font-size:14px!important;
+  font-weight:1000!important;
+  box-shadow:0 2px 5px rgba(0,0,0,.28)!important;
+}
+
+.compactClass{
+  margin-top:4px!important;
+  color:#8fdbff!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  text-align:center!important;
+}
+.compactName{
+  margin-top:3px!important;
+  padding:0 2px!important;
+  color:#fff!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+  font-weight:1000!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.compactWinLabel{
+  margin-top:5px!important;
+  color:#6f92a7!important;
+  font-size:6px!important;
+  text-align:center!important;
+}
+.compactWin{
+  color:#fff!important;
+  font-size:11px!important;
+  line-height:1.05!important;
+  font-weight:1000!important;
+  text-align:center!important;
+}
+.compactDetailBtn{
+  display:block!important;
+  width:calc(100% - 6px)!important;
+  min-height:24px!important;
+  margin:5px 3px 0!important;
+  padding:0!important;
+  border-radius:6px!important;
+  border:1px solid rgba(255,255,255,.86)!important;
+  background:linear-gradient(180deg,#1189ca,#07537e)!important;
+  color:#fff!important;
+  font-size:7px!important;
+  font-weight:1000!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+/* 選手詳細: 横幅いっぱい */
+.racerDetailPanel{
+  margin:0 0 10px!important;
+  padding:10px!important;
+  border:1.5px solid #23aef0!important;
+  border-radius:13px!important;
+  background:
+    linear-gradient(180deg,rgba(7,32,49,.98),rgba(3,16,26,.99))!important;
+  box-shadow:
+    0 8px 22px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.07)!important;
+}
+.racerDetailPanel.hide{display:none!important}
+.racerDetailHead{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  margin-bottom:8px!important;
+}
+.racerDetailHead>div{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:8px!important;
+}
+.racerDetailHead b{
+  color:#fff!important;
+  font-size:18px!important;
+}
+.racerDetailHead span{
+  color:#6ec8f7!important;
+  font-size:8px!important;
+  font-weight:1000!important;
+  letter-spacing:.17em!important;
+}
+#racerDetailClose{
+  min-height:29px!important;
+  padding:0 10px!important;
+  border-radius:999px!important;
+  border:1px solid #fff!important;
+  background:#0b3852!important;
+  color:#fff!important;
+  font-size:9px!important;
+  font-weight:900!important;
+}
+
+.detailTop{
+  display:grid!important;
+  grid-template-columns:150px 1fr!important;
+  gap:10px!important;
+}
+.detailIdentity{
+  display:grid!important;
+  grid-template-columns:66px 1fr!important;
+  gap:8px!important;
+  align-items:center!important;
+  min-width:0!important;
+}
+.detailPhotoWrap{
+  position:relative!important;
+  width:66px!important;
+  height:86px!important;
+  border-radius:9px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(255,255,255,.75)!important;
+  background:#071824!important;
+}
+.detailPhotoWrap img{
+  width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center top!important;
+}
+.detailBoatNo{
+  position:absolute!important;
+  left:3px!important;top:3px!important;
+  width:25px!important;height:25px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:5px!important;
+  border:1px solid #111!important;
+  background:#fff!important;color:#111!important;
+  font-size:14px!important;font-weight:1000!important;
+}
+.detailName{
+  color:#fff!important;
+  font-size:17px!important;
+  line-height:1.05!important;
+  font-weight:1000!important;
+}
+.detailMeta{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:4px!important;
+  margin-top:6px!important;
+}
+.detailMeta span{
+  padding:3px 6px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(255,255,255,.36)!important;
+  background:#0b293a!important;
+  color:#dff6ff!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+.detailMetrics{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+}
+.detailMetric{
+  min-height:52px!important;
+  padding:6px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:8px!important;
+  border:1px solid rgba(89,190,239,.34)!important;
+  background:#082535!important;
+  text-align:center!important;
+}
+.detailMetric span{
+  color:#90aec0!important;
+  font-size:7px!important;
+  line-height:1.15!important;
+}
+.detailMetric b{
+  margin-top:3px!important;
+  color:#fff!important;
+  font-size:14px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+}
+.detailMetric.key b{color:#ffe14c!important}
+
+.recent20Toggle{
+  width:100%!important;
+  min-height:38px!important;
+  margin-top:8px!important;
+  padding:0 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  border-radius:8px!important;
+  border:1px solid rgba(255,255,255,.80)!important;
+  background:linear-gradient(180deg,#0f6fa5,#08486b)!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:1000!important;
+}
+.recent20Toggle b{font-size:18px!important}
+.recent20Full{
+  margin-top:7px!important;
+  padding:7px!important;
+  border:1px solid rgba(40,178,238,.35)!important;
+  border-radius:9px!important;
+  background:#061923!important;
+}
+.recent20Full.hide{display:none!important}
+.recentSummaryGrid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  margin-bottom:7px!important;
+}
+.recentSummaryGrid>div{
+  min-height:43px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:1px solid rgba(76,177,226,.27)!important;
+  border-radius:7px!important;
+  background:#082532!important;
+}
+.recentSummaryGrid span{color:#8caabb!important;font-size:7px!important}
+.recentSummaryGrid b{color:#fff!important;font-size:13px!important}
+.recentTableWrap{
+  overflow-x:auto!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  border-radius:7px!important;
+}
+.recent20Table{
+  min-width:560px!important;
+  width:100%!important;
+  border-collapse:collapse!important;
+  color:#fff!important;
+  font-size:8px!important;
+}
+.recent20Table th{
+  background:#0c2d41!important;
+  color:#dff7ff!important;
+  padding:5px 4px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+}
+.recent20Table td{
+  background:#081d2a!important;
+  color:#fff!important;
+  padding:5px 4px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  text-align:center!important;
+}
+.recentLoading{
+  color:#8fb1c3!important;
+  font-size:9px!important;
+  padding:8px!important;
+}
+
+/* 6艇比較は詳細のさらに下 */
+#comparePanel{
+  margin-top:0!important;
+  order:initial!important;
+}
+.compareBody{display:block!important}
+.compareScroll{overflow:visible!important}
+.compareMatrix{
+  min-width:0!important;
+  width:100%!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.compareMatrix th{
+  width:52px!important;
+  background:#0b2a3d!important;
+  color:#dff6ff!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  padding:6px 3px!important;
+  font-size:8px!important;
+}
+.compareMatrix td{
+  background:#081d2b!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  padding:6px 2px!important;
+  text-align:center!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+.matrixBoat{
+  display:inline-grid!important;
+  place-items:center!important;
+  width:26px!important;
+  height:26px!important;
+  border-radius:5px!important;
+  border:1px solid #fff!important;
+  background:var(--c,#fff)!important;
+  color:var(--t,#111)!important;
+  font-size:13px!important;
+  font-weight:1000!important;
+}
+.matrixName{
+  display:block!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:7px!important;
+}
+.compareMatrix strong{font-size:10px!important;color:#fff!important}
+
+/* iPhone: compact維持 */
+@media(max-width:430px){
+  #main .wrap{padding-left:8px!important;padding-right:8px!important}
+  #cards.cards{gap:3px!important}
+  .compactPhotoWrap{height:58px!important}
+  .compactBoatNo{width:21px!important;height:21px!important;font-size:12px!important}
+  .compactName{font-size:7px!important}
+  .compactClass{font-size:7px!important}
+  .compactWinLabel{font-size:5.5px!important}
+  .compactWin{font-size:9px!important}
+  .compactDetailBtn{min-height:22px!important;font-size:6.5px!important}
+  .detailTop{grid-template-columns:120px 1fr!important;gap:7px!important}
+  .detailIdentity{grid-template-columns:52px 1fr!important;gap:6px!important}
+  .detailPhotoWrap{width:52px!important;height:72px!important}
+  .detailName{font-size:14px!important}
+  .detailMetrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
+  .detailMetric{min-height:46px!important;padding:4px!important}
+  .detailMetric span{font-size:6px!important}
+  .detailMetric b{font-size:11px!important}
+  .recentSummaryGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .compareToggle{min-height:52px!important}
+  .compareToggle b{font-size:18px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -9461,7 +9863,7 @@ body:not(.theme-ladies):not(.theme-sg){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.270</div>
+  <div class="topVol">Vol.271</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9617,14 +10019,32 @@ body:not(.theme-ladies):not(.theme-sg){
   </div>
   <div id="cards" class="cards"></div>
 
+  <section id="racerDetailPanel" class="racerDetailPanel hide">
+    <div class="racerDetailHead">
+      <div>
+        <b>選手詳細</b>
+        <span>RACER DETAIL</span>
+      </div>
+      <button type="button" id="racerDetailClose" onclick="bhCloseRacerDetail()">閉じる</button>
+    </div>
+    <div id="racerDetailBody"></div>
+  </section>
+
+
 <section id="comparePanel" class="comparePanel">
   <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
     <span><b>6艇比較</b><small>RACER COMPARISON / 数字で見える強弱</small></span>
     <b id="compareToggleIcon">−</b>
   </button>
   <div id="compareBody" class="compareBody">
-    <div class="compareAssist"><span>補助：ST上位・モーター上位を自動強調</span><span>勝ち方/負け方＝同コース直近20走</span></div>
-    <div class="compareScroll"><table class="compareTable"><thead><tr><th>艇</th><th>平均ST</th><th>ST順位</th><th>モーター3連対率</th><th>今コース<br>1着率</th><th>今コース<br>3連対率</th><th>コース別データ</th></tr></thead><tbody id="compareRows"><tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr></tbody></table></div>
+    <div class="compareAssist"><span>出走表取得と同時に表示</span><span>階級・選手名・全国勝率を6艇横並びで比較</span></div>
+    <div class="compareScroll">
+      <table class="compareTable compareMatrix">
+        <tbody id="compareRows">
+          <tr><td class="compareWait">出走表取得後に表示</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
@@ -9778,52 +10198,24 @@ async function patchCurrentClassesFromRaceCards(rr){
 }
 
 function card(r){
- const b=+r.entry_number,[ml,mc]=motor(r.motor_top_2_percent,r.motor_top_3_percent);
- return `<article class="card b${b}" data-boat="${b}" data-number="${r.number}">
- <div class="row">
-   <div class="boatArt boatArt${b}" aria-hidden="true"></div>
-   <img class="racerPhoto"
-        src="https://www.boatrace.jp/racerphoto/${String(r.number||"").padStart(4,"0")}.jpg"
-        data-fallback="https://www.boatrace.jp/owpc/pc/data/racersearch/profile?toban=${String(r.number||"").padStart(4,"0")}"
-        alt="${r.name||"選手"}" loading="lazy"
-        onerror="if(!this.dataset.failedOnce){this.dataset.failedOnce='1';this.removeAttribute('src');this.style.display='none';}">
-   <div class="no">${b}</div>
-   <div class="cardIdentity">
-     <div class="name">${r.name||"—"}</div>
-     <span class="patch rank" title="${r.class_source||"出走表"}">${grade(r)}</span>
-     <span id="sgBadge${b}" class="sgBadge"></span>
-     <span class="patch ${mc}">${ml}</span>
+ const b=+r.entry_number;
+ return `<article class="card b${b} compactRacerCard" data-boat="${b}" data-number="${r.number}">
+   <div class="compactPhotoWrap">
+     <img class="racerPhoto"
+       src="https://www.boatrace.jp/racerphoto/${String(r.number||"").padStart(4,"0")}.jpg"
+       alt="${r.name||"選手"}" loading="lazy"
+       onerror="this.style.display='none'">
+     <div class="compactBoatNo">${b}</div>
    </div>
- </div>
-
- <div class="racerMetrics">
-   <div class="metricBox"><div class="k">全国勝率</div><div id="natWin${b}" class="v">${f(r.national_win_rate)}</div></div>
-   <div class="metricBox"><div class="k">全国3連対率</div><div id="nat3${b}" class="v na">—</div></div>
-   <div class="metricBox"><div class="k">今コース平均ST</div><div id="avgst${b}" class="v na">取得中</div></div>
-   <div class="metricBox"><div class="k">今コースST順位</div><div id="avgrank${b}" class="v na">取得中</div></div>
-   <div class="metricBox meetRankBox"><div class="k">今節順位</div><div id="meetRank${b}" class="v na">取得中</div></div>
-   <div class="metricBox"><div class="k">今節得点</div><div id="meetPts${b}" class="v na">取得中</div></div>
- </div>
-
- <button class="more" onclick="toggleDetail(${b},${r.number})">同コース過去20走 ▼</button>
- <div id="d${b}" class="detail hide"></div>
+   <div class="compactClass">${grade(r)}</div>
+   <div class="compactName" title="${r.name||""}">${r.name||"—"}</div>
+   <div class="compactWinLabel">全国勝率</div>
+   <div class="compactWin">${f(r.national_win_rate)}</div>
+   <button type="button" class="compactDetailBtn" onclick="bhSelectRacerDetail(${b},${Number(r.number||0)})">詳細</button>
  </article>`;
 }
 function decorateRanks(rr){
- const metrics=[
-  ["national_win_rate",0],
-  ["motor_top_2_percent",1],
-  ["motor_top_3_percent",2]
- ];
- metrics.forEach(([key,slot])=>{
-  const sorted=rr.map((r,i)=>({i,v:n(r[key])})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
-  sorted.slice(0,2).forEach((x,rank)=>{
-   const cardEl=$("cards").children[x.i];
-   const vals=cardEl.querySelectorAll(".v");
-   const target=slot===0?vals[0]:vals[slot===1?4:5];
-   if(target)target.classList.add(rank===0?"rank1":"rank2");
-  });
- });
+  /* Vol.271: 上段カードはコンパクト表示のため順位装飾は詳細/比較側で行う */
 }
 
 
@@ -9872,6 +10264,7 @@ async function getRace(){
   window.decorateHunterSG?.();
   decorateRanks(rr);
   try{ bhRenderCompare?.(); }catch(e){}
+  try{ bhCloseRacerDetail?.(); }catch(e){}
 
   $("status").textContent="出走表取得済み / 現在級別を照合中…";
   try{
@@ -10131,6 +10524,12 @@ async function preloadHistory(rr){
   historyCache=await historyLoading;
   updateMainHistory(rr,historyCache);
   $("status").textContent="✓ 出走表＋同コース過去20走 取得完了";
+  try{
+    const p=document.getElementById("racerDetailPanel");
+    if(p && !p.classList.contains("hide")){
+      bhSelectRacerDetail(Number(p.dataset.boat),Number(p.dataset.number));
+    }
+  }catch(e){}
  }catch(e){
   $("status").textContent="出走表取得済み / 過去20走の取得に失敗";
  }
@@ -10172,30 +10571,197 @@ function recentSummary(h){
    <div class="sum"><div class="k">母数</div><div class="sv">${h.length}走</div></div>
  </div>`;
 }
-async function toggleDetail(boatNo,number){
- const box=$("d"+boatNo);
- if(!box.classList.contains("hide")){box.classList.add("hide");return}
- box.classList.remove("hide");
- if(box.dataset.done)return;
- box.innerHTML='<div class="muted">同じコースの過去20走を取得中…</div>';
- if(!historyCache){
-  if(!historyLoading)historyLoading=buildHistory();
-  historyCache=await historyLoading;
- }
- const obj=historyCache.get(+number),h=obj?.rows||[];
- let rows=h.map(x=>`<div class="hrow place${x.place<=3?x.place:0}">
-   <span>${x.date.slice(5)}</span><span class="placeBadge">${x.place}着</span><span>${x.course}コース</span><span>ST ${f(x.st,2)} / ${x.stRank??"—"}位</span>
-   <span>1着 ${x.winnerEntry}号艇 / ${T[x.tech]||"不明"}</span>
- </div>`).join("");
- box.innerHTML=`<div class="courseTitle"><span class="courseChip">${boatNo}</span>${boatNo}コース限定・直近${h.length}走</div>
- ${recentSummary(h)}
- <div class="rates">${rateStats(h,boatNo)}</div>
- <div class="hist">
-   <div class="histHead"><span>日付</span><span>着</span><span>コース</span><span>ST / 順位</span><span>1着艇 / 決まり手</span></div>
-   ${rows||'<div class="muted">履歴なし</div>'}
- </div>`;
- box.dataset.done="1";
+
+function bhNum(v){
+  const n=Number(String(v??"").replace(/[^\d.\-]/g,""));
+  return Number.isFinite(n)?n:null;
 }
+function bhPct(v){
+  const n=bhNum(v);
+  return n==null?"—":n.toFixed(1)+"%";
+}
+function bhPickNum(r,keys){
+  for(const k of keys){
+    const n=bhNum(r?.[k]);
+    if(n!=null)return n;
+  }
+  return null;
+}
+function bhNationalTop2(r){
+  return bhPickNum(r,[
+    "national_top_2_percent","national_second_rate","national_2ren_rate",
+    "national_2_rate","national_second_percent"
+  ]);
+}
+function bhNationalTop3(r){
+  const direct=bhPickNum(r,[
+    "national_top_3_percent","national_top3_percent","national_third_percent",
+    "national_3ren_rate","national_3_rate","national_top_3_rate"
+  ]);
+  if(direct!=null)return direct;
+  const top2=bhNationalTop2(r);
+  const third=bhPickNum(r,["national_third_rate","national_third_place_rate","national_third_place_percent"]);
+  return top2!=null&&third!=null?top2+third:null;
+}
+function bhLocalWin(r){
+  return bhPickNum(r,[
+    "local_win_rate","local_rate","local_win","local_average","local_score"
+  ]);
+}
+function bhCurrentRacer(boatNo,number){
+  let rr=[];
+  try{rr=racers(currentRace)||[]}catch(e){}
+  return rr.find(x=>Number(x.number)===Number(number))
+      || rr.find(x=>Number(x.entry_number)===Number(boatNo))
+      || null;
+}
+function bhRacerPhotoUrl(r){
+  return `https://www.boatrace.jp/racerphoto/${String(r?.number||"").padStart(4,"0")}.jpg`;
+}
+function bhDetailMetric(label,value,cls=""){
+  return `<div class="detailMetric ${cls}">
+    <span>${label}</span><b>${value}</b>
+  </div>`;
+}
+function bhCloseRacerDetail(){
+  const p=document.getElementById("racerDetailPanel");
+  if(p)p.classList.add("hide");
+  document.querySelectorAll(".compactRacerCard").forEach(x=>x.classList.remove("selected"));
+}
+async function bhSelectRacerDetail(boatNo,number){
+  const panel=document.getElementById("racerDetailPanel");
+  const body=document.getElementById("racerDetailBody");
+  if(!panel||!body)return;
+
+  const r=bhCurrentRacer(boatNo,number);
+  if(!r)return;
+
+  document.querySelectorAll(".compactRacerCard").forEach(x=>{
+    x.classList.toggle("selected",Number(x.dataset.boat)===Number(boatNo));
+  });
+
+  const meetPts=document.getElementById("meetPts"+boatNo)?.textContent?.trim()||"未公開";
+  const meetRank=document.getElementById("meetRank"+boatNo)?.textContent?.trim()||"未公開";
+
+  const nat2=bhNationalTop2(r);
+  const nat3=bhNationalTop3(r);
+  const local=bhLocalWin(r);
+  const m2=bhNum(r.motor_top_2_percent);
+  const m3=bhNum(r.motor_top_3_percent);
+
+  body.innerHTML=`
+    <div class="detailTop">
+      <div class="detailIdentity">
+        <div class="detailPhotoWrap">
+          <img src="${bhRacerPhotoUrl(r)}" alt="${r.name||"選手"}"
+               onerror="this.style.display='none'">
+          <span class="detailBoatNo b${boatNo}">${boatNo}</span>
+        </div>
+        <div class="detailIdentityText">
+          <div class="detailName">${r.name||"—"}</div>
+          <div class="detailMeta">
+            <span>${grade(r)}</span>
+            <span>登録 ${r.number||"—"}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detailMetrics">
+        ${bhDetailMetric("全国2連対率",bhPct(nat2),"key")}
+        ${bhDetailMetric("全国3連対率",bhPct(nat3))}
+        ${bhDetailMetric("当地勝率",local==null?"—":local.toFixed(2))}
+        ${bhDetailMetric("モーター2連対率",bhPct(m2),"key")}
+        ${bhDetailMetric("モーター3連対率",bhPct(m3))}
+        ${bhDetailMetric("今節得点",meetPts)}
+        ${bhDetailMetric("今節順位",meetRank,"key")}
+      </div>
+    </div>
+
+    <button type="button" class="recent20Toggle" onclick="bhToggleRecent20(${boatNo},${Number(r.number||0)},this)">
+      <span>直近20走・コース別データ</span><b>＋</b>
+    </button>
+    <div id="recent20Full${boatNo}" class="recent20Full hide"></div>
+  `;
+
+  panel.classList.remove("hide");
+  panel.dataset.boat=String(boatNo);
+  panel.dataset.number=String(number);
+
+  requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"nearest"}));
+}
+async function bhToggleRecent20(boatNo,number,btn){
+  const box=document.getElementById("recent20Full"+boatNo);
+  if(!box)return;
+
+  const opening=box.classList.contains("hide");
+  if(!opening){
+    box.classList.add("hide");
+    if(btn?.querySelector("b"))btn.querySelector("b").textContent="＋";
+    return;
+  }
+
+  box.classList.remove("hide");
+  if(btn?.querySelector("b"))btn.querySelector("b").textContent="−";
+
+  if(box.dataset.done==="1")return;
+  box.innerHTML='<div class="recentLoading">直近20走を取得中…</div>';
+
+  if(!historyCache){
+    if(!historyLoading)historyLoading=buildHistory();
+    historyCache=await historyLoading;
+  }
+
+  const obj=historyCache?.get?.(+number);
+  const h=obj?.rows||[];
+  const m=histMetrics(h);
+  const pct=(v)=>h.length?(v/h.length*100).toFixed(1)+"%":"—";
+  const techs=bhCourseTechs(h,boatNo);
+
+  const techMap={};
+  techs.forEach(t=>techMap[t[0]]=t[2]);
+
+  let summary=[
+    ["1着率",pct(m.win)],
+    ["2連対率",pct(m.top2)],
+    ["3連対率",pct(m.top3)],
+    ["平均ST",m.avgST==null?"—":m.avgST.toFixed(3)],
+    ["平均ST順位",m.avgRank==null?"—":m.avgRank.toFixed(2)+"位"]
+  ];
+
+  if(boatNo===1){
+    summary.push(["逃げ率",Number.isFinite(techMap["逃"])?techMap["逃"].toFixed(1)+"%":"—"]);
+  }else{
+    summary.push(["まくり率",Number.isFinite(techMap["ま"])?techMap["ま"].toFixed(1)+"%":"—"]);
+    summary.push(["まくり差し率",Number.isFinite(techMap["ま差"])?techMap["ま差"].toFixed(1)+"%":"—"]);
+    summary.push(["差し率",Number.isFinite(techMap["差"])?techMap["差"].toFixed(1)+"%":"—"]);
+  }
+
+  const rows=h.map(x=>`<tr>
+    <td>${x.date?.slice(5)||"—"}</td>
+    <td>${x.place??"—"}着</td>
+    <td>${x.course??"—"}C</td>
+    <td>${x.st==null?"—":Number(x.st).toFixed(2)}</td>
+    <td>${x.stRank??"—"}位</td>
+    <td>${x.winnerEntry??"—"}号艇</td>
+    <td>${T[x.tech]||"—"}</td>
+  </tr>`).join("");
+
+  box.innerHTML=`
+    <div class="recentSummaryGrid">
+      ${summary.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join("")}
+    </div>
+    <div class="recentTableWrap">
+      <table class="recent20Table">
+        <thead><tr><th>日付</th><th>着</th><th>コース</th><th>ST</th><th>ST順位</th><th>1着艇</th><th>決まり手</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="7">履歴なし</td></tr>'}</tbody>
+      </table>
+    </div>
+  `;
+  box.dataset.done="1";
+}
+window.bhSelectRacerDetail=bhSelectRacerDetail;
+window.bhCloseRacerDetail=bhCloseRacerDetail;
+window.bhToggleRecent20=bhToggleRecent20;
 
 
 function setTopTheme(type){
@@ -12471,6 +13037,14 @@ function renderOdds(odds){
   }
 
   window.loadMeetPointsV047=loadMeetPointsV047;
+  setTimeout(()=>{
+    try{
+      const p=document.getElementById("racerDetailPanel");
+      if(p && !p.classList.contains("hide")){
+        bhSelectRacerDetail(Number(p.dataset.boat),Number(p.dataset.number));
+      }
+    }catch(e){}
+  },0);
 })();
 </script>
 
@@ -12864,61 +13438,26 @@ function bhRenderCompare(){
   let rr=[];
   try{rr=racers(currentRace)||[]}catch(e){}
   if(!rr.length){
-    tbody.innerHTML='<tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr>';
+    tbody.innerHTML='<tr><td class="compareWait">出走表取得後に表示</td></tr>';
     return;
   }
 
-  const data=rr.map(r=>{
+  const boatCell=(r)=>{
     const b=Number(r.entry_number);
-    const h=historyCache?.get?.(+r.number)?.rows||[];
-    const m=histMetrics(h);
-    return {
-      b,h,m,
-      motor:Number(r.motor_top_3_percent),
-      courseWin: h?.length ? h.filter(z=>Number(z.place)===1).length/h.length*100 : NaN,
-      courseTop3: h?.length ? h.filter(z=>Number(z.place)>=1&&Number(z.place)<=3).length/h.length*100 : NaN
-    };
-  });
-
-  /* 平均ST: 小さい順 / ST順位: 小さい順 / モーター3連対率: 大きい順 */
-  const stRank=[...data].filter(x=>Number.isFinite(x.m.avgST)).sort((a,b)=>a.m.avgST-b.m.avgST);
-  const avgRankRank=[...data].filter(x=>Number.isFinite(x.m.avgRank)).sort((a,b)=>a.m.avgRank-b.m.avgRank);
-  const motorRank=[...data].filter(x=>Number.isFinite(x.motor)).sort((a,b)=>b.motor-a.motor);
-  const courseWinRank=[...data].filter(x=>Number.isFinite(x.courseWin)).sort((a,b)=>b.courseWin-a.courseWin);
-  const courseTop3Rank=[...data].filter(x=>Number.isFinite(x.courseTop3)).sort((a,b)=>b.courseTop3-a.courseTop3);
-
-  const rankClass=(arr,b)=>{
-    const i=arr.findIndex(x=>x.b===b);
-    return i===0?"compareBest":i===1?"compareSecond":"";
+    return `<span class="matrixBoat b${b}">${b}</span>`;
   };
 
-  tbody.innerHTML=data.map(x=>{
-    const techs=bhCourseTechs(x.h,x.b)
-      .map(t=>bhTechChip(t[0],t[1],t[2],x.b))
-      .join("");
-
-    return `<tr>
-      <td><span class="compareBoat b${x.b}">${x.b}</span></td>
-      <td class="${rankClass(stRank,x.b)}">${Number.isFinite(x.m.avgST)?x.m.avgST.toFixed(3):"—"}</td>
-      <td class="${rankClass(avgRankRank,x.b)}">${Number.isFinite(x.m.avgRank)?x.m.avgRank.toFixed(2)+"位":"—"}</td>
-      <td class="${rankClass(motorRank,x.b)}">${bhPct(x.motor)}</td>
-      <td class="${rankClass(courseWinRank,x.b)}">${bhPct(x.courseWin)}</td>
-      <td class="${rankClass(courseTop3Rank,x.b)}">${bhPct(x.courseTop3)}</td>
-      <td><div class="compareTechs">${techs}</div></td>
+  const row=(label,values)=>`
+    <tr>
+      <th>${label}</th>
+      ${values.map(v=>`<td>${v}</td>`).join("")}
     </tr>`;
-  }).join("");
 
-  const assist=document.querySelector("#compareBody .compareAssist");
-  if(assist){
-    assist.innerHTML=`
-      <span class="roleLegend">
-        <span class="roleTag roleAttack">⚔ 攻め</span>
-        <span class="roleTag roleDefense">🛡 守り</span>
-        <span class="compareLegend"><i class="r"></i>圧倒的 / 1位</span>
-        <span class="compareLegend"><i class="y"></i>平均級 / 2位</span>
-      </span>
-      <span>決まり手＝選手カードと同じ過去20走</span>`;
-  }
+  tbody.innerHTML=
+    row("艇番",rr.map(boatCell))+
+    row("階級",rr.map(r=>`<b>${grade(r)}</b>`))+
+    row("選手名",rr.map(r=>`<span class="matrixName">${r.name||"—"}</span>`))+
+    row("全国勝率",rr.map(r=>`<strong>${f(r.national_win_rate)}</strong>`));
 }
 const __bhUpdateMainHistoryV183=updateMainHistory;
 updateMainHistory=function(rr,map){
