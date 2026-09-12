@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V236</title>
+<title>BOAT HUNTER V315</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14444,6 +14444,38 @@ input,
 }
 </style>
 
+
+<style id="bh-vol315-final-ui">
+#hunterFinalDecision{overflow:hidden!important}
+.hfdRankToggle{width:100%;margin-top:6px;padding:8px 10px;border:1px solid #3b88ad!important;border-radius:9px!important;background:#082335!important;color:#9edfff!important;font-size:11px!important;font-weight:1000!important}
+.hfdRanksCollapsed .hfdRank:nth-child(n+4){display:none!important}
+.hfdRanksOpen .hfdRank{display:grid!important}
+
+.hfdPass{margin:10px 0!important;padding:14px 8px!important;border:3px solid #ffb2b8!important;border-radius:14px!important;background:linear-gradient(135deg,#ff3d4d,#8f0b18)!important;box-shadow:0 0 24px rgba(255,61,77,.38)!important;font-size:22px!important;letter-spacing:.06em!important;text-shadow:0 2px 5px #63000a!important}
+
+.hfdHeadGroup{margin-top:10px;padding:9px;border:1px solid #45c9ff55;border-radius:14px;background:linear-gradient(180deg,#071d2b,#05141f);box-shadow:0 8px 20px rgba(0,0,0,.22)}
+.hfdHeadTitle{display:grid;grid-template-columns:1fr 46px auto;gap:8px;align-items:center;margin-bottom:8px}
+.hfdHeadTitle>div{display:flex;flex-direction:column}.hfdHeadTitle small{color:#6ed8ff;font-size:8px;font-weight:1000;letter-spacing:.14em}.hfdHeadTitle b{font-size:15px;color:#fff}.hfdHeadTitle em{font-style:normal;font-size:10px;color:#9db8c7;font-weight:900}
+.hfdHeadBig{width:42px;height:42px;display:grid;place-items:center;border:2px solid #fff;border-radius:10px;font-size:22px;font-weight:1000}
+.hfdHeadBig.b1,.hfdCutBoat.b1{background:#fff;color:#111}.hfdHeadBig.b2,.hfdCutBoat.b2{background:#111;color:#fff}.hfdHeadBig.b3,.hfdCutBoat.b3{background:#d82c3d;color:#fff}.hfdHeadBig.b4,.hfdCutBoat.b4{background:#176bd0;color:#fff}.hfdHeadBig.b5,.hfdCutBoat.b5{background:#efd42d;color:#111}.hfdHeadBig.b6,.hfdCutBoat.b6{background:#1b9950;color:#fff}
+
+.hfdFormationMain{padding:9px;border:1px solid #5acfff55;border-radius:11px;background:#092638}.hfdFormationMain>small{display:block;margin-bottom:5px;color:#71d7ff;font-size:8px;font-weight:1000;letter-spacing:.12em}.hfdFormationMain>.hfdLine{grid-template-columns:1fr 14px 1.4fr 14px 2fr}.hfdFormationMain>.hfdLine .hfdSlot{min-height:40px}.hfdFormationMain .hfdFormBoat{width:28px;height:28px;font-size:13px}.hfdFormationMain>b{display:block;margin-top:5px;text-align:right;color:#fff;font-size:10px}
+
+.hfdPickBand{display:grid;grid-template-columns:52px 1fr;gap:7px;align-items:start;margin-top:7px;padding:7px;border-radius:10px;border:1px solid transparent}
+.hfdPickBand>strong{display:grid;place-items:center;min-height:30px;border-radius:7px;color:#fff;font-size:11px}.hfdPickBand>div{display:flex;flex-wrap:wrap;gap:5px}
+.hfdPickBand.main{background:#321019;border-color:#d34b61}.hfdPickBand.main>strong{background:#b7243d}
+.hfdPickBand.cover{background:#08273a;border-color:#2f9fd0}.hfdPickBand.cover>strong{background:#147aa8}
+.hfdPickBand.value{background:#342908;border-color:#d7b12f}.hfdPickBand.value>strong{background:linear-gradient(180deg,#c89d17,#866307);color:#fff8c9}
+.hfdTicket{display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:5px 7px;border-radius:7px;background:#fff;color:#101010;font-size:13px;font-weight:1000;white-space:nowrap}.hfdTicket small{font-size:8px;color:#7a5c00}
+
+.hfdCutBand{display:grid;grid-template-columns:66px 1fr;gap:7px;align-items:center;margin-top:7px;padding:7px;border:1px solid #d54c8b;border-radius:10px;background:#2c0b1d}.hfdCutBand>strong{color:#ff8fbe;font-size:10px}.hfdCutBand>div{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.hfdCutBoat{width:25px;height:25px;display:grid;place-items:center;border:1px solid #fff;border-radius:6px;font-size:12px;font-weight:1000}.hfdCutBand span{font-size:9px;color:#f2bdd3;font-weight:900}.hfdNone{color:#8ca6b4!important;font-size:10px!important;font-weight:900}
+
+@media(max-width:520px){
+ .hfdRanks h4{font-size:8px!important}.hfdRank{min-height:27px!important}.hfdVal{font-size:8px!important}
+ .hfdHeadGroup{padding:8px!important}.hfdTicket{font-size:12px!important;padding:5px 6px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14454,7 +14486,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.314</div>
+  <div class="topVol">Vol.315</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -19487,6 +19519,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     const cnt={};
     base.forEach(x=>cnt[x.boat]={w:0,s:0,t:0,head1second:0});
     const moves={};
+    const combos={};
     const scenario={normal:{n:0,hit:0},level:{n:0,hit:0},rank:{n:0,hit:0}};
 
     for(let k=0;k<N;k++){
@@ -19525,6 +19558,8 @@ setTimeout(bhApplyTokuyamaDayFix,0);
       const p1=runRows[0],p2=runRows[1],p3=runRows[2];
 
       cnt[p1.boat].w++; cnt[p2.boat].s++; cnt[p3.boat].t++;
+      const comboKey=`${p1.boat}-${p2.boat}-${p3.boat}`;
+      combos[comboKey]=(combos[comboKey]||0)+1;
       if(p1.boat===head1.boat){
         scenario[mode].hit++;
         cnt[p2.boat].head1second++;
@@ -19585,7 +19620,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     $q("hunterSimState").textContent="5000回 完了";
     window.__HUNTER_SIM5000={
       count:N,reliability,head1:head1.boat,head2:head2.boat,
-      head1Rate,headTop2,topMove:topMove[0],counts:cnt,scenario
+      head1Rate,headTop2,topMove:topMove[0],counts:cnt,combos,scenario
     };
   }
 
@@ -19670,24 +19705,268 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 </script>
 
 
-<script id="bh-vol313-final-js">
+<script id="bh-vol315-final-js">
 (function(){
-const $=id=>document.getElementById(id), N=v=>{if(v==null||v==="")return null;let x=Number(String(v).replace(/[^\d.\-]/g,""));return Number.isFinite(x)?x:null}, P=v=>N(v)==null?"—":N(v).toFixed(1)+"%";
+const $=id=>document.getElementById(id);
+const N=v=>{if(v==null||v==="")return null;const x=Number(String(v).replace(/[^\d.\-]/g,""));return Number.isFinite(x)?x:null};
+const P=v=>N(v)==null?"—":`${N(v)>=0?"+":""}${N(v).toFixed(1)}`;
 const B=(b,c="hfdBoat")=>`<span class="${c} b${b}">${b}</span>`;
-function R(){try{return racers(currentRace)||[]}catch(e){return[]}} function H(r){try{return historyCache instanceof Map?(historyCache.get(Number(r.number))?.rows||[]):[]}catch(e){return[]}}
-function rate(h,f){return h.length?h.filter(f).length/h.length*100:null}
-function met(r){let h=H(r),m={};try{m=histMetrics(h)||{}}catch(e){}let fc=Number(window.HUNTER_F?.count?.(r)||0),fa=fc?window.HUNTER_F?.after?.(h,fc):null;return{boat:+r.entry_number,r,h,fc,st:N(fa?.avgST)??N(m.avgST),sr:N(m.avgRank),p1:rate(h,x=>+x.place===1),p2:rate(h,x=>[1,2].includes(+x.place)),second:rate(h,x=>+x.place===2),sashi:rate(h,x=>+x.place===1&&+x.tech===2)||0,makuri:rate(h,x=>+x.place===1&&+x.tech===3)||0,mz:rate(h,x=>+x.place===1&&+x.tech===4)||0}}
-function sb(v){if(v==null)return 0;if(v<=.11)return 5;if(v<=.15)return 2;if(v<=.18)return-3;return-6} function rb(v){if(v==null)return 0;if(v<=2.5)return 2;if(v<=3.1)return 0;if(v<=4)return-2;return-4} function fp(c){return c>=3?-8:c===2?-5:c===1?-3:0}
-function mb(r){let a=N(r.motor_top_2_percent),b=N(r.motor_top_3_percent);if(a==null||b==null)return 0;if(a>=58&&b>=70)return 8;if(a>=50&&b>=60)return 5;if(a>=38&&b>=48)return 3;if(a<=20&&b<=23)return-6;if(a<=29&&b<=32)return-3;return 0}
-function va(c,k="p1"){try{let j=String(+$("stadium").value).padStart(2,"0"),v=+VENUE_BASE_202606_08?.[j]?.[String(c)]?.[k];return Number.isFinite(v)?v:0}catch(e){return 0}}
-function pre(){return R().map(met).map(x=>{let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r);if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;s=Math.max(0,Math.min(100,s));return{...x,score:s,diff:s-va(x.boat)}}).sort((a,b)=>b.diff-a.diff)}
-function market(){let m=window.__HUNTER_MARKET_RANK;if(Array.isArray(m))return m.map(x=>({boat:+(x.boat||x.entry_number||x.no),v:N(x.rate||x.percent||x.pct)})).filter(x=>x.boat);let o=window.__HUNTER_ODDS120?.odds;if(!Array.isArray(o))return[];let q={1:0,2:0,3:0,4:0,5:0,6:0};o.forEach(x=>{let b=+String(x.combo||x.key||"").split(/[-=>]/)[0],d=N(x.odds||x.value);if(q[b]!=null&&d>0)q[b]+=1/d});return Object.entries(q).map(([b,v])=>({boat:+b,v})).sort((a,b)=>b.v-a.v)}
-function sim(){let z=window.__HUNTER_SIM5000;if(!z?.counts)return[];return Object.entries(z.counts).map(([b,c])=>({boat:+b,v:+c.w/(+z.count||5000)*100})).sort((a,b)=>b.v-a.v)}
-function rank(id,a,type){let e=$(id);if(!e)return;e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(3)):P(x.v??x.diff)}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`}
-function axis(head,all){return all.filter(x=>x.boat!==head.boat).map(x=>{let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc);if(x.fc===0){let mv=head.makuri>=head.sashi&&head.makuri>=head.mz?"まくり":head.mz>=head.sashi?"まくり差し":"差し";if(mv==="差し"&&x.boat===1)s+=5;if(mv==="まくり"&&x.boat===head.boat+1)s+=5;if(mv==="まくり差し"&&(x.boat===1||x.boat===2))s+=5}return{...x,ad:s-va(x.boat,"p2")}}).sort((a,b)=>b.ad-a.ad)}
-function cut(b){return b<=2?30:b<=4?25:b===5?20:15}
-function draw(){let p=pre();if(!p.length)return;rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",sim(),"s");let heads=p.filter(x=>x.diff>0);if(!heads.length)heads=[p[0]];let pass=heads.length>=3;$("hfdPass").classList.toggle("hide",!pass);let all=R().map(met),forms=heads.map((h,i)=>{let ax=axis(h,all).slice(0,2),s2=new Set(ax.map(x=>x.boat)),s3=new Set(ax.map(x=>x.boat));all.forEach(x=>{if(x.boat!==h.boat&&!s3.has(x.boat)&&(x.second??0)>cut(x.boat))s3.add(x.boat)});let a2=[...s2],a3=[...s3],pts=0;a2.forEach(b=>a3.forEach(c=>{if(b!==c)pts++}));return{h,ax,a2,a3,pts,i}}),total=forms.reduce((a,x)=>a+x.pts,0);$("hfdPoints").textContent=total+"点";$("hfdState").textContent=window.__HUNTER_SIM5000?"SIM5000 完了":"事前診断";$("hfdForms").innerHTML=forms.map(f=>`<div class="hfdForm"><div class="hfdHeadBoat"><small>頭候補${f.i+1}</small>${B(f.h.boat,"hfdFormBoat")}<em>${f.h.diff>=0?"+":""}${f.h.diff.toFixed(1)}</em></div><div><div class="hfdLine"><div class="hfdSlot">${B(f.h.boat,"hfdFormBoat")}</div><div class="hfdArrow">›</div><div class="hfdSlot">${f.a2.map(x=>B(x,"hfdFormBoat")).join("")}</div><div class="hfdArrow">›</div><div class="hfdSlot">${f.a3.map(x=>B(x,"hfdFormBoat")).join("")}</div></div><div class="hfdMeta"><span>軸 <b>${f.ax.map(x=>x.boat).join("・")}</b></span><span>3着 <b>${f.a3.join("・")}</b></span><span><b>${f.pts}点</b></span></div></div></div>`).join("");window.__HUNTER_FINAL_FORMATION={pass,heads,forms}}
-let sig="";setInterval(()=>{let x=[!!window.__HUNTER_SIM5000,window.__HUNTER_ODDS120?.odds?.length||0,$("stadium")?.value,$("race")?.value].join("|");if(x!==sig){sig=x;try{draw()}catch(e){console.error(e)}}},350);window.bhRenderFinalFormation=draw;
+const R=()=>{try{return racers(currentRace)||[]}catch(e){return[]}};
+const H=r=>{try{return historyCache instanceof Map?(historyCache.get(Number(r.number))?.rows||[]):[]}catch(e){return[]}};
+const rate=(h,f)=>h.length?h.filter(f).length/h.length*100:null;
+
+function met(r){
+  const h=H(r); let m={}; try{m=histMetrics(h)||{}}catch(e){}
+  const fc=Number(window.HUNTER_F?.count?.(r)||0),fa=fc?window.HUNTER_F?.after?.(h,fc):null;
+  return {
+    boat:+r.entry_number,r,h,fc,
+    st:N(fa?.avgST)??N(m.avgST),sr:N(m.avgRank),
+    p1:rate(h,x=>+x.place===1),
+    p2:rate(h,x=>[1,2].includes(+x.place)),
+    p3:rate(h,x=>[1,2,3].includes(+x.place)),
+    second:rate(h,x=>+x.place===2),
+    sashi:rate(h,x=>+x.place===1&&+x.tech===2)||0,
+    makuri:rate(h,x=>+x.place===1&&+x.tech===3)||0,
+    mz:rate(h,x=>+x.place===1&&+x.tech===4)||0
+  };
+}
+function sb(v){if(v==null)return 0;if(v<=.11)return 5;if(v<=.15)return 2;if(v<=.18)return-3;return-6}
+function rb(v){if(v==null)return 0;if(v<=2.5)return 2;if(v<=3.1)return 0;if(v<=4)return-2;return-4}
+function fp(c){return c>=3?-8:c===2?-5:c===1?-3:0}
+function mb(r){
+  const a=N(r.motor_top_2_percent),b=N(r.motor_top_3_percent);
+  if(a==null||b==null)return 0;
+  if(a>=58&&b>=70)return 8;
+  if(a>=50&&b>=60)return 5;
+  if(a>=38&&b>=48)return 3;
+  if(a<=20&&b<=23)return-6;
+  if(a<=29&&b<=32)return-3;
+  return 0;
+}
+function va(c,k="p1"){
+  try{
+    const j=String(+$("stadium").value).padStart(2,"0");
+    const v=+VENUE_BASE_202606_08?.[j]?.[String(c)]?.[k];
+    return Number.isFinite(v)?v:null;
+  }catch(e){return null}
+}
+function pre(){
+  return R().map(met).map(x=>{
+    let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r);
+    if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
+    s=Math.max(0,Math.min(100,s));
+    const base=va(x.boat,"p1");
+    return {...x,score:s,diff:base==null?null:s-base};
+  }).sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+}
+function market(){
+  const m=window.__HUNTER_MARKET_RANK;
+  if(Array.isArray(m))return m.map(x=>({boat:+(x.boat||x.entry_number||x.no),v:N(x.rate||x.percent||x.pct)})).filter(x=>x.boat);
+  const o=window.__HUNTER_ODDS120?.odds;if(!Array.isArray(o))return[];
+  const q={1:0,2:0,3:0,4:0,5:0,6:0};
+  o.forEach(x=>{const b=+String(x.combo||x.key||"").split(/[-=>]/)[0],d=N(x.odds||x.value);if(q[b]!=null&&d>0)q[b]+=1/d});
+  const sum=Object.values(q).reduce((a,b)=>a+b,0)||1;
+  return Object.entries(q).map(([b,v])=>({boat:+b,v:v/sum*100})).sort((a,b)=>b.v-a.v);
+}
+function sim(){
+  const z=window.__HUNTER_SIM5000;if(!z?.counts)return[];
+  return Object.entries(z.counts).map(([b,c])=>({boat:+b,v:+c.w/(+z.count||5000)*100})).sort((a,b)=>b.v-a.v);
+}
+function rank(id,a,type){
+  const e=$(id);if(!e)return;
+  e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(1)+"%"):type==="p"?P(x.diff):((x.v??0).toFixed(1)+"%")}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`;
+}
+function move(head){
+  if(head.boat===1)return "逃げ";
+  if(head.boat===2)return head.sashi>=head.makuri?"差し":"まくり";
+  const z=[["差し",head.sashi],["まくり",head.makuri],["まくり差し",head.mz]].sort((a,b)=>b[1]-a[1]);
+  return z[0][0];
+}
+function axis(head,all){
+  const mv=move(head);
+  return all.filter(x=>x.boat!==head.boat).map(x=>{
+    let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc);
+    if(x.fc===0){
+      if(mv==="差し"&&x.boat===1)s+=5;
+      if(mv==="まくり"&&x.boat===head.boat+1)s+=5;
+      if(mv==="まくり差し"&&(x.boat===1||x.boat===2))s+=5;
+    }
+    const base=va(x.boat,"p2");
+    return {...x,axisScore:s,ad:base==null?null:s-base};
+  }).sort((a,b)=>(b.ad??-999)-(a.ad??-999));
+}
+function simCombo(combo){
+  const z=window.__HUNTER_SIM5000;
+  if(!z?.combos)return 0;
+  return (z.combos[combo]||0)/(z.count||5000)*100;
+}
+function odd(combo){
+  const a=window.__HUNTER_ODDS120?.odds;if(!Array.isArray(a))return null;
+  const x=a.find(z=>String(z.combo||z.key||"").replace(/[=>]/g,"-")===combo);
+  return N(x?.odds??x?.value);
+}
+function marketHeadPct(b){return market().find(x=>x.boat===b)?.v??null}
+function marketHeadRank(b){const a=market();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
+function simHeadRank(b){const a=sim();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
+
+function chooseHeads(p){
+  const valid=p.filter(x=>x.diff!=null&&x.diff>=-1);
+  const pool=valid.length?valid:[p[0]];
+  const top=pool[0],second=pool[1];
+  const standout=top&&second&&top.diff>=10&&(top.diff-second.diff)>=5;
+  if(standout)return {heads:[top],pass:false,rawCount:1,standout:true};
+  const positive=p.filter(x=>x.diff!=null&&x.diff>=-1);
+  const pass=positive.length>=3;
+  return {heads:pass?positive:positive.slice(0,2),pass,rawCount:positive.length,standout:false};
+}
+function thirdDiff(x){
+  const base=va(x.boat,"p3");
+  return base==null?null:(x.p3??0)-base;
+}
+function cutForHead(head,all,axes){
+  const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
+  const cut=[],stay=[];
+  all.forEach(x=>{
+    if(protectedBoats.has(x.boat))return;
+    const d=thirdDiff(x);
+    if(d!=null&&d<=-10)cut.push({...x,thirdDiff:d});
+    else stay.push({...x,thirdDiff:d});
+  });
+  return {cut,stay};
+}
+function combinations(head,a2,a3){
+  const out=[];
+  a2.forEach(b=>a3.forEach(c=>{if(head!==b&&head!==c&&b!==c)out.push(`${head}-${b}-${c}`)}));
+  return out;
+}
+function classify(head,axes,a3,thirdStay){
+  const baseCombos=combinations(head.boat,axes.map(x=>x.boat),a3);
+  const scored=baseCombos.map(c=>{
+    const sr=simCombo(c),o=odd(c);
+    return {combo:c,sim:sr,odds:o,ev:o==null?null:sr/100*o};
+  }).sort((a,b)=>b.sim-a.sim);
+
+  const main=[],cover=[],value=[];
+  scored.forEach((x,i)=>{
+    if(i<Math.min(3,scored.length)&&x.sim>0)main.push(x);
+    else cover.push(x);
+    if(x.ev!=null&&x.ev>=1.05)value.push({...x,reason:"SIM×オッズ"});
+  });
+
+  /* 3着高偏差艇を2着へ昇格。頭は絶対に増やさない。 */
+  thirdStay.filter(x=>(x.thirdDiff??-999)>=5&&!axes.some(a=>a.boat===x.boat)).forEach(x=>{
+    axes.forEach(a=>{
+      if(a.boat===x.boat)return;
+      const c=`${head.boat}-${x.boat}-${a.boat}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
+      if(sr>0 || (ev!=null&&ev>=1)){
+        value.push({combo:c,sim:sr,odds:o,ev,reason:"3着高偏差→2着昇格"});
+      }
+    });
+  });
+
+  /* HUNTER/SIM上位なのに世間低評価の頭は期待値側へ。 */
+  const mr=marketHeadRank(head.boat),mp=marketHeadPct(head.boat),srk=simHeadRank(head.boat);
+  if(mr!=null&&mr>=4&&(head.diff??0)>=10&&(mp==null||mp<15)&&srk!=null&&srk<=2){
+    scored.slice(0,2).forEach(x=>value.push({...x,reason:"HUNTER×SIM高評価 / 世間低評価"}));
+  }
+
+  const uniq=a=>{
+    const m=new Map();
+    a.forEach(x=>{if(!m.has(x.combo))m.set(x.combo,x)});
+    return [...m.values()];
+  };
+  return {main:uniq(main),cover:uniq(cover.filter(x=>!main.some(m=>m.combo===x.combo))),value:uniq(value)};
+}
+function rowList(items){
+  if(!items.length)return `<span class="hfdNone">—</span>`;
+  return items.map(x=>`<span class="hfdTicket">${x.combo}${x.odds!=null?`<small>${x.odds.toFixed(1)}倍</small>`:""}</span>`).join("");
+}
+function formationLine(head,second,third){
+  return `<div class="hfdLine">
+    <div class="hfdSlot">${B(head,"hfdFormBoat")}</div><div class="hfdArrow">›</div>
+    <div class="hfdSlot">${second.map(x=>B(x,"hfdFormBoat")).join("")}</div><div class="hfdArrow">›</div>
+    <div class="hfdSlot">${third.map(x=>B(x,"hfdFormBoat")).join("")}</div>
+  </div>`;
+}
+function divergencePass(p){
+  const mk=market(); if(!mk.length)return false;
+  const hr=new Map(p.map((x,i)=>[x.boat,i+1]));
+  const mr=new Map(mk.map((x,i)=>[x.boat,i+1]));
+  let severe=0;
+  p.forEach(x=>{
+    const a=hr.get(x.boat),b=mr.get(x.boat),mp=marketHeadPct(x.boat);
+    if(Math.abs(a-b)>=3){
+      if((a<=2&&(x.diff??0)>=10&&b>=4&&(mp??0)<15) ||
+         (a>=4&&(x.diff??0)<=0&&b<=2&&(mp??0)>=20)) severe++;
+    }
+  });
+  return severe>=2;
+}
+function ensureToggle(){
+  const ranks=document.querySelector(".hfdRanks");if(!ranks||$("hfdRankToggle"))return;
+  const b=document.createElement("button");b.type="button";b.id="hfdRankToggle";b.className="hfdRankToggle";b.textContent="6艇評価を見る ＋";
+  ranks.after(b);
+  ranks.classList.add("hfdRanksCollapsed");
+  b.onclick=()=>{const open=ranks.classList.toggle("hfdRanksOpen");ranks.classList.toggle("hfdRanksCollapsed",!open);b.textContent=open?"6艇評価を閉じる −":"6艇評価を見る ＋"};
+}
+function draw(){
+  const p=pre();if(!p.length)return;
+  ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",sim(),"s");
+  const pick=chooseHeads(p);
+  const marketPass=divergencePass(p);
+  const pass=pick.pass||marketPass;
+  const passEl=$("hfdPass");
+  passEl.classList.toggle("hide",!pass);
+  passEl.textContent=pick.pass&&marketPass?"見｜頭候補3艇以上 × 世間乖離":pick.pass?"見｜頭候補3艇以上":"見｜世間評価と大幅乖離";
+
+  const all=R().map(met);
+  const forms=pick.heads.map((h,i)=>{
+    const axAll=axis(h,all);
+    const ax=axAll.slice(0,2);
+    const cutPack=cutForHead(h,all,ax);
+    const a2=ax.map(x=>x.boat);
+    const a3=[...new Set([h.boat,...a2,...cutPack.stay.map(x=>x.boat)])].filter(x=>x!==h.boat);
+    const cls=classify(h,ax,a3,cutPack.stay);
+    const pts=combinations(h.boat,a2,a3).length;
+    return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:cutPack.stay,cls,pts,i};
+  });
+  const total=forms.reduce((a,x)=>a+x.pts,0);
+  $("hfdPoints").textContent=total+"点";
+  $("hfdState").textContent=window.__HUNTER_SIM5000?"SIM5000 完了":"事前診断";
+
+  $("hfdForms").innerHTML=forms.map(f=>`
+    <article class="hfdHeadGroup">
+      <div class="hfdHeadTitle">
+        <div><small>HEAD ${f.i+1}</small><b>頭候補${f.i+1}</b></div>
+        ${B(f.h.boat,"hfdHeadBig")}
+        <em>偏差 ${P(f.h.diff)}</em>
+      </div>
+
+      <div class="hfdFormationMain">
+        <small>3連単 FORMATION</small>
+        ${formationLine(f.h.boat,f.a2,f.a3)}
+        <b>${f.pts}点</b>
+      </div>
+
+      <div class="hfdPickBand main"><strong>本線</strong><div>${rowList(f.cls.main)}</div></div>
+      <div class="hfdPickBand cover"><strong>押さえ</strong><div>${rowList(f.cls.cover)}</div></div>
+      <div class="hfdPickBand value"><strong>期待値</strong><div>${rowList(f.cls.value)}</div></div>
+
+      <div class="hfdCutBand">
+        <strong>切り候補</strong>
+        <div>${f.cut.length?f.cut.map(x=>`${B(x.boat,"hfdCutBoat")}<span>${x.thirdDiff==null?"—":P(x.thirdDiff)}</span>`).join(""):`<span class="hfdNone">なし</span>`}</div>
+      </div>
+    </article>`).join("");
+
+  window.__HUNTER_FINAL_FORMATION={pass,heads:pick.heads,forms};
+}
+let sig="";
+setInterval(()=>{
+  const z=window.__HUNTER_SIM5000;
+  const x=[z?.count||0,Object.keys(z?.combos||{}).length,window.__HUNTER_ODDS120?.odds?.length||0,$("stadium")?.value,$("race")?.value].join("|");
+  if(x!==sig){sig=x;try{draw()}catch(e){console.error("V315 FINAL",e)}}
+},300);
+window.bhRenderFinalFormation=draw;
 })();
 </script>
 <script id="bh-vol313-ai-auto-odds">
