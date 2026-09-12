@@ -10034,6 +10034,306 @@ body:not(.theme-ladies):not(.theme-sg){
 #comparePanel{margin:0 0 18px!important}
 </style>
 
+
+<style id="bh-vol275-compact-layout">
+/* Vol.275: 全体の間延びを解消。スマホで1画面あたりの情報量を増やす */
+
+/* 全体余白 */
+#main .wrap{
+  padding:8px!important;
+}
+.controls{
+  margin:6px 0 8px!important;
+  padding:10px!important;
+  gap:7px!important;
+  border-radius:16px!important;
+}
+.controls:before{
+  margin-bottom:6px!important;
+  font-size:8px!important;
+}
+.selectCard{
+  padding:8px!important;
+  border-radius:13px!important;
+}
+.selectEyebrow{
+  font-size:7px!important;
+}
+.selectLabel{
+  margin:2px 0 0!important;
+  font-size:9px!important;
+}
+.selectCard select{
+  min-height:34px!important;
+  font-size:15px!important;
+}
+.raceStep{
+  gap:5px!important;
+  margin-top:5px!important;
+}
+.raceStepBtn{
+  min-height:32px!important;
+  font-size:19px!important;
+}
+.voicePick{
+  min-height:42px!important;
+  font-size:12px!important;
+}
+.voiceStatus{
+  font-size:9px!important;
+}
+#get{
+  min-height:46px!important;
+  margin-top:4px!important;
+  font-size:14px!important;
+  border-radius:13px!important;
+}
+.status{
+  margin:5px 2px!important;
+  font-size:10px!important;
+}
+.hunterActions{
+  gap:7px!important;
+  margin:7px 0 6px!important;
+}
+.hunterActions button{
+  min-height:42px!important;
+  border-radius:12px!important;
+  font-size:13px!important;
+}
+
+/* 出走表見出し */
+.racerListTitle{
+  margin:10px 0 6px!important;
+  padding-top:8px!important;
+}
+.racerListTitle b{
+  font-size:21px!important;
+}
+.racerListTitle span{
+  font-size:8px!important;
+}
+.racerListTitle small{
+  font-size:7px!important;
+}
+
+/* 6艇カードの縦を詰める */
+#cards.cards{
+  gap:3px!important;
+  margin-bottom:6px!important;
+}
+#cards .compactRacerCard{
+  padding-bottom:3px!important;
+  border-radius:8px!important;
+}
+.compactPhotoWrap{
+  height:48px!important;
+}
+.compactBoatNo{
+  width:19px!important;
+  height:19px!important;
+  font-size:11px!important;
+  left:2px!important;
+  top:2px!important;
+}
+.compactClass{
+  margin-top:3px!important;
+  font-size:6.5px!important;
+}
+.compactName{
+  margin-top:2px!important;
+  font-size:7px!important;
+  line-height:1!important;
+}
+.compactWinLabel{
+  margin-top:3px!important;
+  font-size:5px!important;
+}
+.compactWin{
+  font-size:9px!important;
+}
+.compactDetailBtn{
+  min-height:19px!important;
+  margin:3px 2px 0!important;
+  width:calc(100% - 4px)!important;
+  font-size:6px!important;
+  border-radius:5px!important;
+}
+
+/* 選手詳細もコンパクト */
+.racerDetailPanel{
+  padding:7px!important;
+  margin-bottom:6px!important;
+  border-radius:10px!important;
+}
+.racerDetailHead{
+  margin-bottom:5px!important;
+}
+.racerDetailHead b{
+  font-size:15px!important;
+}
+.racerDetailHead span{
+  font-size:6.5px!important;
+}
+#racerDetailClose{
+  min-height:25px!important;
+  padding:0 8px!important;
+  font-size:8px!important;
+}
+.detailTop{
+  grid-template-columns:104px 1fr!important;
+  gap:6px!important;
+}
+.detailIdentity{
+  grid-template-columns:44px 1fr!important;
+  gap:5px!important;
+}
+.detailPhotoWrap{
+  width:44px!important;
+  height:60px!important;
+}
+.detailBoatNo{
+  width:20px!important;
+  height:20px!important;
+  font-size:11px!important;
+}
+.detailName{
+  font-size:12px!important;
+}
+.detailMeta{
+  margin-top:4px!important;
+  gap:3px!important;
+}
+.detailMeta span{
+  padding:2px 4px!important;
+  font-size:6.5px!important;
+}
+.detailMetrics{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:3px!important;
+}
+.detailMetric{
+  min-height:39px!important;
+  padding:3px!important;
+  border-radius:6px!important;
+}
+.detailMetric span{
+  font-size:5.5px!important;
+}
+.detailMetric b{
+  margin-top:2px!important;
+  font-size:10px!important;
+}
+.recent20Toggle{
+  min-height:30px!important;
+  margin-top:5px!important;
+  padding:0 8px!important;
+  font-size:8px!important;
+}
+.recent20Toggle b{
+  font-size:15px!important;
+}
+.recent20Full{
+  margin-top:5px!important;
+  padding:5px!important;
+}
+.recentSummaryGrid{
+  gap:3px!important;
+  margin-bottom:5px!important;
+}
+.recentSummaryGrid>div{
+  min-height:35px!important;
+}
+.recentSummaryGrid span{
+  font-size:6px!important;
+}
+.recentSummaryGrid b{
+  font-size:10px!important;
+}
+.recent20Table{
+  font-size:7px!important;
+}
+.recent20Table th,
+.recent20Table td{
+  padding:4px 3px!important;
+}
+
+/* 6艇比較も高さを圧縮 */
+.comparePanel{
+  margin-bottom:10px!important;
+  border-radius:10px!important;
+}
+.compareToggle{
+  min-height:46px!important;
+  padding:7px 9px!important;
+}
+.compareToggle b{
+  font-size:17px!important;
+}
+.compareToggle small{
+  font-size:7px!important;
+}
+#compareToggleIcon{
+  width:30px!important;
+  height:30px!important;
+}
+.compareBody{
+  padding:5px!important;
+}
+.compareAssist{
+  padding:2px 1px 5px!important;
+  font-size:6.5px!important;
+}
+.compareMatrix th,
+.compareMatrix td{
+  padding:4px 2px!important;
+  font-size:7px!important;
+}
+.matrixBoat{
+  width:22px!important;
+  height:22px!important;
+  font-size:11px!important;
+}
+.matrixName{
+  font-size:6.5px!important;
+}
+.compareMatrix strong{
+  font-size:8.5px!important;
+}
+
+/* 下段各パネルの余白も軽く圧縮 */
+.previewPanel,
+.aiPanel,
+.oddsPanel,
+.outlookPanel,
+.entryPanel{
+  margin-top:8px!important;
+  margin-bottom:8px!important;
+  border-radius:12px!important;
+}
+.previewHead,
+.outlookHead,
+.entryHead{
+  padding:8px!important;
+}
+.previewTable th,
+.previewTable td{
+  padding:5px 4px!important;
+  font-size:8px!important;
+}
+
+/* iPhone幅でさらに圧縮 */
+@media(max-width:430px){
+  #main .wrap{padding:6px!important}
+  .controls{padding:8px!important}
+  .compactPhotoWrap{height:44px!important}
+  .compactName{font-size:6.5px!important}
+  .compactWin{font-size:8.5px!important}
+  .detailTop{grid-template-columns:96px 1fr!important}
+  .detailMetrics{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -10044,7 +10344,7 @@ body:not(.theme-ladies):not(.theme-sg){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.274</div>
+  <div class="topVol">Vol.275</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
