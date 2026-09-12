@@ -10657,6 +10657,199 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol278-ultra-compact">
+/* Vol.278: さらにぎゅうぎゅう＋操作文字拡大＋顔写真強調 */
+
+.controls.racePanel,
+.controls{
+  padding:5px!important;
+  margin:3px 0 5px!important;
+  gap:4px!important;
+  border-radius:12px!important;
+}
+.controls.racePanel:before,
+.controls:before{
+  margin-bottom:2px!important;
+  font-size:6.5px!important;
+}
+.controls.racePanel:after,
+.controls:after{top:25px!important}
+
+.selectCard{
+  padding:5px!important;
+  border-radius:10px!important;
+}
+.selectEyebrow{font-size:6px!important}
+.selectLabel{
+  margin:1px 0 0!important;
+  font-size:7px!important;
+}
+.selectCard select{
+  min-height:26px!important;
+  height:26px!important;
+  font-size:13px!important;
+  line-height:26px!important;
+}
+
+/* レース左右矢印を横並び */
+.raceStep{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:4px!important;
+  margin-top:3px!important;
+}
+.raceStepBtn{
+  min-height:28px!important;
+  height:28px!important;
+  border-radius:7px!important;
+  font-size:18px!important;
+  line-height:1!important;
+}
+
+.voicePick{
+  min-height:32px!important;
+  height:32px!important;
+  font-size:11px!important;
+  border-radius:8px!important;
+}
+.voiceStatus{
+  padding:3px 4px!important;
+  font-size:7.5px!important;
+}
+
+/* アクションボタンは文字を大きく */
+#get{
+  min-height:42px!important;
+  height:42px!important;
+  margin-top:2px!important;
+  font-size:16px!important;
+  font-weight:1000!important;
+  letter-spacing:.02em!important;
+}
+.hunterActions{
+  gap:5px!important;
+  margin:4px 0!important;
+}
+.hunterActions button{
+  min-height:38px!important;
+  height:38px!important;
+  font-size:14px!important;
+  font-weight:1000!important;
+}
+
+.racerListTitle{
+  margin:7px 0 4px!important;
+  padding-top:6px!important;
+}
+.racerListTitle b{font-size:20px!important}
+.racerListTitle span{font-size:7.5px!important}
+
+#cards.cards{
+  gap:2px!important;
+  margin-bottom:5px!important;
+}
+#cards .compactRacerCard{
+  padding-bottom:2px!important;
+  border-radius:7px!important;
+}
+
+/* 顔だけ大きく見せる */
+.compactPhotoWrap{
+  height:66px!important;
+  overflow:hidden!important;
+  background:#dfe8ee!important;
+}
+.compactPhotoWrap .racerPhoto,
+#cards .racerPhoto{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center 12%!important;
+  transform:scale(1.22)!important;
+  transform-origin:center 18%!important;
+  background:#e9f0f4!important;
+}
+.compactBoatNo{
+  width:18px!important;
+  height:18px!important;
+  font-size:10px!important;
+}
+.compactClass{
+  margin-top:2px!important;
+  font-size:6px!important;
+}
+.compactName{
+  margin-top:1px!important;
+  font-size:6.5px!important;
+}
+.compactWinLabel{
+  margin-top:2px!important;
+  font-size:4.8px!important;
+}
+.compactWin{font-size:8.5px!important}
+.compactDetailBtn{
+  min-height:18px!important;
+  height:18px!important;
+  margin:3px 2px 0!important;
+  line-height:16px!important;
+  font-size:6px!important;
+}
+
+#comparePanel.comparePanel{margin:4px 0 7px!important}
+.compareToggle{
+  min-height:38px!important;
+  padding:4px 7px!important;
+}
+.compareToggle b{font-size:16px!important}
+.compareBody{padding:3px!important}
+.compareAssist{padding:1px 0 3px!important}
+.compareMatrix th,
+.compareMatrix td{
+  padding:2px 1px!important;
+  font-size:6.5px!important;
+}
+
+@media(max-width:430px){
+  #main .wrap{padding:4px!important}
+  .controls.racePanel,
+  .controls{
+    padding:4px!important;
+    gap:3px!important;
+  }
+  .selectCard{padding:4px!important}
+  .selectCard select{
+    min-height:24px!important;
+    height:24px!important;
+    font-size:12px!important;
+  }
+  .raceStepBtn{
+    min-height:26px!important;
+    height:26px!important;
+  }
+  .voicePick{
+    min-height:30px!important;
+    height:30px!important;
+  }
+  #get{
+    min-height:40px!important;
+    height:40px!important;
+    font-size:15px!important;
+  }
+  .hunterActions button{
+    min-height:36px!important;
+    height:36px!important;
+    font-size:13px!important;
+  }
+  .compactPhotoWrap{height:64px!important}
+  .compactPhotoWrap .racerPhoto,
+  #cards .racerPhoto{
+    transform:scale(1.26)!important;
+    object-position:center 10%!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -10667,7 +10860,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.277</div>
+  <div class="topVol">Vol.278</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
