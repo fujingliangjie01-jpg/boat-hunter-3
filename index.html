@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V319</title>
+<title>BOAT HUNTER V320</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14551,6 +14551,180 @@ input,
 <style id="bh-v319-fix">
 .hfdVal small{display:block;font-size:6px;line-height:1;color:#7db7d3;font-weight:900}
 </style>
+
+<style id="bh-v320-head-candidate-ui">
+/* V320: 頭候補ごとに完全分離。フォーメーション重複表示を廃止 */
+.hfdForms{display:grid!important;gap:14px!important}
+.hfdHeadGroup{
+  position:relative!important;
+  margin-top:0!important;
+  padding:10px!important;
+  border:2px solid #38c9ff!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 90% 0%,rgba(36,139,220,.16),transparent 26%),
+    linear-gradient(180deg,#071b28,#031018)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.34)!important;
+  overflow:hidden!important;
+}
+.hfdHeadTitle{
+  display:grid!important;
+  grid-template-columns:1fr auto auto!important;
+  gap:8px!important;
+  align-items:center!important;
+  margin:0 0 9px!important;
+  padding:3px 2px 8px!important;
+  border-bottom:1px solid rgba(255,255,255,.10)!important;
+}
+.hfdHeadTitle>div{display:flex!important;flex-direction:column!important}
+.hfdHeadTitle small{
+  color:#66d6ff!important;font-size:8px!important;font-weight:1000!important;
+  letter-spacing:.16em!important
+}
+.hfdHeadTitle b{font-size:18px!important;line-height:1!important;color:#fff!important}
+.hfdHeadTitle em{
+  font-style:normal!important;color:#dbeaf2!important;font-size:11px!important;font-weight:1000!important;
+  white-space:nowrap!important
+}
+.hfdHeadBig{
+  width:54px!important;height:54px!important;display:grid!important;place-items:center!important;
+  border:2px solid #fff!important;border-radius:11px!important;font-size:26px!important;font-weight:1000!important;
+  box-shadow:0 0 14px rgba(255,255,255,.10)!important
+}
+
+/* 旧「3連単 FORMATION」ブロックは完全非表示 */
+.hfdFormationMain{display:none!important}
+
+/* 各買い目をそのままフォーメーション表示 */
+.hfdPickBand{
+  display:grid!important;
+  grid-template-columns:72px 1fr auto!important;
+  gap:8px!important;
+  align-items:center!important;
+  margin-top:8px!important;
+  padding:8px!important;
+  border-radius:11px!important;
+  border:1.5px solid transparent!important;
+}
+.hfdPickBand>strong{
+  min-height:44px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  border-radius:8px!important;
+  color:#fff!important;font-size:15px!important;font-weight:1000!important;
+  letter-spacing:.03em!important
+}
+.hfdPickBand>div{
+  display:block!important;
+  min-width:0!important;
+}
+.hfdPickBand.main{
+  background:linear-gradient(180deg,#311019,#1b090f)!important;
+  border-color:#e03a53!important
+}
+.hfdPickBand.main>strong{background:linear-gradient(180deg,#c92843,#8d1428)!important}
+.hfdPickBand.cover{
+  background:linear-gradient(180deg,#08263a,#051923)!important;
+  border-color:#2d9ed2!important
+}
+.hfdPickBand.cover>strong{background:linear-gradient(180deg,#1686bc,#0b5d86)!important}
+.hfdPickBand.value{
+  background:linear-gradient(180deg,#3b2d08,#1d1604)!important;
+  border-color:#ddb52d!important
+}
+.hfdPickBand.value>strong{
+  background:linear-gradient(180deg,#c79f1c,#8e6b08)!important;
+  color:#fff4b1!important
+}
+
+/* チケット列ではなく一目でわかる大きなフォーメーション */
+.hfdFormVisual{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  min-width:0!important;
+  flex-wrap:wrap!important;
+}
+.hfdFormArrow{
+  color:#68d8ff!important;
+  font-size:22px!important;
+  font-weight:1000!important;
+  line-height:1!important
+}
+.hfdFormNums{
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  flex-wrap:wrap!important
+}
+.hfdFormNum{
+  width:34px!important;height:34px!important;
+  display:grid!important;place-items:center!important;
+  border:1.5px solid #fff!important;
+  border-radius:7px!important;
+  font-size:17px!important;font-weight:1000!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.22)!important
+}
+.hfdFormNum.b1{background:#fff!important;color:#111!important}
+.hfdFormNum.b2{background:#111!important;color:#fff!important}
+.hfdFormNum.b3{background:#d92b3d!important;color:#fff!important}
+.hfdFormNum.b4{background:#176bd0!important;color:#fff!important}
+.hfdFormNum.b5{background:#efd42d!important;color:#111!important}
+.hfdFormNum.b6{background:#1b9950!important;color:#fff!important}
+.hfdPickPoints{
+  min-width:54px!important;
+  padding:7px 6px!important;
+  border-radius:8px!important;
+  text-align:center!important;
+  font-size:10px!important;
+  color:#9fc1d1!important;
+  background:#071621!important;
+  border:1px solid rgba(255,255,255,.08)!important
+}
+.hfdPickPoints b{display:block!important;color:#fff!important;font-size:17px!important;line-height:1!important}
+
+/* 切り候補は各頭候補ブロックの最後に独立 */
+.hfdCutBand{
+  display:grid!important;
+  grid-template-columns:72px 1fr!important;
+  gap:8px!important;
+  align-items:center!important;
+  margin-top:8px!important;
+  padding:8px!important;
+  border:1.5px solid #c83479!important;
+  border-radius:11px!important;
+  background:linear-gradient(180deg,#2c0b1c,#180610)!important
+}
+.hfdCutBand>strong{
+  min-height:38px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  border-radius:8px!important;background:#8d1d52!important;
+  color:#ffd1e4!important;font-size:12px!important;font-weight:1000!important
+}
+.hfdCutBand>div{display:flex!important;gap:6px!important;align-items:center!important;flex-wrap:wrap!important}
+.hfdCutBoat{
+  width:30px!important;height:30px!important;display:grid!important;place-items:center!important;
+  border:1.5px solid #fff!important;border-radius:7px!important;font-size:14px!important;font-weight:1000!important
+}
+
+/* 期待値などと重複した旧チケット表示は使わない */
+.hfdTicket{display:none!important}
+
+/* スマホ向け */
+@media(max-width:430px){
+  .hfdHeadGroup{padding:8px!important;border-radius:14px!important}
+  .hfdHeadTitle{grid-template-columns:1fr 48px auto!important;gap:6px!important}
+  .hfdHeadTitle b{font-size:16px!important}
+  .hfdHeadBig{width:46px!important;height:46px!important;font-size:22px!important}
+  .hfdPickBand{grid-template-columns:58px 1fr 46px!important;gap:6px!important;padding:7px!important}
+  .hfdPickBand>strong{font-size:13px!important;min-height:40px!important}
+  .hfdFormNum{width:29px!important;height:29px!important;font-size:14px!important}
+  .hfdFormArrow{font-size:18px!important}
+  .hfdPickPoints{min-width:46px!important;padding:6px 4px!important}
+  .hfdPickPoints b{font-size:15px!important}
+  .hfdCutBand{grid-template-columns:58px 1fr!important;gap:6px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14561,7 +14735,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.319</div>
+  <div class="topVol">Vol.320</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15045,7 +15219,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.319: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.320: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15712,7 +15886,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.319 場時間帯補正
+/* Vol.320 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20061,7 +20235,36 @@ function draw(){
   $("hfdPoints").textContent=total+"点";
   $("hfdState").textContent=window.__HUNTER_SIM5000?"SIM5000 完了":"事前診断";
 
-  $("hfdForms").innerHTML=forms.map(f=>`
+  $("hfdForms").innerHTML=forms.map(f=>{
+    const makeForm=(items,kind)=>{
+      if(!items?.length)return `<span class="hfdNone">—</span>`;
+      const tuples=items.map(x=>String(x.combo||"").split("-").map(Number)).filter(a=>a.length===3);
+      if(!tuples.length)return `<span class="hfdNone">—</span>`;
+      const first=tuples[0][0];
+      const second=[...new Set(tuples.map(a=>a[1]))];
+      const third=[...new Set(tuples.map(a=>a[2]))];
+      return `<div class="hfdFormVisual">
+        <div class="hfdFormNums"><span class="hfdFormNum b${first}">${first}</span></div>
+        <div class="hfdFormArrow">›</div>
+        <div class="hfdFormNums">${second.map(b=>`<span class="hfdFormNum b${b}">${b}</span>`).join("")}</div>
+        <div class="hfdFormArrow">›</div>
+        <div class="hfdFormNums">${third.map(b=>`<span class="hfdFormNum b${b}">${b}</span>`).join("")}</div>
+      </div>`;
+    };
+    const unique=(arr,seen)=>{
+      const out=[];
+      (arr||[]).forEach(x=>{
+        if(!x?.combo||seen.has(x.combo))return;
+        seen.add(x.combo);out.push(x);
+      });
+      return out;
+    };
+    const seen=new Set();
+    const main=unique(f.cls.main,seen);
+    const cover=unique(f.cls.cover,seen);
+    const value=unique(f.cls.value,seen);
+    const points=a=>a?.length||0;
+    return `
     <article class="hfdHeadGroup">
       <div class="hfdHeadTitle">
         <div><small>HEAD ${f.i+1}</small><b>頭候補${f.i+1}</b></div>
@@ -20069,21 +20272,30 @@ function draw(){
         <em>偏差 ${P(f.h.diff)}</em>
       </div>
 
-      <div class="hfdFormationMain">
-        <small>3連単 FORMATION</small>
-        ${formationLine(f.h.boat,f.a2,f.a3)}
-        <b>${f.pts}点</b>
+      <div class="hfdPickBand main">
+        <strong>本線</strong>
+        <div>${makeForm(main,"main")}</div>
+        <div class="hfdPickPoints">計<b>${points(main)}</b>点</div>
       </div>
 
-      <div class="hfdPickBand main"><strong>本線</strong><div>${rowList(f.cls.main)}</div></div>
-      <div class="hfdPickBand cover"><strong>押さえ</strong><div>${rowList(f.cls.cover)}</div></div>
-      <div class="hfdPickBand value"><strong>期待値</strong><div>${rowList(f.cls.value)}</div></div>
+      <div class="hfdPickBand cover">
+        <strong>押さえ</strong>
+        <div>${makeForm(cover,"cover")}</div>
+        <div class="hfdPickPoints">計<b>${points(cover)}</b>点</div>
+      </div>
+
+      <div class="hfdPickBand value">
+        <strong>期待値</strong>
+        <div>${makeForm(value,"value")}</div>
+        <div class="hfdPickPoints">計<b>${points(value)}</b>点</div>
+      </div>
 
       <div class="hfdCutBand">
         <strong>切り候補</strong>
         <div>${f.cut.length?f.cut.map(x=>`${B(x.boat,"hfdCutBoat")}<span>${x.thirdDiff==null?"—":P(x.thirdDiff)}</span>`).join(""):`<span class="hfdNone">なし</span>`}</div>
       </div>
-    </article>`).join("");
+    </article>`;
+  }).join("");
 
   window.__HUNTER_FINAL_FORMATION={pass,heads:pick.heads,forms};
 }
