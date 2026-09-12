@@ -13540,6 +13540,46 @@ input,
 }
 </style>
 
+
+<style id="bh-vol305-tech-visibility">
+/* 0.0%は順位色なし。背景を通常色、文字を弱いグレーへ */
+#comparePanel .techPairRow td.techZero{
+  background:#08202e!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+#comparePanel .techPairRow td.techZero small,
+#comparePanel .techPairRow td.techZero strong{
+  color:#8f9ca5!important;
+  text-shadow:none!important;
+}
+
+/* 決まり手表示をさらに大型化 */
+#comparePanel .techMoveLabel{
+  font-size:15px!important;
+  padding:9px 7px!important;
+  line-height:1.08!important;
+  font-weight:1000!important;
+}
+#comparePanel .techPairRow td small{
+  font-size:12px!important;
+  min-height:23px!important;
+  line-height:1.08!important;
+  font-weight:1000!important;
+}
+#comparePanel .techPairRow td strong{
+  font-size:20px!important;
+  line-height:1.02!important;
+  font-weight:1000!important;
+}
+
+@media(max-width:430px){
+  #comparePanel .techMoveLabel{font-size:13px!important;padding:8px 5px!important}
+  #comparePanel .techPairRow td small{font-size:10px!important;min-height:21px!important}
+  #comparePanel .techPairRow td strong{font-size:17px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13550,7 +13590,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.304</div>
+  <div class="topVol">Vol.305</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18208,6 +18248,28 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     lastTouchEnd=now;
   },{passive:false});
 },{passive:false});
+})();
+</script>
+
+
+<script id="bh-vol305-zero-rank-fix">
+(function(){
+  function fixZero(){
+    document.querySelectorAll('#comparePanel .techPairRow td').forEach(function(td){
+      var strong=td.querySelector('strong');
+      if(!strong) return;
+      var n=parseFloat((strong.textContent||'').replace('%','').trim());
+      if(Number.isFinite(n) && n===0){
+        td.classList.remove('compareRank1','compareRank2');
+        td.classList.add('techZero');
+      }else{
+        td.classList.remove('techZero');
+      }
+    });
+  }
+  new MutationObserver(fixZero).observe(document.documentElement,{subtree:true,childList:true});
+  document.addEventListener('DOMContentLoaded',fixZero);
+  setTimeout(fixZero,300);
 })();
 </script>
 
