@@ -13501,6 +13501,45 @@ input,
 }
 </style>
 
+
+<style id="bh-vol304-tech-font-up">
+/* Vol.304：6艇比較・決まり手部分だけ文字を一段大きく */
+#comparePanel .techMoveLabel{
+  font-size:13px!important;
+  padding:8px 6px!important;
+  line-height:1.08!important;
+  font-weight:1000!important;
+}
+
+#comparePanel .techPairRow td small{
+  font-size:10px!important;
+  line-height:1.1!important;
+  min-height:22px!important;
+  font-weight:1000!important;
+}
+
+#comparePanel .techPairRow td strong{
+  font-size:17px!important;
+  line-height:1.05!important;
+  font-weight:1000!important;
+}
+
+/* 小さいiPhoneでも極端に縮めない */
+@media(max-width:430px){
+  #comparePanel .techMoveLabel{
+    font-size:11px!important;
+    padding:7px 5px!important;
+  }
+  #comparePanel .techPairRow td small{
+    font-size:9px!important;
+    min-height:20px!important;
+  }
+  #comparePanel .techPairRow td strong{
+    font-size:15px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13511,7 +13550,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.303</div>
+  <div class="topVol">Vol.304</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
