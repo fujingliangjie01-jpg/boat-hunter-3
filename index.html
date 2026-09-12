@@ -12637,6 +12637,80 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol295-venue-clean">
+/* Vol.295 開催場カードをさらにシンプル・大型化 */
+
+/* モーニング / デー / ナイター表示は削除 */
+.venueTimeLegend{
+  display:none!important;
+}
+
+/* 空いた高さを場名と音声ボタンへ配分 */
+.venueSelectCard{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  padding:10px 10px 9px!important;
+}
+
+/* 開催場ラベル */
+.venueSelectCard .selectEyebrow{
+  font-size:9px!important;
+}
+.venueSelectCard .selectLabel{
+  font-size:12px!important;
+  font-weight:1000!important;
+}
+
+/* 戸田など開催場名をさらに大型化 */
+#stadium{
+  width:100%!important;
+  min-height:47px!important;
+  height:47px!important;
+  margin-top:2px!important;
+  font-size:25px!important;
+  line-height:47px!important;
+  font-weight:1000!important;
+  letter-spacing:.02em!important;
+}
+
+/* 音声ボタンも文字を大型化。ただし横幅は場カード内に収める */
+.venueVoiceBtn{
+  width:78%!important;
+  min-width:0!important;
+  max-width:190px!important;
+  min-height:38px!important;
+  height:38px!important;
+  margin:7px 0 0!important;
+  padding:0 10px!important;
+  font-size:15px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+}
+
+/* iPhone幅 */
+@media(max-width:430px){
+  .venueSelectCard{
+    padding:8px 8px 7px!important;
+  }
+  #stadium{
+    min-height:44px!important;
+    height:44px!important;
+    font-size:23px!important;
+    line-height:44px!important;
+  }
+  .venueVoiceBtn{
+    width:82%!important;
+    max-width:160px!important;
+    min-height:36px!important;
+    height:36px!important;
+    margin-top:5px!important;
+    font-size:14px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12647,7 +12721,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.294</div>
+  <div class="topVol">Vol.295</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
