@@ -14231,6 +14231,15 @@ input,
 }
 </style>
 
+
+<style id="bh-vol312-ai-sim-state">
+/* AI解析 → SIMULATION 5000 自動実行中が分かるようにする */
+#hunterSimState.simRunning,
+#hunterSimState{
+  transition:.18s ease!important;
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14241,7 +14250,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.311</div>
+  <div class="topVol">Vol.312</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -19398,6 +19407,49 @@ setTimeout(bhApplyTokuyamaDayFix,0);
   }
   $q("race")?.addEventListener("change",reset);
   $q("stadium")?.addEventListener("change",reset);
+})();
+</script>
+
+
+<script id="bh-vol312-ai-runs-sim5000">
+(function(){
+  const $q=id=>document.getElementById(id);
+
+  function runSimulationFromAI(){
+    const simBtn=$q("hunterSimRun");
+    const state=$q("hunterSimState");
+    if(!simBtn)return;
+
+    /* AI解析完了後に5000回を自動実行 */
+    if(state)state.textContent="AI解析後 5000回 計算中…";
+    simBtn.click();
+  }
+
+  const ai=$q("aiAnalyze");
+  if(!ai)return;
+
+  ai.addEventListener("click",()=>{
+    /* 既存AI解析処理を先に完了させる */
+    let tries=0;
+    const timer=setInterval(()=>{
+      tries++;
+
+      const aiDone=ai.classList.contains("done") ||
+        /解析済み/.test(ai.textContent||"");
+
+      if(aiDone){
+        clearInterval(timer);
+        runSimulationFromAI();
+        return;
+      }
+
+      /* 最大約8秒で待機終了 */
+      if(tries>=40){
+        clearInterval(timer);
+        runSimulationFromAI();
+      }
+    },200);
+  });
 })();
 </script>
 
