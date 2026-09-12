@@ -14007,6 +14007,230 @@ input,
 }
 </style>
 
+
+<style id="bh-vol311-simulation5000">
+/* Vol.311 - SIMULATION 5000：通常は内容を隠す */
+.hunterSim5000{
+  margin:8px 0 12px!important;
+  padding:0!important;
+  border-radius:14px!important;
+  border:1.5px solid rgba(70,190,239,.34)!important;
+  background:linear-gradient(180deg,#081c29,#04121b)!important;
+  overflow:hidden!important;
+}
+.hunterSimToggle{
+  width:100%!important;
+  min-height:46px!important;
+  padding:7px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:linear-gradient(180deg,#0b3046,#071d2b)!important;
+  color:#fff!important;
+  text-align:left!important;
+}
+.hunterSimToggle span{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+}
+.hunterSimToggle span b{
+  font-size:15px!important;
+  line-height:1!important;
+  letter-spacing:.06em!important;
+}
+.hunterSimToggle span small{
+  margin-top:3px!important;
+  color:#7db8d6!important;
+  font-size:7px!important;
+  font-weight:900!important;
+}
+.hunterSimToggle strong{
+  width:28px!important;
+  height:28px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:#0a2130!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  color:#70d3ff!important;
+  font-size:20px!important;
+  line-height:1!important;
+}
+.hunterSimBody{
+  padding:8px!important;
+}
+.hunterSimBody.hide{display:none!important}
+.hunterSimTop{
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  gap:6px!important;
+  align-items:center!important;
+}
+.hunterSimRun{
+  min-height:40px!important;
+  border-radius:9px!important;
+  border:1.5px solid #88dbff!important;
+  background:linear-gradient(180deg,#1599dc,#075c8d)!important;
+  color:#fff!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+}
+.hunterSimRun:disabled{opacity:.55!important}
+.hunterSimState{
+  min-width:64px!important;
+  padding:6px 8px!important;
+  border-radius:8px!important;
+  background:#061722!important;
+  color:#87a9bb!important;
+  font-size:8px!important;
+  text-align:center!important;
+  font-weight:900!important;
+}
+.hunterSimSummary{
+  margin-top:7px!important;
+  padding:7px 8px!important;
+  border-radius:9px!important;
+  border:1px solid rgba(67,195,245,.34)!important;
+  background:#082232!important;
+  display:grid!important;
+  grid-template-columns:auto 1fr!important;
+  gap:7px!important;
+  align-items:center!important;
+}
+.hunterSimSummary.hide{display:none!important}
+.hunterSimSummary .simTrust{
+  min-width:64px!important;
+  text-align:center!important;
+}
+.hunterSimSummary .simTrust span{
+  display:block!important;
+  color:#7aa9bf!important;
+  font-size:7px!important;
+  font-weight:900!important;
+}
+.hunterSimSummary .simTrust b{
+  display:block!important;
+  color:#fff!important;
+  font-size:24px!important;
+  line-height:1!important;
+}
+.hunterSimSummary .simTrustText{
+  color:#dceef6!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+  font-weight:900!important;
+}
+.hunterSimGrid{
+  margin-top:7px!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:4px!important;
+}
+.hunterSimBox{
+  min-height:50px!important;
+  padding:5px 3px!important;
+  border-radius:8px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:#071b28!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+.hunterSimBox span{
+  color:#7695a7!important;
+  font-size:6px!important;
+  line-height:1.1!important;
+}
+.hunterSimBox b{
+  margin-top:3px!important;
+  color:#fff!important;
+  font-size:13px!important;
+  line-height:1!important;
+}
+.hunterSimBoatTable{
+  margin-top:7px!important;
+  display:grid!important;
+  gap:3px!important;
+}
+.sim5000Row{
+  display:grid!important;
+  grid-template-columns:30px 1fr 56px 56px 56px!important;
+  gap:4px!important;
+  align-items:center!important;
+  padding:4px!important;
+  border-radius:7px!important;
+  background:#071a26!important;
+  border:1px solid rgba(255,255,255,.07)!important;
+}
+.sim5000Row.head{
+  background:#0a2a3d!important;
+  color:#8cb6ca!important;
+  font-size:6px!important;
+  font-weight:1000!important;
+}
+.sim5000Boat{
+  width:26px!important;
+  height:26px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:5px!important;
+  background:var(--c,#fff)!important;
+  color:var(--t,#111)!important;
+  border:1px solid #fff!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+}
+.sim5000Name{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  color:#dcecf5!important;
+  font-size:7px!important;
+  font-weight:900!important;
+}
+.sim5000Val{
+  text-align:right!important;
+  color:#fff!important;
+  font-size:9px!important;
+  font-weight:1000!important;
+}
+.hunterSimScenario,.hunterSimF{
+  margin-top:6px!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:4px!important;
+}
+.simScenarioCard,.simFCard{
+  padding:6px!important;
+  border-radius:8px!important;
+  background:#071924!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  text-align:center!important;
+}
+.simScenarioCard span,.simFCard span{
+  display:block!important;
+  color:#7596a8!important;
+  font-size:6px!important;
+  line-height:1.1!important;
+}
+.simScenarioCard b,.simFCard b{
+  display:block!important;
+  margin-top:3px!important;
+  color:#fff!important;
+  font-size:11px!important;
+}
+@media(max-width:430px){
+  .hunterSimGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .sim5000Row{grid-template-columns:28px 1fr 49px 49px 49px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14017,7 +14241,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.310</div>
+  <div class="topVol">Vol.311</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14135,6 +14359,45 @@ input,
   <section id="aiPanel" class="aiPanel hide">
     <div class="aiReadyMark">AI</div>
     <div><b id="aiModeTitle">解析データ準備完了</b><small id="aiModeSub">HUNTER解析用データを固定しました</small></div>
+  </section>
+
+  <section id="hunterSim5000" class="hunterSim5000">
+    <button type="button" id="hunterSimToggle" class="hunterSimToggle">
+      <span><b>SIMULATION 5000</b><small>事前診断の信頼性を検証</small></span>
+      <strong id="hunterSimToggleIcon">＋</strong>
+    </button>
+
+    <div id="hunterSimBody" class="hunterSimBody hide">
+      <div class="hunterSimTop">
+        <button type="button" id="hunterSimRun" class="hunterSimRun">5000回シミュレーション</button>
+        <div id="hunterSimState" class="hunterSimState">未実行</div>
+      </div>
+
+      <div id="hunterSimSummary" class="hunterSimSummary hide"></div>
+
+      <div class="hunterSimGrid">
+        <div class="hunterSimBox">
+          <span>頭候補1 再現率</span>
+          <b id="simHead1Rate">—</b>
+        </div>
+        <div class="hunterSimBox">
+          <span>頭候補 上位2艇</span>
+          <b id="simHeadTop2Rate">—</b>
+        </div>
+        <div class="hunterSimBox">
+          <span>頭候補→2着最多</span>
+          <b id="simSecondBoat">—</b>
+        </div>
+        <div class="hunterSimBox">
+          <span>最多決まり手</span>
+          <b id="simTopMove">—</b>
+        </div>
+      </div>
+
+      <div id="hunterSimBoatTable" class="hunterSimBoatTable"></div>
+      <div id="hunterSimScenario" class="hunterSimScenario"></div>
+      <div id="hunterSimF" class="hunterSimF"></div>
+    </div>
   </section>
 
   
@@ -18833,6 +19096,308 @@ setTimeout(bhApplyTokuyamaDayFix,0);
   new MutationObserver(markNA).observe(document.documentElement,{subtree:true,childList:true,characterData:true});
   document.addEventListener('DOMContentLoaded',markNA);
   setTimeout(markNA,200);
+})();
+</script>
+
+
+<script id="bh-vol311-simulation5000-js">
+(function(){
+  const N=5000;
+  const $q=id=>document.getElementById(id);
+
+  function num(v){
+    if(v==null||v==="")return null;
+    const n=Number(String(v).replace(/[^\d+\-.]/g,""));
+    return Number.isFinite(n)?n:null;
+  }
+  function pct(v){return Number.isFinite(v)?v.toFixed(1)+"%":"—"}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+  function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
+
+  function hashSeed(str){
+    let h=2166136261>>>0;
+    for(let i=0;i<str.length;i++){
+      h^=str.charCodeAt(i);
+      h=Math.imul(h,16777619);
+    }
+    return h>>>0;
+  }
+  function rngFactory(seed){
+    let x=seed>>>0||123456789;
+    return function(){
+      x^=x<<13; x^=x>>>17; x^=x<<5;
+      return (x>>>0)/4294967296;
+    };
+  }
+  function normal(rng){
+    const u=Math.max(1e-9,rng()),v=Math.max(1e-9,rng());
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  }
+
+  function racersNow(){
+    try{return racers(currentRace)||[]}catch(e){return []}
+  }
+  function historyFor(r){
+    try{return historyCache instanceof Map ? (historyCache.get(Number(r.number))?.rows||[]) : []}
+    catch(e){return []}
+  }
+  function previewMap(){
+    const src=Array.isArray(window.__HUNTER_PREVIEW)?window.__HUNTER_PREVIEW:[];
+    const m={};
+    src.forEach(x=>{m[Number(x.boat||x.entry_number)]=x});
+    return m;
+  }
+  function metricFor(r){
+    const h=historyFor(r);
+    const m=typeof histMetrics==="function"?histMetrics(h):{};
+    const n=h.length||0;
+    const rate=fn=>n?h.filter(fn).length/n*100:null;
+    const b=Number(r.entry_number);
+    const fc=Number(window.HUNTER_F?.count?.(r)||0);
+    const fa=fc?window.HUNTER_F?.after?.(h,fc):null;
+    const normalST=num(m.avgST);
+    const useST=fa?.avgST!=null?fa.avgST:normalST;
+    const rank=num(m.avgRank);
+    const p=previewMap()[b]||{};
+    return {
+      boat:b,name:r.name||"—",r,h,
+      win:rate(x=>Number(x.place)===1),
+      top2:rate(x=>[1,2].includes(Number(x.place))),
+      top3:rate(x=>[1,2,3].includes(Number(x.place))),
+      avgST:normalST,
+      simST:useST,
+      stRank:rank,
+      fCount:fc,
+      fAfter:fa,
+      exhibition:num(p.exhibition),
+      tilt:num(p.tilt),
+      nige:rate(x=>Number(x.place)===1&&Number(x.tech)===1),
+      sashi:rate(x=>Number(x.place)===1&&Number(x.tech)===2),
+      makuri:rate(x=>Number(x.place)===1&&Number(x.tech)===3),
+      makurizashi:rate(x=>Number(x.place)===1&&Number(x.tech)===4)
+    };
+  }
+
+  function motorBonus(r){
+    const m2=num(r.motor_top_2_percent),m3=num(r.motor_top_3_percent);
+    if(m2==null||m3==null)return 0;
+    if(m2>=58&&m3>=70)return 8;
+    if(m2>=50&&m3>=60)return 5;
+    if(m2>=38&&m3>=48)return 3;
+    if(m2<=20&&m3<=23)return -6;
+    if(m2<=29&&m3<=32)return -3;
+    return 0;
+  }
+  function stBonus(st){
+    if(st==null)return 0;
+    if(st<=.11)return 5;
+    if(st<=.15)return 2;
+    if(st<=.18)return -3;
+    return -6;
+  }
+  function rankBonus(rank){
+    if(rank==null)return 0;
+    if(rank<=2.5)return 2;
+    if(rank<=3.1)return 0;
+    if(rank<=4)return -2;
+    return -4;
+  }
+  function fPenalty(c){return c>=3?-8:c===2?-5:c===1?-3:0}
+
+  function venueAvg(course){
+    try{
+      const j=String(Number($q("stadium")?.value||0)).padStart(2,"0");
+      const v=Number(VENUE_BASE_202606_08?.[j]?.[String(course)]?.p1);
+      return Number.isFinite(v)?v:0;
+    }catch(e){return 0}
+  }
+
+  function diagnosisRows(rows){
+    const external=window.__HUNTER_PRE_DIAG;
+    if(Array.isArray(external?.boats)&&external.boats.length){
+      return rows.map(x=>{
+        const d=external.boats.find(z=>Number(z.boat)===x.boat)||{};
+        return {...x,diagScore:num(d.score)??(x.win||0),diagDiff:num(d.diff)??0};
+      });
+    }
+    return rows.map(x=>{
+      let score=(x.win||0)+stBonus(x.simST)+rankBonus(x.stRank)+fPenalty(x.fCount)+motorBonus(x.r);
+      if(x.boat===1){
+        try{
+          if(document.body.classList.contains("theme-sg"))score-=15;
+        }catch(e){}
+      }
+      score=clamp(score,0,100);
+      return {...x,diagScore:score,diagDiff:score-venueAvg(x.boat)};
+    });
+  }
+
+  function movePick(x,rng){
+    if(x.boat===1)return "逃げ";
+    const arr=x.boat===2
+      ? [["差し",x.sashi||0],["まくり",x.makuri||0]]
+      : [["差し",x.sashi||0],["まくり",x.makuri||0],["まくり差し",x.makurizashi||0]];
+    const total=arr.reduce((a,b)=>a+b[1],0);
+    if(total<=0)return x.boat===2?"差し":"まくり差し";
+    let t=rng()*total;
+    for(const [name,w] of arr){t-=w;if(t<=0)return name}
+    return arr[arr.length-1][0];
+  }
+
+  function run(){
+    const rr=racersNow();
+    if(rr.length!==6){
+      $q("hunterSimState").textContent="出走表未取得";
+      return;
+    }
+    const base=diagnosisRows(rr.map(metricFor));
+    const ordered=[...base].sort((a,b)=>b.diagDiff-a.diagDiff);
+    const head1=ordered[0],head2=ordered[1];
+
+    const exVals=base.map(x=>x.exhibition).filter(Number.isFinite);
+    const exMean=avg(exVals);
+    const seedKey=`${$q("date")?.value}|${$q("stadium")?.value}|${$q("race")?.value}|${base.map(x=>x.diagScore.toFixed(3)).join(",")}`;
+    const rng=rngFactory(hashSeed(seedKey));
+
+    const cnt={};
+    base.forEach(x=>cnt[x.boat]={w:0,s:0,t:0,head1second:0});
+    const moves={};
+    const scenario={normal:{n:0,hit:0},level:{n:0,hit:0},rank:{n:0,hit:0}};
+
+    for(let k=0;k<N;k++){
+      const q=rng();
+      const mode=q<.50?"normal":q<.75?"level":"rank";
+      scenario[mode].n++;
+
+      const runRows=base.map(x=>{
+        let st=x.simST??.16;
+        if(mode==="normal"){
+          st+=normal(rng)*.014;
+        }else if(mode==="level"){
+          st=.14+normal(rng)*.004;
+        }else{
+          const rank=x.stRank??3.5;
+          st=.14+(rank-3.5)*.006+normal(rng)*.007;
+        }
+
+        /* 展示タイムは150m最高速指標。実戦の約135mへ0.9倍して反映 */
+        const exAdj=(Number.isFinite(x.exhibition)&&Number.isFinite(exMean))
+          ? (exMean-x.exhibition)*0.9
+          : 0;
+
+        const stEdge=(.16-st)*120;
+        const exEdge=exAdj*32;
+        const diagEdge=(x.diagDiff||0)*.36;
+        const randomEdge=normal(rng)*5.1;
+
+        let attackEdge=0;
+        if(x.tilt>=1.5)attackEdge+=1.8;
+        const strength=diagEdge+stEdge+exEdge+attackEdge+randomEdge;
+        return {...x,st,strength};
+      });
+
+      runRows.sort((a,b)=>b.strength-a.strength);
+      const p1=runRows[0],p2=runRows[1],p3=runRows[2];
+
+      cnt[p1.boat].w++; cnt[p2.boat].s++; cnt[p3.boat].t++;
+      if(p1.boat===head1.boat){
+        scenario[mode].hit++;
+        cnt[p2.boat].head1second++;
+      }
+      const mv=movePick(p1,rng);
+      moves[mv]=(moves[mv]||0)+1;
+    }
+
+    const topMove=Object.entries(moves).sort((a,b)=>b[1]-a[1])[0]||["—",0];
+    const secondAfterHead=Object.entries(cnt)
+      .map(([boat,c])=>({boat:Number(boat),n:c.head1second}))
+      .filter(x=>x.boat!==head1.boat)
+      .sort((a,b)=>b.n-a.n)[0];
+
+    const head1Rate=cnt[head1.boat].w/N*100;
+    const headTop2=(cnt[head1.boat].w+cnt[head2.boat].w)/N*100;
+    const reliability=clamp(headTop2*.55+head1Rate*.45,0,100);
+
+    $q("simHead1Rate").textContent=pct(head1Rate);
+    $q("simHeadTop2Rate").textContent=pct(headTop2);
+    $q("simSecondBoat").textContent=secondAfterHead?`${secondAfterHead.boat}号艇 ${pct(secondAfterHead.n/Math.max(1,cnt[head1.boat].w)*100)}`:"—";
+    $q("simTopMove").textContent=`${topMove[0]} ${pct(topMove[1]/N*100)}`;
+
+    $q("hunterSimSummary").classList.remove("hide");
+    $q("hunterSimSummary").innerHTML=`
+      <div class="simTrust"><span>事前診断信頼度</span><b>${reliability.toFixed(0)}</b></div>
+      <div class="simTrustText">
+        頭候補1：${head1.boat}号艇　頭候補2：${head2.boat}号艇<br>
+        5000回でスタート・展示150m→135m補正・F後ST・決まり手を揺らして検証
+      </div>`;
+
+    let tbl=`<div class="sim5000Row head"><span>艇</span><span>選手</span><span>1着</span><span>2着</span><span>3着</span></div>`;
+    base.forEach(x=>{
+      tbl+=`<div class="sim5000Row">
+        <span class="sim5000Boat b${x.boat}">${x.boat}</span>
+        <span class="sim5000Name">${x.name}</span>
+        <span class="sim5000Val">${pct(cnt[x.boat].w/N*100)}</span>
+        <span class="sim5000Val">${pct(cnt[x.boat].s/N*100)}</span>
+        <span class="sim5000Val">${pct(cnt[x.boat].t/N*100)}</span>
+      </div>`;
+    });
+    $q("hunterSimBoatTable").innerHTML=tbl;
+
+    $q("hunterSimScenario").innerHTML=[
+      ["通常ST＋展示",scenario.normal],
+      ["スタート横一線",scenario.level],
+      ["平均ST順位順",scenario.rank]
+    ].map(([name,o])=>`<div class="simScenarioCard"><span>${name}</span><b>${pct(o.hit/Math.max(1,o.n)*100)}</b></div>`).join("");
+
+    const fRows=base.filter(x=>x.fCount>0);
+    $q("hunterSimF").innerHTML=fRows.length
+      ? fRows.map(x=>{
+          const d=(x.fAfter?.avgST!=null&&x.avgST!=null)?x.fAfter.avgST-x.avgST:null;
+          return `<div class="simFCard"><span>${x.boat}号艇 F${x.fCount} / F後ST差</span><b>${d==null?"—":(d>=0?"+":"")+d.toFixed(3)+"秒"}</b></div>`;
+        }).join("")
+      : `<div class="simFCard"><span>F持ち</span><b>なし</b></div>`;
+
+    $q("hunterSimState").textContent="5000回 完了";
+    window.__HUNTER_SIM5000={
+      count:N,reliability,head1:head1.boat,head2:head2.boat,
+      head1Rate,headTop2,topMove:topMove[0],counts:cnt,scenario
+    };
+  }
+
+  function openToggle(){
+    const body=$q("hunterSimBody"),ico=$q("hunterSimToggleIcon");
+    if(!body)return;
+    const opening=body.classList.contains("hide");
+    body.classList.toggle("hide",!opening);
+    if(ico)ico.textContent=opening?"−":"＋";
+  }
+
+  $q("hunterSimToggle")?.addEventListener("click",openToggle);
+  $q("hunterSimRun")?.addEventListener("click",()=>{
+    const b=$q("hunterSimRun");
+    b.disabled=true;
+    $q("hunterSimState").textContent="5000回 計算中…";
+    setTimeout(()=>{
+      try{run()}catch(e){
+        console.error("SIM5000",e);
+        $q("hunterSimState").textContent="計算エラー";
+      }finally{b.disabled=false}
+    },20);
+  });
+
+  /* レース変更時は内容を閉じて結果をクリア */
+  function reset(){
+    $q("hunterSimBody")?.classList.add("hide");
+    if($q("hunterSimToggleIcon"))$q("hunterSimToggleIcon").textContent="＋";
+    if($q("hunterSimState"))$q("hunterSimState").textContent="未実行";
+    $q("hunterSimSummary")?.classList.add("hide");
+    if($q("hunterSimBoatTable"))$q("hunterSimBoatTable").innerHTML="";
+    if($q("hunterSimScenario"))$q("hunterSimScenario").innerHTML="";
+    if($q("hunterSimF"))$q("hunterSimF").innerHTML="";
+    window.__HUNTER_SIM5000=null;
+  }
+  $q("race")?.addEventListener("change",reset);
+  $q("stadium")?.addEventListener("change",reset);
 })();
 </script>
 
