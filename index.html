@@ -13676,6 +13676,43 @@ input,
 }
 </style>
 
+
+<style id="bh-vol307-course-top3-escape">
+/* Vol.307
+   6艇比較：
+   今コース3着率 -> 今コース3連対率
+   逃げ率は場平均比較のみ。順位色は使わない。
+*/
+
+/* 逃げ率：場平均超えだけ青 */
+#comparePanel .techPairRow td.escapeAboveVenue{
+  background:linear-gradient(180deg,#2589dc,#145b9a)!important;
+  color:#fff!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)!important;
+}
+#comparePanel .techPairRow td.escapeAboveVenue small,
+#comparePanel .techPairRow td.escapeAboveVenue strong{
+  color:#fff!important;
+}
+#comparePanel .techPairRow td.escapeNormal{
+  background:#08202e!important;
+  color:#fff!important;
+}
+#comparePanel .techPairRow td.escapeNormal em,
+#comparePanel .techPairRow td.escapeAboveVenue em{
+  display:block!important;
+  margin-top:3px!important;
+  font-style:normal!important;
+  font-size:7px!important;
+  line-height:1!important;
+  color:#8ea8b7!important;
+  font-weight:900!important;
+}
+#comparePanel .techPairRow td.escapeAboveVenue em{
+  color:#d8efff!important;
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13686,7 +13723,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.306</div>
+  <div class="topVol">Vol.307</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18175,6 +18212,16 @@ setTimeout(bhApplyTokuyamaDayFix,0);
   function ST(v){ return Number.isFinite(v)?v.toFixed(3):"—"; }
   function RK(v){ return Number.isFinite(v)?v.toFixed(2)+"位":"—"; }
 
+  function venueEscapeAverage(){
+    try{
+      const j=String(Number(document.getElementById("stadium")?.value||0)).padStart(2,"0");
+      const v=Number(VENUE_BASE_202606_08?.[j]?.["1"]?.p1);
+      return Number.isFinite(v)&&v>0 ? v : null;
+    }catch(e){
+      return null;
+    }
+  }
+
   function makeCourseStats(h,boat){
     const n=h.length||0;
     const rate=fn=>n?h.filter(fn).length/n*100:null;
@@ -18247,7 +18294,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
         boat,
         name:r.name||"—",
         courseWin:rate(x=>Number(x.place)===1),
-        courseThird:rate(x=>Number(x.place)===3),
+        courseTop3:rate(x=>[1,2,3].includes(Number(x.place))),
         avgST:m.avgST,
         avgRank:m.avgRank,
         motor2:N(r.motor_top_2_percent),
@@ -18281,7 +18328,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 
     const baseDefs=[
       ["今コース勝率","courseWin",P,false],
-      ["今コース3着率","courseThird",P,false],
+      ["今コース3連対率","courseTop3",P,false],
       ["平均ST","avgST",ST,true],
       ["平均ST順位","avgRank",RK,true],
       ["モーター2連対率","motor2",P,false],
@@ -18295,16 +18342,24 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     // ===== 写真の配列に合わせた「決まり手」セクション =====
     html+=`<tr class="compareTechniqueTitle"><th colspan="7">決まり手・攻守比較</th></tr>`;
 
-    // 逃げ：1コースだけ
+    // 逃げ：1コースのみ。場平均を上回った時だけ青網掛け
     {
-      const cls=rankClasses("nige",false,x=>x.boat===1);
+      const venueAvg=venueEscapeAverage();
       html+=`<tr class="techPairRow">
         <th><span class="techMoveLabel">逃げ</span></th>
-        ${rows.map((x,i)=>`
-          <td class="${cls[i]} ${x.boat===1?'techApplicable':'techNA'}">
-            <small>${x.boat===1?'🗡️ 逃げ':'—'}</small>
-            <strong>${x.boat===1?P(Number(x.nige)):'—'}</strong>
-          </td>`).join("")}
+        ${rows.map(x=>{
+          if(x.boat!==1){
+            return `<td class="techNA"><small>—</small><strong>—</strong></td>`;
+          }
+          const above=Number.isFinite(Number(x.nige)) && Number.isFinite(venueAvg) && Number(x.nige)>venueAvg;
+          const cls=above?'escapeAboveVenue':'escapeNormal';
+          const avgText=Number.isFinite(venueAvg)?`<em>場平均 ${venueAvg.toFixed(1)}%</em>`:'';
+          return `<td class="${cls}">
+            <small>🗡️ 逃げ</small>
+            <strong>${P(Number(x.nige))}</strong>
+            ${avgText}
+          </td>`;
+        }).join("")}
       </tr>`;
     }
 
