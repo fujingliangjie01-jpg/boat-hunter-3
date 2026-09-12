@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V317</title>
+<title>BOAT HUNTER V318</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14532,6 +14532,22 @@ input,
 }
 </style>
 
+
+<style id="bh-vol318-three-stage">
+.bh318StageWrap{margin:8px 0;padding:8px;border:1px solid #285f7d;border-radius:12px;background:#071a27}
+.bh318StageTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bh318StageTitle b{font-size:11px;color:#fff}.bh318StageTitle span{font-size:8px;color:#75cfff;font-weight:900}
+.bh318Stages{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.bh318Stage{padding:6px 4px;border:1px solid #314957;border-radius:9px;background:#101c24;text-align:center;opacity:.55}
+.bh318Stage.ready{opacity:1;border-color:#4fc7ff;background:#09283a}
+.bh318Stage.done{opacity:.82;border-color:#56717e;background:#101d24}
+.bh318Stage.final{border-color:#d9b436;background:#332807}
+.bh318Stage strong{display:block;font-size:12px;color:#fff}.bh318Stage small{display:block;margin-top:2px;font-size:7px;color:#9eb2bd;font-weight:900}
+.bh318Stage em{display:block;margin-top:4px;font-style:normal;font-size:9px;color:#78d9ff;font-weight:1000}
+.bh318Consistency{display:none;margin-top:6px;padding:7px;border:1px solid #d7b437;border-radius:8px;background:#3a2d07;color:#ffe36b;text-align:center;font-size:11px;font-weight:1000}
+.bh318Consistency.show{display:block}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14542,7 +14558,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.317</div>
+  <div class="topVol">Vol.318</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15026,7 +15042,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.317: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.318: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15679,7 +15695,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.317 場時間帯補正
+/* Vol.318 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20385,6 +20401,89 @@ window.bhRenderFinalFormation=draw;
    });
  }
  setInterval(run,900);
+})();
+</script>
+
+
+<script id="bh-vol318-three-stage-js">
+(function(){
+ const $=id=>document.getElementById(id);
+ const KEY="bh318_three_stage_v1";
+ function raceKey(){return [document.getElementById("date")?.value,document.getElementById("stadium")?.value,document.getElementById("race")?.value].join("_")}
+ function store(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
+ function save(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}
+ function raceTime(){
+   try{
+     const r=currentRace;
+     const raw=r?.deadline_at||r?.deadline||r?.start_time||r?.race_time||r?.time;
+     if(!raw)return null;
+     if(/^\d{1,2}:\d{2}$/.test(String(raw))){
+       const [h,m]=String(raw).split(":").map(Number),d=new Date();
+       d.setHours(h,m,0,0); return d;
+     }
+     const d=new Date(raw); return isNaN(d)?null:d;
+   }catch(e){return null}
+ }
+ function mins(){
+   const t=raceTime(); if(!t)return null;
+   return (t-Date.now())/60000;
+ }
+ function stage(){
+   const m=mins();
+   if(m==null)return "manual";
+   if(m<=5)return "5";
+   if(m<=8)return "8";
+   if(m<=15)return "15";
+   return "early";
+ }
+ function snapshot(label){
+   const z=window.__HUNTER_FINAL_FORMATION;
+   const heads=(z?.heads||[]).map(x=>+x.boat);
+   const axes=(z?.forms||[]).map(f=>(f.ax||[]).map(x=>+x.boat));
+   const cuts=(z?.forms||[]).map(f=>(f.cut||[]).map(x=>+x.boat));
+   return {label,at:Date.now(),heads,axes,cuts,sim:window.__HUNTER_SIM5000?.count||0,odds:window.__HUNTER_ODDS120?.odds?.length||0};
+ }
+ function ensure(){
+   const btn=$("aiAnalyze"); if(!btn||$("bh318StageWrap"))return;
+   const box=document.createElement("div");box.id="bh318StageWrap";box.className="bh318StageWrap";
+   box.innerHTML=`<div class="bh318StageTitle"><b>AI解析 3-STAGE</b><span>15分 → 8分 → 5分</span></div>
+   <div class="bh318Stages">
+    <div class="bh318Stage" data-s="15"><strong>15分前</strong><small>事前解析</small><em>待機</em></div>
+    <div class="bh318Stage" data-s="8"><strong>8分前</strong><small>直前情報＋SIM</small><em>待機</em></div>
+    <div class="bh318Stage final" data-s="5"><strong>5分前</strong><small>最終解析</small><em>待機</em></div>
+   </div><div id="bh318Consistency" class="bh318Consistency">3解析一致</div>`;
+   btn.parentElement?.after(box);
+ }
+ function render(){
+   ensure();
+   const data=store()[raceKey()]||{};
+   ["15","8","5"].forEach(k=>{
+     const e=document.querySelector(`.bh318Stage[data-s="${k}"]`);if(!e)return;
+     const d=data[k],em=e.querySelector("em");
+     e.classList.toggle("done",!!d);
+     if(d){em.textContent=`頭 ${d.heads?.join("・")||"—"}`;}
+     else em.textContent="待機";
+   });
+   const st=stage();
+   document.querySelectorAll(".bh318Stage").forEach(e=>e.classList.remove("ready"));
+   if(["15","8","5"].includes(st))document.querySelector(`.bh318Stage[data-s="${st}"]`)?.classList.add("ready");
+   const a=data["15"],b=data["8"],c=data["5"];
+   const same=a&&b&&c&&JSON.stringify(a.heads)===JSON.stringify(b.heads)&&JSON.stringify(b.heads)===JSON.stringify(c.heads)
+      &&JSON.stringify(a.axes)===JSON.stringify(b.axes)&&JSON.stringify(b.axes)===JSON.stringify(c.axes);
+   $("bh318Consistency")?.classList.toggle("show",!!same);
+ }
+ function record(){
+   const st=stage(); if(!["15","8","5"].includes(st))return;
+   setTimeout(()=>{
+     const all=store(),k=raceKey();all[k]=all[k]||{};
+     all[k][st]=snapshot(st);save(all);render();
+   },1200);
+ }
+ function hook(){
+   ensure();const btn=$("aiAnalyze");if(!btn||btn.dataset.bh318)return;
+   btn.dataset.bh318="1";btn.addEventListener("click",record,false);
+ }
+ setInterval(()=>{hook();render()},1000);
 })();
 </script>
 
