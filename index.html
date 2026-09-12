@@ -13580,6 +13580,102 @@ input,
 }
 </style>
 
+
+<style id="bh-vol306-racer-photo-ranks">
+/* ===== Vol.306 小写真：首〜頭を大きく、切らない ===== */
+#cards .compactPhotoWrap.racerPhotoButton{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:100%!important;
+  border:0!important;
+  padding:0!important;
+  margin:0!important;
+  cursor:pointer!important;
+  height:82px!important;
+  background:#e7eef2!important;
+  overflow:hidden!important;
+}
+#cards .compactPhotoWrap .racerPhoto{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center 18%!important;
+  transform:scale(1.13)!important;
+  transform-origin:center 22%!important;
+}
+/* 詳細側の大きな写真は変更しない */
+#racerDetailPanel .detailPhotoWrap img{
+  transform:none!important;
+}
+
+/* 詳細ボタンをなくした分カードを詰める */
+#cards .compactDetailBtn{display:none!important}
+#cards .compactRacerCard{padding-bottom:5px!important}
+
+/* 写真タップ案内 */
+.detailPhotoHint{
+  color:#7898aa!important;
+  font-size:8px!important;
+  font-weight:900!important;
+}
+
+/* ===== 今回6艇内ランキング：1位赤、2位黄 ===== */
+.detailMetric.detailRank1,
+#cards .compactWin.detailRank1{
+  background:linear-gradient(180deg,#dd3542,#a91420)!important;
+  color:#fff!important;
+  border-color:#ff7f89!important;
+}
+.detailMetric.detailRank1 span,
+.detailMetric.detailRank1 b,
+#cards .compactWin.detailRank1{
+  color:#fff!important;
+}
+.detailMetric.detailRank2,
+#cards .compactWin.detailRank2{
+  background:linear-gradient(180deg,#f4d63d,#c39d08)!important;
+  color:#111!important;
+  border-color:#fff09b!important;
+}
+.detailMetric.detailRank2 span,
+.detailMetric.detailRank2 b,
+#cards .compactWin.detailRank2{
+  color:#111!important;
+}
+
+/* ===== 直近20走：着順ごとに行全体を網掛け ===== */
+.recent20Table tr.recentPlace1 td{
+  background:linear-gradient(180deg,#cf3340,#971723)!important;
+  color:#fff!important;
+  font-weight:1000!important;
+}
+.recent20Table tr.recentPlace2 td{
+  background:linear-gradient(180deg,#eed43c,#bb9508)!important;
+  color:#111!important;
+  font-weight:1000!important;
+}
+.recent20Table tr.recentPlace3 td{
+  background:linear-gradient(180deg,#2688d8,#125694)!important;
+  color:#fff!important;
+  font-weight:1000!important;
+}
+
+/* 罫線は残して読みやすく */
+.recent20Table tr.recentPlace1 td,
+.recent20Table tr.recentPlace2 td,
+.recent20Table tr.recentPlace3 td{
+  border-color:rgba(255,255,255,.34)!important;
+}
+
+@media(max-width:430px){
+  #cards .compactPhotoWrap.racerPhotoButton{height:78px!important}
+  #cards .compactPhotoWrap .racerPhoto{
+    transform:scale(1.10)!important;
+    object-position:center 18%!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13590,7 +13686,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.305</div>
+  <div class="topVol">Vol.306</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -13653,7 +13749,7 @@ input,
         <b>選手詳細</b>
         <span>RACER DETAIL</span>
       </div>
-      <button type="button" id="racerDetailClose" onclick="bhCloseRacerDetail()">閉じる</button>
+      <span class="detailPhotoHint">写真タップで切替</span>
     </div>
     <div id="racerDetailBody"></div>
   </section>
@@ -13947,22 +14043,36 @@ async function patchCurrentClassesFromRaceCards(rr){
 function card(r){
  const b=+r.entry_number;
  return `<article class="card b${b} compactRacerCard" data-boat="${b}" data-number="${r.number}">
-   <div class="compactPhotoWrap">
+   <button type="button" class="compactPhotoWrap racerPhotoButton"
+     onclick="bhToggleRacerFromPhoto(${b},${Number(r.number||0)})"
+     aria-label="${r.name||"選手"}の詳細を開く">
      <img class="racerPhoto"
        src="https://www.boatrace.jp/racerphoto/${String(r.number||"").padStart(4,"0")}.jpg"
        alt="${r.name||"選手"}" loading="lazy"
        onerror="this.style.display='none'">
      <div class="compactBoatNo">${b}</div>
-   </div>
+   </button>
    <div class="compactClass">${grade(r)}</div>
    <div class="compactName" title="${r.name||""}">${r.name||"—"}</div>
    <div class="compactWinLabel">全国勝率</div>
    <div class="compactWin">${f(r.national_win_rate)}</div>
-   <button type="button" class="compactDetailBtn" onclick="bhSelectRacerDetail(${b},${Number(r.number||0)})">詳細</button>
  </article>`;
 }
 function decorateRanks(rr){
-  /* Vol.271: 上段カードはコンパクト表示のため順位装飾は詳細/比較側で行う */
+  const vals=rr.map(r=>({boat:Number(r.entry_number),v:Number(r.national_win_rate)}))
+    .filter(x=>Number.isFinite(x.v))
+    .sort((a,b)=>b.v-a.v);
+  const uniq=[];
+  vals.forEach(x=>{if(!uniq.includes(x.v))uniq.push(x.v)});
+  document.querySelectorAll("#cards .compactRacerCard").forEach(card=>{
+    const boat=Number(card.dataset.boat);
+    const item=vals.find(x=>x.boat===boat);
+    const win=card.querySelector(".compactWin");
+    if(!win||!item)return;
+    win.classList.remove("detailRank1","detailRank2");
+    if(item.v===uniq[0])win.classList.add("detailRank1");
+    else if(item.v===uniq[1])win.classList.add("detailRank2");
+  });
 }
 
 
@@ -14378,6 +14488,28 @@ function bhCloseRacerDetail(){
   if(p)p.classList.add("hide");
   document.querySelectorAll(".compactRacerCard").forEach(x=>x.classList.remove("selected"));
 }
+function bhToggleRacerFromPhoto(boatNo,number){
+  const p=document.getElementById("racerDetailPanel");
+  if(p && !p.classList.contains("hide") && Number(p.dataset.boat)===Number(boatNo)){
+    bhCloseRacerDetail();
+    return;
+  }
+  bhSelectRacerDetail(boatNo,number);
+}
+function bhRankClassFor(values,current,lowerBetter=false){
+  const nums=values.filter(Number.isFinite).sort((a,b)=>lowerBetter?a-b:b-a);
+  const uniq=[];
+  nums.forEach(v=>{if(!uniq.some(x=>Math.abs(x-v)<1e-9))uniq.push(v)});
+  if(!Number.isFinite(current))return "";
+  if(uniq.length && Math.abs(current-uniq[0])<1e-9)return "detailRank1";
+  if(uniq.length>1 && Math.abs(current-uniq[1])<1e-9)return "detailRank2";
+  return "";
+}
+function bhDetailMetricRank(label,value,rankClass="",cls=""){
+  return `<div class="detailMetric ${cls} ${rankClass}">
+    <span>${label}</span><b>${value}</b>
+  </div>`;
+}
 async function bhSelectRacerDetail(boatNo,number){
   const panel=document.getElementById("racerDetailPanel");
   const body=document.getElementById("racerDetailBody");
@@ -14398,6 +14530,22 @@ async function bhSelectRacerDetail(boatNo,number){
   const local=bhLocalWin(r);
   const m2=bhNum(r.motor_top_2_percent);
   const m3=bhNum(r.motor_top_3_percent);
+
+  let allR=[];
+  try{ allR=racers(currentRace)||[]; }catch(e){}
+
+  const natWinVals=allR.map(x=>bhNum(x.national_win_rate));
+  const nat2Vals=allR.map(x=>bhNationalTop2(x));
+  const nat3Vals=allR.map(x=>bhNationalTop3(x));
+  const localVals=allR.map(x=>bhLocalWin(x));
+  const m2Vals=allR.map(x=>bhNum(x.motor_top_2_percent));
+  const m3Vals=allR.map(x=>bhNum(x.motor_top_3_percent));
+  const meetPtsVals=allR.map(x=>bhNum(document.getElementById("meetPts"+x.entry_number)?.textContent));
+  const meetRankVals=allR.map(x=>bhNum(document.getElementById("meetRank"+x.entry_number)?.textContent));
+
+  const natWin=bhNum(r.national_win_rate);
+  const meetPtsNum=bhNum(meetPts);
+  const meetRankNum=bhNum(meetRank);
 
   body.innerHTML=`
     <div class="detailTop">
@@ -14422,14 +14570,14 @@ async function bhSelectRacerDetail(boatNo,number){
         <button type="button" class="detailTab" onclick="bhDetailTab(${boatNo},'course',this)">コース別・決まり手</button>
       </div>
       <div id="detailBasic${boatNo}" class="detailMetrics">
-        ${bhDetailMetric("全国勝率",r?.national_win_rate==null?"—":Number(r.national_win_rate).toFixed(2),"hero")}
-        ${bhDetailMetric("全国2連対率",bhPct(nat2),"key")}
-        ${bhDetailMetric("全国3連対率",bhPct(nat3))}
-        ${bhDetailMetric("当地勝率",local==null?"—":local.toFixed(2))}
-        ${bhDetailMetric("モーター2連対率",bhPct(m2),"key")}
-        ${bhDetailMetric("モーター3連対率",bhPct(m3))}
-        ${bhDetailMetric("今節得点",meetPts)}
-        ${bhDetailMetric("今節順位",meetRank,"key")}
+        ${bhDetailMetricRank("全国勝率",natWin==null?"—":natWin.toFixed(2),bhRankClassFor(natWinVals,natWin),"hero")}
+        ${bhDetailMetricRank("全国2連対率",bhPct(nat2),bhRankClassFor(nat2Vals,nat2),"key")}
+        ${bhDetailMetricRank("全国3連対率",bhPct(nat3),bhRankClassFor(nat3Vals,nat3))}
+        ${bhDetailMetricRank("当地勝率",local==null?"—":local.toFixed(2),bhRankClassFor(localVals,local))}
+        ${bhDetailMetricRank("モーター2連対率",bhPct(m2),bhRankClassFor(m2Vals,m2),"key")}
+        ${bhDetailMetricRank("モーター3連対率",bhPct(m3),bhRankClassFor(m3Vals,m3))}
+        ${bhDetailMetricRank("今節得点",meetPts,bhRankClassFor(meetPtsVals,meetPtsNum))}
+        ${bhDetailMetricRank("今節順位",meetRank,bhRankClassFor(meetRankVals,meetRankNum,true),"key")}
       </div>
       <div id="detailCourse${boatNo}" class="detailCoursePanel hide">
         <div class="courseHint">コース別・決まり手は直近20走から集計します</div>
@@ -14495,7 +14643,10 @@ async function bhToggleRecent20(boatNo,number,btn){
     summary.push(["差し率",Number.isFinite(techMap["差"])?techMap["差"].toFixed(1)+"%":"—"]);
   }
 
-  const rows=h.map(x=>`<tr>
+  const rows=h.map(x=>{
+    const plc=Number(x.place);
+    const rowClass=plc===1?"recentPlace1":plc===2?"recentPlace2":plc===3?"recentPlace3":"";
+    return `<tr class="${rowClass}">
     <td>${x.date?.slice(5)||"—"}</td>
     <td>${x.place??"—"}着</td>
     <td>${x.course??"—"}C</td>
@@ -14503,7 +14654,8 @@ async function bhToggleRecent20(boatNo,number,btn){
     <td>${x.stRank??"—"}位</td>
     <td>${x.winnerEntry??"—"}号艇</td>
     <td>${T[x.tech]||"—"}</td>
-  </tr>`).join("");
+  </tr>`;
+  }).join("");
 
   box.innerHTML=`
     <div class="recentSummaryGrid">
@@ -14539,6 +14691,7 @@ function bhDetailTab(boatNo,mode,btn){
   }
 }
 
+window.bhToggleRacerFromPhoto=bhToggleRacerFromPhoto;
 window.bhSelectRacerDetail=bhSelectRacerDetail;
 window.bhCloseRacerDetail=bhCloseRacerDetail;
 window.bhToggleRecent20=bhToggleRecent20;
