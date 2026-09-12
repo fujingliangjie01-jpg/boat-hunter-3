@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V315</title>
+<title>BOAT HUNTER V316</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14486,7 +14486,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.315</div>
+  <div class="topVol">Vol.316</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14751,11 +14751,21 @@ const S={1:"桐生",2:"戸田",3:"江戸川",4:"平和島",5:"多摩川",6:"浜�
 const VENUE_TIME_TYPE={
   1:"ナイター", 2:"デー", 3:"デー", 4:"デー", 5:"デー", 6:"デー",
   7:"ナイター", 8:"デー", 9:"デー", 10:"モーニング", 11:"デー", 12:"ナイター",
-  13:"デー", 14:"モーニング", 15:"ナイター", 16:"デー", 17:"デー", 18:"モーニング",
+  13:"デー", 14:"モーニング", 15:"ナイター", 16:"デー", 17:"デー", 18:"デー",
   19:"ナイター", 20:"ナイター", 21:"モーニング", 22:"デー", 23:"モーニング", 24:"ナイター"
 };
 function venueTimeLabel(no){
-  return VENUE_TIME_TYPE[Number(no)]||"デー";
+  let base=VENUE_TIME_TYPE[Number(no)]||"デー";
+  try{
+    const d=document.getElementById("date")?.value||today();
+    const ov=typeof bhVenueTimeZoneOverride==="function"
+      ? bhVenueTimeZoneOverride(d,Number(no),base==="モーニング"?"morning":base==="ナイター"?"night":"day")
+      : null;
+    if(ov==="morning")return "モーニング";
+    if(ov==="night")return "ナイター";
+    if(ov==="day")return "デー";
+  }catch(e){}
+  return base;
 }
 function venueTimeIcon(no){
   const t=venueTimeLabel(no);
@@ -14960,33 +14970,38 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.267: 場選択は当日開催場のみ表示 */
+/* Vol.316: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
+  try{
+    if(typeof window.loadTodayVenues==="function"){
+      await window.loadTodayVenues();
+      return;
+    }
+  }catch(e){}
   const dateEl=document.getElementById("date");
   const stadiumEl=document.getElementById("stadium");
   if(!dateEl||!stadiumEl)return;
   const date=String(dateEl.value||today());
   try{
     const j=await fetch(url(date),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
-    const sts=j?.programs?.stadiums||j?.stadiums||{};
+    const sts=j?.programs?.stadiums||{};
     const held=[];
     for(const [k,v] of Object.entries(sts)){
       const jcd=Number(v?.stadium_number||v?.number||k||0);
-      const races=v?.races||{};
-      if(jcd && Object.keys(races).length){
-        held.push(jcd);
-      }
+      const rows=Array.isArray(v?.races)?v.races:Object.values(v?.races||{});
+      const active=rows.some(r=>{
+        const rr=Array.isArray(r?.racers)?r.racers:Object.values(r?.racers||{});
+        return rr.filter(Boolean).length>=6;
+      });
+      if(jcd&&active)held.push(jcd);
     }
     held.sort((a,b)=>a-b);
     const prev=Number(stadiumEl.value||0);
-    stadiumEl.innerHTML=held.map(jcd=>`<option value="${jcd}">${S[jcd]||jcd}</option>`).join("");
+    stadiumEl.innerHTML=held.map(jcd=>`<option value="${jcd}">${venueTimeIcon(jcd)} ${S[jcd]||jcd}</option>`).join("");
     if(held.includes(prev))stadiumEl.value=String(prev);
     else if(held.length)stadiumEl.value=String(held[0]);
-    try{ setupVenueSelectDisplay?.(); decorateVenueOptions?.("closed"); }catch(e){}
-    try{ updateRaceFloat?.(true); }catch(e){}
-  }catch(e){
-    console.warn("開催場取得失敗",e);
-  }
+    try{setupVenueSelectDisplay?.();decorateVenueOptions?.("closed");}catch(e){}
+  }catch(e){console.warn("開催場取得失敗",e)}
 }
 async function getRace(){
  window.resetHunterPreflight?.();
@@ -15608,12 +15623,12 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.266 場時間帯補正
-   徳山 2026-09-12 はモーニングではなくデー開催として扱う。 */
+/* Vol.316 場時間帯補正
+   徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
   const jo=Number(jcd||0);
-  if(ymd==="20260912" && jo===18) return "day";
+  if(jo===18 && ymd>="20260912" && ymd<="20260917") return "day";
   return current;
 }
 
