@@ -13713,6 +13713,117 @@ input,
 }
 </style>
 
+
+<style id="bh-vol308-f-after">
+/* Vol.308 F持ちだけ表示。通常カードと一目で違う警戒デザイン */
+#cards .compactRacerCard{
+  position:relative!important;
+}
+#cards .fCompactBadge{
+  position:absolute!important;
+  right:3px!important;
+  top:3px!important;
+  z-index:12!important;
+  min-width:25px!important;
+  height:20px!important;
+  padding:0 5px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:6px!important;
+  border:1.5px solid #fff!important;
+  background:linear-gradient(180deg,#ff304c,#ae1028)!important;
+  color:#fff!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  box-shadow:0 0 10px rgba(255,38,73,.45)!important;
+}
+#cards .fCompactBadge.f2{
+  background:linear-gradient(180deg,#ff173b,#7f0019)!important;
+}
+#cards .fCompactBadge.f3{
+  background:linear-gradient(180deg,#ff0035,#5b0012)!important;
+  animation:bhFGlow 1s ease-in-out infinite alternate;
+}
+@keyframes bhFGlow{
+  from{box-shadow:0 0 5px rgba(255,0,53,.35)}
+  to{box-shadow:0 0 15px rgba(255,0,53,.8)}
+}
+
+#cards .fAfterCompact{
+  margin:5px 3px 3px!important;
+  padding:5px!important;
+  border-radius:7px!important;
+  border:1.5px solid rgba(255,92,122,.82)!important;
+  background:
+    linear-gradient(180deg,rgba(91,15,35,.96),rgba(40,8,20,.98))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 10px rgba(255,35,75,.18)!important;
+}
+#cards .fAfterTitle{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:3px!important;
+  margin-bottom:4px!important;
+}
+#cards .fAfterTitle span{
+  color:#ffb6c5!important;
+  font-size:7px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  letter-spacing:.02em!important;
+}
+#cards .fAfterTitle b{
+  color:#fff!important;
+  font-size:7px!important;
+  line-height:1!important;
+}
+#cards .fAfterStats{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:3px!important;
+}
+#cards .fAfterStats>div{
+  min-width:0!important;
+  padding:3px 2px!important;
+  border-radius:5px!important;
+  background:rgba(0,0,0,.22)!important;
+  text-align:center!important;
+}
+#cards .fAfterStats small{
+  display:block!important;
+  color:#e6a9b6!important;
+  font-size:5.5px!important;
+  line-height:1!important;
+}
+#cards .fAfterStats strong{
+  display:block!important;
+  margin-top:2px!important;
+  color:#fff!important;
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+}
+
+/* F持ちだけカード下端に警戒ライン */
+#cards .compactRacerCard:has(.fAfterCompact){
+  border-bottom-color:#ff365b!important;
+  box-shadow:
+    0 5px 14px rgba(0,0,0,.28),
+    0 0 12px rgba(255,54,91,.16)!important;
+}
+
+@media(max-width:430px){
+  #cards .fAfterCompact{padding:4px!important}
+  #cards .fAfterTitle span,#cards .fAfterTitle b{font-size:6px!important}
+  #cards .fAfterStats small{font-size:5px!important}
+  #cards .fAfterStats strong{font-size:8px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -13723,7 +13834,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.307</div>
+  <div class="topVol">Vol.308</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14112,6 +14223,39 @@ function decorateRanks(rr){
   });
 }
 
+function bhRenderFAfterCompact(rr,map){
+  if(!Array.isArray(rr))return;
+  rr.forEach(r=>{
+    const boat=Number(r.entry_number);
+    const card=document.querySelector(`#cards .compactRacerCard[data-boat="${boat}"]`);
+    if(!card)return;
+
+    card.querySelector(".fAfterCompact")?.remove();
+    card.querySelector(".fCompactBadge")?.remove();
+
+    const fc=window.HUNTER_F?.count?.(r)||0;
+    if(!fc)return; // F持ちだけ表示
+
+    const badge=document.createElement("div");
+    badge.className=`fCompactBadge f${fc}`;
+    badge.textContent=`F${fc}`;
+    card.appendChild(badge);
+
+    const hist=map instanceof Map ? (map.get(Number(r.number))?.rows||[]) : [];
+    const fa=window.HUNTER_F?.after?.(hist,fc);
+    const box=document.createElement("div");
+    box.className="fAfterCompact";
+    box.innerHTML=`
+      <div class="fAfterTitle"><span>⚠ F後</span><b>${fa?.count||0}走</b></div>
+      <div class="fAfterStats">
+        <div><small>平均ST</small><strong>${fa?.avgST!=null?fa.avgST.toFixed(3):"—"}</strong></div>
+        <div><small>ST順位</small><strong>${fa?.avgRank!=null?fa.avgRank.toFixed(2)+"位":"—"}</strong></div>
+      </div>`;
+    card.appendChild(box);
+  });
+}
+window.bhRenderFAfterCompact=bhRenderFAfterCompact;
+
 
 /* Vol.267: 場選択は当日開催場のみ表示 */
 async function bhRefreshHeldVenues(){
@@ -14157,6 +14301,7 @@ async function getRace(){
   $("cards").innerHTML=rr.map(card).join("");
   window.decorateHunterSG?.();
   decorateRanks(rr);
+  try{ if(historyCache) bhRenderFAfterCompact(rr,historyCache); }catch(e){}
   try{ bhCloseRacerDetail?.(); }catch(e){}
   try{ bhRenderCompare?.(); }catch(e){}
   try{ bhNormalizeMainLayout?.(); }catch(e){}
@@ -14419,6 +14564,7 @@ async function preloadHistory(rr){
   if(!historyLoading)historyLoading=buildHistory();
   historyCache=await historyLoading;
   updateMainHistory(rr,historyCache);
+  try{bhRenderFAfterCompact(rr,historyCache)}catch(e){}
   try{bhRenderCompare()}catch(e){}
   $("status").textContent="✓ 出走表＋同コース過去20走 取得完了";
   try{
