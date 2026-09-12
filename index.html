@@ -12274,7 +12274,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.289</div>
+  <div class="topVol">Vol.290</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15921,29 +15921,45 @@ function bhRenderCompare(){
     const winRate=n ? m.win/n*100 : null;
     const thirdOnly=n ? h.filter(x=>Number(x.place)===3).length/n*100 : null;
 
-    /* 攻撃率：同コース直近20走の1着決まり手
-       1C = 逃げ
-       2C = 差し + まくり
-       3C・4C = 差し + まくり + まくり差し
-       5C・6C = 差し + まくり + まくり差し（現行維持） */
-    let attackCount=0;
-    if(n){
-      attackCount=h.filter(x=>{
-        if(Number(x.place)!==1)return false;
-        const tech=Number(x.tech);
-        if(boat===1)return tech===1;
-        if(boat===2)return tech===2 || tech===3;
-        if(boat===3 || boat===4)return [2,3,4].includes(tech);
-        return [2,3,4].includes(tech);
-      }).length;
-    }
-    const attackRate=n ? attackCount/n*100 : null;
+    /* Vol.290 コース別の攻撃・守備 */
+    const rateBy = fn => n ? h.filter(fn).length / n * 100 : null;
 
-    /* 守備率：
-       同コース直近20走で、1着を逃しても2・3着に残した率。 */
-    const defenseRate=n
-      ? h.filter(x=>Number(x.place)===2||Number(x.place)===3).length/n*100
-      : null;
+    // 攻撃
+    // 1C = 逃げ
+    // 2C = 差し + まくり
+    // 3-6C = 差し + まくり + まくり差し
+    let attackRate=null;
+    if(boat===1){
+      attackRate=rateBy(x=>Number(x.place)===1 && Number(x.tech)===1);
+    }else if(boat===2){
+      attackRate=rateBy(x=>Number(x.place)===1 && [2,3].includes(Number(x.tech)));
+    }else{
+      attackRate=rateBy(x=>Number(x.place)===1 && [2,3,4].includes(Number(x.tech)));
+    }
+
+    // 守備
+    // 1C = 差され率 + まくられ率 + まくり差され率
+    // 2C = 3-6Cからのまくられ率
+    // 3C = 4-6Cからのまくられ率
+    // 4-6C = ルール未指定のため — 表示
+    let defenseRate=null;
+    if(boat===1){
+      defenseRate=rateBy(x=>Number(x.place)!==1 && [2,3,4].includes(Number(x.tech)));
+    }else if(boat===2){
+      defenseRate=rateBy(x=>
+        Number(x.place)!==1 &&
+        Number(x.tech)===3 &&
+        Number(x.winnerCourse)>=3 &&
+        Number(x.winnerCourse)<=6
+      );
+    }else if(boat===3){
+      defenseRate=rateBy(x=>
+        Number(x.place)!==1 &&
+        Number(x.tech)===3 &&
+        Number(x.winnerCourse)>=4 &&
+        Number(x.winnerCourse)<=6
+      );
+    }
 
     return {
       boat,
@@ -15987,8 +16003,8 @@ function bhRenderCompare(){
     {label:"平均ST順位",key:"avgRank",fmt:rank,lower:true},
     {label:"モーター2連対率",key:"motor2",fmt:pct},
     {label:"モーター3連対率",key:"motor3",fmt:pct},
-    {label:"攻撃率",key:"attack",fmt:pct},
-    {label:"守備率",key:"defense",fmt:pct}
+    {label:"攻撃",key:"attack",fmt:pct},
+    {label:"守備",key:"defense",fmt:pct}
   ];
 
   const boatHeader=`<tr class="compareBoatHeader">
@@ -16014,7 +16030,7 @@ function bhRenderCompare(){
     assist.innerHTML=`
       <span class="compareLegend"><i class="legendRed"></i>1位</span>
       <span class="compareLegend"><i class="legendYellow"></i>2位</span>
-      <span class="compareFormula">攻撃=コース別の攻め決まり手1着 / 守備=2・3着残り</span>`;
+      <span class="compareFormula">攻撃・守備＝コース別決まり手率</span>`;
   }
 }
 const __bhUpdateMainHistoryV183=updateMainHistory;
