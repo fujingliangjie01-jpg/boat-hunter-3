@@ -12353,6 +12353,86 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol293-tech-layout">
+/* Vol.293 決まり手を写真の配列に寄せる */
+#comparePanel .compareTechniqueTitle th{
+  position:sticky!important;
+  left:0!important;
+  z-index:5!important;
+  width:auto!important;
+  max-width:none!important;
+  padding:8px!important;
+  text-align:center!important;
+  background:linear-gradient(180deg,#0f5ecf,#1147a6)!important;
+  color:#fff!important;
+  font-size:12px!important;
+  letter-spacing:.04em!important;
+}
+#comparePanel .techPairRow th{
+  background:#193d6c!important;
+  color:#fff!important;
+  padding:0!important;
+}
+.techDefenseLabel,
+.techAttackLabel{
+  display:block!important;
+  padding:5px 3px!important;
+  font-size:8px!important;
+  line-height:1.05!important;
+  font-weight:1000!important;
+}
+.techDefenseLabel{
+  background:#f37a2b!important;
+  color:#fff!important;
+}
+.techAttackLabel{
+  background:#587fd8!important;
+  color:#fff!important;
+}
+#comparePanel .techPairRow td{
+  min-height:52px!important;
+  padding:5px 2px!important;
+}
+#comparePanel .techPairRow td small{
+  display:block!important;
+  min-height:17px!important;
+  margin-bottom:3px!important;
+  color:#8fb3c8!important;
+  font-size:6px!important;
+  line-height:1.1!important;
+  font-weight:900!important;
+}
+#comparePanel .techPairRow td strong{
+  display:block!important;
+  font-size:14px!important;
+}
+#comparePanel .techDefenseCell{
+  background:#1f2c35!important;
+}
+#comparePanel .techDefenseCell small{
+  color:#ffac79!important;
+}
+#comparePanel .techAttackCell small{
+  color:#9fc7ff!important;
+}
+#comparePanel .techNA{
+  background:#3a4247!important;
+  color:#aeb8bd!important;
+}
+#comparePanel .techNA small{
+  color:#97a1a6!important;
+}
+#comparePanel .outerDefenseRow td strong{
+  font-size:13px!important;
+}
+@media(max-width:430px){
+  .techDefenseLabel,.techAttackLabel{font-size:7px!important}
+  #comparePanel .techPairRow td strong{font-size:12px!important}
+  #comparePanel .techPairRow td small{font-size:5.5px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12363,7 +12443,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.292</div>
+  <div class="topVol">Vol.293</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16784,7 +16864,8 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 </script>
 
 
-<script id="bh-vol292-compare-authoritative">
+
+<script id="bh-vol293-compare-authoritative">
 (function(){
   function N(v){
     const n=Number(String(v??"").replace(/[^\d.\-]/g,""));
@@ -16794,43 +16875,54 @@ setTimeout(bhApplyTokuyamaDayFix,0);
   function ST(v){ return Number.isFinite(v)?v.toFixed(3):"—"; }
   function RK(v){ return Number.isFinite(v)?v.toFixed(2)+"位":"—"; }
 
-  function courseRates(h,boat){
+  function makeCourseStats(h,boat){
     const n=h.length||0;
     const rate=fn=>n?h.filter(fn).length/n*100:null;
 
-    const nige = rate(x=>Number(x.place)===1 && Number(x.tech)===1);
-    const sashi = rate(x=>Number(x.place)===1 && Number(x.tech)===2);
-    const makuri = rate(x=>Number(x.place)===1 && Number(x.tech)===3);
-    const makurizashi = rate(x=>Number(x.place)===1 && Number(x.tech)===4);
+    const stats={
+      nige:rate(x=>Number(x.place)===1 && Number(x.tech)===1),
+      sashi:rate(x=>Number(x.place)===1 && Number(x.tech)===2),
+      makuri:rate(x=>Number(x.place)===1 && Number(x.tech)===3),
+      makurizashi:rate(x=>Number(x.place)===1 && Number(x.tech)===4),
 
-    let attack=null,attackLabel="";
+      sasare:rate(x=>Number(x.place)!==1 && Number(x.tech)===2),
+      makurare:rate(x=>Number(x.place)!==1 && Number(x.tech)===3),
+      makurizasare:rate(x=>Number(x.place)!==1 && Number(x.tech)===4),
+
+      outerMakurare2:rate(x=>
+        Number(x.place)!==1 &&
+        Number(x.tech)===3 &&
+        Number(x.winnerCourse)>=3 &&
+        Number(x.winnerCourse)<=6
+      ),
+      outerMakurare3:rate(x=>
+        Number(x.place)!==1 &&
+        Number(x.tech)===3 &&
+        Number(x.winnerCourse)>=4 &&
+        Number(x.winnerCourse)<=6
+      )
+    };
+
+    // コース別「攻撃」合計
     if(boat===1){
-      attack=nige;
-      attackLabel="逃げ";
+      stats.attack=stats.nige;
     }else if(boat===2){
-      attack=(Number.isFinite(sashi)?sashi:0)+(Number.isFinite(makuri)?makuri:0);
-      attackLabel="差し＋まくり";
+      stats.attack=(stats.sashi||0)+(stats.makuri||0);
     }else{
-      attack=(Number.isFinite(sashi)?sashi:0)+(Number.isFinite(makuri)?makuri:0)+(Number.isFinite(makurizashi)?makurizashi:0);
-      attackLabel="差し＋まくり＋まくり差し";
+      stats.attack=(stats.sashi||0)+(stats.makuri||0)+(stats.makurizashi||0);
     }
 
-    let defense=null,defenseLabel="—";
+    // コース別「守備」合計
     if(boat===1){
-      const sasare=rate(x=>Number(x.place)!==1 && Number(x.tech)===2);
-      const makurare=rate(x=>Number(x.place)!==1 && Number(x.tech)===3);
-      const makurizasare=rate(x=>Number(x.place)!==1 && Number(x.tech)===4);
-      defense=(Number.isFinite(sasare)?sasare:0)+(Number.isFinite(makurare)?makurare:0)+(Number.isFinite(makurizasare)?makurizasare:0);
-      defenseLabel="差され＋まくられ＋まくり差され";
+      stats.defense=(stats.sasare||0)+(stats.makurare||0)+(stats.makurizasare||0);
     }else if(boat===2){
-      defense=rate(x=>Number(x.place)!==1 && Number(x.tech)===3 && Number(x.winnerCourse)>=3 && Number(x.winnerCourse)<=6);
-      defenseLabel="3〜6Cからまくられ";
+      stats.defense=stats.outerMakurare2;
     }else if(boat===3){
-      defense=rate(x=>Number(x.place)!==1 && Number(x.tech)===3 && Number(x.winnerCourse)>=4 && Number(x.winnerCourse)<=6);
-      defenseLabel="4〜6Cからまくられ";
+      stats.defense=stats.outerMakurare3;
+    }else{
+      stats.defense=null;
     }
-
-    return {attack,attackLabel,defense,defenseLabel};
+    return stats;
   }
 
   window.bhRenderCompare=function(){
@@ -16847,9 +16939,9 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     const rows=rr.map(r=>{
       const boat=Number(r.entry_number);
       const h=(historyCache instanceof Map ? historyCache.get(Number(r.number))?.rows : [])||[];
-      const m=histMetrics(h),n=h.length||0;
+      const m=histMetrics(h), n=h.length||0;
       const rate=fn=>n?h.filter(fn).length/n*100:null;
-      const cr=courseRates(h,boat);
+      const cs=makeCourseStats(h,boat);
 
       return {
         boat,
@@ -16860,23 +16952,22 @@ setTimeout(bhApplyTokuyamaDayFix,0);
         avgRank:m.avgRank,
         motor2:N(r.motor_top_2_percent),
         motor3:N(r.motor_top_3_percent),
-        attack:cr.attack,
-        attackLabel:cr.attackLabel,
-        defense:cr.defense,
-        defenseLabel:cr.defenseLabel
+        ...cs
       };
     });
 
-    function rankClasses(key,lower=false){
-      const vals=rows.map((x,i)=>({i,v:Number(x[key])}))
-        .filter(x=>Number.isFinite(x.v))
+    function rankClasses(key,lower=false,eligible=null){
+      const vals=rows.map((x,i)=>({i,v:Number(x[key]),x}))
+        .filter(o=>Number.isFinite(o.v) && (!eligible || eligible(o.x)))
         .sort((a,b)=>lower?a.v-b.v:b.v-a.v);
+
       const distinct=[];
-      for(const x of vals){
-        if(!distinct.some(v=>Math.abs(v-x.v)<1e-9))distinct.push(x.v);
+      for(const o of vals){
+        if(!distinct.some(v=>Math.abs(v-o.v)<1e-9))distinct.push(o.v);
         if(distinct.length===2)break;
       }
       return rows.map(x=>{
+        if(eligible && !eligible(x))return "";
         const v=Number(x[key]);
         if(!Number.isFinite(v))return "";
         if(Number.isFinite(distinct[0])&&Math.abs(v-distinct[0])<1e-9)return "compareRank1";
@@ -16885,7 +16976,10 @@ setTimeout(bhApplyTokuyamaDayFix,0);
       });
     }
 
-    const defs=[
+    let html='<tr class="compareBoatHeader"><th>項目</th>'+
+      rows.map(x=>`<td><span class="matrixBoat b${x.boat}">${x.boat}</span><span class="compareRacerName">${x.name}</span></td>`).join("")+'</tr>';
+
+    const baseDefs=[
       ["今コース勝率","courseWin",P,false],
       ["今コース3着率","courseThird",P,false],
       ["平均ST","avgST",ST,true],
@@ -16893,34 +16987,85 @@ setTimeout(bhApplyTokuyamaDayFix,0);
       ["モーター2連対率","motor2",P,false],
       ["モーター3連対率","motor3",P,false]
     ];
-
-    let html='<tr class="compareBoatHeader"><th>項目</th>'+
-      rows.map(x=>`<td><span class="matrixBoat b${x.boat}">${x.boat}</span><span class="compareRacerName">${x.name}</span></td>`).join("")+'</tr>';
-
-    for(const [label,key,fmt,lower] of defs){
+    for(const [label,key,fmt,lower] of baseDefs){
       const cls=rankClasses(key,lower);
       html+=`<tr><th>${label}</th>${rows.map((x,i)=>`<td class="${cls[i]}"><strong>${fmt(Number(x[key]))}</strong></td>`).join("")}</tr>`;
     }
 
-    // 攻撃: visible definition per course
+    // ===== 写真の配列に合わせた「決まり手」セクション =====
+    html+=`<tr class="compareTechniqueTitle"><th colspan="7">決まり手・攻守比較</th></tr>`;
+
+    // 逃げ：1コースだけ
     {
-      const cls=rankClasses("attack",false);
-      html+=`<tr><th>攻撃</th>${rows.map((x,i)=>`
-        <td class="${cls[i]} compareRoleCell">
-          <small>${x.attackLabel}</small>
-          <strong>${P(Number(x.attack))}</strong>
-        </td>`).join("")}</tr>`;
+      const cls=rankClasses("nige",false,x=>x.boat===1);
+      html+=`<tr class="techPairRow">
+        <th><span class="techDefenseLabel">逃げ</span></th>
+        ${rows.map((x,i)=>`
+          <td class="${cls[i]} ${x.boat===1?'techApplicable':'techNA'}">
+            <small>${x.boat===1?'逃げ':'—'}</small>
+            <strong>${x.boat===1?P(Number(x.nige)):'—'}</strong>
+          </td>`).join("")}
+      </tr>`;
     }
 
-    // 守備: 4/5/6 are explicitly "なし"
+    // 差され / 差し
     {
-      const cls=rankClasses("defense",false);
-      html+=`<tr><th>守備</th>${rows.map((x,i)=>`
-        <td class="${cls[i]} compareRoleCell ${x.boat>=4?'compareNoDefense':''}">
-          <small>${x.boat>=4?'守備なし':x.defenseLabel}</small>
-          <strong>${x.boat>=4?'—':P(Number(x.defense))}</strong>
-        </td>`).join("")}</tr>`;
+      const attackCls=rankClasses("sashi",false,x=>x.boat>=2);
+      html+=`<tr class="techPairRow">
+        <th><span class="techDefenseLabel">差され</span><span class="techAttackLabel">差し</span></th>
+        ${rows.map((x,i)=>{
+          if(x.boat===1){
+            return `<td class="techDefenseCell"><small>差され</small><strong>${P(Number(x.sasare))}</strong></td>`;
+          }
+          return `<td class="${attackCls[i]} techAttackCell"><small>差し</small><strong>${P(Number(x.sashi))}</strong></td>`;
+        }).join("")}
+      </tr>`;
     }
+
+    // まくられ / まくり
+    {
+      const attackCls=rankClasses("makuri",false,x=>x.boat>=2);
+      html+=`<tr class="techPairRow">
+        <th><span class="techDefenseLabel">まくられ</span><span class="techAttackLabel">まくり</span></th>
+        ${rows.map((x,i)=>{
+          if(x.boat===1){
+            return `<td class="techDefenseCell"><small>まくられ</small><strong>${P(Number(x.makurare))}</strong></td>`;
+          }
+          return `<td class="${attackCls[i]} techAttackCell"><small>まくり</small><strong>${P(Number(x.makuri))}</strong></td>`;
+        }).join("")}
+      </tr>`;
+    }
+
+    // まくり差され / まくり差し
+    {
+      const attackCls=rankClasses("makurizashi",false,x=>x.boat>=3);
+      html+=`<tr class="techPairRow">
+        <th><span class="techDefenseLabel">まくり差され</span><span class="techAttackLabel">まくり差し</span></th>
+        ${rows.map((x,i)=>{
+          if(x.boat===1){
+            return `<td class="techDefenseCell"><small>まくり差され</small><strong>${P(Number(x.makurizasare))}</strong></td>`;
+          }
+          if(x.boat===2){
+            return `<td class="techNA"><small>対象外</small><strong>—</strong></td>`;
+          }
+          return `<td class="${attackCls[i]} techAttackCell"><small>まくり差し</small><strong>${P(Number(x.makurizashi))}</strong></td>`;
+        }).join("")}
+      </tr>`;
+    }
+
+    // 外からのまくられ：2C/3Cだけ
+    html+=`<tr class="techPairRow outerDefenseRow">
+      <th><span class="techDefenseLabel">外まくられ</span></th>
+      ${rows.map(x=>{
+        if(x.boat===2){
+          return `<td class="techDefenseCell"><small>3〜6Cから</small><strong>${P(Number(x.outerMakurare2))}</strong></td>`;
+        }
+        if(x.boat===3){
+          return `<td class="techDefenseCell"><small>4〜6Cから</small><strong>${P(Number(x.outerMakurare3))}</strong></td>`;
+        }
+        return `<td class="techNA"><small>${x.boat>=4?'守備なし':'—'}</small><strong>—</strong></td>`;
+      }).join("")}
+    </tr>`;
 
     tbody.innerHTML=html;
 
@@ -16929,17 +17074,18 @@ setTimeout(bhApplyTokuyamaDayFix,0);
       assist.innerHTML=`
         <span class="compareLegend"><i class="legendRed"></i>1位</span>
         <span class="compareLegend"><i class="legendYellow"></i>2位</span>
-        <span class="compareFormula">攻撃は艇ごとに決まり手を明示 / 4〜6Cの守備はなし</span>`;
+        <span class="compareFormula">写真のように「守備側 / 攻撃側」を決まり手ごとに横並び表示</span>`;
     }
   };
 
-  const rerender=()=>{ try{window.bhRenderCompare()}catch(e){} };
+  const rerender=()=>{try{window.bhRenderCompare()}catch(e){}};
   document.addEventListener("click",e=>{
-    if(e.target.closest("#get,#getPreview,#aiAnalyze")) setTimeout(rerender,350);
+    if(e.target.closest("#get,#getPreview,#aiAnalyze"))setTimeout(rerender,350);
   });
   setTimeout(rerender,0);
 })();
 </script>
+
 
 
 </body>
