@@ -9853,6 +9853,187 @@ body:not(.theme-ladies):not(.theme-sg){
 }
 </style>
 
+
+<style id="bh-vol272-layout-fix">
+/* ===== Vol.272 画面構成を完全整理 ===== */
+
+/* 上部の古い「出走表」見出しは重複するのでコンパクト化 */
+#main>.wrap>.head.bh221Head{
+  margin:4px 0 6px!important;
+  padding:0 2px!important;
+  min-height:26px!important;
+  border:0!important;
+  background:transparent!important;
+}
+#main>.wrap>.head.bh221Head h2{
+  display:none!important;
+}
+#bh221RaceTicker{
+  width:100%!important;
+  font-size:10px!important;
+  color:#a9d8f2!important;
+}
+
+/* RACE SELECTをイメージに寄せて整理 */
+.controls.racePanel{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:8px!important;
+  margin:6px 0 10px!important;
+  padding:10px!important;
+  border:1.5px solid rgba(80,185,245,.72)!important;
+  border-radius:15px!important;
+  background:linear-gradient(180deg,#0b2638,#061722)!important;
+}
+.controls.racePanel:before{
+  grid-column:1/-1!important;
+  margin:0 0 2px!important;
+  color:#71bce7!important;
+  font-size:9px!important;
+  letter-spacing:.20em!important;
+}
+.controls.racePanel:after{display:none!important}
+
+.selectCard{
+  min-height:104px!important;
+  padding:9px!important;
+  border:1.5px solid rgba(255,255,255,.76)!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#0d3148,#071c2b)!important;
+}
+.selectEyebrow{font-size:8px!important;color:#6eaed3!important}
+.selectLabel{font-size:9px!important;color:#acc6d6!important}
+.selectCard select{
+  min-height:37px!important;
+  font-size:17px!important;
+  color:#fff!important;
+}
+
+/* 時間帯表示を小さく */
+.venueTimeLegend{
+  margin-top:5px!important;
+  gap:3px!important;
+}
+.venueTimeLegend span{
+  font-size:7px!important;
+  padding:2px 4px!important;
+}
+
+/* 音声は青のサブアクション */
+.voiceSelectGroup{
+  grid-column:1/-1!important;
+  margin-top:1px!important;
+  border:1.5px solid rgba(255,255,255,.60)!important;
+  border-radius:11px!important;
+  overflow:hidden!important;
+  background:#071b28!important;
+}
+.voicePick{
+  min-height:39px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.16)!important;
+  background:linear-gradient(180deg,#1188cf,#075683)!important;
+  font-size:11px!important;
+}
+.voiceStatus{
+  min-height:25px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:7px!important;
+}
+
+/* 必須ボタン */
+#get{
+  grid-column:1/-1!important;
+  min-height:50px!important;
+  margin:1px 0 0!important;
+  border-radius:11px!important;
+  background:linear-gradient(135deg,#ffb000,#ff7a00 55%,#ee5d00)!important;
+  border:2px solid #fff!important;
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:1000!important;
+}
+
+/* 出走表は場選択の直後 */
+.racerListTitle{
+  margin:10px 0 7px!important;
+  padding:8px 0 0!important;
+  border-top:1px solid rgba(80,177,229,.38)!important;
+}
+.racerListTitle b{font-size:20px!important}
+.racerListTitle small{display:none!important}
+
+/* 6艇横1列を最優先。絶対にカードを下へ回さない */
+#cards.cards{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  width:100%!important;
+  gap:3px!important;
+  margin:0 0 7px!important;
+  padding:0!important;
+  overflow:visible!important;
+}
+
+/* 詳細はカード直下。カードより上には出さない */
+#racerDetailPanel{
+  width:100%!important;
+  margin:0 0 8px!important;
+}
+#racerDetailPanel.hide{display:none!important}
+
+/* 比較は詳細よりさらに下 */
+#comparePanel{
+  width:100%!important;
+  margin:0 0 10px!important;
+}
+
+/* 解析系はその後ろ */
+#status{margin-top:8px!important}
+.hunterActions{margin-top:7px!important}
+
+/* iPhoneで6艇が1列に収まるコンパクトサイズ */
+@media(max-width:430px){
+  .wrap{padding-left:7px!important;padding-right:7px!important}
+  .controls.racePanel{gap:6px!important;padding:8px!important}
+  .selectCard{min-height:96px!important;padding:7px!important}
+  .selectCard select{font-size:15px!important}
+  .compactPhotoWrap{height:53px!important}
+  .compactBoatNo{width:19px!important;height:19px!important;font-size:11px!important}
+  .compactClass{font-size:6px!important;margin-top:3px!important}
+  .compactName{font-size:6.5px!important;margin-top:2px!important}
+  .compactWinLabel{font-size:5px!important;margin-top:3px!important}
+  .compactWin{font-size:8.5px!important}
+  .compactDetailBtn{
+    min-height:20px!important;
+    margin-top:4px!important;
+    font-size:6px!important;
+  }
+}
+</style>
+
+
+<style id="bh-vol273-clean-layout">
+/* Vol.273: screen hierarchy lock */
+#main>.wrap{display:block!important}
+.racerListTitle{margin-top:18px!important;margin-bottom:8px!important}
+#cards.cards{margin-bottom:8px!important}
+#racerDetailPanel{margin:0 0 8px!important;width:100%!important}
+#comparePanel{margin:0 0 18px!important;width:100%!important}
+</style>
+
+
+<style id="bh-vol274-order-lock">
+/* Vol.274: race screen hierarchy */
+#main>.wrap{display:block!important}
+.hunterActions{margin-bottom:0!important}
+.racerListTitle{margin-top:18px!important}
+#cards.cards{margin-bottom:8px!important}
+#racerDetailPanel{margin:0 0 8px!important}
+#comparePanel{margin:0 0 18px!important}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -9863,7 +10044,7 @@ body:not(.theme-ladies):not(.theme-sg){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.271</div>
+  <div class="topVol">Vol.274</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -9896,6 +10077,42 @@ body:not(.theme-ladies):not(.theme-sg){
     <button type="button" id="getPreview" class="previewBtn" disabled>② 直前情報取得</button>
     <button type="button" id="aiAnalyze" class="aiBtn" disabled>③ AI解析</button>
   </div>
+
+<div class="racerListTitle">
+    <div><b>出走表</b><span>RACER LIST</span></div>
+    <small>選手写真 × 基本データ</small>
+  </div>
+  <div id="cards" class="cards"></div>
+
+  <section id="racerDetailPanel" class="racerDetailPanel hide">
+    <div class="racerDetailHead">
+      <div>
+        <b>選手詳細</b>
+        <span>RACER DETAIL</span>
+      </div>
+      <button type="button" id="racerDetailClose" onclick="bhCloseRacerDetail()">閉じる</button>
+    </div>
+    <div id="racerDetailBody"></div>
+  </section>
+
+
+<section id="comparePanel" class="comparePanel">
+  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
+    <span><b>6艇比較</b><small>RACER COMPARISON / 数字で見える強弱</small></span>
+    <b id="compareToggleIcon">−</b>
+  </button>
+  <div id="compareBody" class="compareBody">
+    <div class="compareAssist"><span>出走表取得と同時に表示</span><span>階級・選手名・全国勝率を6艇横並びで比較</span></div>
+    <div class="compareScroll">
+      <table class="compareTable compareMatrix">
+        <tbody id="compareRows">
+          <tr><td class="compareWait">出走表取得後に表示</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <section id="previewPanel" class="previewPanel hide">
     <div class="previewHead">
       <div><div class="previewEyebrow">JUST BEFORE DATA</div><h3>直前情報</h3></div>
@@ -10013,40 +10230,7 @@ body:not(.theme-ladies):not(.theme-sg){
     </div>
   </section>
 
-  <div class="racerListTitle">
-    <div><b>出走表</b><span>RACER LIST</span></div>
-    <small>選手写真 × 基本データ</small>
-  </div>
-  <div id="cards" class="cards"></div>
-
-  <section id="racerDetailPanel" class="racerDetailPanel hide">
-    <div class="racerDetailHead">
-      <div>
-        <b>選手詳細</b>
-        <span>RACER DETAIL</span>
-      </div>
-      <button type="button" id="racerDetailClose" onclick="bhCloseRacerDetail()">閉じる</button>
-    </div>
-    <div id="racerDetailBody"></div>
-  </section>
-
-
-<section id="comparePanel" class="comparePanel">
-  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
-    <span><b>6艇比較</b><small>RACER COMPARISON / 数字で見える強弱</small></span>
-    <b id="compareToggleIcon">−</b>
-  </button>
-  <div id="compareBody" class="compareBody">
-    <div class="compareAssist"><span>出走表取得と同時に表示</span><span>階級・選手名・全国勝率を6艇横並びで比較</span></div>
-    <div class="compareScroll">
-      <table class="compareTable compareMatrix">
-        <tbody id="compareRows">
-          <tr><td class="compareWait">出走表取得後に表示</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+  
 
 </section>
 </div>
@@ -10263,8 +10447,9 @@ async function getRace(){
   $("cards").innerHTML=rr.map(card).join("");
   window.decorateHunterSG?.();
   decorateRanks(rr);
-  try{ bhRenderCompare?.(); }catch(e){}
   try{ bhCloseRacerDetail?.(); }catch(e){}
+  try{ bhRenderCompare?.(); }catch(e){}
+  try{ bhNormalizeMainLayout?.(); }catch(e){}
 
   $("status").textContent="出走表取得済み / 現在級別を照合中…";
   try{
@@ -10272,6 +10457,7 @@ async function getRace(){
     $("cards").innerHTML=rr.map(card).join("");
     window.decorateHunterSG?.();
     decorateRanks(rr);
+    try{ bhNormalizeMainLayout?.(); }catch(e){}
   }catch(e){
     console.warn("級別補正をスキップ",e);
   }
@@ -14062,6 +14248,47 @@ document.getElementById("date")?.addEventListener("change",()=>{
 setTimeout(bhApplyTokuyamaDayFix,0);
 
 </script>
+
+<script id="bh-vol272-layout-normalizer">
+(function(){
+  function moveAfter(ref,node){
+    if(!ref||!node||!ref.parentNode)return;
+    ref.parentNode.insertBefore(node,ref.nextSibling);
+  }
+
+  window.bhNormalizeMainLayout=function(){
+    const wrap=document.querySelector("#main>.wrap");
+    const racePanel=document.querySelector(".controls.racePanel");
+    const title=document.querySelector(".racerListTitle");
+    const cards=document.getElementById("cards");
+    const detail=document.getElementById("racerDetailPanel");
+    const compare=document.getElementById("comparePanel");
+    if(!wrap||!racePanel||!title||!cards||!detail||!compare)return;
+
+    /* Vol.272 固定順序:
+       場/レース選択 → 出走表6艇 → 選手詳細 → 6艇比較 → その他解析 */
+    moveAfter(racePanel,title);
+    moveAfter(title,cards);
+    moveAfter(cards,detail);
+    moveAfter(detail,compare);
+
+    /* 初期状態では詳細を絶対に出さない */
+    if(!cards.children.length){
+      detail.classList.add("hide");
+      detail.removeAttribute("data-boat");
+      detail.removeAttribute("data-number");
+    }
+  };
+
+  const run=()=>window.bhNormalizeMainLayout?.();
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",run,{once:true});
+  }else run();
+
+  window.addEventListener("load",run,{once:true});
+})();
+</script>
+
 </body>
 </html>
 
