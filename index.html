@@ -12433,6 +12433,210 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol294-voice-and-role-ui">
+/* =========================================================
+   Vol.294
+   - 音声入力を開催場カード下へ移動
+   - 直前情報 / AI解析を2列化
+   - 選択文字を大きく
+   - 攻守ラベルを剣 / 盾 + HUNTER濃紺へ統一
+   ========================================================= */
+
+/* RACE SELECT */
+.controls.racePanel{
+  grid-template-columns:1.18fr 1.18fr .92fr!important;
+  gap:6px!important;
+}
+.venueSelectCard,
+.raceSelectCard,
+#get{
+  min-height:118px!important;
+}
+
+/* 開催場・レース文字を大きく */
+.selectEyebrow{
+  font-size:8px!important;
+  letter-spacing:.16em!important;
+}
+.selectLabel{
+  font-size:10px!important;
+  margin-top:2px!important;
+}
+.selectCard select{
+  min-height:38px!important;
+  height:38px!important;
+  font-size:20px!important;
+  font-weight:1000!important;
+  line-height:38px!important;
+}
+#stadium,
+#race{
+  font-size:20px!important;
+  font-weight:1000!important;
+}
+
+/* 開催場下の時間帯 */
+.venueTimeLegend{
+  margin-top:4px!important;
+  gap:3px!important;
+}
+.venueTimeLegend span{
+  padding:3px 5px!important;
+  font-size:7px!important;
+}
+
+/* 音声は開催場下の空きスペースに小さく配置、文字は大きく */
+.venueVoiceBtn{
+  width:auto!important;
+  min-width:120px!important;
+  max-width:100%!important;
+  min-height:34px!important;
+  height:34px!important;
+  margin:7px 0 0!important;
+  padding:0 12px!important;
+  justify-self:start!important;
+  align-self:start!important;
+  border-radius:8px!important;
+  border:1.5px solid rgba(255,255,255,.88)!important;
+  background:linear-gradient(180deg,#168ed0,#085987)!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:1000!important;
+  letter-spacing:.02em!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 4px 10px rgba(0,0,0,.20)!important;
+}
+
+/* レース矢印も大きく */
+.raceStepBtn{
+  min-height:35px!important;
+  height:35px!important;
+  font-size:24px!important;
+  font-weight:1000!important;
+}
+
+/* 出走表取得を大きく */
+#get{
+  font-size:18px!important;
+  font-weight:1000!important;
+  line-height:1.15!important;
+}
+
+/* 直前情報 / AI解析は大きな2列 */
+.quickActionRow.actionPair{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important;
+  margin-top:2px!important;
+}
+.quickActionRow.actionPair button{
+  min-height:50px!important;
+  height:50px!important;
+  border-radius:11px!important;
+  border:2px solid rgba(255,255,255,.90)!important;
+  font-size:16px!important;
+  font-weight:1000!important;
+  letter-spacing:.015em!important;
+}
+.quickActionRow.actionPair .previewBtn:not(:disabled){
+  background:linear-gradient(180deg,#f1a53b,#b66d17)!important;
+  border-color:#ffe0ad!important;
+}
+.quickActionRow.actionPair .aiBtn:not(:disabled){
+  background:linear-gradient(180deg,#9b46f3,#6320b7)!important;
+  border-color:#dcc5ff!important;
+}
+
+/* 古い3列指定を完全解除 */
+.quickActionRow.actionTriple{display:none!important}
+
+/* ===== 6艇比較 攻守 ===== */
+/* オレンジ / 水色を廃止して濃紺+白枠 */
+#comparePanel .techPairRow th{
+  background:#061725!important;
+  border-right:1px solid rgba(255,255,255,.28)!important;
+}
+.techDefenseLabel,
+.techAttackLabel{
+  display:block!important;
+  padding:7px 5px!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,#0c2d43,#071b29)!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  border-radius:6px!important;
+  margin:3px!important;
+  font-size:8px!important;
+  line-height:1.1!important;
+  font-weight:1000!important;
+  text-align:left!important;
+}
+.swordLabel{
+  box-shadow:inset 3px 0 0 #46b8ff,0 0 8px rgba(70,184,255,.10)!important;
+}
+.shieldLabel{
+  box-shadow:inset 3px 0 0 #d7e1e8,0 0 8px rgba(215,225,232,.08)!important;
+}
+
+/* 数値側も攻守の意味だけ薄く表現 */
+#comparePanel .techDefenseCell{
+  background:linear-gradient(180deg,#101d27,#0b1720)!important;
+}
+#comparePanel .techDefenseCell small{
+  color:#d8e2e8!important;
+}
+#comparePanel .techAttackCell small{
+  color:#8fd0ff!important;
+}
+
+/* 1位/2位の赤黄は優先 */
+#comparePanel .techPairRow td.compareRank1{
+  background:linear-gradient(180deg,#e33945,#ac1723)!important;
+  color:#fff!important;
+}
+#comparePanel .techPairRow td.compareRank2{
+  background:linear-gradient(180deg,#f6dc52,#c19b0c)!important;
+  color:#111!important;
+}
+
+/* mobile */
+@media(max-width:430px){
+  .controls.racePanel{
+    grid-template-columns:1.18fr 1.18fr .9fr!important;
+    gap:4px!important;
+  }
+  .venueSelectCard,
+  .raceSelectCard,
+  #get{
+    min-height:110px!important;
+  }
+  .selectCard select,
+  #stadium,
+  #race{
+    min-height:35px!important;
+    height:35px!important;
+    font-size:18px!important;
+  }
+  .venueVoiceBtn{
+    min-width:108px!important;
+    height:32px!important;
+    min-height:32px!important;
+    padding:0 9px!important;
+    font-size:12px!important;
+  }
+  .quickActionRow.actionPair button{
+    min-height:46px!important;
+    height:46px!important;
+    font-size:14px!important;
+  }
+  #get{font-size:16px!important}
+  .techDefenseLabel,.techAttackLabel{
+    font-size:7px!important;
+    padding:6px 4px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12443,7 +12647,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.293</div>
+  <div class="topVol">Vol.294</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -12468,6 +12672,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
       <div class="venueTimeLegend">
         <span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span>
       </div>
+      <button type="button" id="voicePick" class="voicePick venueVoiceBtn">🎙 音声で選ぶ</button>
     </div>
 
     <div class="selectCard raceSelectCard">
@@ -12482,8 +12687,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 
     <button type="button" id="get">① 出走表取得</button>
 
-    <div class="quickActionRow actionTriple">
-      <button type="button" id="voicePick" class="voicePick">🎙 音声で選ぶ</button>
+    <div class="quickActionRow actionPair">
       <button type="button" id="getPreview" class="previewBtn quickMainAction" disabled>② 直前情報取得</button>
       <button type="button" id="aiAnalyze" class="aiBtn quickMainAction" disabled>③ AI解析</button>
     </div>
@@ -16999,7 +17203,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     {
       const cls=rankClasses("nige",false,x=>x.boat===1);
       html+=`<tr class="techPairRow">
-        <th><span class="techDefenseLabel">逃げ</span></th>
+        <th><span class="techAttackLabel swordLabel">⚔ 攻撃｜逃げ</span></th>
         ${rows.map((x,i)=>`
           <td class="${cls[i]} ${x.boat===1?'techApplicable':'techNA'}">
             <small>${x.boat===1?'逃げ':'—'}</small>
@@ -17012,7 +17216,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     {
       const attackCls=rankClasses("sashi",false,x=>x.boat>=2);
       html+=`<tr class="techPairRow">
-        <th><span class="techDefenseLabel">差され</span><span class="techAttackLabel">差し</span></th>
+        <th><span class="techDefenseLabel shieldLabel">🛡 守備｜差され</span><span class="techAttackLabel swordLabel">⚔ 攻撃｜差し</span></th>
         ${rows.map((x,i)=>{
           if(x.boat===1){
             return `<td class="techDefenseCell"><small>差され</small><strong>${P(Number(x.sasare))}</strong></td>`;
@@ -17026,7 +17230,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     {
       const attackCls=rankClasses("makuri",false,x=>x.boat>=2);
       html+=`<tr class="techPairRow">
-        <th><span class="techDefenseLabel">まくられ</span><span class="techAttackLabel">まくり</span></th>
+        <th><span class="techDefenseLabel shieldLabel">🛡 守備｜まくられ</span><span class="techAttackLabel swordLabel">⚔ 攻撃｜まくり</span></th>
         ${rows.map((x,i)=>{
           if(x.boat===1){
             return `<td class="techDefenseCell"><small>まくられ</small><strong>${P(Number(x.makurare))}</strong></td>`;
@@ -17040,7 +17244,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
     {
       const attackCls=rankClasses("makurizashi",false,x=>x.boat>=3);
       html+=`<tr class="techPairRow">
-        <th><span class="techDefenseLabel">まくり差され</span><span class="techAttackLabel">まくり差し</span></th>
+        <th><span class="techDefenseLabel shieldLabel">🛡 守備｜まくり差され</span><span class="techAttackLabel swordLabel">⚔ 攻撃｜まくり差し</span></th>
         ${rows.map((x,i)=>{
           if(x.boat===1){
             return `<td class="techDefenseCell"><small>まくり差され</small><strong>${P(Number(x.makurizasare))}</strong></td>`;
@@ -17055,7 +17259,7 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 
     // 外からのまくられ：2C/3Cだけ
     html+=`<tr class="techPairRow outerDefenseRow">
-      <th><span class="techDefenseLabel">外まくられ</span></th>
+      <th><span class="techDefenseLabel shieldLabel">🛡 守備｜外まくられ</span></th>
       ${rows.map(x=>{
         if(x.boat===2){
           return `<td class="techDefenseCell"><small>3〜6Cから</small><strong>${P(Number(x.outerMakurare2))}</strong></td>`;
