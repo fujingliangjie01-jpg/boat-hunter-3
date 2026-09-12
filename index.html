@@ -12711,6 +12711,155 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol296-race-compact-actions">
+/* Vol.296
+   ・音声 =「🎙️ 音声」
+   ・1R等をレース欄中央
+   ・レース欄＋矢印をコンパクト化
+   ・直前情報 / AI解析を強い色へ
+*/
+
+/* 音声ボタン：短く、文字は大きい */
+.venueVoiceBtn{
+  width:96px!important;
+  min-width:96px!important;
+  max-width:96px!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 8px!important;
+  margin-top:6px!important;
+  font-size:15px!important;
+  font-weight:1000!important;
+  white-space:nowrap!important;
+}
+
+/* 上段の比率：開催場を確保しつつレース欄を細く */
+.controls.racePanel{
+  grid-template-columns:1.28fr .88fr .92fr!important;
+  gap:6px!important;
+}
+
+/* レースカードを詰める */
+.raceSelectCard{
+  padding:8px!important;
+}
+
+/* 1Rをボタン内の中央へ */
+.raceSelectCard #race{
+  display:block!important;
+  width:100%!important;
+  min-height:40px!important;
+  height:40px!important;
+  margin:2px 0 5px!important;
+  padding:0 24px!important;
+  text-align:center!important;
+  text-align-last:center!important;
+  font-size:23px!important;
+  font-weight:1000!important;
+  line-height:40px!important;
+}
+
+/* 矢印2個を横並び＋コンパクト */
+.raceStepWrap,
+.raceStepButtons,
+.raceArrowRow{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:5px!important;
+}
+
+/* 実DOMがラッパー無しでも横並びにする */
+.raceSelectCard{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  grid-template-rows:auto auto auto!important;
+  column-gap:5px!important;
+}
+.raceSelectCard .selectEyebrow,
+.raceSelectCard .selectLabel,
+.raceSelectCard #race{
+  grid-column:1/-1!important;
+}
+.raceSelectCard .raceStepBtn{
+  grid-row:3!important;
+  width:100%!important;
+  min-width:0!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  margin:0!important;
+  font-size:23px!important;
+  line-height:1!important;
+  border-radius:8px!important;
+}
+
+/* 直前情報：強いオレンジ */
+.quickActionRow.actionPair .previewBtn:not(:disabled){
+  background:linear-gradient(180deg,#ffad16 0%,#f06a00 100%)!important;
+  border:2px solid #ffe5a3!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.35),
+    0 0 12px rgba(255,139,0,.38)!important;
+}
+
+/* AI解析：強い紫 */
+.quickActionRow.actionPair .aiBtn:not(:disabled){
+  background:linear-gradient(180deg,#b24cff 0%,#6d18d7 100%)!important;
+  border:2px solid #ead2ff!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    0 0 12px rgba(157,62,255,.38)!important;
+}
+
+/* ボタン文字をさらに見やすく */
+.quickActionRow.actionPair button{
+  font-size:17px!important;
+  font-weight:1000!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.28)!important;
+}
+
+/* 無効時は「まだ押せない」が明確に分かる */
+.quickActionRow.actionPair button:disabled{
+  background:#122838!important;
+  border-color:#536875!important;
+  color:#758895!important;
+  box-shadow:none!important;
+  opacity:.78!important;
+}
+
+@media(max-width:430px){
+  .controls.racePanel{
+    grid-template-columns:1.30fr .86fr .90fr!important;
+    gap:4px!important;
+  }
+  .venueVoiceBtn{
+    width:88px!important;
+    min-width:88px!important;
+    max-width:88px!important;
+    height:34px!important;
+    min-height:34px!important;
+    font-size:14px!important;
+  }
+  .raceSelectCard #race{
+    height:37px!important;
+    min-height:37px!important;
+    font-size:21px!important;
+    line-height:37px!important;
+  }
+  .raceSelectCard .raceStepBtn{
+    height:35px!important;
+    min-height:35px!important;
+    font-size:21px!important;
+  }
+  .quickActionRow.actionPair button{
+    font-size:15px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12721,7 +12870,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.295</div>
+  <div class="topVol">Vol.296</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -12746,7 +12895,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
       <div class="venueTimeLegend">
         <span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span>
       </div>
-      <button type="button" id="voicePick" class="voicePick venueVoiceBtn">🎙 音声で選ぶ</button>
+      <button type="button" id="voicePick" class="voicePick venueVoiceBtn">🎙️ 音声</button>
     </div>
 
     <div class="selectCard raceSelectCard">
