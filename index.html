@@ -10334,6 +10334,143 @@ body:not(.theme-ladies):not(.theme-sg){
 }
 </style>
 
+
+<style id="bh-vol276-real-compact-fix">
+/* Vol.276: 間延びの原因だった旧.card高さ指定を完全リセット */
+
+/* ===== 6艇出走表 ===== */
+#cards.cards{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-auto-rows:auto!important;
+  align-items:start!important;
+  align-content:start!important;
+  gap:3px!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0 0 6px!important;
+  padding:0!important;
+}
+#cards .card.compactRacerCard{
+  display:block!important;
+  align-self:start!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:0 0 3px!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+#cards .compactRacerCard .compactPhotoWrap{
+  height:50px!important;
+  min-height:0!important;
+  margin:0!important;
+}
+#cards .compactRacerCard .compactClass{
+  height:auto!important;
+  min-height:0!important;
+  margin:3px 0 0!important;
+  padding:0!important;
+  line-height:1!important;
+}
+#cards .compactRacerCard .compactName{
+  height:auto!important;
+  min-height:0!important;
+  margin:2px 0 0!important;
+  padding:0 2px!important;
+  line-height:1.05!important;
+}
+#cards .compactRacerCard .compactWinLabel{
+  height:auto!important;
+  min-height:0!important;
+  margin:3px 0 0!important;
+  padding:0!important;
+  line-height:1!important;
+}
+#cards .compactRacerCard .compactWin{
+  height:auto!important;
+  min-height:0!important;
+  margin:1px 0 0!important;
+  padding:0!important;
+  line-height:1!important;
+}
+#cards .compactRacerCard .compactDetailBtn{
+  display:block!important;
+  height:21px!important;
+  min-height:21px!important;
+  max-height:21px!important;
+  margin:4px 2px 0!important;
+  padding:0!important;
+  line-height:19px!important;
+}
+
+/* 旧カード内部要素が残っても高さを取らせない */
+#cards .compactRacerCard > .row,
+#cards .compactRacerCard > .racerMetrics,
+#cards .compactRacerCard > .more,
+#cards .compactRacerCard > .detail{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+/* ===== 見出し〜比較表も密着 ===== */
+.racerListTitle{
+  margin:8px 0 5px!important;
+  padding-top:7px!important;
+}
+#racerDetailPanel{
+  margin:5px 0 6px!important;
+}
+#comparePanel.comparePanel{
+  margin:5px 0 9px!important;
+  padding:0!important;
+}
+.compareToggle{
+  min-height:40px!important;
+  padding:5px 8px!important;
+}
+.compareBody{
+  padding:4px!important;
+}
+.compareAssist{
+  padding:1px 0 4px!important;
+}
+.compareMatrix th,
+.compareMatrix td{
+  padding:3px 2px!important;
+  line-height:1.1!important;
+}
+
+/* ===== 上部選択も少しだけ詰める ===== */
+.controls{
+  padding:8px!important;
+  margin:4px 0 6px!important;
+}
+.voicePick{min-height:38px!important}
+#get{min-height:42px!important}
+.hunterActions{
+  margin:5px 0!important;
+}
+.hunterActions button{
+  min-height:38px!important;
+}
+
+/* iPhone */
+@media(max-width:430px){
+  #main .wrap{padding:5px!important}
+  #cards.cards{gap:2px!important}
+  #cards .compactRacerCard .compactPhotoWrap{height:46px!important}
+  #cards .compactRacerCard .compactDetailBtn{
+    height:19px!important;
+    min-height:19px!important;
+    line-height:17px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -10344,7 +10481,7 @@ body:not(.theme-ladies):not(.theme-sg){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.275</div>
+  <div class="topVol">Vol.276</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
