@@ -11833,6 +11833,212 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol285-detail-fullwidth">
+/* Vol.285: 選手詳細の左側空白を完全活用 */
+
+/* 上段はプロフィール + タブ */
+.detailTop{
+  display:grid!important;
+  grid-template-columns:185px minmax(0,1fr)!important;
+  gap:10px!important;
+  align-items:start!important;
+}
+
+/* 左プロフィール */
+.detailIdentity{
+  grid-column:1!important;
+  grid-row:1!important;
+  display:grid!important;
+  grid-template-columns:82px 1fr!important;
+  gap:9px!important;
+  align-items:center!important;
+}
+
+/* 右上タブ */
+.detailTabs{
+  grid-column:2!important;
+  grid-row:1!important;
+  align-self:start!important;
+  margin:0!important;
+}
+
+/* 指標はプロフィールの下を含めて横幅100%使用 */
+.detailMetrics{
+  grid-column:1 / -1!important;
+  grid-row:2!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin-top:2px!important;
+  width:100%!important;
+}
+
+/* 全国勝率は特大、残りも均等 */
+.detailMetric{
+  min-height:64px!important;
+  padding:7px 5px!important;
+}
+.detailMetric.hero{
+  grid-column:span 1!important;
+}
+.detailMetric.hero b{
+  font-size:23px!important;
+}
+.detailMetric b{
+  font-size:17px!important;
+}
+
+/* 8項目なら4×2で綺麗に埋める */
+.detailMetric:nth-child(n){
+  grid-column:auto!important;
+}
+
+/* コース別も全幅 */
+.detailCoursePanel{
+  grid-column:1 / -1!important;
+  grid-row:2!important;
+  width:100%!important;
+  min-height:110px!important;
+}
+
+/* 写真少し大きく */
+.detailPhotoWrap{
+  width:86px!important;
+  height:118px!important;
+}
+.detailName{
+  font-size:21px!important;
+}
+
+/* iPhone */
+@media(max-width:430px){
+  .detailTop{
+    grid-template-columns:145px minmax(0,1fr)!important;
+    gap:7px!important;
+  }
+  .detailIdentity{
+    grid-template-columns:64px 1fr!important;
+    gap:6px!important;
+  }
+  .detailPhotoWrap{
+    width:64px!important;
+    height:94px!important;
+  }
+  .detailName{
+    font-size:17px!important;
+  }
+  .detailTabs{
+    gap:4px!important;
+  }
+  .detailTab{
+    min-height:31px!important;
+    font-size:8px!important;
+  }
+  .detailMetrics{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  .detailMetric{
+    min-height:56px!important;
+    padding:5px 3px!important;
+  }
+  .detailMetric span{
+    font-size:6px!important;
+  }
+  .detailMetric b{
+    font-size:13px!important;
+  }
+  .detailMetric.hero b{
+    font-size:18px!important;
+  }
+}
+</style>
+
+
+<style id="bh-vol286-actions-layout">
+/* Vol.286: 設定削除。音声 / 直前情報 / AI解析を同じ位置へ集約 */
+
+/* quick row: 3 large actions */
+.quickActionRow.actionTriple{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:.95fr 1.15fr 1.05fr!important;
+  gap:6px!important;
+  margin-top:2px!important;
+}
+.quickActionRow.actionTriple button{
+  min-height:46px!important;
+  height:46px!important;
+  border-radius:10px!important;
+  border:2px solid rgba(255,255,255,.92)!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:1000!important;
+  letter-spacing:.01em!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    0 5px 14px rgba(0,0,0,.22)!important;
+}
+
+/* 音声: 青 */
+.quickActionRow .voicePick{
+  background:linear-gradient(180deg,#1599e3 0%,#08639c 100%)!important;
+}
+
+/* 直前情報: オレンジ寄りの琥珀色でAIと明確に分離 */
+.quickActionRow .previewBtn:not(:disabled){
+  background:linear-gradient(180deg,#f0a336 0%,#b96e19 100%)!important;
+  border-color:#ffe0ad!important;
+}
+.quickActionRow .previewBtn:disabled{
+  background:linear-gradient(180deg,#55432c 0%,#30271c 100%)!important;
+  color:#bcae99!important;
+  border-color:rgba(255,255,255,.34)!important;
+  opacity:.68!important;
+}
+
+/* AI解析: 鮮やかな紫 */
+.quickActionRow .aiBtn:not(:disabled){
+  background:linear-gradient(180deg,#9b46f3 0%,#6520bd 100%)!important;
+  border-color:#ddc4ff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 14px rgba(142,58,232,.24)!important;
+}
+.quickActionRow .aiBtn:disabled{
+  background:linear-gradient(180deg,#302344 0%,#1c1628 100%)!important;
+  color:#998bac!important;
+  border-color:rgba(255,255,255,.30)!important;
+  opacity:.66!important;
+}
+
+/* separate old action area is no longer used */
+.hunterActions{
+  display:none!important;
+}
+
+/* status remains compact below */
+.status{
+  margin:4px 2px 5px!important;
+  font-size:9px!important;
+}
+
+/* iPhone */
+@media(max-width:430px){
+  .quickActionRow.actionTriple{
+    grid-template-columns:.9fr 1.15fr 1fr!important;
+    gap:4px!important;
+  }
+  .quickActionRow.actionTriple button{
+    min-height:42px!important;
+    height:42px!important;
+    font-size:11px!important;
+    padding:0 4px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -11843,7 +12049,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.284</div>
+  <div class="topVol">Vol.286</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -11882,9 +12088,10 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 
     <button type="button" id="get">① 出走表取得</button>
 
-    <div class="quickActionRow">
+    <div class="quickActionRow actionTriple">
       <button type="button" id="voicePick" class="voicePick">🎙 音声で選ぶ</button>
-      <button type="button" id="settingsQuickBtn" class="quickActionBtn">⚙ 設定</button>
+      <button type="button" id="getPreview" class="previewBtn quickMainAction" disabled>② 直前情報取得</button>
+      <button type="button" id="aiAnalyze" class="aiBtn quickMainAction" disabled>③ AI解析</button>
     </div>
 
     <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
@@ -11893,11 +12100,6 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
       placeholder="例：桐生 5レース">
   </div>
   <div id="status" class="status">開催場・Rを選択</div>
-  <div class="hunterActions">
-    <button type="button" id="getPreview" class="previewBtn" disabled>② 直前情報取得</button>
-    <button type="button" id="aiAnalyze" class="aiBtn" disabled>③ AI解析</button>
-  </div>
-
 <div class="racerListTitle">
     <div><b>出走表</b><span>RACER LIST</span></div>
     <small>選手写真 × 基本データ</small>
