@@ -11545,6 +11545,294 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol284-photo-detail-venue">
+/* Vol.284: 顔写真切れ防止 / 選手詳細を大きく / 開催場選択バランス改善 */
+
+/* ===== 開催場・レース選択：高さ・余白・比率を揃える ===== */
+.controls.racePanel{
+  display:grid!important;
+  grid-template-columns:1.14fr 1.14fr .92fr!important;
+  gap:6px!important;
+  padding:7px!important;
+  align-items:stretch!important;
+}
+.venueSelectCard,
+.raceSelectCard,
+#get{
+  min-height:78px!important;
+  height:auto!important;
+}
+.venueSelectCard,
+.raceSelectCard{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  padding:7px!important;
+}
+.selectEyebrow{
+  font-size:7px!important;
+  line-height:1!important;
+}
+.selectLabel{
+  margin-top:2px!important;
+  font-size:9px!important;
+}
+.selectCard select{
+  width:100%!important;
+  height:32px!important;
+  min-height:32px!important;
+  margin-top:4px!important;
+  font-size:16px!important;
+  line-height:32px!important;
+}
+.venueTimeLegend{
+  margin-top:5px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  flex-wrap:nowrap!important;
+}
+.venueTimeLegend span{
+  flex:0 0 auto!important;
+  padding:2px 5px!important;
+  font-size:6px!important;
+  white-space:nowrap!important;
+}
+.raceStep{
+  margin-top:5px!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:5px!important;
+}
+.raceStepBtn{
+  min-height:30px!important;
+  height:30px!important;
+}
+#get{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:8px!important;
+  text-align:center!important;
+  font-size:15px!important;
+}
+.quickActionRow{
+  grid-column:1/-1!important;
+  grid-template-columns:1.25fr .75fr!important;
+  gap:6px!important;
+  margin-top:1px!important;
+}
+.quickActionRow button{
+  min-height:34px!important;
+  height:34px!important;
+}
+
+/* ===== 出走表カード写真：顔を大きく保ちつつ頭頂/顎切れ防止 ===== */
+.compactPhotoWrap{
+  height:84px!important;
+  overflow:hidden!important;
+  background:#e9eff3!important;
+}
+.compactPhotoWrap .racerPhoto,
+#cards .racerPhoto{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  background:#e9eff3!important;
+}
+/* 顔写真そのものに余白があるケースでも見栄えを保つ */
+.compactPhotoWrap{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* ===== 選手詳細：横幅を使って大きく見やすく ===== */
+.racerDetailPanel{
+  padding:11px!important;
+}
+.detailTop{
+  display:grid!important;
+  grid-template-columns:180px minmax(0,1fr)!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+.detailIdentity{
+  display:grid!important;
+  grid-template-columns:82px 1fr!important;
+  gap:9px!important;
+  align-items:center!important;
+}
+.detailPhotoWrap{
+  width:82px!important;
+  height:116px!important;
+  background:#e9eff3!important;
+}
+.detailPhotoWrap img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:#e9eff3!important;
+}
+.detailName{
+  font-size:21px!important;
+  line-height:1.05!important;
+}
+.detailMeta{
+  gap:5px!important;
+}
+.detailMeta span{
+  font-size:9px!important;
+  padding:4px 7px!important;
+}
+
+/* タブ */
+.detailTabs{
+  grid-column:2!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin-bottom:7px!important;
+}
+.detailTab{
+  min-height:36px!important;
+  font-size:10px!important;
+}
+
+/* 指標：横幅いっぱいに大きく */
+.detailMetrics{
+  grid-column:2!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.detailMetric{
+  min-height:68px!important;
+  padding:8px 6px!important;
+  border-radius:9px!important;
+}
+.detailMetric span{
+  font-size:8px!important;
+  line-height:1.15!important;
+}
+.detailMetric b{
+  margin-top:5px!important;
+  font-size:18px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+}
+.detailMetric.hero{
+  grid-column:span 2!important;
+  background:linear-gradient(180deg,#0d3a54,#082637)!important;
+  border-color:#23b5ff!important;
+}
+.detailMetric.hero span{
+  color:#bde9ff!important;
+  font-size:9px!important;
+}
+.detailMetric.hero b{
+  color:#fff!important;
+  font-size:24px!important;
+}
+
+/* 今節得点/順位なども横幅を均等利用 */
+.detailMetric:nth-last-child(-n+2){
+  min-height:68px!important;
+}
+
+/* 直近20走 */
+.recent20Toggle{
+  margin-top:10px!important;
+  min-height:40px!important;
+  font-size:11px!important;
+}
+.recentSummaryGrid{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:5px!important;
+}
+.recentSummaryGrid>div{
+  min-height:52px!important;
+}
+
+/* iPhone */
+@media(max-width:430px){
+  .controls.racePanel{
+    grid-template-columns:1.12fr 1.12fr .88fr!important;
+    gap:4px!important;
+    padding:5px!important;
+  }
+  .venueSelectCard,
+  .raceSelectCard,
+  #get{
+    min-height:70px!important;
+  }
+  .selectCard select{
+    height:29px!important;
+    min-height:29px!important;
+    font-size:14px!important;
+  }
+  .venueTimeLegend{
+    gap:2px!important;
+  }
+  .venueTimeLegend span{
+    padding:2px 3px!important;
+    font-size:5.5px!important;
+  }
+
+  .compactPhotoWrap{
+    height:80px!important;
+  }
+
+  .detailTop{
+    grid-template-columns:145px minmax(0,1fr)!important;
+    gap:7px!important;
+  }
+  .detailIdentity{
+    grid-template-columns:64px 1fr!important;
+    gap:6px!important;
+  }
+  .detailPhotoWrap{
+    width:64px!important;
+    height:94px!important;
+  }
+  .detailName{
+    font-size:17px!important;
+  }
+  .detailMeta span{
+    font-size:7px!important;
+    padding:3px 5px!important;
+  }
+  .detailTab{
+    min-height:31px!important;
+    font-size:8px!important;
+  }
+  .detailMetrics{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  .detailMetric{
+    min-height:58px!important;
+    padding:6px 3px!important;
+  }
+  .detailMetric span{
+    font-size:6.5px!important;
+  }
+  .detailMetric b{
+    font-size:14px!important;
+  }
+  .detailMetric.hero{
+    grid-column:span 2!important;
+  }
+  .detailMetric.hero b{
+    font-size:20px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -11555,7 +11843,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.283</div>
+  <div class="topVol">Vol.284</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -12390,6 +12678,7 @@ async function bhSelectRacerDetail(boatNo,number){
         <button type="button" class="detailTab" onclick="bhDetailTab(${boatNo},'course',this)">コース別・決まり手</button>
       </div>
       <div id="detailBasic${boatNo}" class="detailMetrics">
+        ${bhDetailMetric("全国勝率",r?.national_win_rate==null?"—":Number(r.national_win_rate).toFixed(2),"hero")}
         ${bhDetailMetric("全国2連対率",bhPct(nat2),"key")}
         ${bhDetailMetric("全国3連対率",bhPct(nat3))}
         ${bhDetailMetric("当地勝率",local==null?"—":local.toFixed(2))}
