@@ -8680,6 +8680,409 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 .formationRateRow strong{color:#971d54!important;font-size:12px!important}
 </style>
 
+
+<style id="bh-vol267-normal-ui-contrast">
+/* Vol.267 通常版: 暗背景に青系ボタン＋白枠で視認性強化 */
+body.theme-normal button,
+body:not(.theme-ladies):not(.theme-sg) button{
+  border-color:rgba(255,255,255,.78)!important;
+}
+
+/* レース移動・音声・一般操作は青系 */
+body.theme-normal .raceStepBtn,
+body.theme-normal .voicePick,
+body.theme-normal .hunterActions button,
+body.theme-normal .formationRateToggle,
+body:not(.theme-ladies):not(.theme-sg) .raceStepBtn,
+body:not(.theme-ladies):not(.theme-sg) .voicePick{
+  background:linear-gradient(180deg,#177fc6 0%,#0b4f7c 100%)!important;
+  color:#fff!important;
+  border:1.5px solid rgba(255,255,255,.82)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    0 4px 12px rgba(0,102,168,.24)!important;
+}
+
+/* 場・レースの選択カードも白枠を少し強める */
+body.theme-normal .selectCard,
+body:not(.theme-ladies):not(.theme-sg) .selectCard{
+  border:1.5px solid rgba(255,255,255,.56)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+
+/* 必須: 出走表取得だけ差別化。青系の中で明るいシアン寄り */
+body.theme-normal #get,
+body:not(.theme-ladies):not(.theme-sg) #get{
+  background:linear-gradient(135deg,#0ea5e9 0%,#16b7ff 52%,#0878c9 100%)!important;
+  color:#fff!important;
+  border:2px solid #fff!important;
+  box-shadow:
+    0 0 0 2px rgba(31,171,238,.18),
+    0 8px 22px rgba(0,139,214,.32),
+    inset 0 1px 0 rgba(255,255,255,.28)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.22)!important;
+}
+
+/* 押せないボタンは暗くするが白枠は残す */
+body.theme-normal button:disabled,
+body:not(.theme-ladies):not(.theme-sg) button:disabled{
+  background:linear-gradient(180deg,#173044,#0c1d29)!important;
+  color:#7990a3!important;
+  border-color:rgba(255,255,255,.28)!important;
+  box-shadow:none!important;
+  opacity:.72!important;
+}
+
+/* 有効になった直前情報/AIは中間ブルー */
+body.theme-normal #getPreview:not(:disabled),
+body.theme-normal #aiAnalyze:not(:disabled),
+body:not(.theme-ladies):not(.theme-sg) #getPreview:not(:disabled),
+body:not(.theme-ladies):not(.theme-sg) #aiAnalyze:not(:disabled){
+  background:linear-gradient(180deg,#146ea9,#0c4c76)!important;
+  color:#fff!important;
+  border:1.5px solid rgba(255,255,255,.78)!important;
+}
+</style>
+
+
+<style id="bh-vol269-concept-ui">
+/* ===== Vol.269: generated conceptを実装 ===== */
+:root{
+  --bh-blue:#0aa8ff;
+  --bh-blue2:#0876d8;
+  --bh-navy:#061521;
+  --bh-panel:#0b2233;
+  --bh-line:rgba(255,255,255,.74);
+  --bh-soft:rgba(255,255,255,.12);
+}
+
+/* section heading */
+.racerListTitle{
+  margin:18px 0 10px!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  color:#fff!important;
+}
+.racerListTitle>div{display:flex!important;align-items:baseline!important;gap:10px!important}
+.racerListTitle b{font-size:24px!important;line-height:1!important}
+.racerListTitle span{
+  color:#76bfea!important;
+  font-size:10px!important;
+  font-weight:1000!important;
+  letter-spacing:.20em!important;
+}
+.racerListTitle small{
+  color:#7897ab!important;
+  font-size:9px!important;
+  font-weight:800!important;
+}
+
+/* racer cards: horizontal swipe row like concept, readable size */
+#cards.cards{
+  display:grid!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:minmax(154px,43vw)!important;
+  grid-template-columns:none!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  padding:2px 2px 12px!important;
+  scroll-snap-type:x proximity!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#cards.cards::-webkit-scrollbar{height:4px}
+#cards.cards::-webkit-scrollbar-thumb{background:#176c9c;border-radius:99px}
+
+#cards .card{
+  scroll-snap-align:start!important;
+  min-height:248px!important;
+  border-radius:15px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:2px solid rgba(255,255,255,.72)!important;
+  background:linear-gradient(180deg,#0c2638 0%,#071824 100%)!important;
+  box-shadow:
+    0 9px 22px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.10)!important;
+  color:#fff!important;
+}
+#cards .card:before{
+  width:5px!important;
+  opacity:1!important;
+  box-shadow:0 0 12px var(--c)!important;
+}
+#cards .card:after{
+  height:26%!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),transparent)!important;
+}
+
+/* photo area */
+#cards .card .row{
+  min-height:155px!important;
+  height:155px!important;
+  padding:0!important;
+  display:block!important;
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(180deg,#12334a 0%,#0a1d2b 100%)!important;
+}
+#cards .card .row::after{
+  content:"＋"!important;
+  position:absolute!important;
+  right:8px!important;
+  bottom:8px!important;
+  top:auto!important;
+  transform:none!important;
+  width:30px!important;
+  height:30px!important;
+  border-radius:50%!important;
+  border:1.5px solid #fff!important;
+  background:rgba(2,22,35,.72)!important;
+  color:#fff!important;
+  font-size:20px!important;
+  z-index:8!important;
+  display:grid!important;
+  place-items:center!important;
+}
+#cards .card.open .row::after{content:"−"!important}
+
+/* real racer photo */
+#cards .racerPhoto{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center top!important;
+  display:block!important;
+  z-index:1!important;
+  filter:saturate(.93) contrast(1.04)!important;
+}
+#cards .racerPhoto.photoError{display:none!important}
+
+/* boat art becomes fallback / subtle layer */
+#cards .card .boatArt,
+#cards .card.open .boatArt{
+  position:absolute!important;
+  inset:auto 4px 4px auto!important;
+  width:62%!important;
+  height:58%!important;
+  transform:none!important;
+  opacity:.18!important;
+  z-index:0!important;
+}
+
+/* boat number */
+#cards .card .no{
+  position:absolute!important;
+  top:8px!important;
+  left:8px!important;
+  min-width:42px!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:9px!important;
+  border:2px solid rgba(0,0,0,.75)!important;
+  z-index:5!important;
+  font-size:24px!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.24)!important;
+}
+
+/* identity plate over bottom of photo */
+#cards .card .cardIdentity{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:5!important;
+  padding:28px 8px 8px!important;
+  background:linear-gradient(180deg,transparent,rgba(2,10,16,.92) 42%,rgba(2,10,16,.98))!important;
+}
+#cards .card .name{
+  color:#fff!important;
+  font-size:18px!important;
+  line-height:1.08!important;
+  font-weight:1000!important;
+  text-shadow:0 2px 6px #000!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#cards .card .rank,
+#cards .card .motorBadge,
+#cards .card .patch{
+  font-size:10px!important;
+  padding:3px 7px!important;
+  margin-top:4px!important;
+}
+
+/* compact metrics below photo */
+#cards .card .racerMetrics{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:5px!important;
+  padding:8px!important;
+  background:linear-gradient(180deg,#081b28,#06131d)!important;
+}
+#cards .card .metricBox{
+  min-height:48px!important;
+  padding:6px!important;
+  border-radius:8px!important;
+  border:1px solid rgba(93,188,241,.25)!important;
+  background:#092331!important;
+}
+#cards .card .metricBox .k{
+  color:#9ab6c7!important;
+  font-size:8px!important;
+  line-height:1.05!important;
+  margin-bottom:2px!important;
+}
+#cards .card .metricBox .v{
+  color:#fff!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+}
+#cards .card .more{
+  margin:0 8px 8px!important;
+  width:calc(100% - 16px)!important;
+  min-height:35px!important;
+  padding:5px 8px!important;
+  font-size:10px!important;
+  border:1px solid rgba(255,255,255,.62)!important;
+  background:linear-gradient(180deg,#126c9f,#0a486d)!important;
+  color:#fff!important;
+}
+#cards .card .detail{
+  margin:0 8px 8px!important;
+  max-height:360px!important;
+  overflow:auto!important;
+}
+
+/* collapsed card still shows concept data, not just name */
+#cards .card:not(.open){
+  min-height:248px!important;
+  padding:0!important;
+}
+#cards .card:not(.open) .racerMetrics,
+#cards .card:not(.open) .more{
+  display:grid!important;
+}
+#cards .card:not(.open) .detail{display:none!important}
+
+/* Comparison: dark racing dashboard */
+.comparePanel{
+  margin:14px 0 22px!important;
+  border:2px solid rgba(58,180,242,.70)!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,#071a27,#06121c)!important;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.07)!important;
+  overflow:hidden!important;
+}
+.compareToggle{
+  min-height:68px!important;
+  padding:12px 14px!important;
+  background:linear-gradient(180deg,#0e2b3e,#081d2b)!important;
+  color:#fff!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.16)!important;
+}
+.compareToggle b{font-size:22px!important;color:#fff!important}
+.compareToggle small{
+  margin-top:3px!important;
+  color:#7fbbe0!important;
+  font-size:9px!important;
+  letter-spacing:.08em!important;
+}
+#compareToggleIcon{
+  width:38px!important;height:38px!important;
+  border:1.5px solid #fff!important;
+  background:linear-gradient(180deg,#0e8cd2,#07598a)!important;
+  color:#fff!important;
+}
+.compareBody{padding:8px 8px 10px!important}
+.compareAssist{
+  color:#7fa1b4!important;
+  padding:4px 2px 8px!important;
+}
+.compareScroll{
+  border:1px solid rgba(255,255,255,.60)!important;
+  border-radius:12px!important;
+  background:#071a26!important;
+  overflow:auto!important;
+}
+.compareTable{
+  min-width:690px!important;
+  width:100%!important;
+  background:#071a26!important;
+  color:#fff!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  font-size:10px!important;
+}
+.compareTable th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  background:#0e2a3d!important;
+  color:#dff5ff!important;
+  border-right:1px solid rgba(255,255,255,.20)!important;
+  border-bottom:1px solid rgba(255,255,255,.28)!important;
+  padding:8px 5px!important;
+  font-size:9px!important;
+}
+.compareTable td{
+  background:#081c29!important;
+  color:#fff!important;
+  border-right:1px solid rgba(255,255,255,.13)!important;
+  border-bottom:1px solid rgba(255,255,255,.13)!important;
+  padding:8px 5px!important;
+  font-weight:900!important;
+}
+.compareTable tr:nth-child(even) td{background:#0a2130!important}
+.compareTable th:first-child,
+.compareTable td:first-child{
+  position:sticky!important;
+  left:0!important;
+  z-index:2!important;
+}
+.compareTable th:first-child{z-index:4!important}
+.compareTable td:first-child{background:#06131d!important}
+
+/* rankings: red / yellow / grey */
+.compareBest{
+  background:linear-gradient(180deg,#d9333c,#9c1620)!important;
+  color:#fff!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important;
+}
+.compareSecond{
+  background:linear-gradient(180deg,#f3d451,#a98608)!important;
+  color:#111!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important;
+}
+.compareWorst{
+  background:#5e6870!important;
+  color:#fff!important;
+}
+.compareBoat{
+  border:2px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 2px 6px rgba(0,0,0,.25)!important;
+}
+
+/* mobile */
+@media(max-width:430px){
+  #cards.cards{
+    grid-auto-columns:minmax(148px,47vw)!important;
+  }
+  #cards .card{min-height:244px!important}
+  .racerListTitle b{font-size:22px!important}
+  .compareTable{min-width:650px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -8690,7 +9093,7 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.266</div>
+  <div class="topVol">Vol.269</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -8751,16 +9154,7 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
     </div>
   </section>
 
-<section id="comparePanel" class="comparePanel">
-  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
-    <span><b>6艇 比較表</b><small>平均ST・平均ST順位・モーター3連対率・勝ち方/負け方</small></span>
-    <b id="compareToggleIcon">＋</b>
-  </button>
-  <div id="compareBody" class="compareBody hide">
-    <div class="compareAssist"><span>補助：ST上位・モーター上位を自動強調</span><span>勝ち方/負け方＝同コース直近20走</span></div>
-    <div class="compareScroll"><table class="compareTable"><thead><tr><th>艇</th><th>平均ST</th><th>ST順位</th><th>モーター3連対率</th><th>今コース<br>1着率</th><th>今コース<br>3連対率</th><th>コース別データ</th></tr></thead><tbody id="compareRows"><tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr></tbody></table></div>
-  </div>
-</section>
+
   <section id="aiPanel" class="aiPanel hide">
     <div class="aiReadyMark">AI</div>
     <div><b id="aiModeTitle">解析データ準備完了</b><small id="aiModeSub">HUNTER解析用データを固定しました</small></div>
@@ -8849,7 +9243,22 @@ body:not(.theme-ladies):not(.theme-sg) .entryPanel .entryMode button[data-mode="
     </div>
   </section>
 
+  <div class="racerListTitle">
+    <div><b>出走表</b><span>RACER LIST</span></div>
+    <small>選手写真 × 基本データ</small>
+  </div>
   <div id="cards" class="cards"></div>
+
+<section id="comparePanel" class="comparePanel">
+  <button type="button" id="compareToggle" class="compareToggle" onclick="bhToggleCompare()">
+    <span><b>6艇比較</b><small>RACER COMPARISON / 数字で見える強弱</small></span>
+    <b id="compareToggleIcon">−</b>
+  </button>
+  <div id="compareBody" class="compareBody">
+    <div class="compareAssist"><span>補助：ST上位・モーター上位を自動強調</span><span>勝ち方/負け方＝同コース直近20走</span></div>
+    <div class="compareScroll"><table class="compareTable"><thead><tr><th>艇</th><th>平均ST</th><th>ST順位</th><th>モーター3連対率</th><th>今コース<br>1着率</th><th>今コース<br>3連対率</th><th>コース別データ</th></tr></thead><tbody id="compareRows"><tr><td colspan="7" class="compareWait">出走表取得後に表示</td></tr></tbody></table></div>
+  </div>
+</section>
 
 </section>
 </div>
@@ -9005,6 +9414,9 @@ function card(r){
  return `<article class="card b${b}" data-boat="${b}" data-number="${r.number}">
  <div class="row">
    <div class="boatArt boatArt${b}" aria-hidden="true"></div>
+   <img class="racerPhoto" src="https://www.boatrace.jp/racerphoto/${String(r.number||"").padStart(4,"0")}.jpg"
+        alt="${r.name||"選手"}" loading="lazy"
+        onerror="this.classList.add('photoError');this.style.display='none'">
    <div class="no">${b}</div>
    <div class="cardIdentity">
      <div class="name">${r.name||"—"}</div>
@@ -9044,6 +9456,35 @@ function decorateRanks(rr){
  });
 }
 
+
+/* Vol.267: 場選択は当日開催場のみ表示 */
+async function bhRefreshHeldVenues(){
+  const dateEl=document.getElementById("date");
+  const stadiumEl=document.getElementById("stadium");
+  if(!dateEl||!stadiumEl)return;
+  const date=String(dateEl.value||today());
+  try{
+    const j=await fetch(url(date),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
+    const sts=j?.programs?.stadiums||j?.stadiums||{};
+    const held=[];
+    for(const [k,v] of Object.entries(sts)){
+      const jcd=Number(v?.stadium_number||v?.number||k||0);
+      const races=v?.races||{};
+      if(jcd && Object.keys(races).length){
+        held.push(jcd);
+      }
+    }
+    held.sort((a,b)=>a-b);
+    const prev=Number(stadiumEl.value||0);
+    stadiumEl.innerHTML=held.map(jcd=>`<option value="${jcd}">${S[jcd]||jcd}</option>`).join("");
+    if(held.includes(prev))stadiumEl.value=String(prev);
+    else if(held.length)stadiumEl.value=String(held[0]);
+    try{ setupVenueSelectDisplay?.(); decorateVenueOptions?.("closed"); }catch(e){}
+    try{ updateRaceFloat?.(true); }catch(e){}
+  }catch(e){
+    console.warn("開催場取得失敗",e);
+  }
+}
 async function getRace(){
  window.resetHunterPreflight?.();
  $("status").textContent="取得中…";$("cards").innerHTML="";historyCache=null;historyLoading=null;
@@ -11924,7 +12365,10 @@ function renderOdds(odds){
 })();
 
 /* Vol.215 native venue dropdown decoration */
-setTimeout(()=>{ try{ setupVenueSelectDisplay(); decorateVenueOptions("closed"); }catch(e){} },0);
+setTimeout(()=>{ 
+  try{ setupVenueSelectDisplay(); decorateVenueOptions("closed"); }catch(e){}
+  try{ bhRefreshHeldVenues(); }catch(e){}
+},0);
 
 </script>
 
@@ -12686,7 +13130,10 @@ function bhApplyTokuyamaDayFix(){
   });
 }
 document.getElementById("stadium")?.addEventListener("change",()=>setTimeout(bhApplyTokuyamaDayFix,0));
-document.getElementById("date")?.addEventListener("change",()=>setTimeout(bhApplyTokuyamaDayFix,0));
+document.getElementById("date")?.addEventListener("change",()=>{
+  setTimeout(bhApplyTokuyamaDayFix,0);
+  setTimeout(()=>{try{bhRefreshHeldVenues()}catch(e){}},0);
+});
 setTimeout(bhApplyTokuyamaDayFix,0);
 
 </script>
