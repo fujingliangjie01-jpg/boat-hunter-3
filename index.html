@@ -11473,6 +11473,78 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol282-racepanel-repair">
+/* Vol.282: broken DATE-removal markup repair + compact race select */
+.controls.racePanel{
+  display:grid!important;
+  grid-template-columns:1.18fr 1.18fr .95fr!important;
+  gap:5px!important;
+  padding:6px!important;
+  margin:4px 0 6px!important;
+  align-items:stretch!important;
+}
+.controls.racePanel:before{
+  grid-column:1/-1!important;
+  margin:0!important;
+}
+.venueSelectCard,.raceSelectCard,#get{
+  min-height:72px!important;
+  height:auto!important;
+}
+.venueSelectCard,.raceSelectCard{
+  padding:6px!important;
+}
+.selectCard select{
+  height:28px!important;
+  min-height:28px!important;
+  margin-top:1px!important;
+}
+.raceStep{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:4px!important;
+  margin-top:3px!important;
+}
+.raceStepBtn{
+  height:27px!important;
+  min-height:27px!important;
+}
+#get{
+  margin:0!important;
+  font-size:15px!important;
+  line-height:1.15!important;
+}
+.quickActionRow{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:1.3fr .7fr!important;
+  gap:5px!important;
+}
+.quickActionRow button{
+  min-height:32px!important;
+  height:32px!important;
+}
+.voiceStatus{
+  grid-column:1/-1!important;
+  display:none!important;
+}
+#date{
+  display:none!important;
+}
+@media(max-width:430px){
+  .controls.racePanel{
+    grid-template-columns:1.16fr 1.16fr .9fr!important;
+    gap:4px!important;
+    padding:5px!important;
+  }
+  .venueSelectCard,.raceSelectCard,#get{
+    min-height:66px!important;
+  }
+  #get{font-size:13px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -11483,7 +11555,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.281</div>
+  <div class="topVol">Vol.283</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -11500,16 +11572,33 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
   <div class="head bh221Head"><h2>出走表</h2><div id="bh221RaceTicker" class="bh221RaceTicker" aria-live="polite"><div class="bh221NextLine"><span class="bh221Label">NEXT</span><span id="bh221NextRaces">取得中…</span></div><div id="bh221SpecialLine" class="bh221SpecialLine"></div></div><button type="button" id="back">トップへ</button></div>
   <div class="controls racePanel">
     <input id="date" type="hidden">
-    <div class="selectCard"><div class="selectEyebrow">VENUE</div><div class="selectLabel">開催場</div><select id="stadium" aria-label="開催場選択"></select><div class="venueTimeLegend"><span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span></div></div>
-    <div class="selectCard raceSelectCard"><div class="selectEyebrow">RACE</div><div class="selectLabel">レース</div><select id="race" aria-label="レース選択"></select><div class="raceStep"><button type="button" id="racePrev" class="raceStepBtn" aria-label="1つ前のレース">←</button><button type="button" id="raceNext" class="raceStepBtn" aria-label="1つ次のレース">→</button></div></div>
-<div id="raceDateText" class="raceDateText">—</div>
-      <div class="raceDayType">☀ デー</div>
+
+    <div class="selectCard venueSelectCard">
+      <div class="selectEyebrow">VENUE</div>
+      <div class="selectLabel">開催場</div>
+      <select id="stadium" aria-label="開催場選択"></select>
+      <div class="venueTimeLegend">
+        <span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span>
+      </div>
     </div>
+
+    <div class="selectCard raceSelectCard">
+      <div class="selectEyebrow">RACE</div>
+      <div class="selectLabel">レース</div>
+      <select id="race" aria-label="レース選択"></select>
+      <div class="raceStep">
+        <button type="button" id="racePrev" class="raceStepBtn" aria-label="1つ前のレース">←</button>
+        <button type="button" id="raceNext" class="raceStepBtn" aria-label="1つ次のレース">→</button>
+      </div>
+    </div>
+
     <button type="button" id="get">① 出走表取得</button>
+
     <div class="quickActionRow">
       <button type="button" id="voicePick" class="voicePick">🎙 音声で選ぶ</button>
-<button type="button" id="settingsQuickBtn" class="quickActionBtn">⚙ 設定</button>
+      <button type="button" id="settingsQuickBtn" class="quickActionBtn">⚙ 設定</button>
     </div>
+
     <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
     <input id="voiceFallbackInput" class="voiceFallbackInput hide"
       type="text" inputmode="text" autocomplete="off" autocapitalize="off"
@@ -15763,6 +15852,16 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 
 <script>
 
+</script>
+<script>
+(function(){
+  const d=document.getElementById("date");
+  if(d && !d.value){
+    const n=new Date();
+    const y=n.getFullYear(),m=String(n.getMonth()+1).padStart(2,"0"),day=String(n.getDate()).padStart(2,"0");
+    d.value=`${y}-${m}-${day}`;
+  }
+})();
 </script>
 </body>
 </html>
