@@ -12039,6 +12039,160 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 }
 </style>
 
+
+<style id="bh-vol287-compare-dashboard">
+/* ===== Vol.287 6艇比較：8指標を大型表示 ===== */
+#comparePanel.comparePanel{
+  border:2px solid #199fdf!important;
+  background:linear-gradient(180deg,#071e2d,#04131d)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.28)!important;
+}
+#comparePanel .compareToggle{
+  min-height:52px!important;
+  padding:8px 10px!important;
+  background:linear-gradient(180deg,#0b3147,#071d2b)!important;
+}
+#comparePanel .compareToggle>span>b{
+  font-size:22px!important;
+  color:#fff!important;
+}
+#comparePanel .compareToggle small{
+  font-size:8px!important;
+  color:#71c7f5!important;
+}
+#comparePanel .compareBody{
+  display:block!important;
+  padding:7px!important;
+}
+#comparePanel .compareAssist{
+  min-height:28px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+  padding:2px 2px 7px!important;
+  color:#cceeff!important;
+  font-size:8px!important;
+}
+.compareLegend{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  font-weight:1000!important;
+}
+.compareLegend i{
+  width:13px!important;
+  height:13px!important;
+  display:inline-block!important;
+  border-radius:3px!important;
+  border:1px solid rgba(255,255,255,.65)!important;
+}
+.legendRed{background:#d92534!important}
+.legendYellow{background:#f0cf31!important}
+.compareFormula{
+  margin-left:auto!important;
+  color:#7fa7bc!important;
+  font-size:7px!important;
+}
+
+#comparePanel .compareScroll{
+  width:100%!important;
+  overflow:visible!important;
+  border:1px solid rgba(255,255,255,.55)!important;
+  border-radius:9px!important;
+}
+#comparePanel .compareTable.compareMatrix{
+  width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+#comparePanel .compareMatrix th{
+  width:88px!important;
+  padding:7px 4px!important;
+  background:#0c2b3e!important;
+  color:#dff6ff!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  font-size:9px!important;
+  line-height:1.15!important;
+  text-align:left!important;
+  font-weight:1000!important;
+}
+#comparePanel .compareMatrix td{
+  padding:7px 2px!important;
+  background:#081f2d!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  text-align:center!important;
+  vertical-align:middle!important;
+}
+#comparePanel .compareMatrix td strong{
+  font-size:15px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  color:inherit!important;
+}
+.compareBoatHeader td{
+  padding:5px 2px!important;
+  background:#061926!important;
+}
+.compareBoatHeader .matrixBoat{
+  width:29px!important;
+  height:29px!important;
+  font-size:14px!important;
+  margin:0 auto 3px!important;
+}
+.compareRacerName{
+  display:block!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  color:#dcecf5!important;
+  font-size:7px!important;
+  font-weight:900!important;
+}
+
+/* 1位：赤網掛け */
+#comparePanel .compareMatrix td.compareRank1{
+  background:linear-gradient(180deg,#e33945,#ac1723)!important;
+  color:#fff!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)!important;
+}
+/* 2位：黄色網掛け */
+#comparePanel .compareMatrix td.compareRank2{
+  background:linear-gradient(180deg,#f6dc52,#c19b0c)!important;
+  color:#111!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)!important;
+}
+#comparePanel .compareMatrix td.compareRank2 strong{
+  color:#111!important;
+}
+
+/* スマホでも大きさ優先。横スクロールなしで6艇表示 */
+@media(max-width:430px){
+  #comparePanel .compareBody{padding:5px!important}
+  #comparePanel .compareMatrix th{
+    width:74px!important;
+    padding:6px 3px!important;
+    font-size:7.5px!important;
+  }
+  #comparePanel .compareMatrix td{
+    padding:6px 1px!important;
+  }
+  #comparePanel .compareMatrix td strong{
+    font-size:12px!important;
+  }
+  .compareBoatHeader .matrixBoat{
+    width:25px!important;
+    height:25px!important;
+    font-size:12px!important;
+  }
+  .compareRacerName{font-size:6px!important}
+  .compareFormula{width:100%!important;margin-left:0!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -12049,7 +12203,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.286</div>
+  <div class="topVol">Vol.287</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -12124,7 +12278,7 @@ body:not(.theme-ladies):not(.theme-sg) #get.done,
     <b id="compareToggleIcon">−</b>
   </button>
   <div id="compareBody" class="compareBody">
-    <div class="compareAssist"><span>出走表取得と同時に表示</span><span>階級・選手名・全国勝率を6艇横並びで比較</span></div>
+    <div class="compareAssist"><span>同コース直近20走＋モーター比較</span></div>
     <div class="compareScroll">
       <table class="compareTable compareMatrix">
         <tbody id="compareRows">
@@ -12731,6 +12885,7 @@ async function preloadHistory(rr){
   if(!historyLoading)historyLoading=buildHistory();
   historyCache=await historyLoading;
   updateMainHistory(rr,historyCache);
+  try{bhRenderCompare()}catch(e){}
   $("status").textContent="✓ 出走表＋同コース過去20走 取得完了";
   try{
     const p=document.getElementById("racerDetailPanel");
@@ -15680,22 +15835,112 @@ function bhRenderCompare(){
     return;
   }
 
-  const boatCell=(r)=>{
-    const b=Number(r.entry_number);
-    return `<span class="matrixBoat b${b}">${b}</span>`;
-  };
+  const histMap=historyCache instanceof Map ? historyCache : null;
 
-  const row=(label,values)=>`
-    <tr>
-      <th>${label}</th>
-      ${values.map(v=>`<td>${v}</td>`).join("")}
+  const pct=(v)=>Number.isFinite(v)?v.toFixed(1)+"%":"—";
+  const st=(v)=>Number.isFinite(v)?v.toFixed(3):"—";
+  const rank=(v)=>Number.isFinite(v)?v.toFixed(2)+"位":"—";
+
+  const rows=rr.map(r=>{
+    const boat=Number(r.entry_number);
+    const h=histMap?.get?.(Number(r.number))?.rows||[];
+    const m=histMetrics(h);
+    const n=h.length||0;
+
+    const winRate=n ? m.win/n*100 : null;
+    const thirdOnly=n ? h.filter(x=>Number(x.place)===3).length/n*100 : null;
+
+    /* 攻撃率：
+       同コース直近20走のうち、自艇が決まり手を出して1着になった率。
+       1C=逃げ、2-6C=差し/まくり/まくり差し。 */
+    let attackCount=0;
+    if(n){
+      attackCount=h.filter(x=>{
+        if(Number(x.place)!==1)return false;
+        const tech=Number(x.tech);
+        if(boat===1)return tech===1;
+        return [2,3,4].includes(tech);
+      }).length;
+    }
+    const attackRate=n ? attackCount/n*100 : null;
+
+    /* 守備率：
+       同コース直近20走で、1着を逃しても2・3着に残した率。 */
+    const defenseRate=n
+      ? h.filter(x=>Number(x.place)===2||Number(x.place)===3).length/n*100
+      : null;
+
+    return {
+      boat,
+      name:r.name||"—",
+      courseWin:winRate,
+      courseThird:thirdOnly,
+      avgST:m.avgST,
+      avgRank:m.avgRank,
+      motor2:bhNum(r.motor_top_2_percent),
+      motor3:bhNum(r.motor_top_3_percent),
+      attack:attackRate,
+      defense:defenseRate
+    };
+  });
+
+  function rankClasses(key,lowerBetter=false){
+    const vals=rows
+      .map((x,i)=>({i,v:Number(x[key])}))
+      .filter(x=>Number.isFinite(x.v))
+      .sort((a,b)=>lowerBetter ? a.v-b.v : b.v-a.v);
+
+    const distinct=[];
+    for(const x of vals){
+      if(!distinct.some(v=>Math.abs(v-x.v)<1e-9))distinct.push(x.v);
+      if(distinct.length>=2)break;
+    }
+    const top=distinct[0],second=distinct[1];
+    return rows.map(x=>{
+      const v=Number(x[key]);
+      if(!Number.isFinite(v))return "";
+      if(Number.isFinite(top)&&Math.abs(v-top)<1e-9)return "compareRank1";
+      if(Number.isFinite(second)&&Math.abs(v-second)<1e-9)return "compareRank2";
+      return "";
+    });
+  }
+
+  const metrics=[
+    {label:"今コース勝率",key:"courseWin",fmt:pct},
+    {label:"今コース3着率",key:"courseThird",fmt:pct},
+    {label:"平均ST",key:"avgST",fmt:st,lower:true},
+    {label:"平均ST順位",key:"avgRank",fmt:rank,lower:true},
+    {label:"モーター2連対率",key:"motor2",fmt:pct},
+    {label:"モーター3連対率",key:"motor3",fmt:pct},
+    {label:"攻撃率",key:"attack",fmt:pct},
+    {label:"守備率",key:"defense",fmt:pct}
+  ];
+
+  const boatHeader=`<tr class="compareBoatHeader">
+    <th>項目</th>
+    ${rows.map(x=>`<td>
+      <span class="matrixBoat b${x.boat}">${x.boat}</span>
+      <span class="compareRacerName">${x.name}</span>
+    </td>`).join("")}
+  </tr>`;
+
+  const metricRows=metrics.map(meta=>{
+    const classes=rankClasses(meta.key,!!meta.lower);
+    return `<tr>
+      <th>${meta.label}</th>
+      ${rows.map((x,i)=>`<td class="${classes[i]}"><strong>${meta.fmt(Number(x[meta.key]))}</strong></td>`).join("")}
     </tr>`;
+  }).join("");
 
-  tbody.innerHTML=
-    row("艇番",rr.map(boatCell))+
-    row("階級",rr.map(r=>`<b>${grade(r)}</b>`))+
-    row("選手名",rr.map(r=>`<span class="matrixName">${r.name||"—"}</span>`))+
-    row("全国勝率",rr.map(r=>`<strong>${f(r.national_win_rate)}</strong>`));
+  tbody.innerHTML=boatHeader+metricRows;
+
+  const assist=document.querySelector("#comparePanel .compareAssist");
+  if(assist){
+    assist.innerHTML=`
+      <span class="compareLegend"><i class="legendRed"></i>1位</span>
+      <span class="compareLegend"><i class="legendYellow"></i>2位</span>
+      <span class="compareFormula">攻撃=自力決まり手1着 / 守備=2・3着残り</span>`;
+  }
 }
 const __bhUpdateMainHistoryV183=updateMainHistory;
 updateMainHistory=function(rr,map){
