@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V342</title>
+<title>BOAT HUNTER V343</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14839,7 +14839,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.342</div>
+  <div class="topVol">Vol.343</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15323,7 +15323,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.342: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.343: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15990,7 +15990,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.342 場時間帯補正
+/* Vol.343 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20347,11 +20347,9 @@ function chooseHeads(p){
   const lane1MarketPct=lane1?(marketHeadPct(1)??0):0;
   const lane1SimPct=lane1?(sim().find(x=>Number(x.boat)===1)?.v??0):0;
 
-  /* V342: 1号艇頭は基本的に残す
-     - 偏差プラス → 強制的に頭候補対象
-     - 偏差 -5.0 以内 → 原則残す
-     - -5.0 未満でも 世間1位 / SIM上位 なら残す余地
-     - 完全除外は「偏差<-5 かつ 世間もSIMも弱い」場合のみ */
+  /* V343:
+     1号艇は「保護して追加」する。
+     本来のHUNTER頭候補を押し出さない。 */
   const lane1ClearlyWeak=!!(
     lane1 &&
     lane1.diff!=null &&
@@ -20363,18 +20361,15 @@ function chooseHeads(p){
   );
   const keepLane1=!!(lane1 && !lane1ClearlyWeak);
 
-  const normal=p.filter(x=>x.diff!=null&&x.diff>=-1);
-  let eligible=[...normal];
+  /* 本来の頭候補群。
+     -1以上を基本採用。並びはHUNTER偏差順。 */
+  const natural=p
+    .filter(x=>x.diff!=null&&x.diff>=-1)
+    .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
 
-  if(keepLane1 && !eligible.some(x=>Number(x.boat)===1)){
-    eligible.push(lane1);
-  }
+  const top=natural[0];
 
-  /* HUNTER主頭は従来どおり能力順 */
-  eligible.sort((a,b)=>(b.diff??-999)-(a.diff??-999));
-  let top=eligible[0];
-
-  /* 1号艇が+40以上でダントツなら①単独頭 */
+  /* 1号艇主頭 +40以上だけは単独頭 */
   if(top && Number(top.boat)===1 && top.diff>=40){
     return {
       heads:[top],
@@ -20382,61 +20377,50 @@ function chooseHeads(p){
       rawCount:1,
       standout:true,
       over40:true,
-      secondarySpecial:false,
-      lane1Base:true,
+      lane1Protected:true,
       lane1ClearlyWeak:false
     };
   }
 
-  /* 基本は2艇頭。
-     HUNTER主頭が①以外なら、①を頭候補2として優先して残す。 */
-  if(top && Number(top.boat)!==1 && keepLane1){
-    return {
-      heads:[top,lane1],
-      pass:false,
-      rawCount:2,
-      standout:false,
-      over40:false,
-      secondarySpecial:false,
-      primaryHeadBoat:null,
-      lane1Base:true,
-      lane1ClearlyWeak:false
-    };
+  /* 通常は自然な頭候補を最大3艇まで残す。
+     ①が自然候補外でも保護対象なら追加。
+     例: ② +28.8 / ① +25.2 / ⑤ +13.6 → ②①⑤を全部残す。 */
+  let heads=natural.slice(0,3);
+
+  if(keepLane1 && !heads.some(x=>Number(x.boat)===1)){
+    heads.push(lane1);
   }
 
-  /* 主頭が①なら、2番手を通常どおり追加 */
-  const second=eligible.find(x=>Number(x.boat)!==Number(top?.boat));
-  if(top && second){
-    return {
-      heads:[top,second],
-      pass:false,
-      rawCount:2,
-      standout:false,
-      over40:false,
-      secondarySpecial:false,
-      lane1Base:Number(top.boat)===1,
-      lane1ClearlyWeak:false
-    };
+  /* ①保護で4艇になった場合:
+     ①は残しつつ、非①の上位3艇まで＝最大4頭。
+     見判定は後段で総点数と合わせて決める。 */
+  heads=[
+    ...heads.filter(x=>Number(x.boat)!==1)
+      .sort((a,b)=>(b.diff??-999)-(a.diff??-999))
+      .slice(0,3),
+    ...heads.filter(x=>Number(x.boat)===1).slice(0,1)
+  ].sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+
+  /* 2頭未満なら非①から補充 */
+  if(heads.length<2){
+    const extras=p
+      .filter(x=>!heads.some(h=>Number(h.boat)===Number(x.boat)))
+      .filter(x=>x.diff!=null)
+      .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+    if(extras[0])heads.push(extras[0]);
   }
-
-  /* ①が明確に弱く除外された場合のみ、他艇から最大2艇 */
-  const fallback=p
-    .filter(x=>Number(x.boat)!==1)
-    .filter(x=>x.diff!=null&&x.diff>=-1)
-    .sort((a,b)=>(b.diff??-999)-(a.diff??-999))
-    .slice(0,2);
-
-  const heads=(top?[top]:fallback).slice(0,2);
-  const pass=heads.length>=3;
 
   return {
     heads,
-    pass,
+    /* 3頭以上だけでは即「見」にしない。
+       実際の全買い目点数を作った後に20点超かで判定する。 */
+    pass:false,
     rawCount:heads.length,
+    multiHead:heads.length>=3,
     standout:false,
     over40:false,
     secondarySpecial:false,
-    lane1Base:false,
+    lane1Protected:keepLane1,
     lane1ClearlyWeak
   };
 }
@@ -20624,11 +20608,6 @@ function draw(){
   ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",sim(),"s");
   const pick=chooseHeads(p);
   const marketPass=divergencePass(p);
-  const pass=pick.pass||marketPass;
-  const passEl=$("hfdPass");
-  passEl.classList.toggle("hide",!pass);
-  const passReason=pick.pass&&marketPass?"頭候補3艇以上 × 世間乖離":pick.pass?"頭候補3艇以上":"世間評価と大幅乖離";
-  passEl.innerHTML=pass?`<small>RACE ALERT</small><b>見 <i>/ SKIP</i></b><strong>${passReason}</strong><em>FORMATIONは参考表示</em>`:"";
 
   const all=R().map(met);
   const forms=pick.heads.map((h,i)=>{
@@ -20659,8 +20638,47 @@ function draw(){
     const pts=combinations(h.boat,a2,a3).length;
     return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:cutPack.stay,cls,pts,i};
   });
-  const total=forms.reduce((a,x)=>a+x.pts,0);
-  $("hfdPoints").textContent=total+"点";
+  /* V343:
+     ここでは仮の組合せ数ではなく、実際に表示する
+     本線+押さえ+期待値の合計点数で「見」を判定する。 */
+  const previewDisplayedPoints=forms.reduce((sum,f)=>{
+    let main=[...(f.cls?.main||[])];
+    let cover=[...(f.cls?.cover||[])];
+    let value=[...(f.cls?.value||[])];
+
+    if(pick.secondarySpecial&&f.i===1){
+      main=main.slice(0,3);
+      cover=[];
+      value=[];
+    }
+
+    const seen=new Set();
+    const countUnique=arr=>{
+      let n=0;
+      (arr||[]).forEach(x=>{
+        if(!x?.combo||seen.has(x.combo))return;
+        seen.add(x.combo);n++;
+      });
+      return n;
+    };
+    return sum+countUnique(main)+countUnique(cover)+countUnique(value);
+  },0);
+
+  /* 頭候補3艇以上でも、全買い目が20点以下なら
+     「頭候補が多い」ことを理由に見アラートは出さない。 */
+  const multiHeadPass=!!(pick.heads.length>=3 && previewDisplayedPoints>20);
+  const pass=!!(multiHeadPass||marketPass);
+
+  const passEl=$("hfdPass");
+  passEl.classList.toggle("hide",!pass);
+  const passReason=multiHeadPass&&marketPass
+    ?"頭候補3艇以上・21点以上 × 世間乖離"
+    :multiHeadPass
+      ?"頭候補3艇以上・21点以上"
+      :"世間評価と大幅乖離";
+  passEl.innerHTML=pass?`<small>RACE ALERT</small><b>見 <i>/ SKIP</i></b><strong>${passReason}</strong><em>FORMATIONは参考表示</em>`:"";
+
+  $("hfdPoints").textContent=previewDisplayedPoints+"点";
   $("hfdState").textContent=window.__HUNTER_SIM5000?"SIM5000 完了":"事前診断";
 
   $("hfdForms").innerHTML=(pass?`<div class="hfdBeforeFormsSkip"><b>見推奨 / SKIP</b><span>${passReason}｜以下は参考FORMATION</span></div>`:"")+forms.map(f=>{
@@ -21737,6 +21755,16 @@ window.BH_V334_HEAD_POLICY = {
    通常は HUNTER主頭 + 1号艇 の2頭構成。
    1号艇が主頭なら 1号艇 + 次点。
    1号艇主頭かつ偏差+40以上のみ単独頭。 */
+</script>
+
+
+<script id="bh-v343-marker">
+/* V343:
+   ①は頭候補を押し出さず「追加保護」。
+   HUNTER上位候補も残し、必要なら頭候補3艇以上を表示。
+   頭候補3艇以上でも、表示する全買い目合計が20点以下なら
+   頭数だけを理由に見アラートは出さない。
+   21点以上なら見。世間乖離アラートは従来どおり独立判定。 */
 </script>
 
 </body>
