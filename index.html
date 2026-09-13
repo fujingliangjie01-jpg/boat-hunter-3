@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V332</title>
+<title>BOAT HUNTER V333</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14792,6 +14792,16 @@ input,
 @media(max-width:430px){.hfrLogicRow{grid-template-columns:1.15fr repeat(3,.62fr);font-size:9px}.hfrStats5 .hfrStat b{font-size:12px!important}}
 </style>
 
+
+<style id="bh-v333-formation-result">
+.hfrFormationOverall{display:grid;grid-template-columns:1fr auto 2fr;align-items:center;gap:8px;margin:0 0 8px;padding:10px 12px;border-radius:10px;border:1px solid #28526a;background:#071824}
+.hfrFormationOverall b{font-size:11px;letter-spacing:.08em}
+.hfrFormationOverall strong{font-size:22px}
+.hfrFormationOverall span{text-align:right;font-size:9px;font-weight:900}
+.hfrFormationOverall.ok{border-color:#35d47f;background:#0b3c29;color:#baffd5}
+.hfrFormationOverall.ng{border-color:#d94759;background:#43131b;color:#ffc1c8}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14802,7 +14812,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.332</div>
+  <div class="topVol">Vol.333</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15286,7 +15296,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.332: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.333: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15953,7 +15963,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.332 場時間帯補正
+/* Vol.333 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -21017,10 +21027,21 @@ window.bhRenderFinalFormation=draw;
       if($("hfrOdds"))$("hfrOdds").textContent=parsed.trifectaOdds!=null?`3連単 ${parsed.trifectaOdds.toFixed(1)}倍`:"3連単 —";
 
       const pass=!!pack.pass;
+      /* V333:
+         FORMATION判定は頭候補ごとの個別成否ではなくレース単位。
+         頭候補1〜Nのどれか1つでも本線/押さえ/期待値で完全一致すれば○。
+         複数候補が当たっても1Rにつき1的中だけ加算する。 */
       const match=comboMatch(pack,a,b,c);
-      const hit=!pass&&!!match?.hit;
+      const formationHit=!pass&&!!match?.hit;
+      const hit=formationHit;
       const logic=evaluateLogic(pack,a,b,c);
-      if($("hfrLogicChecks"))$("hfrLogicChecks").innerHTML=logicHtml(logic);
+      if($("hfrLogicChecks")){
+        $("hfrLogicChecks").innerHTML=
+          `<div class="hfrFormationOverall ${formationHit?"ok":"ng"}">
+             <b>FORMATION</b><strong>${formationHit?"○":"×"}</strong>
+             <span>${formationHit?"頭候補のいずれかで的中":"全頭候補で不的中"}</span>
+           </div>` + logicHtml(logic);
+      }
 
       if(pass){
         $("hfrJudge").className="hfrJudge pass";
@@ -21053,7 +21074,7 @@ window.bhRenderFinalFormation=draw;
             headHit:logic.headHit,
             axisHit:logic.axisHit,
             axisTests:logic.axisTests,
-            formHit:!!match?.hit,
+            formHit:formationHit,
             formCategory:match?.label||null,
             cutSuccess:logic.cutSuccess,
             cutTests:logic.cutTests,
@@ -21065,7 +21086,7 @@ window.bhRenderFinalFormation=draw;
           if(logic.headHit)st.headHit++;
           st.axisTests+=logic.axisTests;
           if(logic.axisHit)st.axisHit++;
-          if(match?.hit){
+          if(formationHit){
             st.formHit++;
             if(match.kind==="main")st.mainHit++;
             if(match.kind==="cover")st.coverHit++;
@@ -21078,7 +21099,7 @@ window.bhRenderFinalFormation=draw;
           if(logic.headHit)tt.headHit++;
           tt.axisTests+=logic.axisTests;
           if(logic.axisHit)tt.axisHit++;
-          if(match?.hit){
+          if(formationHit){
             tt.formHit++;
             if(match.kind==="main")tt.mainHit++;
             if(match.kind==="cover")tt.coverHit++;
@@ -21429,6 +21450,14 @@ window.bhVenueBase=function(course,key="p1"){
    期待値は同一3艇セットでも着順違いなら残す。
    本線/押さえと完全一致の3連単のみ除外。
    最大2点。 */
+</script>
+
+
+<script id="bh-v333-marker">
+/* V333:
+   FORMATION = 頭候補1〜NのOR判定。
+   どれか1候補でも完全一致ならレース的中。
+   TODAY/TOTALとも1Rにつき最大1的中として蓄積。 */
 </script>
 
 </body>
