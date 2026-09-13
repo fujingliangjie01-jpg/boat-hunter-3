@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V335</title>
+<title>BOAT HUNTER V337</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14815,6 +14815,12 @@ input,
 #hfrTotalResetConfirm.hide{display:none!important}
 </style>
 
+<style id="bh-v337-skip-technique">
+#hfdPass.hfdPass{margin:10px 0 13px;padding:14px 12px;border:3px solid #ff334b;border-radius:14px;background:linear-gradient(180deg,#420711,#11070a);box-shadow:0 0 0 2px #080808,0 0 24px rgba(255,40,66,.6),inset 0 0 22px rgba(255,40,66,.16);text-align:center}
+#hfdPass small,#hfdPass strong,#hfdPass em{display:block}#hfdPass small{font-size:8px;letter-spacing:.25em;color:#ff8996;font-weight:1000}#hfdPass b{display:block;font-size:40px;line-height:1.05;color:#fff;text-shadow:0 0 15px #ff2943}#hfdPass b i{font-size:18px;color:#ff6376;font-style:normal}#hfdPass strong{margin-top:7px;padding:7px;border-top:1px solid #812633;border-bottom:1px solid #812633;color:#ffd4d9;font-size:11px}#hfdPass em{margin-top:6px;color:#bda4a8;font-size:8px;font-style:normal}
+.hfdBeforeFormsSkip{margin:8px 0;padding:9px 10px;border:1.5px solid #ff4056;border-radius:9px;background:#350b12;display:flex;justify-content:space-between;align-items:center;gap:8px}.hfdBeforeFormsSkip b{font-size:12px;color:#ff7182}.hfdBeforeFormsSkip span{font-size:8px;color:#d7b2b8;font-weight:900;text-align:right}
+.hfdTechnique{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px;padding:7px 9px;border:1px solid rgba(255,210,75,.38);border-radius:8px;background:#191507}.hfdTechnique small{font-size:7px;color:#ad9755;font-weight:1000;letter-spacing:.07em}.hfdTechnique b{font-size:14px;color:#ffe268;font-weight:1000}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14825,7 +14831,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.335</div>
+  <div class="topVol">Vol.337</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15309,7 +15315,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.335: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.337: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15976,7 +15982,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.335 場時間帯補正
+/* Vol.337 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20350,7 +20356,7 @@ function chooseHeads(p){
      +40未満で従来の「大差単独頭」条件に入っても、
      2番手がHUNTER・世間・SIMすべて2位以内なら頭候補2として救済。
      頭候補2は主頭を軸固定した少数フォーメーションにする。 */
-  const topOver40=!!(top&&top.diff>=40);
+  const topOver40=!!(top&&top.boat===1&&top.diff>=40);
   const secondHunterRank=second?(eligible.findIndex(x=>x.boat===second.boat)+1):99;
   const secondMarketRank=second?(marketHeadRank(second.boat)??99):99;
   const secondSimRank=second?(simHeadRank(second.boat)??99):99;
@@ -20429,6 +20435,20 @@ function combinations(head,a2,a3){
   const out=[];
   a2.forEach(b=>a3.forEach(c=>{if(head!==b&&head!==c&&b!==c)out.push(`${head}-${b}-${c}`)}));
   return out;
+}
+function predictedTechnique(head,all){
+  const b=Number(head?.boat||0);
+  if(b===1)return "逃げ";
+  const x=(all||[]).find(v=>Number(v.boat)===b)||head;
+  const st=Number(x?.st), atk=Number(x?.attack??x?.oneMarkAttack??0);
+  const inner=(all||[]).find(v=>Number(v.boat)===b-1), ist=Number(inner?.st);
+  const edge=Number.isFinite(st)&&Number.isFinite(ist)?ist-st:0;
+  if(b===2)return (edge>=.03||atk>=8)?"まくり":"差し";
+  if(b===3)return (edge>=.025||atk>=8)?"まくり":"まくり差し";
+  if(b===4)return (edge>=.03||atk>=8)?"まくり":"まくり差し";
+  if(b===5)return (atk>=8&&edge>=.02)?"まくり":"まくり差し";
+  if(b===6)return (atk>=9&&edge>=.03)?"まくり":"まくり差し";
+  return "—";
 }
 function classify(head,axes,a3,thirdStay){
   const axisBoats=axes.map(x=>x.boat);
@@ -20518,7 +20538,8 @@ function draw(){
   const pass=pick.pass||marketPass;
   const passEl=$("hfdPass");
   passEl.classList.toggle("hide",!pass);
-  passEl.textContent=pick.pass&&marketPass?"見｜頭候補3艇以上 × 世間乖離":pick.pass?"見｜頭候補3艇以上":"見｜世間評価と大幅乖離";
+  const passReason=pick.pass&&marketPass?"頭候補3艇以上 × 世間乖離":pick.pass?"頭候補3艇以上":"世間評価と大幅乖離";
+  passEl.innerHTML=pass?`<small>RACE ALERT</small><b>見 <i>/ SKIP</i></b><strong>${passReason}</strong><em>FORMATIONは参考表示</em>`:"";
 
   const all=R().map(met);
   const forms=pick.heads.map((h,i)=>{
@@ -20544,7 +20565,7 @@ function draw(){
   $("hfdPoints").textContent=total+"点";
   $("hfdState").textContent=window.__HUNTER_SIM5000?"SIM5000 完了":"事前診断";
 
-  $("hfdForms").innerHTML=forms.map(f=>{
+  $("hfdForms").innerHTML=(pass?`<div class="hfdBeforeFormsSkip"><b>見推奨 / SKIP</b><span>${passReason}｜以下は参考FORMATION</span></div>`:"")+forms.map(f=>{
     const makeForm=(items,kind)=>{
       if(!items?.length)return `<span class="hfdNone">—</span>`;
       const tuples=items.map(x=>String(x.combo||"").split("-").map(Number)).filter(a=>a.length===3);
@@ -20595,6 +20616,7 @@ function draw(){
         ${B(f.h.boat,"hfdHeadBig")}
         <em>偏差 ${P(f.h.diff)}</em>
       </div>
+      <div class="hfdTechnique"><small>WINNING MOVE / 想定決まり手</small><b>${predictedTechnique(f.h,all)}</b></div>
 
       <div class="hfdAxisDeviation">
         <span class="hfdAxisLabel">AXIS / 軸偏差</span>
@@ -21556,6 +21578,17 @@ window.BH_V334_HEAD_POLICY = {
 /* V335: 今日リセットと累計リセットを分離。
    累計リセットは長押し→確認で全成績を初期化。 */
 </script>
+
+<script id="bh-v336-single-lane1-policy">
+/* V336 単独1コース頭
+   通常：頭候補は基本2艇。
+   例外：頭候補1が1号艇かつ頭偏差+40以上のダントツ時だけ1艇に絞る。
+   この場合も見にはせず、1頭の本線FORMATIONを生成。
+   3着専用艇が成立すれば期待値＝1→3着専用艇→軸候補も生成。
+   1号艇以外が+40以上でも、この例外では自動1頭化しない。 */
+</script>
+
+<script id="bh-v337-marker">/* V337: 見/SKIP大型化 + FORMATION直前再警告 + 頭候補別想定決まり手 */</script>
 </body>
 </html>
 
