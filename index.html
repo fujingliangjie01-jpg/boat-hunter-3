@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V329</title>
+<title>BOAT HUNTER V330</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14786,7 +14786,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.329</div>
+  <div class="topVol">Vol.330</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15270,7 +15270,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.329: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.330: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15937,7 +15937,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.329 場時間帯補正
+/* Vol.330 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20344,21 +20344,47 @@ function thirdDiff(x){
     +mb(x.r);
 }
 function cutForHead(head,all,axes){
+  /* V330 頭候補別・完全独立切り判定
+     ①頭決定 → ②その頭の軸決定 → ③その頭×軸でSIM3着支持を再評価
+     → ④その頭専用の3着偏差 → ⑤最大1艇だけ切る */
   const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
-  const candidates=[];
-  const stay=[];
-  all.forEach(x=>{
-    if(protectedBoats.has(x.boat))return;
-    const d=thirdDiff(x);
-    if(d!=null&&d<=-10)candidates.push({...x,thirdDiff:d});
-    else stay.push({...x,thirdDiff:d});
+  const axisBoats=axes.map(x=>x.boat);
+
+  const rows=all
+    .filter(x=>!protectedBoats.has(x.boat))
+    .map(x=>{
+      const base=thirdDiff(x);
+
+      /* この頭・この軸の組合せで、候補艇が3着に来るSIM支持。
+         頭が変われば必ず再計算するので、切り艇の使い回しをしない。 */
+      const sims=axisBoats
+        .filter(a=>a!==x.boat&&a!==head.boat)
+        .map(a=>simCombo(`${head.boat}-${a}-${x.boat}`));
+      const sim3=sims.length?sims.reduce((a,b)=>a+b,0)/sims.length:0;
+
+      return {...x,baseThirdDiff:base,headThirdSim:sim3};
+    });
+
+  /* 頭別SIM3着支持の順位を補正。
+     1位 +6 / 2位 +3 / 3位 +1 / それ以下 0。
+     コース・全国地力偏差を主軸にし、頭別展開だけを補正する。 */
+  const simRank=[...rows].sort((a,b)=>b.headThirdSim-a.headThirdSim);
+  const bonus=new Map(simRank.map((x,i)=>[x.boat,i===0?6:i===1?3:i===2?1:0]));
+
+  rows.forEach(x=>{
+    x.headThirdBonus=bonus.get(x.boat)||0;
+    x.thirdDiff=(x.baseThirdDiff??0)+x.headThirdBonus;
   });
-  /* V328: 切り候補は各頭候補ごとに最大1艇。最も3着偏差が低い艇だけ切る。 */
-  candidates.sort((a,b)=>(a.thirdDiff??999)-(b.thirdDiff??999));
+
+  const candidates=rows.filter(x=>x.thirdDiff<=-10)
+    .sort((a,b)=>a.thirdDiff-b.thirdDiff);
+
+  /* 各頭候補につき切りは最大1艇。 */
   const cut=candidates.slice(0,1);
-  /* 2番目以降の切り水準艇は3着候補へ戻す。 */
-  stay.push(...candidates.slice(1));
-  return {cut,stay};
+  const cutSet=new Set(cut.map(x=>x.boat));
+  const stay=rows.filter(x=>!cutSet.has(x.boat));
+
+  return {cut,stay,headBoat:head.boat};
 }
 function combinations(head,a2,a3){
   const out=[];
@@ -21239,6 +21265,10 @@ window.bhVenueBase=function(course,key="p1"){
 };
 </script>
 
+<script id="bh-v330-head-specific-cut">
+/* V330: 切り候補は頭候補ごとに独立。
+   頭×軸×SIM3着支持を再計算し、各頭最大1艇。 */
+</script>
 </body>
 </html>
 
