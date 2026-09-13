@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V334</title>
+<title>BOAT HUNTER V335</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14802,6 +14802,19 @@ input,
 .hfrFormationOverall.ng{border-color:#d94759;background:#43131b;color:#ffc1c8}
 </style>
 
+
+<style id="bh-v335-total-reset">
+#hfrTotalResetArm{
+  width:100%;min-height:42px;margin-top:8px;border:1px solid rgba(255,210,77,.30);
+  border-radius:10px;background:#17140a;color:#d8c16d;font-size:10px;font-weight:1000
+}
+#hfrTotalResetConfirm{
+  width:100%;min-height:46px;margin-top:7px;border:1.5px solid #ff5364;
+  border-radius:10px;background:#5a1019;color:#fff;font-size:12px;font-weight:1000
+}
+#hfrTotalResetConfirm.hide{display:none!important}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14812,7 +14825,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.334</div>
+  <div class="topVol">Vol.335</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15296,7 +15309,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.334: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.335: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15963,7 +15976,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.334 場時間帯補正
+/* Vol.335 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20685,8 +20698,10 @@ window.bhRenderFinalFormation=draw;
       </div>
 
       <div class="hfrResetWrap">
-        <button type="button" id="hfrResetArm">リセット（長押し）</button>
-        <button type="button" id="hfrResetConfirm" class="hide">本当にリセットする</button>
+        <button type="button" id="hfrResetArm">今日をリセット（長押し）</button>
+        <button type="button" id="hfrResetConfirm" class="hide">今日の結果をリセット</button>
+        <button type="button" id="hfrTotalResetArm">累計をリセット（長押し）</button>
+        <button type="button" id="hfrTotalResetConfirm" class="hide">累計を完全リセット</button>
       </div>
     `;
     wrap.appendChild(sec);
@@ -21178,8 +21193,35 @@ window.bhRenderFinalFormation=draw;
       }catch(e){}
       renderStats();
       $("hfrResetConfirm").classList.add("hide");
-      if(arm)arm.textContent="リセット（長押し）";
+      if(arm)arm.textContent="今日をリセット（長押し）";
       $("hfrStatus").textContent="今日の結果のみリセットしました（累計は保持）";
+    });
+    const totalArm=$("hfrTotalResetArm");
+    let totalTimer=null;
+    const totalStart=()=>{
+      clearTimeout(totalTimer);
+      totalTimer=setTimeout(()=>{
+        $("hfrTotalResetConfirm")?.classList.remove("hide");
+        if(totalArm)totalArm.textContent="確認してください";
+      },900);
+    };
+    const totalCancel=()=>clearTimeout(totalTimer);
+    totalArm?.addEventListener("pointerdown",totalStart);
+    totalArm?.addEventListener("pointerup",totalCancel);
+    totalArm?.addEventListener("pointerleave",totalCancel);
+    totalArm?.addEventListener("touchcancel",totalCancel);
+
+    $("hfrTotalResetConfirm")?.addEventListener("click",()=>{
+      try{
+        const all=loadAllStats();
+        all.total=emptyStats();
+        all.daily={};
+        saveAllStats(all);
+      }catch(e){}
+      renderStats();
+      $("hfrTotalResetConfirm")?.classList.add("hide");
+      if(totalArm)totalArm.textContent="累計をリセット（長押し）";
+      $("hfrStatus").textContent="累計データを完全リセットしました";
     });
   }
 
@@ -21510,6 +21552,10 @@ window.BH_V334_HEAD_POLICY = {
 })();
 </script>
 
+<script id="bh-v335-marker">
+/* V335: 今日リセットと累計リセットを分離。
+   累計リセットは長押し→確認で全成績を初期化。 */
+</script>
 </body>
 </html>
 
