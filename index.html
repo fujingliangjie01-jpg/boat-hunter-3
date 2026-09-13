@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V338</title>
+<title>BOAT HUNTER V339</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14824,6 +14824,11 @@ input,
 <style id="bh-v338-tech-cut">
 .hfdCutWhy{font-size:7px;color:#d69ab7;font-weight:900;margin-left:2px}
 </style>
+<style id="bh-v339-exact-form">
+.hfdExactGroups{display:grid!important;gap:5px!important}
+.hfdExactLine{display:flex!important;align-items:center!important;gap:6px!important;flex-wrap:wrap!important}
+.hfdExactLine+.hfdExactLine{padding-top:5px!important;border-top:1px dashed rgba(255,255,255,.10)!important}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14834,7 +14839,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.338</div>
+  <div class="topVol">Vol.339</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15318,7 +15323,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.338: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.339: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15985,7 +15990,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.338 場時間帯補正
+/* Vol.339 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20392,91 +20397,74 @@ function thirdDiff(x){
     +mb(x.r);
 }
 function cutForHead(head,all,axes){
-  /* V338 頭候補 × 想定決まり手 × 軸 で切りを完全独立判定 */
-  const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
-  const axisBoats=axes.map(x=>x.boat);
-  const tech=predictedTechnique(head,all);
+  /* V339:
+     切り = 頭候補 × 想定決まり手 × その頭の軸候補 で完全独立。
+     特に「まくり」の直外艇は絶対に切らない。 */
   const hb=Number(head.boat);
+  const tech=predictedTechnique(head,all);
+  const axisBoats=(axes||[]).map(x=>Number(x.boat));
+  const protectedBoats=new Set([hb,...axisBoats]);
 
-  const rows=all
-    .filter(x=>!protectedBoats.has(x.boat))
+  /* 決まり手による絶対保護 */
+  if(tech==="まくり" && hb<6) protectedBoats.add(hb+1);
+  if((tech==="まくり差し" || tech==="差し") && hb!==1) protectedBoats.add(1);
+
+  const rows=(all||[])
+    .filter(x=>!protectedBoats.has(Number(x.boat)))
     .map(x=>{
+      const boat=Number(x.boat);
       const base=thirdDiff(x);
 
       const sims=axisBoats
-        .filter(a=>a!==x.boat&&a!==head.boat)
-        .map(a=>simCombo(`${head.boat}-${a}-${x.boat}`));
+        .filter(a=>a!==boat&&a!==hb)
+        .map(a=>simCombo(`${hb}-${a}-${boat}`));
       const sim3=sims.length?sims.reduce((a,b)=>a+b,0)/sims.length:0;
 
-      let techBonus=0;
-      let cutProtected=false;
-      let techNote="";
-
-      /* 決まり手別・展開補正
-         まくり：直外艇は展開追走で強く保護、直内艇は被弾しやすく減点。
-         まくり差し：1号艇の内残りを保護、直外も少し加点。
-         差し：1号艇の内残りを保護。
-         逃げ：通常の3着偏差を主軸。 */
+      let techBonus=0,techNote="";
       if(tech==="まくり"){
-        if(Number(x.boat)===hb+1 && hb<6){
-          techBonus+=15;
-          cutProtected=true;
-          techNote="まくり直外・追走保護";
-        }else if(Number(x.boat)===hb-1 && hb>1){
-          techBonus-=10;
-          techNote="まくり被弾・直内減点";
-        }else if(Number(x.boat)===hb+2 && hb<=4){
+        if(boat===hb-1 && hb>1){
+          techBonus-=12;
+          techNote="まくり被弾・直内";
+        }else if(boat===hb+2 && hb<=4){
           techBonus+=5;
           techNote="外展開拾い";
         }
       }else if(tech==="まくり差し"){
-        if(Number(x.boat)===1){
-          techBonus+=12;
-          cutProtected=true;
-          techNote="1号艇内残り保護";
-        }else if(Number(x.boat)===hb+1 && hb<6){
+        if(boat===hb+1 && hb<6){
           techBonus+=4;
           techNote="直外追走";
         }
-      }else if(tech==="差し"){
-        if(Number(x.boat)===1){
-          techBonus+=12;
-          cutProtected=true;
-          techNote="差し時1号艇内残り保護";
-        }
       }
 
-      return {
-        ...x,
-        baseThirdDiff:base,
-        headThirdSim:sim3,
-        techBonus,
-        cutProtected,
-        techNote,
-        predictedTechnique:tech
-      };
+      return {...x,boat,baseThirdDiff:base,headThirdSim:sim3,techBonus,techNote};
     });
 
-  /* 頭別SIM3着支持補正 */
   const simRank=[...rows].sort((a,b)=>b.headThirdSim-a.headThirdSim);
-  const bonus=new Map(simRank.map((x,i)=>[x.boat,i===0?6:i===1?3:i===2?1:0]));
+  const simBonus=new Map(simRank.map((x,i)=>[x.boat,i===0?6:i===1?3:i===2?1:0]));
 
   rows.forEach(x=>{
-    x.headThirdBonus=bonus.get(x.boat)||0;
+    x.headThirdBonus=simBonus.get(x.boat)||0;
     x.thirdDiff=(x.baseThirdDiff??0)+x.headThirdBonus+x.techBonus;
   });
 
-  /* 決まり手で保護された艇は切り候補から除外。
-     残った艇のうち、その頭で最弱の1艇のみ切る。 */
   const candidates=rows
-    .filter(x=>!x.cutProtected && x.thirdDiff<=-10)
+    .filter(x=>x.thirdDiff<=-10)
     .sort((a,b)=>a.thirdDiff-b.thirdDiff);
 
   const cut=candidates.slice(0,1);
-  const cutSet=new Set(cut.map(x=>x.boat));
-  const stay=rows.filter(x=>!cutSet.has(x.boat));
+  const cutSet=new Set(cut.map(x=>Number(x.boat)));
 
-  return {cut,stay,headBoat:head.boat,technique:tech,ranked:rows};
+  /* 絶対保護艇もstayへ必ず戻す */
+  const protectedRows=(all||[])
+    .filter(x=>Number(x.boat)!==hb && !axisBoats.includes(Number(x.boat)) && protectedBoats.has(Number(x.boat)))
+    .map(x=>({...x,thirdDiff:thirdDiff(x),techNote:tech==="まくり"&&Number(x.boat)===hb+1?"まくり直外・追走保護":"展開保護"}));
+
+  const stay=[
+    ...rows.filter(x=>!cutSet.has(Number(x.boat))),
+    ...protectedRows
+  ];
+
+  return {cut,stay,headBoat:hb,technique:tech,protectedBoats:[...protectedBoats],ranked:rows};
 }
 function combinations(head,a2,a3){
   const out=[];
@@ -20602,6 +20590,15 @@ function draw(){
     }
 
     const cutPack=cutForHead(h,all,ax);
+    const techNow=predictedTechnique(h,all);
+    if(techNow==="まくり" && Number(h.boat)<6){
+      const outer=Number(h.boat)+1;
+      const leaked=cutPack.cut.find(x=>Number(x.boat)===outer);
+      if(leaked){
+        cutPack.cut=cutPack.cut.filter(x=>Number(x.boat)!==outer);
+        if(!cutPack.stay.some(x=>Number(x.boat)===outer))cutPack.stay.push(leaked);
+      }
+    }
     const a2=ax.map(x=>x.boat);
     const a3=[...new Set([h.boat,...a2,...cutPack.stay.map(x=>x.boat)])].filter(x=>x!==h.boat);
     const cls=classify(h,ax,a3,cutPack.stay);
@@ -20615,18 +20612,31 @@ function draw(){
   $("hfdForms").innerHTML=(pass?`<div class="hfdBeforeFormsSkip"><b>見推奨 / SKIP</b><span>${passReason}｜以下は参考FORMATION</span></div>`:"")+forms.map(f=>{
     const makeForm=(items,kind)=>{
       if(!items?.length)return `<span class="hfdNone">—</span>`;
-      const tuples=items.map(x=>String(x.combo||"").split("-").map(Number)).filter(a=>a.length===3);
+      const tuples=items
+        .map(x=>String(x.combo||"").split("-").map(Number))
+        .filter(a=>a.length===3&&a[0]&&a[1]&&a[2]&&a[0]!==a[1]&&a[0]!==a[2]&&a[1]!==a[2]);
       if(!tuples.length)return `<span class="hfdNone">—</span>`;
-      const first=tuples[0][0];
-      const second=[...new Set(tuples.map(a=>a[1]))];
-      const third=[...new Set(tuples.map(a=>a[2]))];
-      return `<div class="hfdFormVisual">
-        <div class="hfdFormNums"><span class="hfdFormNum b${first}">${first}</span></div>
-        <div class="hfdFormArrow">›</div>
-        <div class="hfdFormNums">${second.map(b=>`<span class="hfdFormNum b${b}">${b}</span>`).join("")}</div>
-        <div class="hfdFormArrow">›</div>
-        <div class="hfdFormNums">${third.map(b=>`<span class="hfdFormNum b${b}">${b}</span>`).join("")}</div>
-      </div>`;
+
+      /* V339:
+         2着艇ごとにグループ化して、実際に存在する3連単だけ表示。
+         以前のように2着集合×3着集合を見せて「被って見える」問題を廃止。 */
+      const groups=new Map();
+      tuples.forEach(([a,b,c])=>{
+        if(!groups.has(b))groups.set(b,{first:a,second:b,third:[]});
+        const g=groups.get(b);
+        if(!g.third.includes(c))g.third.push(c);
+      });
+
+      return `<div class="hfdExactGroups">`+
+        [...groups.values()].map(g=>`
+          <div class="hfdExactLine">
+            <div class="hfdFormNums"><span class="hfdFormNum b${g.first}">${g.first}</span></div>
+            <div class="hfdFormArrow">›</div>
+            <div class="hfdFormNums"><span class="hfdFormNum b${g.second}">${g.second}</span></div>
+            <div class="hfdFormArrow">›</div>
+            <div class="hfdFormNums">${g.third.map(c=>`<span class="hfdFormNum b${c}">${c}</span>`).join("")}</div>
+          </div>`).join("")+
+        `</div>`;
     };
     const unique=(arr,seen)=>{
       const out=[];
@@ -21642,6 +21652,11 @@ window.BH_V334_HEAD_POLICY = {
    まくり時は直外艇を切り保護、直内艇を減点。
    まくり差し/差し時は1号艇の内残りを保護。
    各頭最大1艇。 */
+</script>
+<script id="bh-v339-marker">
+/* V339:
+   まくり直外艇は切り絶対保護。
+   本線/押さえは2着艇ごとの実在買い目だけ表示し、見かけの重複を廃止。 */
 </script>
 </body>
 </html>
