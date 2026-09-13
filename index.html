@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V347</title>
+<title>BOAT HUNTER V348</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14847,6 +14847,11 @@ input,
 #comparePanel{margin-top:10px!important}
 </style>
 
+
+<style id="bh-v348-sim-cal">
+.hfdSimCal{font-size:6px!important;color:#d8baff!important;opacity:.85;font-weight:1000!important;margin-left:2px}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14857,7 +14862,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.347</div>
+  <div class="topVol">Vol.348</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15022,7 +15027,7 @@ input,
   <div class="hfdRanks">
     <div><h4>世間評価</h4><div id="hfdMarket"></div></div>
     <div><h4>HUNTER事前評価</h4><div id="hfdPre"></div></div>
-    <div><h4>SIM最終評価</h4><div id="hfdSim"></div></div>
+    <div><h4>SIM最終評価 <small class="hfdSimCal">校正</small></h4><div id="hfdSim"></div></div>
   </div>
   <div id="hfdPass" class="hfdPass hide">見</div>
   <div class="hfdFormHead"><b>3連単 FORMATION</b><strong id="hfdPoints">—</strong></div>
@@ -15339,7 +15344,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.347: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.348: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16006,7 +16011,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.347 場時間帯補正
+/* Vol.348 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20453,7 +20458,7 @@ function fourDualAttack(all){
    前付けで実進入が内 / チルト+1.5以上は例外ルート。 */
 
 function hunterHeadRank(boat,p){const a=[...(p||[])].filter(x=>x.diff!=null).sort((x,y)=>(y.diff??-999)-(x.diff??-999));const i=a.findIndex(x=>+x.boat===+boat);return i<0?99:i+1}
-function calibratedSimRank(boat){const a=bhCalibratedSim();const i=a.findIndex(x=>+x.boat===+boat);return i<0?99:i+1}
+function calibratedSimRank(boat){return bhFinalSimRank(boat)}
 function tripleRankOuterRelease(x,p){const r=[marketHeadRank(x.boat)??99,hunterHeadRank(x.boat,p),calibratedSimRank(x.boat)];return {ok:r.every(v=>v<=2)&&r.filter(v=>v===1).length>=2,ranks:r}}
 function motorUpper(x){const t=String(x?.motorRank??x?.motor_rank??x?.motorGrade??"");if(/上位|エース|レジェンド/i.test(t))return true;return (N(x?.motor2??x?.motor2Rate??x?.motor_2rate??x?.motor2rate)??0)>=42}
 function startAboveAverage(x){const c=actualCourseOf(x),b=({1:.15,2:.16,3:.16,4:.17,5:.17,6:.17})[c]??.17;return effectiveST(x)<=b}
@@ -20540,12 +20545,47 @@ function bhCalibratedSim(){
   if(sum>0) a.forEach(z=>z.v=(Number(z.v)||0)*100/sum);
   return a.sort((x,y)=>(y.v||0)-(x.v||0));
 }
+/* V348 最終SIM評価
+   SIMを独立した第四の世界にしない。
+   校正SIM 50% + HUNTER事前順位 30% + 世間評価 20%。
+   これを「SIM最終評価」の表示・順位・⑤⑥解放判定で共通使用する。 */
+function bhFinalSimEval(){
+  const cal=bhCalibratedSim();
+  const p=pre();
+  const m=market();
+
+  const preSorted=[...p].sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  const rankPts=[0,36,24,16,11,8,5]; // index=rank
+  const preMap=new Map(preSorted.map((x,i)=>[Number(x.boat),rankPts[i+1]||0]));
+  const preSum=[...preMap.values()].reduce((a,b)=>a+b,0)||1;
+
+  const marketMap=new Map((m||[]).map(x=>[Number(x.boat),Number(x.v)||0]));
+  const calMap=new Map((cal||[]).map(x=>[Number(x.boat),Number(x.v)||0]));
+
+  const out=[1,2,3,4,5,6].map(boat=>{
+    const simV=calMap.get(boat)||0;
+    const preV=(preMap.get(boat)||0)/preSum*100;
+    const marketV=marketMap.get(boat)||0;
+    const v=simV*.50 + preV*.30 + marketV*.20;
+    return {boat,v,simV,preV,marketV};
+  });
+
+  const sum=out.reduce((a,x)=>a+x.v,0)||1;
+  out.forEach(x=>x.v=x.v/sum*100);
+  return out.sort((a,b)=>b.v-a.v);
+}
+function bhFinalSimRank(boat){
+  const a=bhFinalSimEval();
+  const i=a.findIndex(x=>Number(x.boat)===Number(boat));
+  return i<0?99:i+1;
+}
+
 function chooseHeads(p){
   const lane1=p.find(x=>Number(x.boat)===1);
   const lane1MarketRank=lane1?(marketHeadRank(1)??99):99;
-  const lane1SimRank=lane1?(simHeadRank(1)??99):99;
+  const lane1SimRank=lane1?bhFinalSimRank(1):99;
   const lane1MarketPct=lane1?(marketHeadPct(1)??0):0;
-  const lane1SimPct=lane1?(bhCalibratedSim().find(x=>Number(x.boat)===1)?.v??0):0;
+  const lane1SimPct=lane1?(bhFinalSimEval().find(x=>Number(x.boat)===1)?.v??0):0;
 
   /* V343:
      1号艇は「保護して追加」する。
@@ -20840,7 +20880,7 @@ function bhResultAxisHit(pred,result){
 }
 function draw(){
   const p=pre();if(!p.length)return;
-  ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",sim(),"s");
+  ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",bhFinalSimEval(),"s");
   const pick=chooseHeads(p);
   const marketPass=divergencePass(p);
 
@@ -22038,6 +22078,16 @@ V346
 </script>
 
 <script id="bh-v347-marker">/* V347: 5/6三評価解放、1差され×2差し、5能力解放、3頭以上は本命以外期待値なし、本命折り返し拡張、見ルール維持、軸結果は頭連動 */</script>
+
+<script id="bh-v348-marker">
+/* V348
+   - SIM最終評価の表示を生SIMから統一校正SIMへ変更。
+   - 最終評価 = 校正SIM50% + HUNTER事前30% + 世間20%。
+   - ⑤⑥の三評価解放も、この画面表示と同じ最終SIM順位を使用。
+   - ①保護判定も同じ最終SIMへ統一。
+   - 生SIMは内部シミュレーション/買い目検証用として保持。 */
+</script>
+
 </body>
 </html>
 
