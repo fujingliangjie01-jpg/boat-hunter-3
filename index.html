@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V344</title>
+<title>BOAT HUNTER V345</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14857,7 +14857,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.344</div>
+  <div class="topVol">Vol.345</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15339,7 +15339,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.344: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.345: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16006,7 +16006,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.344 場時間帯補正
+/* Vol.345 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20230,7 +20230,9 @@ function met(r){
     second:rate(h,x=>+x.place===2),
     sashi:rate(h,x=>+x.place===1&&+x.tech===2)||0,
     makuri:rate(h,x=>+x.place===1&&+x.tech===3)||0,
-    mz:rate(h,x=>+x.place===1&&+x.tech===4)||0
+    mz:rate(h,x=>+x.place===1&&+x.tech===4)||0,
+    tilt:(()=>{const p=(window.__HUNTER_PREVIEW||[]).find(z=>Number(z.boat||z.entry_number)===Number(r.entry_number));return N(p?.tilt??p?.tilt_adjustment)})(),
+    actualCourse:(()=>{const e=(window.__HUNTER_ENTRY||[]).find(z=>Number(z.boat)===Number(r.entry_number));return Number(e?.course)||Number(r.entry_number)})()
   };
 }
 function sb(v){if(v==null)return 0;if(v<=.11)return 5;if(v<=.15)return 2;if(v<=.18)return-3;return-6}
@@ -20301,6 +20303,12 @@ function pre(){
   return R().map(met).map(x=>{
     let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r)+natWinBonus(x.nationalWin,"head");
     if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
+    /* V345: ③が壁ならダッシュ勢の頭率低下。④両対応は頭チャンス加点。 */
+    try{
+      const allFlow=R().map(met);
+      if(x.boat>=4 && isWall(3,allFlow))s-=(x.boat===4?6:x.boat===5?9:12);
+      if(x.boat===4 && fourDualAttack(allFlow))s+=7;
+    }catch(e){}
     /* V325: 偏差を潰さない。0下限丸めを廃止 */
     const base=va(x.boat,"p1");
     return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
@@ -20330,16 +20338,55 @@ function move(head){
   return z[0][0];
 }
 function axis(head,all){
-  const mv=move(head);
+  const mv=predictedTechnique(head,all);
+  const h=Number(head.boat);
+  const wall2=isWall(2,all);
+  const wall3=isWall(3,all);
+  const dual4=fourDualAttack(all);
+
   return all.filter(x=>x.boat!==head.boat).map(x=>{
     let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+natWinBonus(x.nationalWin,"axis");
-    if(x.fc===0){
-      if(mv==="差し"&&x.boat===1)s+=5;
-      if(mv==="まくり"&&x.boat===head.boat+1)s+=5;
-      if(mv==="まくり差し"&&(x.boat===1||x.boat===2))s+=5;
+    let exp=0;
+
+    /* ①逃げ: 2壁なら2・4、2壁なしなら3 */
+    if(h===1 && mv==="逃げ"){
+      if(wall2){
+        if(x.boat===2)exp+=9;
+        if(x.boat===4)exp+=6;
+        if(x.boat===3)exp-=3;
+      }else{
+        if(x.boat===3)exp+=9;
+        if(x.boat===2)exp+=2;
+      }
     }
+
+    /* ②差し: ①が最優先、④にも軸チャンス */
+    if(h===2 && mv==="差し"){
+      if(x.boat===1)exp+=10;
+      if(x.boat===4)exp+=6;
+    }
+
+    /* ③まくり差し: ①内残りを強く軸へ */
+    if(h===3 && mv==="まくり差し"){
+      if(x.boat===1)exp+=11;
+    }
+
+    /* ③まくり: ④追走 */
+    if(h===3 && mv==="まくり"){
+      if(x.boat===4)exp+=10;
+      if(x.boat===2)exp-=5;
+      if(x.boat===1)exp-=3;
+    }
+
+    /* ④がまくり/まくり差し両対応なら2着軸力も加点 */
+    if(x.boat===4 && dual4)exp+=7;
+
+    /* ③壁成立なら④以降の攻め・連対を抑える */
+    if(wall3 && x.boat>=4)exp-=5;
+
+    s+=exp;
     const base=va(x.boat,"p2");
-    return {...x,axisScore:s,axisBase:base,ad:base==null?s:s-base,basePending:base==null};
+    return {...x,axisScore:s,axisBase:base,axisFlowBonus:exp,ad:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.ad??-999)-(a.ad??-999));
 }
 function simCombo(combo){
@@ -20356,6 +20403,82 @@ function marketHeadPct(b){return market().find(x=>x.boat===b)?.v??null}
 function marketHeadRank(b){const a=market();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
 function simHeadRank(b){const a=sim();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
 
+
+/* ===== V345 展開優先ロジック ===== */
+function previewST(boat){
+  const p=(window.__HUNTER_PREVIEW||[]).find(x=>Number(x.boat||x.entry_number)===Number(boat));
+  return N(p?.st);
+}
+function effectiveST(x){ return previewST(x.boat)??N(x.st)??.18; }
+function actualCourseOf(x){ return Number(x?.actualCourse)||Number(x?.boat)||6; }
+function frontMoved(x){ return actualCourseOf(x)<Number(x.boat); }
+function tiltJump(x){ return N(x?.tilt)!=null && N(x.tilt)>=1.5; }
+
+/* 壁: STが遅すぎず、コース実績/地力が一定以上なら成立。
+   直外艇に0.03以上先行される場合は壁を弱める。 */
+function wallStrength(boat,all){
+  const x=all.find(v=>Number(v.boat)===Number(boat));
+  if(!x)return 0;
+  let w=0;
+  const st=effectiveST(x);
+  if(st<=.15)w+=3; else if(st<=.17)w+=2; else if(st<=.19)w+=1; else w-=2;
+  if((x.p2??0)>=35)w+=2;
+  if((x.p3??0)>=50)w+=1;
+  if((x.nationalWin??0)>=6)w+=1;
+  const outer=all.find(v=>actualCourseOf(v)===actualCourseOf(x)+1);
+  if(outer){
+    const edge=st-effectiveST(outer); // positive = outer is faster
+    if(edge>=.03)w-=4;
+    else if(edge>=.015)w-=2;
+  }
+  return w;
+}
+function isWall(boat,all){ return wallStrength(boat,all)>=3; }
+
+function fourDualAttack(all){
+  const x=all.find(v=>Number(v.boat)===4);
+  if(!x)return false;
+  const inner=all.find(v=>actualCourseOf(v)===actualCourseOf(x)-1);
+  const edge=inner?effectiveST(inner)-effectiveST(x):0;
+  const skill=(x.makuri??0)+(x.mz??0);
+  return actualCourseOf(x)===4 && !isWall(3,all) &&
+    ((x.makuri??0)>=5 || edge>=.015) &&
+    ((x.mz??0)>=5 || (x.nationalWin??0)>=5.5) &&
+    skill>=10;
+}
+
+/* 5・6は「展開が開いた時だけ」頭へ。
+   前付けで実進入が内 / チルト+1.5以上は例外ルート。 */
+function outerHeadGate(x,all){
+  const b=Number(x.boat);
+  if(b<5)return {ok:true,reason:"通常"};
+  if(frontMoved(x) && actualCourseOf(x)<=4)return {ok:true,reason:"前付け例外"};
+  if(tiltJump(x)){
+    const inner=all.find(v=>actualCourseOf(v)===actualCourseOf(x)-1);
+    if(!inner || effectiveST(x)<=effectiveST(inner)+.015)
+      return {ok:true,reason:"高チルト例外"};
+  }
+
+  const simPct=sim().find(z=>Number(z.boat)===b)?.v??0;
+  const inner3Wall=isWall(3,all);
+  const four=all.find(v=>Number(v.boat)===4);
+  const fourAttack=four && !inner3Wall &&
+    (fourDualAttack(all) || predictedTechnique(four,all)==="まくり" || predictedTechnique(four,all)==="まくり差し");
+  const ownTech=predictedTechnique(x,all);
+  const inner=all.find(v=>actualCourseOf(v)===actualCourseOf(x)-1);
+  const stEdge=inner?effectiveST(inner)-effectiveST(x):0;
+
+  if(b===5){
+    const opened=!!fourAttack;
+    const ownAttack=(ownTech==="まくり差し"||ownTech==="まくり") && stEdge>=-.01;
+    return {ok:opened&&ownAttack&&simPct>=8,reason:opened?"4攻め展開":"展開なし"};
+  }
+  /* 6はさらに厳格 */
+  const five=all.find(v=>Number(v.boat)===5);
+  const chainOpen=!!fourAttack && five && !isWall(3,all);
+  const ownAttack=(ownTech==="まくり差し"||ownTech==="まくり") && stEdge>=0;
+  return {ok:chainOpen&&ownAttack&&simPct>=10,reason:chainOpen?"外展開連鎖":"展開なし"};
+}
 function chooseHeads(p){
   const lane1=p.find(x=>Number(x.boat)===1);
   const lane1MarketRank=lane1?(marketHeadRank(1)??99):99;
@@ -20379,8 +20502,16 @@ function chooseHeads(p){
 
   /* 本来の頭候補群。
      -1以上を基本採用。並びはHUNTER偏差順。 */
+  const allNow=R().map(met);
   const natural=p
     .filter(x=>x.diff!=null&&x.diff>=-1)
+    .filter(x=>{
+      if(Number(x.boat)<5)return true;
+      const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
+      const gate=outerHeadGate(ax,allNow);
+      x.outerHeadGate=gate;
+      return gate.ok;
+    })
     .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
 
   const top=natural[0];
@@ -20422,6 +20553,11 @@ function chooseHeads(p){
     const extras=p
       .filter(x=>!heads.some(h=>Number(h.boat)===Number(x.boat)))
       .filter(x=>x.diff!=null)
+      .filter(x=>{
+        if(Number(x.boat)<5)return true;
+        const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
+        return outerHeadGate(ax,allNow).ok;
+      })
       .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
     if(extras[0])heads.push(extras[0]);
   }
@@ -20461,7 +20597,7 @@ function cutForHead(head,all,axes){
 
   /* 決まり手による絶対保護 */
   if(tech==="まくり" && hb<6) protectedBoats.add(hb+1);
-  if((tech==="まくり差し" || tech==="差し") && hb!==1) protectedBoats.add(1);
+  if((tech==="まくり差し" || tech==="まくり/まくり差し" || tech==="差し") && hb!==1) protectedBoats.add(1);
 
   const rows=(all||[])
     .filter(x=>!protectedBoats.has(Number(x.boat)))
@@ -20534,7 +20670,10 @@ function predictedTechnique(head,all){
   const edge=Number.isFinite(st)&&Number.isFinite(ist)?ist-st:0;
   if(b===2)return (edge>=.03||atk>=8)?"まくり":"差し";
   if(b===3)return (edge>=.025||atk>=8)?"まくり":"まくり差し";
-  if(b===4)return (edge>=.03||atk>=8)?"まくり":"まくり差し";
+  if(b===4){
+    if(fourDualAttack(all))return "まくり/まくり差し";
+    return (edge>=.03||atk>=8)?"まくり":"まくり差し";
+  }
   if(b===5)return (atk>=8&&edge>=.02)?"まくり":"まくり差し";
   if(b===6)return (atk>=9&&edge>=.03)?"まくり":"まくり差し";
   return "—";
@@ -21788,6 +21927,18 @@ window.BH_V334_HEAD_POLICY = {
   killStage();
   setInterval(killStage,1500);
 })();
+</script>
+
+
+<script id="bh-v345-marker">
+/* V345 展開優先
+  1) 5・6頭は偏差だけで昇格禁止。展開成立時のみ。前付け/高チルト例外。
+  2) 4はダッシュ最内。まくり+まくり差し両対応なら1着/2着評価UP。
+  3) 3が壁なら4・5・6の頭評価を段階的に低下。
+  4) 1逃げ: 2壁あり→2/4軸UP、2壁なし→3軸UP。
+  5) 2差し→1軸最優先、4も軸UP。
+  6) 3まくり差し→1軸UP。3まくり→4追走軸UP。
+  7) 実進入・チルト・壁→決まり手→頭→軸→3着/切りの順で連動。 */
 </script>
 
 </body>
