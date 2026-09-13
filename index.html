@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V349</title>
+<title>BOAT HUNTER V351</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14852,6 +14852,62 @@ input,
 .hfdSimCal{font-size:6px!important;color:#d8baff!important;opacity:.85;font-weight:1000!important;margin-left:2px}
 </style>
 
+
+<style id="bh-v350-market-scenario">
+.hfdMarketScenario{
+  margin:4px;padding:6px;border:1px solid rgba(73,197,255,.24);
+  border-radius:9px;background:#05131d
+}
+.hfdMarketType{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:5px}
+.hfdMarketType small{font-size:6px;color:#7eb6cf;font-weight:1000;letter-spacing:.08em}
+.hfdMarketType strong{font-size:10px;color:#fff}
+.hfdMarketType.escape strong{color:#77e4ff}
+.hfdMarketType.other strong{color:#ffd66e}
+.hfdMarketMove{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:7px;color:#8caebb;font-weight:900}
+.hfdMarketMove>b{margin-left:auto;font-size:9px;color:#fff}
+.hfdMarketHeadBoat,.hfdMarketAxisBoat{width:22px!important;height:22px!important;border-radius:5px!important;font-size:10px!important}
+.hfdMarketAxis{margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.08)}
+.hfdMarketAxis>span{display:block;margin-bottom:4px;font-size:6px;color:#7ea0b0;font-weight:1000}
+.hfdMarketAxis>div{display:flex;flex-direction:column;gap:3px}
+.hfdMarketAxisItem{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:4px}
+.hfdMarketAxisItem b{font-size:8px;color:#fff}
+.hfdMarketAxisItem em{font-size:6px;color:#7bd7ff;font-style:normal;font-weight:1000}
+.hfdMarketWait{font-size:7px;color:#7f929c;font-weight:900}
+</style>
+
+
+<style id="bh-v351-market-nonescape">
+.hfdMarketNonEscapeToggle{
+  width:calc(100% - 8px);min-height:34px;margin:5px 4px 3px;padding:6px 8px;
+  border:1px solid rgba(255,214,110,.28);border-radius:8px;
+  background:#171408;color:#f4cf6a;font-size:8px;font-weight:1000;
+  text-align:center
+}
+.hfdMarketNonEscapeToggle:disabled{opacity:.45}
+.hfdMarketNonEscape{margin:4px;display:grid;gap:5px}
+.hfdMarketNonEscape.hide{display:none!important}
+.hfdNonEscapeCard{
+  padding:6px;border:1px solid rgba(255,255,255,.10);
+  border-radius:8px;background:#08151d
+}
+.hfdNonEscapeHead{display:flex;align-items:center;gap:5px}
+.hfdNonEscapeHead>b{margin-left:auto;font-size:10px;color:#fff}
+.hfdNonEscapeRank{
+  min-width:42px;padding:3px 4px;border-radius:5px;background:#332707;
+  color:#ffd96a;font-size:6px;font-weight:1000;text-align:center
+}
+.hfdNonEscapeMove{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:6px;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.07)
+}
+.hfdNonEscapeMove span,.hfdNonEscapeAxes>span{
+  font-size:6px;color:#7fa0ae;font-weight:1000
+}
+.hfdNonEscapeMove strong{font-size:8px;color:#fff}
+.hfdNonEscapeAxes{margin-top:5px}
+.hfdNonEscapeAxes>div{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14862,7 +14918,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.349</div>
+  <div class="topVol">Vol.351</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15025,7 +15081,15 @@ input,
 <section id="hunterFinalDecision" class="hunterFinalDecision">
   <div class="hfdHead"><div><small>HUNTER FINAL</small><b>3評価 × 3連単 FORMATION</b></div><strong id="hfdState">AI解析待ち</strong></div>
   <div class="hfdRanks">
-    <div><h4>世間評価</h4><div id="hfdMarket"></div></div>
+    <div class="hfdMarketBox">
+      <h4>世間評価</h4>
+      <div id="hfdMarketScenario" class="hfdMarketScenario">120通り取得待ち</div>
+      <button type="button" id="hfdMarketNonEscapeToggle" class="hfdMarketNonEscapeToggle" aria-expanded="false">
+        イン逃げ以外 TOP3を見る ＋
+      </button>
+      <div id="hfdMarketNonEscape" class="hfdMarketNonEscape hide"></div>
+      <div id="hfdMarket"></div>
+    </div>
     <div><h4>HUNTER事前評価</h4><div id="hfdPre"></div></div>
     <div><h4>SIM検証評価 <small class="hfdSimCal">検証</small></h4><div id="hfdSim"></div></div>
   </div>
@@ -15344,7 +15408,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.349: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.351: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16011,7 +16075,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.349 場時間帯補正
+/* Vol.351 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20321,14 +20385,136 @@ function pre(){
     return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.headDecisionDiff??b.diff??-999)-(a.headDecisionDiff??a.diff??-999));
 }
+function marketOddsRows(){
+  const o=window.__HUNTER_ODDS120?.odds;
+  if(!Array.isArray(o))return [];
+  return o.map(x=>{
+    const combo=String(x.combo||x.key||"").replace(/[=>]/g,"-");
+    const a=combo.split("-").map(Number);
+    const odds=N(x.odds??x.value);
+    if(a.length!==3||a.some(v=>v<1||v>6)||!(odds>0))return null;
+    return {combo,a,odds,w:1/odds};
+  }).filter(Boolean);
+}
+
+/* V350 世間評価
+   過去の世間順位ロジックを廃止し、3連単120通りだけから
+   1着支持・2着支持・3着支持を独立算出する。 */
+function marketProfile(){
+  const rows=marketOddsRows();
+  const first={1:0,2:0,3:0,4:0,5:0,6:0};
+  const second={1:0,2:0,3:0,4:0,5:0,6:0};
+  const third={1:0,2:0,3:0,4:0,5:0,6:0};
+
+  rows.forEach(r=>{
+    first[r.a[0]]+=r.w;
+    second[r.a[1]]+=r.w;
+    third[r.a[2]]+=r.w;
+  });
+
+  const norm=o=>{
+    const sum=Object.values(o).reduce((a,b)=>a+b,0)||1;
+    return Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v/sum*100]));
+  };
+
+  const f=norm(first),s2=norm(second),t3=norm(third);
+  const rank=obj=>Object.entries(obj)
+    .map(([boat,v])=>({boat:+boat,v}))
+    .sort((a,b)=>b.v-a.v);
+
+  return {
+    rows,
+    first:f,second:s2,third:t3,
+    firstRank:rank(f),secondRank:rank(s2),thirdRank:rank(t3)
+  };
+}
+
 function market(){
-  const m=window.__HUNTER_MARKET_RANK;
-  if(Array.isArray(m))return m.map(x=>({boat:+(x.boat||x.entry_number||x.no),v:N(x.rate||x.percent||x.pct)})).filter(x=>x.boat);
-  const o=window.__HUNTER_ODDS120?.odds;if(!Array.isArray(o))return[];
+  return marketProfile().firstRank;
+}
+function marketSecondPct(b){return marketProfile().second[Number(b)]??null}
+function marketThirdPct(b){return marketProfile().third[Number(b)]??null}
+
+function marketConditionalAxis(headBoat){
+  const rows=marketOddsRows().filter(r=>r.a[0]===Number(headBoat));
   const q={1:0,2:0,3:0,4:0,5:0,6:0};
-  o.forEach(x=>{const b=+String(x.combo||x.key||"").split(/[-=>]/)[0],d=N(x.odds||x.value);if(q[b]!=null&&d>0)q[b]+=1/d});
+  rows.forEach(r=>{q[r.a[1]]+=r.w});
   const sum=Object.values(q).reduce((a,b)=>a+b,0)||1;
-  return Object.entries(q).map(([b,v])=>({boat:+b,v:v/sum*100})).sort((a,b)=>b.v-a.v);
+  return Object.entries(q)
+    .filter(([b])=>Number(b)!==Number(headBoat))
+    .map(([boat,v])=>({boat:+boat,v:v/sum*100}))
+    .sort((a,b)=>b.v-a.v);
+}
+
+function marketLikelyMove(headBoat){
+  const b=Number(headBoat);
+  if(b===1)return "逃げ";
+  if(b===2)return "差し";
+  if(b===3)return "まくり / まくり差し";
+  if(b===4)return "まくり / まくり差し";
+  if(b===5)return "まくり差し / 展開突き";
+  if(b===6)return "展開突き / まくり差し";
+  return "—";
+}
+
+function marketScenario(){
+  const p=marketProfile();
+  const top=p.firstRank[0]||null;
+  const second=p.firstRank[1]||null;
+  if(!top)return {type:"none",label:"未取得",head:null,axis:[],move:"—"};
+
+  const onePct=p.first[1]||0;
+  const gap=top&&second?(top.v-second.v):0;
+
+  /* 世間が「イン逃げ型」と見る条件:
+     1号艇が1着支持1位かつ、支持35%以上または2位との差10pt以上 */
+  const isEscape=top.boat===1 && (onePct>=35 || gap>=10);
+
+  if(isEscape){
+    const axis=marketConditionalAxis(1);
+    return {
+      type:"escape",
+      label:"イン逃げ",
+      head:1,
+      headPct:onePct,
+      move:"逃げ",
+      axis:axis.slice(0,2),
+      axisAll:axis
+    };
+  }
+
+  const head=top.boat;
+  const axis=marketConditionalAxis(head);
+  return {
+    type:"other",
+    label:"イン逃げ以外",
+    head,
+    headPct:top.v,
+    move:marketLikelyMove(head),
+    axis:axis.slice(0,2),
+    axisAll:axis
+  };
+}
+
+/* V351: イン逃げ以外の世間シナリオ TOP3
+   1号艇を除いた1着支持上位3艇について、
+   頭支持・想定決まり手・その頭での軸1/軸2を返す。 */
+function marketNonEscapeTop3(){
+  const p=marketProfile();
+  return (p.firstRank||[])
+    .filter(x=>Number(x.boat)!==1)
+    .slice(0,3)
+    .map((x,i)=>{
+      const axis=marketConditionalAxis(x.boat);
+      return {
+        rank:i+1,
+        head:Number(x.boat),
+        headPct:Number(x.v)||0,
+        move:marketLikelyMove(x.boat),
+        axis:axis.slice(0,2),
+        axisAll:axis
+      };
+    });
 }
 function sim(){
   const z=window.__HUNTER_SIM5000;if(!z?.counts)return[];
@@ -20995,9 +21181,97 @@ function bhResultAxisHit(pred,result){
  if(!f)return false;
  return (f.ax||f.axes||[]).map(x=>+(x?.boat??x)).includes(r[1]);
 }
+
+
+function renderMarketNonEscape(){
+  const box=$("hfdMarketNonEscape");
+  const btn=$("hfdMarketNonEscapeToggle");
+  if(!box||!btn)return;
+
+  const list=marketNonEscapeTop3();
+  if(!list.length){
+    box.innerHTML=`<div class="hfdMarketWait">120通り取得待ち</div>`;
+    btn.disabled=true;
+    return;
+  }
+  btn.disabled=false;
+
+  box.innerHTML=list.map(x=>{
+    const axisHtml=(x.axis||[]).length
+      ? x.axis.map((a,i)=>`
+          <span class="hfdMarketAxisItem">
+            ${B(a.boat,"hfdMarketAxisBoat")}
+            <b>${a.v.toFixed(1)}%</b>
+            <em>${i===0?"軸1":"軸2"}</em>
+          </span>`).join("")
+      : `<span class="hfdMarketWait">軸判定なし</span>`;
+
+    return `
+      <div class="hfdNonEscapeCard">
+        <div class="hfdNonEscapeHead">
+          <span class="hfdNonEscapeRank">非イン${x.rank}</span>
+          ${B(x.head,"hfdMarketHeadBoat")}
+          <b>${x.headPct.toFixed(1)}%</b>
+        </div>
+        <div class="hfdNonEscapeMove">
+          <span>想定決まり手</span><strong>${x.move}</strong>
+        </div>
+        <div class="hfdNonEscapeAxes">
+          <span>世間軸</span>
+          <div>${axisHtml}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function ensureMarketNonEscapeToggle(){
+  const btn=$("hfdMarketNonEscapeToggle");
+  const box=$("hfdMarketNonEscape");
+  if(!btn||!box||btn.dataset.bound==="1")return;
+  btn.dataset.bound="1";
+  btn.addEventListener("click",()=>{
+    const open=box.classList.contains("hide");
+    box.classList.toggle("hide",!open);
+    btn.setAttribute("aria-expanded",open?"true":"false");
+    btn.textContent=open?"イン逃げ以外 TOP3を閉じる −":"イン逃げ以外 TOP3を見る ＋";
+  });
+}
+function renderMarketScenario(){
+  const el=$("hfdMarketScenario");
+  if(!el)return;
+  ensureMarketNonEscapeToggle();
+  renderMarketNonEscape();
+  const sc=marketScenario();
+  if(sc.type==="none"){
+    el.innerHTML=`<span class="hfdMarketWait">120通り取得待ち</span>`;
+    return;
+  }
+
+  const axis=sc.axis||[];
+  const axisText=axis.length
+    ? axis.map((x,i)=>`<span class="hfdMarketAxisItem">${B(x.boat,"hfdMarketAxisBoat")}<b>${x.v.toFixed(1)}%</b>${i===0?"<em>軸1</em>":"<em>軸2</em>"}</span>`).join("")
+    : `<span class="hfdMarketWait">軸判定なし</span>`;
+
+  el.innerHTML=`
+    <div class="hfdMarketType ${sc.type}">
+      <small>MARKET SCENARIO</small>
+      <strong>${sc.label}</strong>
+    </div>
+    <div class="hfdMarketMove">
+      <span>想定頭</span>${B(sc.head,"hfdMarketHeadBoat")}
+      <b>${(sc.headPct??0).toFixed(1)}%</b>
+    </div>
+    <div class="hfdMarketMove">
+      <span>想定決まり手</span><b>${sc.move}</b>
+    </div>
+    <div class="hfdMarketAxis">
+      <span>世間軸</span>
+      <div>${axisText}</div>
+    </div>`;
+}
 function draw(){
   const p=pre();if(!p.length)return;
-  ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",bhFinalSimEval(),"s");
+  ensureToggle(); renderMarketScenario(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",bhFinalSimEval(),"s");
   const pick=chooseHeads(p);
   const marketPass=divergencePass(p);
 
@@ -22218,6 +22492,27 @@ V346
 - 折り返し: 軸1は許可。軸2以降は軸1との差が1pt以内のみ。
 - 頭候補2以降の折り返しはさらに厳しく、条件付き2着率12%以上かつ最大2点。
 - 結果確認の軸○は、頭的中かつその頭の軸が実際に2着の時のみ。 */
+</script>
+
+
+<script id="bh-v350-marker">
+/* V350 世間評価を全面再構築
+   - 過去の世間順位ロジックを廃止。
+   - 3連単120通りだけから1着/2着/3着支持を独立算出。
+   - まず「イン逃げ型」か「イン逃げ以外」かを判定。
+   - イン逃げ型なら 1頭固定で世間軸(条件付き2着支持)を抽出。
+   - イン逃げ以外なら世間1着支持トップ艇を頭とし、
+     艇番から想定決まり手を表示し、その頭での世間軸を抽出。
+   - HUNTER事前評価/SIM検証ロジックにはまだ手を入れない。 */
+</script>
+
+
+<script id="bh-v351-marker">
+/* V351
+   世間評価に「イン逃げ以外 TOP3」追加。
+   通常は非表示。
+   ボタンで展開すると非イン1〜3位それぞれについて、
+   1着支持率・想定決まり手・条件付き世間軸1/軸2を表示。 */
 </script>
 
 </body>
