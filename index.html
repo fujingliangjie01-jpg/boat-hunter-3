@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V333</title>
+<title>BOAT HUNTER V334</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14812,7 +14812,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.333</div>
+  <div class="topVol">Vol.334</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15296,7 +15296,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.333: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.334: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15963,7 +15963,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.333 場時間帯補正
+/* Vol.334 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -21458,6 +21458,56 @@ window.bhVenueBase=function(course,key="p1"){
    FORMATION = 頭候補1〜NのOR判定。
    どれか1候補でも完全一致ならレース的中。
    TODAY/TOTALとも1Rにつき最大1的中として蓄積。 */
+</script>
+
+
+<script id="bh-v334-head-policy">
+/* V334 HEAD POLICY
+   - 基本は頭候補2艇
+   - 主頭の頭偏差が +40.0 以上なら例外的に1艇
+   - 頭候補2の優先: 世間評価1位 > 1号艇かつ頭偏差プラス > SIM上位 > HUNTER事前評価
+   - 1号艇で頭偏差プラスは原則として頭候補選考に残す
+   - 最終的な頭候補は既存の採用不可/切り条件を壊さない
+*/
+window.BH_V334_HEAD_POLICY = {
+  maxHeads: 2,
+  dominantHeadDeviation: 40,
+  keepLane1PositiveDeviation: true,
+  preferMarketRank1: true
+};
+</script>
+
+<script id="bh-v334-head-runtime">
+(function(){
+  const num=v=>Number.isFinite(+v)?+v:0;
+  const lane=x=>num(x?.lane ?? x?.boat ?? x?.waku ?? x?.no);
+  const dev=x=>num(x?.headDev ?? x?.headDeviation ?? x?.deviation ?? x?.hensachi);
+  const market=x=>num(x?.marketRank ?? x?.publicRank ?? x?.sekenRank ?? 99);
+  const sim=x=>num(x?.sim ?? x?.simPct ?? x?.simRate);
+  const hunter=x=>num(x?.hunter ?? x?.hunterScore ?? x?.preScore);
+
+  window.bhV334SelectHeads=function(candidates){
+    if(!Array.isArray(candidates)||!candidates.length) return candidates||[];
+    const valid=candidates.filter(x=>x && !x.cut && !x.disabled && !x.headExcluded);
+    if(!valid.length) return [];
+
+    const primary=[...valid].sort((a,b)=>
+      hunter(b)-hunter(a) || sim(b)-sim(a) || dev(b)-dev(a) || market(a)-market(b)
+    )[0];
+
+    if(primary && dev(primary)>=40) return [primary];
+
+    const rest=valid.filter(x=>x!==primary).sort((a,b)=>{
+      const ap = market(a)===1 ? 1:0, bp = market(b)===1 ? 1:0;
+      if(ap!==bp) return bp-ap;
+      const a1 = lane(a)===1 && dev(a)>0 ? 1:0, b1 = lane(b)===1 && dev(b)>0 ? 1:0;
+      if(a1!==b1) return b1-a1;
+      return sim(b)-sim(a) || hunter(b)-hunter(a) || dev(b)-dev(a);
+    });
+
+    return primary ? [primary,...rest].slice(0,2) : rest.slice(0,2);
+  };
+})();
 </script>
 
 </body>
