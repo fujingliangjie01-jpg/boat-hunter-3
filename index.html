@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V327</title>
+<title>BOAT HUNTER V328</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14783,7 +14783,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.327</div>
+  <div class="topVol">Vol.328</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15267,7 +15267,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.327: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.328: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15934,7 +15934,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.327 場時間帯補正
+/* Vol.328 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20320,13 +20320,19 @@ function thirdDiff(x){
 }
 function cutForHead(head,all,axes){
   const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
-  const cut=[],stay=[];
+  const candidates=[];
+  const stay=[];
   all.forEach(x=>{
     if(protectedBoats.has(x.boat))return;
     const d=thirdDiff(x);
-    if(d!=null&&d<=-10)cut.push({...x,thirdDiff:d});
+    if(d!=null&&d<=-10)candidates.push({...x,thirdDiff:d});
     else stay.push({...x,thirdDiff:d});
   });
+  /* V328: 切り候補は各頭候補ごとに最大1艇。最も3着偏差が低い艇だけ切る。 */
+  candidates.sort((a,b)=>(a.thirdDiff??999)-(b.thirdDiff??999));
+  const cut=candidates.slice(0,1);
+  /* 2番目以降の切り水準艇は3着候補へ戻す。 */
+  stay.push(...candidates.slice(1));
   return {cut,stay};
 }
 function combinations(head,a2,a3){
@@ -20335,35 +20341,31 @@ function combinations(head,a2,a3){
   return out;
 }
 function classify(head,axes,a3,thirdStay){
-  const baseCombos=combinations(head.boat,axes.map(x=>x.boat),a3);
+  const axisBoats=axes.map(x=>x.boat);
+  const baseCombos=combinations(head.boat,axisBoats,a3);
   const scored=baseCombos.map(c=>{
     const sr=simCombo(c),o=odd(c);
     return {combo:c,sim:sr,odds:o,ev:o==null?null:sr/100*o};
   }).sort((a,b)=>b.sim-a.sim);
 
-  const main=[],cover=[],value=[];
+  const main=[],cover=[];
   scored.forEach((x,i)=>{
     if(i<Math.min(3,scored.length)&&x.sim>0)main.push(x);
     else cover.push(x);
-    if(x.ev!=null&&x.ev>=1.05)value.push({...x,reason:"SIM×オッズ"});
   });
 
-  /* 3着高偏差艇を2着へ昇格。頭は絶対に増やさない。 */
-  thirdStay.filter(x=>(x.thirdDiff??-999)>=5&&!axes.some(a=>a.boat===x.boat)).forEach(x=>{
-    axes.forEach(a=>{
-      if(a.boat===x.boat)return;
-      const c=`${head.boat}-${x.boat}-${a.boat}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
-      if(sr>0 || (ev!=null&&ev>=1)){
-        value.push({combo:c,sim:sr,odds:o,ev,reason:"3着高偏差→2着昇格"});
-      }
-    });
-  });
-
-  /* HUNTER/SIM上位なのに世間低評価の頭は期待値側へ。 */
-  const mr=marketHeadRank(head.boat),mp=marketHeadPct(head.boat),srk=simHeadRank(head.boat);
-  if(mr!=null&&mr>=4&&(head.diff??0)>=10&&(mp==null||mp<15)&&srk!=null&&srk<=2){
-    scored.slice(0,2).forEach(x=>value.push({...x,reason:"HUNTER×SIM高評価 / 世間低評価"}));
-  }
+  /* V328 期待値固定ルール:
+     本命の「3着候補のみ」の艇を2着へ昇格し、
+     本命の軸艇を3着へ置く。単純な裏返しやEV自動追加はしない。 */
+  const mainSecond=new Set(main.map(x=>+String(x.combo).split('-')[1]));
+  const mainThird=new Set(main.map(x=>+String(x.combo).split('-')[2]));
+  const thirdOnly=[...mainThird].filter(b=>!mainSecond.has(b)&&!axisBoats.includes(b)&&b!==head.boat);
+  const value=[];
+  thirdOnly.forEach(b=>axisBoats.forEach(a=>{
+    if(a===b||a===head.boat)return;
+    const c=`${head.boat}-${b}-${a}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
+    value.push({combo:c,sim:sr,odds:o,ev,reason:'本命3着専用→2着 / 本命軸→3着'});
+  }));
 
   const uniq=a=>{
     const m=new Map();
