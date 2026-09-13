@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V325</title>
+<title>BOAT HUNTER V326</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14762,6 +14762,14 @@ input,
 #bh323JumpBet span{opacity:.72;font-size:11px;margin-left:6px}
 </style>
 
+<style id="bh-v326-axis">
+.hfdAxisDeviation{margin:0 0 9px;padding:8px;border:1px solid rgba(65,194,241,.35);border-radius:10px;background:#061824}
+.hfdAxisLabel{display:block;margin-bottom:6px;color:#69d7ff;font-size:8px;font-weight:1000;letter-spacing:.15em}
+.hfdAxisChips{display:flex;gap:6px;flex-wrap:wrap}.hfdAxisChip{display:grid;grid-template-columns:auto 28px auto;align-items:center;gap:5px;padding:5px 7px;border:1px solid #35586a;border-radius:8px;background:#0a202d}
+.hfdAxisChip small{font-size:8px;color:#8ca9b8;font-weight:900}.hfdAxisChip b{font-size:12px;font-weight:1000}.hfdAxisChip.plus b{color:#6cdbff}.hfdAxisChip.zero b{color:#fff}.hfdAxisChip.minus b{color:#9aa8b0}
+.hfdAxisBoat{width:28px!important;height:28px!important;display:grid!important;place-items:center!important;border:1.5px solid #fff!important;border-radius:6px!important;font-size:13px!important;font-weight:1000!important}
+.hfdAxisNone{font-size:10px;color:#8ca0aa}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14772,7 +14780,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.325</div>
+  <div class="topVol">Vol.326</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15256,7 +15264,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.325: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.326: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15923,7 +15931,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.325 場時間帯補正
+/* Vol.326 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20251,14 +20259,28 @@ function marketHeadRank(b){const a=market();const i=a.findIndex(x=>x.boat===b);r
 function simHeadRank(b){const a=sim();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
 
 function chooseHeads(p){
-  const valid=p.filter(x=>x.diff!=null&&x.diff>=-1);
-  const pool=valid.length?valid:[p[0]];
-  const top=pool[0],second=pool[1];
+  const normal=p.filter(x=>x.diff!=null&&x.diff>=-1);
+  const oneHold=p.find(x=>x.boat===1&&x.diff!=null&&x.diff>=-5&&x.diff<-1);
+
+  if(oneHold){
+    const mr=marketHeadRank(1),sr=simHeadRank(1);
+    const mp=marketHeadPct(1)??0;
+    const sp=sim().find(x=>x.boat===1)?.v??0;
+    oneHold.headHold=true;
+    oneHold.headHoldKept=((mr??99)<=2&&(sr??99)<=2)||(mp>=20&&sp>=20);
+  }
+
+  let eligible=[...normal];
+  if(oneHold?.headHoldKept&&!eligible.some(x=>x.boat===1))eligible.push(oneHold);
+  eligible.sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+
+  const top=eligible[0],second=eligible[1];
   const standout=top&&second&&top.diff>=10&&(top.diff-second.diff)>=5;
-  if(standout)return {heads:[top],pass:false,rawCount:1,standout:true};
-  const positive=p.filter(x=>x.diff!=null&&x.diff>=-1);
-  const pass=positive.length>=3;
-  return {heads:pass?positive:positive.slice(0,2),pass,rawCount:positive.length,standout:false};
+  if(standout && !(oneHold?.headHoldKept&&top.boat!==1))
+    return {heads:[top],pass:false,rawCount:1,standout:true,oneHold};
+
+  const pass=eligible.length>=3;
+  return {heads:pass?eligible:eligible.slice(0,2),pass,rawCount:eligible.length,standout:false,oneHold};
 }
 function thirdDiff(x){
   const base=va(x.boat,"p3");
@@ -20419,6 +20441,15 @@ function draw(){
         <em>偏差 ${P(f.h.diff)}</em>
       </div>
 
+      <div class="hfdAxisDeviation">
+        <span class="hfdAxisLabel">AXIS / 軸偏差</span>
+        <div class="hfdAxisChips">
+          ${(f.ax||[]).slice(0,2).map((x,i)=>`
+            <span class="hfdAxisChip ${x.ad>0?"plus":x.ad<0?"minus":"zero"}">
+              <small>軸${i+1}</small>${B(x.boat,"hfdAxisBoat")}<b>${P(x.ad)}</b>
+            </span>`).join("")||`<span class="hfdAxisNone">軸候補なし</span>`}
+        </div>
+      </div>
       <div class="hfdPickBand main">
         <strong>本線</strong>
         <div>${makeForm(main,"main")}</div>
