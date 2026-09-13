@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V345</title>
+<title>BOAT HUNTER V346</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14857,7 +14857,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.345</div>
+  <div class="topVol">Vol.346</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15339,7 +15339,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.345: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.346: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16006,7 +16006,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.345 場時間帯補正
+/* Vol.346 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20312,7 +20312,7 @@ function pre(){
     /* V325: 偏差を潰さない。0下限丸めを廃止 */
     const base=va(x.boat,"p1");
     return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
-  }).sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  }).sort((a,b)=>(b.headDecisionDiff??b.diff??-999)-(a.headDecisionDiff??a.diff??-999));
 }
 function market(){
   const m=window.__HUNTER_MARKET_RANK;
@@ -20459,7 +20459,7 @@ function outerHeadGate(x,all){
       return {ok:true,reason:"高チルト例外"};
   }
 
-  const simPct=sim().find(z=>Number(z.boat)===b)?.v??0;
+  /* V346: SIMは頭資格を作らない。頭資格は事前評価・実進入・展開だけで決定 */
   const inner3Wall=isWall(3,all);
   const four=all.find(v=>Number(v.boat)===4);
   const fourAttack=four && !inner3Wall &&
@@ -20471,20 +20471,66 @@ function outerHeadGate(x,all){
   if(b===5){
     const opened=!!fourAttack;
     const ownAttack=(ownTech==="まくり差し"||ownTech==="まくり") && stEdge>=-.01;
-    return {ok:opened&&ownAttack&&simPct>=8,reason:opened?"4攻め展開":"展開なし"};
+    return {ok:opened&&ownAttack,reason:opened?"4攻め展開":"展開なし"};
   }
   /* 6はさらに厳格 */
   const five=all.find(v=>Number(v.boat)===5);
   const chainOpen=!!fourAttack && five && !isWall(3,all);
   const ownAttack=(ownTech==="まくり差し"||ownTech==="まくり") && stEdge>=0;
-  return {ok:chainOpen&&ownAttack&&simPct>=10,reason:chainOpen?"外展開連鎖":"展開なし"};
+  return {ok:chainOpen&&ownAttack,reason:chainOpen?"外展開連鎖":"展開なし"};
+}
+
+/* ===== V346 SIM校正 =====
+   SIMは頭候補を発掘せず、事前診断の検証専用。
+   外枠ほどコース基礎1着率へ収縮し、通常6コースの異常な高率を抑える。 */
+function bhCourseBaseWin(course){
+  const c=Number(course);
+  return ({1:55,2:14,3:13,4:11,5:5,6:2})[c] ?? 10;
+}
+function bhSimShrinkWeight(course){
+  const c=Number(course);
+  return ({1:.72,2:.68,3:.66,4:.62,5:.50,6:.40})[c] ?? .60;
+}
+function bhCalibratedSimPct(boat, rawPct, all){
+  const x=(all||R().map(met)).find(v=>Number(v.boat)===Number(boat));
+  if(!x) return Number(rawPct)||0;
+  const c=actualCourseOf(x);
+  const raw=Number(rawPct)||0;
+  const base=bhCourseBaseWin(c);
+  let w=bhSimShrinkWeight(c);
+
+  /* 前付け・高チルトは例外として生SIMをやや強く残す */
+  if(frontMoved(x) && c<=4) w=Math.max(w,.72);
+  if(tiltJump(x)) w=Math.max(w,.68);
+
+  /* ③壁成立時は4～6の頭率をさらに抑制 */
+  let pct=base*(1-w)+raw*w;
+  if(isWall(3,all||R().map(met)) && c>=4){
+    pct *= (c===4?.82:c===5?.70:.58);
+  }
+
+  /* 5/6は頭資格なしなら、SIM表示も上限を設ける。
+     これは頭昇格条件ではなく、非現実的な外枠確率の校正。 */
+  if(Number(boat)>=5){
+    const gate=outerHeadGate(x,all||R().map(met));
+    if(!gate.ok) pct=Math.min(pct, Number(boat)===5?9.9:5.9);
+  }
+  return Math.max(0,Math.min(100,pct));
+}
+function bhCalibratedSim(){
+  const all=R().map(met);
+  const raw=sim();
+  const a=raw.map(z=>({...z,v:bhCalibratedSimPct(z.boat,z.v,all)}));
+  const sum=a.reduce((q,z)=>q+(Number(z.v)||0),0);
+  if(sum>0) a.forEach(z=>z.v=(Number(z.v)||0)*100/sum);
+  return a.sort((x,y)=>(y.v||0)-(x.v||0));
 }
 function chooseHeads(p){
   const lane1=p.find(x=>Number(x.boat)===1);
   const lane1MarketRank=lane1?(marketHeadRank(1)??99):99;
   const lane1SimRank=lane1?(simHeadRank(1)??99):99;
   const lane1MarketPct=lane1?(marketHeadPct(1)??0):0;
-  const lane1SimPct=lane1?(sim().find(x=>Number(x.boat)===1)?.v??0):0;
+  const lane1SimPct=lane1?(bhCalibratedSim().find(x=>Number(x.boat)===1)?.v??0):0;
 
   /* V343:
      1号艇は「保護して追加」する。
@@ -20503,8 +20549,12 @@ function chooseHeads(p){
   /* 本来の頭候補群。
      -1以上を基本採用。並びはHUNTER偏差順。 */
   const allNow=R().map(met);
+  /* V346: 表示偏差はそのまま、頭選定では極端な負偏差の暴走を防止 */
+  p.forEach(x=>{
+    x.headDecisionDiff = x.diff==null ? null : Math.max(-30,Math.min(60,Number(x.diff)));
+  });
   const natural=p
-    .filter(x=>x.diff!=null&&x.diff>=-1)
+    .filter(x=>x.headDecisionDiff!=null&&x.headDecisionDiff>=-1)
     .filter(x=>{
       if(Number(x.boat)<5)return true;
       const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
@@ -21939,6 +21989,20 @@ window.BH_V334_HEAD_POLICY = {
   5) 2差し→1軸最優先、4も軸UP。
   6) 3まくり差し→1軸UP。3まくり→4追走軸UP。
   7) 実進入・チルト・壁→決まり手→頭→軸→3着/切りの順で連動。 */
+</script>
+
+
+<script id="bh-v346-marker">
+/*
+V346
+- SIM5000は「頭候補発掘」から外し、事前診断の検証専用へ。
+- 5/6の頭資格はSIM値を一切使用しない。
+- 5/6は展開成立、前付け、高チルト等の事前条件を満たした場合のみ頭資格。
+- SIM1着率は実進入コース基礎率へ収縮。
+- 3コース壁成立時は4～6のSIM頭率も追加抑制。
+- 頭資格なしの通常5/6は異常なSIM高率を校正。
+- 偏差表示は維持しつつ、頭判定では極端値による暴走を抑制。
+*/
 </script>
 
 </body>
