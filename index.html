@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V326</title>
+<title>BOAT HUNTER V327</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14770,6 +14770,9 @@ input,
 .hfdAxisBoat{width:28px!important;height:28px!important;display:grid!important;place-items:center!important;border:1.5px solid #fff!important;border-radius:6px!important;font-size:13px!important;font-weight:1000!important}
 .hfdAxisNone{font-size:10px;color:#8ca0aa}
 </style>
+<style id="bh-v327-ground">
+.hfdGroundNote{font-size:8px;color:#86a9ba;font-weight:800;letter-spacing:.04em;margin-top:2px}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14780,7 +14783,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.326</div>
+  <div class="topVol">Vol.327</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15264,7 +15267,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.326: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.327: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15931,7 +15934,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.326 場時間帯補正
+/* Vol.327 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20146,6 +20149,8 @@ function met(r){
   const fc=Number(window.HUNTER_F?.count?.(r)||0),fa=fc?window.HUNTER_F?.after?.(h,fc):null;
   return {
     boat:+r.entry_number,r,h,fc,
+    nationalWin:N(r.national_win_rate),
+    nationalTop3:(typeof bhNationalTop3==="function"?N(bhNationalTop3(r)):N(r.national_top_3_percent??r.national_top3_percent??r.national_3ren_rate)),
     st:N(fa?.avgST)??N(m.avgST),sr:N(m.avgRank),
     p1:rate(h,x=>+x.place===1),
     p2:rate(h,x=>[1,2].includes(+x.place)),
@@ -20169,6 +20174,27 @@ function mb(r){
   if(a<=29&&b<=32)return-3;
   return 0;
 }
+/* V327 地力補正
+   コース偏差を主軸にし、全国勝率は補正としてのみ使用。
+   3着は全国3連対率も追加して、地力のある外枠を過剰に切らない。 */
+function natWinBonus(v,role="head"){
+  v=N(v); if(v==null)return 0;
+  const table=role==="third"
+    ? [[7,6],[6,5],[5,3],[4,1],[3,-2],[-Infinity,-4]]
+    : role==="axis"
+      ? [[7,5],[6,4],[5,2],[4,0],[3,-2],[-Infinity,-4]]
+      : [[7,4],[6,3],[5,1],[4,0],[3,-1],[-Infinity,-3]];
+  for(const [min,pt] of table)if(v>=min)return pt;
+  return 0;
+}
+function natTop3Bonus(v){
+  v=N(v); if(v==null)return 0;
+  if(v>=70)return 3;
+  if(v>=60)return 2;
+  if(v>=50)return 1;
+  return 0;
+}
+
 function va(c,k="p1"){
   try{
     const j=String(+$("stadium").value).padStart(2,"0"), cc=String(c);
@@ -20201,7 +20227,7 @@ function va(c,k="p1"){
 }
 function pre(){
   return R().map(met).map(x=>{
-    let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r);
+    let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r)+natWinBonus(x.nationalWin,"head");
     if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
     /* V325: 偏差を潰さない。0下限丸めを廃止 */
     const base=va(x.boat,"p1");
@@ -20234,7 +20260,7 @@ function move(head){
 function axis(head,all){
   const mv=move(head);
   return all.filter(x=>x.boat!==head.boat).map(x=>{
-    let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc);
+    let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+natWinBonus(x.nationalWin,"axis");
     if(x.fc===0){
       if(mv==="差し"&&x.boat===1)s+=5;
       if(mv==="まくり"&&x.boat===head.boat+1)s+=5;
@@ -20284,7 +20310,13 @@ function chooseHeads(p){
 }
 function thirdDiff(x){
   const base=va(x.boat,"p3");
-  return base==null?(x.p3??0):(x.p3??0)-base;
+  const course=base==null?(x.p3??0):(x.p3??0)-base;
+  /* 3着は地力救済を最も強くする。
+     全国勝率 + 全国3連対率 + モーター。 */
+  return course
+    +natWinBonus(x.nationalWin,"third")
+    +natTop3Bonus(x.nationalTop3)
+    +mb(x.r);
 }
 function cutForHead(head,all,axes){
   const protectedBoats=new Set([head.boat,...axes.map(x=>x.boat)]);
