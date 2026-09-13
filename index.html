@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V321</title>
+<title>BOAT HUNTER V323</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14732,6 +14732,36 @@ input,
 #hfrStatus{font-size:10px!important;min-height:34px!important;padding:5px 8px!important;text-align:center!important}
 </style>
 
+
+<style id="bh-vol322-kachigake-fix">
+.kachiNeed{
+  font-size:15px!important;
+  font-weight:1000!important;
+  color:#ffe16a!important;
+}
+.kachiMeta{font-size:10px!important}
+.kachiRemain{font-size:9px!important;color:#91a8b8!important}
+</style>
+
+
+<style id="bh-vol323-bet-jump">
+#bh323JumpBet{
+  width:100%!important;
+  min-height:48px!important;
+  margin:10px 0 2px!important;
+  border:1.5px solid #6edbff!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#0b89c4,#075c89)!important;
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:1000!important;
+  letter-spacing:.04em!important;
+  box-shadow:0 7px 18px rgba(0,130,190,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+#bh323JumpBet:active{transform:translateY(1px)!important}
+#bh323JumpBet span{opacity:.72;font-size:11px;margin-left:6px}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14742,7 +14772,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.321</div>
+  <div class="topVol">Vol.323</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15226,7 +15256,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.321: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.323: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15893,7 +15923,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.321 場時間帯補正
+/* Vol.323 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -17146,46 +17176,133 @@ $('top').classList.remove('hide');
       for(const n of names){const i=head.indexOf(n);if(i>=0)return i}
       return -1;
     };
-    const borderIdx=idx('ボーダー順位','予選ボーダー順位');
-    const border=borderIdx>=0?outlookNum(row[borderIdx]):null;
+    const numAt=(...names)=>{
+      const i=idx(...names);
+      return i>=0?outlookNum(row[i]):null;
+    };
+
+    const border=numAt('ボーダー順位','予選ボーダー順位');
+    const currentRaceNo=Number(document.getElementById("race")?.value||0);
+
+    /* 実際の着順点をCSVから読む。G1等で11/9/7...の場合にも対応 */
+    const pointMap={};
+    for(let k=1;k<=6;k++){
+      pointMap[k]=numAt(`${k}着点`,`${k}着得点`);
+    }
+
     const hits=[];
-    const pointMap={1:10,2:8,3:6,4:4,5:2,6:1};
 
     for(let b=1;b<=6;b++){
-      const nameI=idx(`艇${b}_選手名`), rateI=idx(`艇${b}_得点率`), rankI=idx(`艇${b}_順位`), hayamiI=idx(`艇${b}_早見`);
-      if(nameI<0||rateI<0||rankI<0)continue;
-      const name=String(row[nameI]||'').trim();
-      const rate=outlookNum(row[rateI]), rank=outlookNum(row[rankI]);
-      if(!name||rate==null||rank==null||rate<=0)continue; // 0.00は未成立値として勝負掛けに使わない
+      const nameI=idx(`艇${b}_選手名`);
+      const rateI=idx(`艇${b}_得点率`);
+      const rankI=idx(`艇${b}_順位`);
+      const hayamiI=idx(`艇${b}_早見`);
+      const borderStateI=idx(`艇${b}_ボーダー状態`);
 
-      let needPlace=null;
+      if(nameI<0||rateI<0||rankI<0)continue;
+
+      const name=String(row[nameI]||'').trim();
+      const rate=outlookNum(row[rateI]);
+      const rank=outlookNum(row[rankI]);
+      if(!name||rate==null||rank==null||rate<=0)continue;
+
+      const hayami=hayamiI>=0?String(row[hayamiI]||'').trim():'';
+      const otherRace=Number(String(hayami).replace(/[^\d]/g,""))||null;
+      const hasLaterRace=otherRace!=null && otherRace>currentRaceNo;
+      const remaining=hasLaterRace?2:1; // 現レースを含む残り走数
+
+      const currentBorderCode=borderStateI>=0
+        ? Number.parseInt(String(row[borderStateI]||"0"),10)||0
+        : 0;
+
+      const states=[];
       for(let k=1;k<=6;k++){
         const stateI=idx(`艇${b}_${k}着時状態`,`艇${b}_${k}着状態`);
-        const state=stateI>=0?String(row[stateI]||'').trim():'';
-        if(state && state!=='00' && /[1245]/.test(state)){needPlace=k;break}
+        const rateAfterI=idx(`艇${b}_${k}着時得点率`,`艇${b}_${k}着得点率`);
+        const code=stateI>=0
+          ? (Number.parseInt(String(row[stateI]||"0"),10)||0)
+          : 0;
+        const afterRate=rateAfterI>=0?outlookNum(row[rateAfterI]):null;
+
+        /* tokuten_hayami はbit値。
+           bit1(1)=ボーダー得点率以上
+           bit2(2)=次走結果次第
+           bit4(4)=当レース終了時点でボーダー以上 */
+        states.push({
+          place:k,
+          code,
+          above:!!(code&1)||!!(code&4),
+          nextDependent:!!(code&2),
+          afterRate
+        });
       }
-      const hayami=hayamiI>=0?String(row[hayamiI]||'').trim():'';
-      const remaining=hayami?2:1;
-      if((border!=null && rank<=border+8) || needPlace){
-        hits.push({b,name,rate,rank,remaining,needPlace});
+
+      const abovePlaces=states.filter(x=>x.above).map(x=>x.place);
+      const dependentPlaces=states.filter(x=>x.nextDependent).map(x=>x.place);
+
+      /*
+       勝負掛けとして出す条件：
+       - 全着順でボーダー以上 → 既に安全圏なので出さない
+       - 全着順で状態変化なし → 明確な勝負掛けではない
+       - 着順によって「ボーダー以上/以下」が変わる艇を優先
+       - 次走がある場合の bit2 は「次走勝負」として別表示
+      */
+      const allSafe=abovePlaces.length===6;
+      const noCondition=abovePlaces.length===0 && dependentPlaces.length===0;
+      if(allSafe||noCondition)continue;
+
+      let needPlace=null;
+      if(abovePlaces.length){
+        /* 1～N着までが条件成立する形を想定し、最も緩い成立着順を採用 */
+        const sorted=[...abovePlaces].sort((a,b)=>a-b);
+        let contiguous=0;
+        for(let k=1;k<=6;k++){
+          if(sorted.includes(k))contiguous=k;
+          else break;
+        }
+        needPlace=contiguous||sorted[0];
       }
+
+      /* 1着でのみ成立するだけ、という誤判定を避けるため、
+         条件が実際に着順で分岐しているか確認 */
+      const hasStateTransition=states.some((x,i)=>i>0 && (x.above!==states[i-1].above || x.nextDependent!==states[i-1].nextDependent));
+      if(!hasStateTransition && !(hasLaterRace&&dependentPlaces.length))continue;
+
+      const needPoint=needPlace?pointMap[needPlace]:null;
+      let condition="";
+      if(needPlace){
+        condition=needPlace===1?"1着条件":`${needPlace}着以上`;
+      }else if(hasLaterRace&&dependentPlaces.length){
+        condition="次走勝負";
+      }else{
+        continue;
+      }
+
+      hits.push({
+        b,name,rate,rank,remaining,needPlace,needPoint,condition,
+        hasLaterRace,currentBorderCode,
+        urgency:needPlace?7-needPlace:1
+      });
     }
-    if(!hits.length)return `<span class="muted">明確な勝負掛け艇なし / 得点データ確定待ち</span>`;
-    hits.sort((a,b)=>(a.needPlace??99)-(b.needPlace??99)||a.rank-b.rank||b.rate-a.rate);
+
+    if(!hits.length){
+      return `<span class="muted">明確な勝負掛け艇なし</span><br><span class="muted">着順別のボーダー状態に差がある艇だけ表示します</span>`;
+    }
+
+    hits.sort((a,b)=>b.urgency-a.urgency||a.rank-b.rank||b.rate-a.rate);
     const picked=hits.slice(0,4);
+
     return `<div class="kachiCompact ${picked.length>=3?'many':''}">`+
       picked.map(x=>{
-        const needPoint=x.needPlace?pointMap[x.needPlace]:null;
-        const need=needPoint!=null?`必要 ${needPoint}pt`:(border!=null?`ボーダー${border}位`:'ボーダー確認中');
+        const pointTxt=x.needPoint!=null?` / ${x.needPoint}pt`:"";
         return `<div class="kachiItem">
           <div class="kachiTop"><span class="boatPill b${x.b}">${x.b}</span><b>${x.name}</b></div>
           <div class="kachiMeta">${x.rank}位 / ${x.rate.toFixed(2)}</div>
-          <div class="kachiNeed">${need}</div>
+          <div class="kachiNeed">${x.condition}${pointTxt}</div>
           <div class="kachiRemain">残り${x.remaining}走</div>
         </div>`;
       }).join('')+`</div>`;
   }
-
   function venueHtml(){
     const j=String($("stadium").value).padStart(2,"0");
     const r=VENUE_RULES[j];
@@ -20432,43 +20549,111 @@ window.bhRenderFinalFormation=draw;
     return {hit:false,combo};
   }
 
-  function raceFlexible(j,jo,rn){
-    const sts=j?.programs?.stadiums||j?.stadiums||{};
-    const st=sts?.[String(jo)]||sts?.[String(jo).padStart(2,"0")]||
-      Object.values(sts).find(x=>Number(x?.stadium_number||x?.number||0)===Number(jo));
-    const races=st?.races||{};
-    return races?.[String(rn)]||races?.[String(rn).padStart(2,"0")]||
-      Object.values(races).find(x=>Number(x?.race_number||x?.number||0)===Number(rn))||null;
+  function findRaceAnywhere(j,jo,rn){
+    const wantJo=Number(jo),wantRn=Number(rn);
+    const seen=new Set();
+
+    function walk(node,depth=0){
+      if(node==null||depth>7)return null;
+      if(typeof node!=="object")return null;
+      if(seen.has(node))return null;
+      seen.add(node);
+
+      /* v1: programs.stadiums.{場}.races.{R} */
+      const joVal=Number(
+        node.stadium_number??node.stadium_no??node.jcd??node.place_number??node.venue_number??0
+      );
+      const rnVal=Number(
+        node.race_number??node.race_no??node.rno??node.race??0
+      );
+      if(joVal===wantJo&&rnVal===wantRn){
+        if(node.result||node.results||node.race_result||node.racers||node.payouts)return node;
+      }
+
+      if(node.races&&typeof node.races==="object"){
+        const direct=node.races[String(wantRn)]||node.races[String(wantRn).padStart(2,"0")];
+        if(direct){
+          const djo=Number(direct.stadium_number??direct.stadium_no??node.stadium_number??node.number??node.stadium??wantJo);
+          if(!djo||djo===wantJo)return direct;
+        }
+      }
+
+      for(const v of Object.values(node)){
+        if(v&&typeof v==="object"){
+          const hit=walk(v,depth+1);
+          if(hit)return hit;
+        }
+      }
+      return null;
+    }
+    return walk(j);
   }
 
   function parseResult(race){
-    const result=race?.result||race?.results||race?.race_result||null;
+    if(!race)return null;
+    const result=race?.result||race?.results||race?.race_result||
+      (race?.racers&&(
+        race?.payouts||race?.technique_number!=null||race?.winning_technique_number!=null
+      ) ? race : null);
     if(!result)return null;
 
+    /* racers形式 */
     const raw=result?.racers||result?.boats||result?.entries||result?.result_racers||{};
     const arr=(Array.isArray(raw)?raw:Object.values(raw||{})).filter(Boolean);
-
-    const norm=arr.map(x=>({
-      entry:Number(x.entry_number??x.boat_number??x.entry??x.number??x.boat),
-      place:Number(x.place_number??x.place??x.rank??x.arrival??x.finish_order),
+    const norm=arr.map((x,i)=>({
+      entry:Number(x.entry_number??x.boat_number??x.entry??x.boat??x.waku??x.frame_number??(i+1)),
+      place:Number(x.place_number??x.place??x.rank??x.arrival??x.finish_order??x.order),
       raw:x
     })).filter(x=>x.entry>=1&&x.entry<=6&&x.place>=1&&x.place<=6)
       .sort((a,b)=>a.place-b.place);
 
-    const top3=norm.filter(x=>x.place<=3).slice(0,3);
+    let top3=norm.filter(x=>x.place<=3).slice(0,3).map(x=>x.entry);
+
+    /* racersが無い旧results APIでは3連単払戻 combination から確定着順を復元 */
+    if(top3.length<3){
+      const trifecta=
+        result?.payouts?.trifecta?.[0]?.combination ??
+        result?.trifecta?.[0]?.combination ??
+        result?.trifecta_combination ??
+        race?.payouts?.trifecta?.[0]?.combination ??
+        null;
+      if(trifecta){
+        const nums=String(trifecta).match(/[1-6]/g)?.map(Number)||[];
+        if(nums.length>=3)top3=nums.slice(0,3);
+      }
+    }
+
+    /* さらに着順配列形式にも対応 */
+    if(top3.length<3){
+      const order=result?.order||result?.orders||result?.arrival_order||result?.finish_order;
+      if(Array.isArray(order)){
+        const nums=order.map(x=>Number(x?.entry_number??x?.boat_number??x)).filter(x=>x>=1&&x<=6);
+        if(nums.length>=3)top3=nums.slice(0,3);
+      }
+    }
+
     if(top3.length<3)return null;
 
     const techNo=Number(
       result.technique_number??result.winning_technique_number??result.technique??result.kimarite_number
     );
     const techText=String(
-      result.technique_name??result.winning_technique??result.kimarite_name??""
+      result.technique_name??result.winning_technique??result.kimarite_name??result.technique_source??""
     ).trim();
 
     return {
-      top3:top3.map(x=>x.entry),
+      top3,
       technique:techText||({1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"})[techNo]||"—"
     };
+  }
+
+  async function fetchJsonNoCache(u){
+    try{
+      const sep=u.includes("?")?"&":"?";
+      const res=await fetch(u+sep+"t="+Date.now(),{cache:"no-store"});
+      if(!res.ok)return null;
+      return await res.json();
+    }catch(e){return null}
   }
 
   async function fetchResult(){
@@ -20479,38 +20664,47 @@ window.bhRenderFinalFormation=draw;
       return;
     }
 
-    $("hfrStatus").textContent="結果取得中…";
+    $("hfrStatus").textContent="確定結果を検索中…";
     $("hfrFetch").disabled=true;
 
     try{
       const d=$("date")?.value;
       const jo=Number($("stadium")?.value);
       const rn=Number($("race")?.value);
+      const ymd=String(d||"").replaceAll("-","");
+      const y=ymd.slice(0,4);
 
-      /* 最新結果を取りやすいようキャッシュを避ける */
-      let j=null;
-      try{
-        const ymd=String(d||"").replaceAll("-","");
-        const y=ymd.slice(0,4);
-        const urls=[
-          `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json?t=${Date.now()}`,
-          `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json?t=${Date.now()}`,
-          `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json?t=${Date.now()}`
-        ];
-        for(const u of urls){
-          try{
-            const res=await fetch(u,{cache:"no-store"});
-            if(res.ok){j=await res.json(); if(j)break}
-          }catch(e){}
-        }
-      }catch(e){}
-      if(!j)j=await dayJson(d);
+      /* V323:
+         結果専用API → 統合API → 既存dayJson の順で確認。
+         同じソースだけを見て「未確定」としない。 */
+      const urls=[
+        `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
+        `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`,
+        `https://boatraceopenapi.github.io/results/v3/today.json`,
+        `https://boatraceopenapi.github.io/results/v2/today.json`,
+        `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
+        `https://boatraceopenapi.github.io/api/v1/today.json`
+      ];
 
-      const race=raceFlexible(j,jo,rn);
-      const parsed=parseResult(race);
+      let parsed=null,source="";
+      for(const u of urls){
+        const j=await fetchJsonNoCache(u);
+        if(!j)continue;
+        const race=findRaceAnywhere(j,jo,rn);
+        const p=parseResult(race);
+        if(p){parsed=p;source=u.includes("/results/")?"RESULT":"API";break;}
+      }
 
       if(!parsed){
-        $("hfrStatus").textContent="まだ確定結果が出ていません";
+        try{
+          const j=await dayJson(d);
+          parsed=parseResult(findRaceAnywhere(j,jo,rn));
+          if(parsed)source="DAY";
+        }catch(e){}
+      }
+
+      if(!parsed){
+        $("hfrStatus").textContent="結果データ未反映｜少し待って再確認";
         $("hfrCombo").textContent="—";
         $("hfrTechnique").textContent="—";
         $("hfrJudge").className="hfrJudge";
@@ -20530,7 +20724,7 @@ window.bhRenderFinalFormation=draw;
         $("hfrJudge").className="hfrJudge pass";
         $("hfrJudgeText").textContent="見";
         $("hfrStatus").textContent=
-          match?.hit ? `見レース｜参考買い目 ${match.label} 的中（集計外）`
+          match?.hit ? `見レース｜参考 ${match.label} 的中（集計外）`
                      : "見レース｜成績集計対象外";
       }else if(hit){
         $("hfrJudge").className="hfrJudge hit";
@@ -20539,18 +20733,16 @@ window.bhRenderFinalFormation=draw;
       }else{
         $("hfrJudge").className="hfrJudge miss";
         $("hfrJudgeText").textContent="不的中";
-        $("hfrStatus").textContent="現在表示中の本線・押さえ・期待値には該当なし";
+        $("hfrStatus").textContent="本線・押さえ・期待値に該当なし";
       }
 
-      /* 見は集計外 / 同一レース二重集計なし */
       if(!pass){
         const st=loadStats();
         const key=raceKey();
         if(!st.seen)st.seen={};
         if(!st.seen[key]){
           st.seen[key]={
-            hit,
-            combo:`${a}-${b}-${c}`,
+            hit,combo:`${a}-${b}-${c}`,
             category:match?.label||"不的中",
             head:match?.head||null
           };
@@ -20564,11 +20756,11 @@ window.bhRenderFinalFormation=draw;
       window.__HUNTER_LAST_RESULT={
         combo:[a,b,c],technique:parsed.technique,hit,pass,
         category:match?.label||null,head:match?.head||null,
-        formation:pack
+        source,formation:pack
       };
 
     }catch(e){
-      console.error("RESULT CHECK V321",e);
+      console.error("RESULT CHECK V323",e);
       $("hfrStatus").textContent="結果取得失敗："+(e?.message||"不明");
     }finally{
       $("hfrFetch").disabled=false;
@@ -20835,6 +21027,39 @@ window.bhRenderFinalFormation=draw;
  setInterval(place,2500);
 })();
 </script>
+
+
+<script id="bh-vol323-bet-jump-js">
+(function(){
+ function ensure(){
+   if(document.getElementById("bh323JumpBet"))return;
+   const stage=document.getElementById("bh318StageWrap");
+   const ai=document.getElementById("aiAnalyze");
+   const anchor=stage||ai?.parentElement;
+   if(!anchor)return;
+
+   const b=document.createElement("button");
+   b.type="button";
+   b.id="bh323JumpBet";
+   b.innerHTML='買い目に行く <span>↓ FINAL</span>';
+   b.addEventListener("click",()=>{
+     const target=document.getElementById("hunterFinalDecision");
+     if(target){
+       target.scrollIntoView({behavior:"smooth",block:"start"});
+       setTimeout(()=>target.classList.add("bh323Flash"),250);
+       setTimeout(()=>target.classList.remove("bh323Flash"),1400);
+     }
+   });
+   anchor.insertAdjacentElement("afterend",b);
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ensure,{once:true});
+ else ensure();
+ setInterval(ensure,1500);
+})();
+</script>
+<style id="bh-vol323-flash">
+#hunterFinalDecision.bh323Flash{box-shadow:0 0 0 3px #65d9ff,0 0 28px rgba(50,198,255,.48)!important}
+</style>
 
 </body>
 </html>
