@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V331</title>
+<title>BOAT HUNTER V332</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14802,7 +14802,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.331</div>
+  <div class="topVol">Vol.332</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15286,7 +15286,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.331: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.332: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15953,7 +15953,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.331 場時間帯補正
+/* Vol.332 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20442,13 +20442,14 @@ function classify(head,axes,a3,thirdStay){
   const mainU=uniq(main);
   const coverU=uniq(cover.filter(x=>!mainU.some(m=>m.combo===x.combo)));
 
-  /* V331 期待値整理
-     本線/押さえと同じ3艇セットの組み替えは「被り」として除外。
-     残った期待値候補を EV→SIM の順で並べ、最大2点。 */
-  const trioKey=c=>String(c||"").split("-").map(Number).sort((a,b)=>a-b).join("");
-  const usedTrios=new Set([...mainU,...coverU].map(x=>trioKey(x.combo)));
+  /* V332 期待値ルール
+     期待値＝「頭 → 本命3着専用艇 → 本命軸艇」。
+     3艇構成が同じでも着順が違えば別買い目として残す。
+     除外するのは本線/押さえと完全に同一の3連単だけ。
+     候補は EV→SIM の順で最大2点。 */
+  const usedExact=new Set([...mainU,...coverU].map(x=>String(x.combo||"")));
   const valueU=uniq(value)
-    .filter(x=>!usedTrios.has(trioKey(x.combo)))
+    .filter(x=>x?.combo && !usedExact.has(String(x.combo)))
     .sort((a,b)=>(b.ev??-1)-(a.ev??-1)||b.sim-a.sim)
     .slice(0,2);
 
@@ -21422,6 +21423,14 @@ window.bhVenueBase=function(course,key="p1"){
 <script id="bh-v331-marker">
 /* V331: 結果監査＝頭/軸/FORMATION/切り、日別+累計、決まり手+3連単倍率 */
 </script>
+
+<script id="bh-v332-marker">
+/* V332:
+   期待値は同一3艇セットでも着順違いなら残す。
+   本線/押さえと完全一致の3連単のみ除外。
+   最大2点。 */
+</script>
+
 </body>
 </html>
 
