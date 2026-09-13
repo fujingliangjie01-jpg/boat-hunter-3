@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V351</title>
+<title>BOAT HUNTER V352</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14908,6 +14908,20 @@ input,
 .hfdNonEscapeAxes>div{display:flex;flex-direction:column;gap:3px;margin-top:3px}
 </style>
 
+
+<style id="bh-v352-sim-verify">
+.hfdSimVerify{margin:0 0 8px;padding:7px 9px;border:1px solid rgba(142,118,255,.28);border-radius:9px;background:#0c1020}
+.hfdSimVerifyLabel{display:block;margin-bottom:5px;font-size:7px;color:#a99cff;font-weight:1000;letter-spacing:.08em}
+.hfdSimVerify>div{display:flex;flex-wrap:wrap;gap:5px}
+.hfdSimVerifyChip{display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid rgba(255,255,255,.12);border-radius:7px;background:#111827}
+.hfdSimVerifyChip small{font-size:6px;color:#95a7b5;font-weight:1000}
+.hfdSimVerifyChip b{font-size:8px;color:#fff}
+.hfdSimVerifyChip.outside{border-color:rgba(79,214,255,.35);background:#08202a}
+.hfdSimVerifyChip.cut{border-color:rgba(255,90,108,.35);background:#260b10}
+.hfrLogicRow{grid-template-columns:1.25fr repeat(4,.7fr)!important}
+.hfrStats5{grid-template-columns:repeat(3,1fr)!important}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14918,7 +14932,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.351</div>
+  <div class="topVol">Vol.352</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15408,7 +15422,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.351: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.352: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16075,7 +16089,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.351 場時間帯補正
+/* Vol.352 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20626,6 +20640,26 @@ function bhHeadConditionalSim(headBoat){
 
   return {head:h,total,rows};
 }
+function bhSimOutsideCandidates(headBoat,axes,baselineThird){
+  const sim=bhHeadConditionalSim(headBoat);
+  if(sim.total<80)return [];
+  const used=new Set([Number(headBoat),...(axes||[]).map(x=>Number(x.boat??x)),...(baselineThird||[]).map(x=>Number(x.boat??x))]);
+  return sim.rows
+    .filter(r=>!used.has(Number(r.boat)))
+    .filter(r=>r.placePct>=18 && (r.secondPct>=8 || r.thirdPct>=10))
+    .slice(0,2)
+    .map(r=>({...r,reason:"SIM候補外浮上"}));
+}
+function bhClearCutForHead(headBoat,rows){
+  const sim=bhHeadConditionalSim(headBoat);
+  if(sim.total<80)return null;
+  const eligible=sim.rows.filter(r=>(rows||[]).some(x=>Number(x.boat)===Number(r.boat))).sort((a,b)=>a.placePct-b.placePct);
+  if(!eligible.length)return null;
+  const low=eligible[0],next=eligible[1];
+  const clear = low.placePct<5 || (low.placePct<8 && (!next || (next.placePct-low.placePct)>=5)) || (low.placePct<12 && next && (next.placePct-low.placePct)>=10);
+  return clear?low:null;
+}
+
 function bhConditionalRow(headBoat,boat){
   return bhHeadConditionalSim(headBoat).rows.find(x=>Number(x.boat)===Number(boat))||null;
 }
@@ -21004,11 +21038,21 @@ function cutForHead(head,all,axes){
     x.thirdDiff=(x.baseThirdDiff??0)+x.headThirdBonus+x.techBonus+x.conditionalCutPenalty;
   });
 
-  const candidates=rows
-    .filter(x=>x.thirdDiff<=-10)
-    .sort((a,b)=>a.thirdDiff-b.thirdDiff);
-
-  const cut=candidates.slice(0,1);
+  const clearCut=bhClearCutForHead(hb,rows);
+  let cut=[];
+  if(clearCut){
+    const hit=rows.find(x=>Number(x.boat)===Number(clearCut.boat));
+    if(hit){
+      hit.techNote=`SIM明確低下 ${clearCut.placePct.toFixed(1)}%`;
+      cut=[hit];
+    }
+  }else{
+    /* SIM母数不足時だけ従来偏差の極端な弱さを代替条件にする */
+    const simPack=bhHeadConditionalSim(hb);
+    if(simPack.total<80){
+      cut=rows.filter(x=>x.thirdDiff<=-15).sort((a,b)=>a.thirdDiff-b.thirdDiff).slice(0,1);
+    }
+  }
   const cutSet=new Set(cut.map(x=>Number(x.boat)));
 
   /* 絶対保護艇もstayへ必ず戻す */
@@ -21299,10 +21343,24 @@ function draw(){
       }
     }
     const a2=ax.map(x=>x.boat);
-    const a3=[...new Set([h.boat,...a2,...cutPack.stay.map(x=>x.boat)])].filter(x=>x!==h.boat);
-    const cls=classify(h,ax,a3,cutPack.stay,i);
+
+    /* V352: 事前3着候補は頭別偏差上位を基礎にし、
+       SIM5000で候補外から浮上する艇を別枠で追加する */
+    const baselineThird=[...cutPack.stay]
+      .filter(x=>!a2.includes(Number(x.boat))&&Number(x.boat)!==Number(h.boat))
+      .sort((a,b)=>(b.thirdDiff??-999)-(a.thirdDiff??-999))
+      .slice(0,2);
+
+    const outside=bhSimOutsideCandidates(h.boat,ax,baselineThird);
+    const a3=[...new Set([
+      ...a2,
+      ...baselineThird.map(x=>Number(x.boat)),
+      ...outside.map(x=>Number(x.boat))
+    ])].filter(x=>x!==Number(h.boat));
+
+    const cls=classify(h,ax,a3,[...baselineThird,...outside],i);
     const pts=combinations(h.boat,a2,a3).length;
-    return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:cutPack.stay,cls,pts,i};
+    return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:baselineThird,outside,cls,pts,i};
   });
   /* V343:
      ここでは仮の組合せ数ではなく、実際に表示する
@@ -21415,6 +21473,21 @@ function draw(){
       </div>
       <div class="hfdTechnique"><small>WINNING MOVE / 想定決まり手</small><b>${predictedTechnique(f.h,all)}</b></div>
 
+      <div class="hfdSimVerify">
+        <span class="hfdSimVerifyLabel">SIM5000 / 頭別検証</span>
+        <div>
+          ${(f.ax||[]).slice(0,2).map((x,i)=>{
+            const r=bhConditionalRow(f.h.boat,x.boat);
+            return `<span class="hfdSimVerifyChip"><small>軸${i+1}</small>${B(x.boat,"hfdAxisBoat")}<b>${r&&r.totalHeadWins?r.secondPct.toFixed(1)+"%":"—"}</b></span>`;
+          }).join("")}
+          ${(f.outside||[]).map(x=>`<span class="hfdSimVerifyChip outside"><small>候補外浮上</small>${B(x.boat,"hfdAxisBoat")}<b>${x.placePct.toFixed(1)}%</b></span>`).join("")}
+          ${(f.cut||[]).map(x=>{
+            const r=bhConditionalRow(f.h.boat,x.boat);
+            return `<span class="hfdSimVerifyChip cut"><small>切り候補</small>${B(x.boat,"hfdAxisBoat")}<b>${r&&r.totalHeadWins?r.placePct.toFixed(1)+"%":"—"}</b></span>`;
+          }).join("")}
+        </div>
+      </div>
+
       <div class="hfdAxisDeviation">
         <span class="hfdAxisLabel">AXIS / 軸偏差</span>
         <div class="hfdAxisChips">
@@ -21505,6 +21578,7 @@ window.bhRenderFinalFormation=draw;
         <div class="hfrStat"><b id="hfrAxisRate">—</b><span>軸的中</span></div>
         <div class="hfrStat"><b id="hfrRate">—</b><span>FORMATION</span></div>
         <div class="hfrStat"><b id="hfrCutRate">—</b><span>切り成功</span></div>
+        <div class="hfrStat"><b id="hfrOutsideRate">—</b><span>候補外浮上</span></div>
       </div>
 
       <div class="hfrStatsTitle cumulative">TOTAL / 累計</div>
@@ -21514,6 +21588,7 @@ window.bhRenderFinalFormation=draw;
         <div class="hfrStat"><b id="hfrTotalAxisRate">—</b><span>軸的中</span></div>
         <div class="hfrStat"><b id="hfrTotalFormRate">—</b><span>FORMATION</span></div>
         <div class="hfrStat"><b id="hfrTotalCutRate">—</b><span>切り成功</span></div>
+        <div class="hfrStat"><b id="hfrTotalOutsideRate">—</b><span>候補外浮上</span></div>
       </div>
 
       <div class="hfrResetWrap">
@@ -21543,7 +21618,7 @@ window.bhRenderFinalFormation=draw;
   }
   function emptyStats(){
     return {races:0,headHit:0,axisHit:0,axisTests:0,formHit:0,cutSuccess:0,cutTests:0,
-      mainHit:0,coverHit:0,valueHit:0,seen:{}};
+      outsideHit:0,outsideTests:0,mainHit:0,coverHit:0,valueHit:0,seen:{}};
   }
   function loadAllStats(){
     try{
@@ -21564,12 +21639,14 @@ window.bhRenderFinalFormation=draw;
     if($("hfrAxisRate"))$("hfrAxisRate").textContent=pct(st.axisHit,st.axisTests);
     if($("hfrRate"))$("hfrRate").textContent=pct(st.formHit,st.races);
     if($("hfrCutRate"))$("hfrCutRate").textContent=pct(st.cutSuccess,st.cutTests);
+    if($("hfrOutsideRate"))$("hfrOutsideRate").textContent=pct(st.outsideHit,st.outsideTests);
 
     if($("hfrTotalCount"))$("hfrTotalCount").textContent=tt.races||0;
     if($("hfrTotalHeadRate"))$("hfrTotalHeadRate").textContent=pct(tt.headHit,tt.races);
     if($("hfrTotalAxisRate"))$("hfrTotalAxisRate").textContent=pct(tt.axisHit,tt.axisTests);
     if($("hfrTotalFormRate"))$("hfrTotalFormRate").textContent=pct(tt.formHit,tt.races);
     if($("hfrTotalCutRate"))$("hfrTotalCutRate").textContent=pct(tt.cutSuccess,tt.cutTests);
+    if($("hfrTotalOutsideRate"))$("hfrTotalOutsideRate").textContent=pct(tt.outsideHit,tt.outsideTests);
   }
 
   function syncRace(){
@@ -21604,20 +21681,26 @@ window.bhRenderFinalFormation=draw;
       const head=Number(f.h?.boat||0);
       const axes=(f.ax||[]).map(x=>Number(x.boat));
       const cuts=(f.cut||[]).map(x=>Number(x.boat));
+      const outside=(f.outside||[]).map(x=>Number(x.boat));
       const headOk=head===a;
       const axisTest=headOk;
       const axisOk=headOk&&axes.some(x=>x===b);
-      const cutTest=cuts.length>0;
+      const cutTest=headOk&&cuts.length>0;
       const cutOk=cutTest?!cuts.some(x=>top3.has(x)):null;
-      return {i:i+1,head,headOk,axes,axisTest,axisOk,cuts,cutTest,cutOk};
+      const outsideTest=headOk&&outside.length>0;
+      const outsideHit=outsideTest&&outside.some(x=>x===b||x===c);
+      return {i:i+1,head,headOk,axes,axisTest,axisOk,cuts,cutTest,cutOk,outside,outsideTest,outsideHit};
     });
     const winForms=rows.filter(x=>x.headOk);
     const axisTests=winForms.length?1:0;
     const axisHit=winForms.some(x=>x.axisOk);
-    const cutRows=rows.filter(x=>x.cutTest);
-    const cutTests=cutRows.length;
-    const cutSuccess=cutRows.filter(x=>x.cutOk).length;
-    return {headHit,axisTests,axisHit,cutTests,cutSuccess,rows};
+    const cutRows=winForms.filter(x=>x.cutTest);
+    const cutTests=cutRows.length?1:0;
+    const cutSuccess=cutRows.some(x=>x.cutOk)?1:0;
+    const outsideRows=winForms.filter(x=>x.outsideTest);
+    const outsideTests=outsideRows.length?1:0;
+    const outsideHit=outsideRows.some(x=>x.outsideHit);
+    return {headHit,axisTests,axisHit,cutTests,cutSuccess,outsideTests,outsideHit,rows};
   }
   function logicHtml(ev){
     if(!ev?.rows?.length)return "";
@@ -21626,6 +21709,7 @@ window.bhRenderFinalFormation=draw;
       <span class="${x.headOk?"ok":"ng"}">頭 ${x.headOk?"○":"×"}</span>
       <span class="${!x.axisTest?"na":x.axisOk?"ok":"ng"}">軸 ${!x.axisTest?"—":x.axisOk?"○":"×"}</span>
       <span class="${!x.cutTest?"na":x.cutOk?"ok":"ng"}">切り ${!x.cutTest?"—":x.cutOk?"○":"×"}</span>
+      <span class="${!x.outsideTest?"na":x.outsideHit?"ok":"ng"}">浮上 ${!x.outsideTest?"—":x.outsideHit?"○":"×"}</span>
     </div>`).join("");
   }
 
@@ -21912,6 +21996,8 @@ window.bhRenderFinalFormation=draw;
             formCategory:match?.label||null,
             cutSuccess:logic.cutSuccess,
             cutTests:logic.cutTests,
+            outsideHit:logic.outsideHit,
+            outsideTests:logic.outsideTests,
             headChecks:logic.rows,
             at:Date.now()
           };
@@ -21928,6 +22014,8 @@ window.bhRenderFinalFormation=draw;
           }
           st.cutTests+=logic.cutTests;
           st.cutSuccess+=logic.cutSuccess;
+          st.outsideTests=(st.outsideTests||0)+logic.outsideTests;
+          if(logic.outsideHit)st.outsideHit=(st.outsideHit||0)+1;
 
           tt.races++;
           if(logic.headHit)tt.headHit++;
@@ -21941,6 +22029,8 @@ window.bhRenderFinalFormation=draw;
           }
           tt.cutTests+=logic.cutTests;
           tt.cutSuccess+=logic.cutSuccess;
+          tt.outsideTests=(tt.outsideTests||0)+logic.outsideTests;
+          if(logic.outsideHit)tt.outsideHit=(tt.outsideHit||0)+1;
           if(!tt.seen)tt.seen={};
           tt.seen[key]=rec;
 
@@ -22513,6 +22603,17 @@ V346
    通常は非表示。
    ボタンで展開すると非イン1〜3位それぞれについて、
    1着支持率・想定決まり手・条件付き世間軸1/軸2を表示。 */
+</script>
+
+
+<script id="bh-v352-marker">
+/* V352
+- SIM5000は頭候補を新規生成しない。
+- 各頭候補が1着だったSIMだけを抽出して、頭別に軸/3着/候補外/切りを検証。
+- 事前候補外でも2+3着率18%以上かつ2着8%以上または3着10%以上なら候補外浮上。
+- 切り艇はその頭で明らかに来ない時だけ。SIM母数80以上を基本。
+- 切り成功/失敗は実際にその頭が当たったレースだけ判定。
+- 結果確認に候補外浮上○×を追加し、今日/累計にも蓄積。 */
 </script>
 
 </body>
