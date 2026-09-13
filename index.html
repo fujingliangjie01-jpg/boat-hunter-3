@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V330</title>
+<title>BOAT HUNTER V331</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14776,6 +14776,22 @@ input,
 <style id="bh-v329-secondary-head">
 .hfdReverseBadge{display:inline-block;margin-left:7px;padding:3px 6px;border:1px solid #ffd34e;border-radius:999px;color:#ffd34e;background:#2a2205;font-size:8px;font-style:normal;font-weight:1000;vertical-align:middle}
 </style>
+
+<style id="bh-v331-result-audit">
+#hfrOdds{margin-top:4px;font-size:14px;font-weight:1000;color:#ffe06b}
+.hfrLogicChecks{display:grid;gap:6px;margin:10px 0}
+.hfrLogicRow{display:grid;grid-template-columns:1.25fr repeat(3,.65fr);gap:5px;align-items:center;padding:7px;border:1px solid #21495f;border-radius:9px;background:#071824;font-size:10px}
+.hfrLogicRow b{font-size:10px;color:#dff5ff}
+.hfrLogicRow span{text-align:center;padding:5px 3px;border-radius:6px;font-weight:1000}
+.hfrLogicRow .ok{background:#0e5d3a;color:#8ff0b8}.hfrLogicRow .ng{background:#641923;color:#ffb2bb}.hfrLogicRow .na{background:#18242c;color:#8295a0}
+.hfrStatsTitle{margin:10px 0 5px;font-size:8px;font-weight:1000;letter-spacing:.14em;color:#72d7ff}
+.hfrStatsTitle.cumulative{color:#ffd85c}
+.hfrStats5{grid-template-columns:repeat(5,1fr)!important;gap:5px!important}
+.hfrStats5 .hfrStat{padding:7px 3px!important;min-width:0}
+.hfrStats5 .hfrStat b{font-size:14px!important}.hfrStats5 .hfrStat span{font-size:7px!important}
+@media(max-width:430px){.hfrLogicRow{grid-template-columns:1.15fr repeat(3,.62fr);font-size:9px}.hfrStats5 .hfrStat b{font-size:12px!important}}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14786,7 +14802,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.330</div>
+  <div class="topVol">Vol.331</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15270,7 +15286,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.330: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.331: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15937,7 +15953,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.330 場時間帯補正
+/* Vol.331 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20423,7 +20439,20 @@ function classify(head,axes,a3,thirdStay){
     a.forEach(x=>{if(!m.has(x.combo))m.set(x.combo,x)});
     return [...m.values()];
   };
-  return {main:uniq(main),cover:uniq(cover.filter(x=>!main.some(m=>m.combo===x.combo))),value:uniq(value)};
+  const mainU=uniq(main);
+  const coverU=uniq(cover.filter(x=>!mainU.some(m=>m.combo===x.combo)));
+
+  /* V331 期待値整理
+     本線/押さえと同じ3艇セットの組み替えは「被り」として除外。
+     残った期待値候補を EV→SIM の順で並べ、最大2点。 */
+  const trioKey=c=>String(c||"").split("-").map(Number).sort((a,b)=>a-b).join("");
+  const usedTrios=new Set([...mainU,...coverU].map(x=>trioKey(x.combo)));
+  const valueU=uniq(value)
+    .filter(x=>!usedTrios.has(trioKey(x.combo)))
+    .sort((a,b)=>(b.ev??-1)-(a.ev??-1)||b.sim-a.sim)
+    .slice(0,2);
+
+  return {main:mainU,cover:coverU,value:valueU};
 }
 function rowList(items){
   if(!items.length)return `<span class="hfdNone">—</span>`;
@@ -20616,17 +20645,32 @@ window.bhRenderFinalFormation=draw;
         <div class="hfrComboBox">
           <small>確定着順</small>
           <div id="hfrCombo">—</div>
-          <div id="hfrTechnique">—</div>
+          <div id="hfrTechnique">決まり手 —</div>
+          <div id="hfrOdds">3連単 —</div>
         </div>
         <div id="hfrJudge" class="hfrJudge">
           <div id="hfrJudgeText">未判定</div>
         </div>
       </div>
 
-      <div class="hfrStats">
-        <div class="hfrStat"><b id="hfrCount">0</b><span>集計レース</span></div>
-        <div class="hfrStat"><b id="hfrHits">0</b><span>的中</span></div>
-        <div class="hfrStat"><b id="hfrRate">—</b><span>的中率</span></div>
+      <div id="hfrLogicChecks" class="hfrLogicChecks"></div>
+
+      <div class="hfrStatsTitle">TODAY / 今日</div>
+      <div class="hfrStats hfrStats5">
+        <div class="hfrStat"><b id="hfrCount">0</b><span>R</span></div>
+        <div class="hfrStat"><b id="hfrHeadRate">—</b><span>頭的中</span></div>
+        <div class="hfrStat"><b id="hfrAxisRate">—</b><span>軸的中</span></div>
+        <div class="hfrStat"><b id="hfrRate">—</b><span>FORMATION</span></div>
+        <div class="hfrStat"><b id="hfrCutRate">—</b><span>切り成功</span></div>
+      </div>
+
+      <div class="hfrStatsTitle cumulative">TOTAL / 累計</div>
+      <div class="hfrStats hfrStats5">
+        <div class="hfrStat"><b id="hfrTotalCount">0</b><span>R</span></div>
+        <div class="hfrStat"><b id="hfrTotalHeadRate">—</b><span>頭的中</span></div>
+        <div class="hfrStat"><b id="hfrTotalAxisRate">—</b><span>軸的中</span></div>
+        <div class="hfrStat"><b id="hfrTotalFormRate">—</b><span>FORMATION</span></div>
+        <div class="hfrStat"><b id="hfrTotalCutRate">—</b><span>切り成功</span></div>
       </div>
 
       <div class="hfrResetWrap">
@@ -20647,32 +20691,42 @@ window.bhRenderFinalFormation=draw;
     syncRace();
   }
 
+  const STATS_KEY="boat_hunter_v331_stats";
   function todayKey(){
     const d=$("date")?.value||"";
     return String(d);
   }
+  function emptyStats(){
+    return {races:0,headHit:0,axisHit:0,axisTests:0,formHit:0,cutSuccess:0,cutTests:0,
+      mainHit:0,coverHit:0,valueHit:0,seen:{}};
+  }
+  function loadAllStats(){
+    try{
+      const x=JSON.parse(localStorage.getItem(STATS_KEY)||"{}");
+      return {daily:x.daily||{},total:x.total||emptyStats()};
+    }catch(e){return {daily:{},total:emptyStats()}}
+  }
+  function saveAllStats(x){try{localStorage.setItem(STATS_KEY,JSON.stringify(x))}catch(e){}}
   function loadStats(){
-    try{
-      const all=JSON.parse(localStorage.getItem(KEY)||"{}");
-      const k=todayKey();
-      return all[k]||{count:0,hits:0,seen:{}};
-    }catch(e){
-      return {count:0,hits:0,seen:{}};
-    }
+    const all=loadAllStats();
+    return all.daily[todayKey()]||emptyStats();
   }
-  function saveStats(st){
-    try{
-      const all=JSON.parse(localStorage.getItem(KEY)||"{}");
-      all[todayKey()]=st;
-      localStorage.setItem(KEY,JSON.stringify(all));
-    }catch(e){}
-  }
+  function pct(n,d){return d?((n/d)*100).toFixed(1)+"%":"—"}
   function renderStats(){
-    const st=loadStats();
-    if($("hfrCount"))$("hfrCount").textContent=st.count||0;
-    if($("hfrHits"))$("hfrHits").textContent=st.hits||0;
-    if($("hfrRate"))$("hfrRate").textContent=st.count?((st.hits/st.count)*100).toFixed(1)+"%":"—";
+    const all=loadAllStats(),st=all.daily[todayKey()]||emptyStats(),tt=all.total||emptyStats();
+    if($("hfrCount"))$("hfrCount").textContent=st.races||0;
+    if($("hfrHeadRate"))$("hfrHeadRate").textContent=pct(st.headHit,st.races);
+    if($("hfrAxisRate"))$("hfrAxisRate").textContent=pct(st.axisHit,st.axisTests);
+    if($("hfrRate"))$("hfrRate").textContent=pct(st.formHit,st.races);
+    if($("hfrCutRate"))$("hfrCutRate").textContent=pct(st.cutSuccess,st.cutTests);
+
+    if($("hfrTotalCount"))$("hfrTotalCount").textContent=tt.races||0;
+    if($("hfrTotalHeadRate"))$("hfrTotalHeadRate").textContent=pct(tt.headHit,tt.races);
+    if($("hfrTotalAxisRate"))$("hfrTotalAxisRate").textContent=pct(tt.axisHit,tt.axisTests);
+    if($("hfrTotalFormRate"))$("hfrTotalFormRate").textContent=pct(tt.formHit,tt.races);
+    if($("hfrTotalCutRate"))$("hfrTotalCutRate").textContent=pct(tt.cutSuccess,tt.cutTests);
   }
+
   function syncRace(){
     const venue=window.S?.[Number($("stadium")?.value)]||"—";
     const race=$("race")?.value||"—";
@@ -20696,6 +20750,38 @@ window.bhRenderFinalFormation=draw;
         return {hit:true,kind:"formation",label:"買い目",head:Number(f.h?.boat||0)};
     }
     return {hit:false,combo};
+  }
+
+  function evaluateLogic(pack,a,b,c){
+    const top3=new Set([a,b,c]);
+    const headHit=pack?.forms?.some(f=>Number(f.h?.boat)===a)||false;
+    const rows=(pack?.forms||[]).map((f,i)=>{
+      const head=Number(f.h?.boat||0);
+      const axes=(f.ax||[]).map(x=>Number(x.boat));
+      const cuts=(f.cut||[]).map(x=>Number(x.boat));
+      const headOk=head===a;
+      const axisTest=headOk;
+      const axisOk=headOk&&axes.some(x=>x===b||x===c);
+      const cutTest=cuts.length>0;
+      const cutOk=cutTest?!cuts.some(x=>top3.has(x)):null;
+      return {i:i+1,head,headOk,axes,axisTest,axisOk,cuts,cutTest,cutOk};
+    });
+    const winForms=rows.filter(x=>x.headOk);
+    const axisTests=winForms.length?1:0;
+    const axisHit=winForms.some(x=>x.axisOk);
+    const cutRows=rows.filter(x=>x.cutTest);
+    const cutTests=cutRows.length;
+    const cutSuccess=cutRows.filter(x=>x.cutOk).length;
+    return {headHit,axisTests,axisHit,cutTests,cutSuccess,rows};
+  }
+  function logicHtml(ev){
+    if(!ev?.rows?.length)return "";
+    return ev.rows.map(x=>`<div class="hfrLogicRow">
+      <b>頭候補${x.i} ${x.head}号艇</b>
+      <span class="${x.headOk?"ok":"ng"}">頭 ${x.headOk?"○":"×"}</span>
+      <span class="${!x.axisTest?"na":x.axisOk?"ok":"ng"}">軸 ${!x.axisTest?"—":x.axisOk?"○":"×"}</span>
+      <span class="${!x.cutTest?"na":x.cutOk?"ok":"ng"}">切り ${!x.cutTest?"—":x.cutOk?"○":"×"}</span>
+    </div>`).join("");
   }
 
   function findRaceAnywhere(j,jo,rn){
@@ -20790,9 +20876,27 @@ window.bhRenderFinalFormation=draw;
       result.technique_name??result.winning_technique??result.kimarite_name??result.technique_source??""
     ).trim();
 
+    function trifectaPay(){
+      const pools=[
+        result?.payouts?.trifecta,result?.trifecta,
+        race?.payouts?.trifecta,race?.trifecta
+      ].filter(Boolean);
+      for(const p of pools){
+        const a=Array.isArray(p)?p:[p];
+        for(const x of a){
+          const pay=Number(x?.payoff??x?.payout??x?.amount??x?.money??x?.refund);
+          if(Number.isFinite(pay)&&pay>0)return pay;
+        }
+      }
+      const direct=Number(result?.trifecta_payoff??result?.trifecta_payout??race?.trifecta_payoff);
+      return Number.isFinite(direct)&&direct>0?direct:null;
+    }
+    const trifectaPayoff=trifectaPay();
     return {
       top3,
-      technique:techText||({1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"})[techNo]||"—"
+      technique:techText||({1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"})[techNo]||"—",
+      trifectaPayoff,
+      trifectaOdds:trifectaPayoff!=null?trifectaPayoff/100:null
     };
   }
 
@@ -20908,11 +21012,14 @@ window.bhRenderFinalFormation=draw;
 
       const [a,b,c]=parsed.top3;
       $("hfrCombo").textContent=`${a}-${b}-${c}`;
-      $("hfrTechnique").textContent=parsed.technique;
+      $("hfrTechnique").textContent=`決まり手 ${parsed.technique}`;
+      if($("hfrOdds"))$("hfrOdds").textContent=parsed.trifectaOdds!=null?`3連単 ${parsed.trifectaOdds.toFixed(1)}倍`:"3連単 —";
 
       const pass=!!pack.pass;
       const match=comboMatch(pack,a,b,c);
       const hit=!pass&&!!match?.hit;
+      const logic=evaluateLogic(pack,a,b,c);
+      if($("hfrLogicChecks"))$("hfrLogicChecks").innerHTML=logicHtml(logic);
 
       if(pass){
         $("hfrJudge").className="hfrJudge pass";
@@ -20931,24 +21038,65 @@ window.bhRenderFinalFormation=draw;
       }
 
       if(!pass){
-        const st=loadStats();
+        const allStats=loadAllStats();
+        const dk=todayKey();
+        const st=allStats.daily[dk]||emptyStats();
+        const tt=allStats.total||emptyStats();
         const key=raceKey();
-        if(!st.seen)st.seen={};
+
         if(!st.seen[key]){
-          st.seen[key]={
-            hit,combo:`${a}-${b}-${c}`,
-            category:match?.label||"不的中",
-            head:match?.head||null
+          const rec={
+            combo:`${a}-${b}-${c}`,
+            technique:parsed.technique,
+            odds:parsed.trifectaOdds,
+            headHit:logic.headHit,
+            axisHit:logic.axisHit,
+            axisTests:logic.axisTests,
+            formHit:!!match?.hit,
+            formCategory:match?.label||null,
+            cutSuccess:logic.cutSuccess,
+            cutTests:logic.cutTests,
+            headChecks:logic.rows,
+            at:Date.now()
           };
-          st.count=(st.count||0)+1;
-          if(hit)st.hits=(st.hits||0)+1;
-          saveStats(st);
+          st.seen[key]=rec;
+          st.races++;
+          if(logic.headHit)st.headHit++;
+          st.axisTests+=logic.axisTests;
+          if(logic.axisHit)st.axisHit++;
+          if(match?.hit){
+            st.formHit++;
+            if(match.kind==="main")st.mainHit++;
+            if(match.kind==="cover")st.coverHit++;
+            if(match.kind==="value")st.valueHit++;
+          }
+          st.cutTests+=logic.cutTests;
+          st.cutSuccess+=logic.cutSuccess;
+
+          tt.races++;
+          if(logic.headHit)tt.headHit++;
+          tt.axisTests+=logic.axisTests;
+          if(logic.axisHit)tt.axisHit++;
+          if(match?.hit){
+            tt.formHit++;
+            if(match.kind==="main")tt.mainHit++;
+            if(match.kind==="cover")tt.coverHit++;
+            if(match.kind==="value")tt.valueHit++;
+          }
+          tt.cutTests+=logic.cutTests;
+          tt.cutSuccess+=logic.cutSuccess;
+          if(!tt.seen)tt.seen={};
+          tt.seen[key]=rec;
+
+          allStats.daily[dk]=st;
+          allStats.total=tt;
+          saveAllStats(allStats);
           renderStats();
         }
       }
 
       window.__HUNTER_LAST_RESULT={
-        combo:[a,b,c],technique:parsed.technique,hit,pass,
+        combo:[a,b,c],technique:parsed.technique,odds:parsed.trifectaOdds,hit,pass,
         category:match?.label||null,head:match?.head||null,
         source,formation:pack
       };
@@ -20968,7 +21116,9 @@ window.bhRenderFinalFormation=draw;
       $(id)?.addEventListener("change",()=>{
         syncRace();
         if($("hfrCombo"))$("hfrCombo").textContent="—";
-        if($("hfrTechnique"))$("hfrTechnique").textContent="—";
+        if($("hfrTechnique"))$("hfrTechnique").textContent="決まり手 —";
+        if($("hfrOdds"))$("hfrOdds").textContent="3連単 —";
+        if($("hfrLogicChecks"))$("hfrLogicChecks").innerHTML="";
         if($("hfrJudge")){
           $("hfrJudge").className="hfrJudge";
           $("hfrJudgeText").textContent="未判定";
@@ -21000,14 +21150,14 @@ window.bhRenderFinalFormation=draw;
 
     $("hfrResetConfirm")?.addEventListener("click",()=>{
       try{
-        const all=JSON.parse(localStorage.getItem(KEY)||"{}");
-        delete all[todayKey()];
-        localStorage.setItem(KEY,JSON.stringify(all));
+        const all=loadAllStats();
+        delete all.daily[todayKey()];
+        saveAllStats(all); /* 累計 total は絶対に消さない */
       }catch(e){}
       renderStats();
       $("hfrResetConfirm").classList.add("hide");
       if(arm)arm.textContent="リセット（長押し）";
-      $("hfrStatus").textContent="今日の集計をリセットしました";
+      $("hfrStatus").textContent="今日の結果のみリセットしました（累計は保持）";
     });
   }
 
@@ -21268,6 +21418,9 @@ window.bhVenueBase=function(course,key="p1"){
 <script id="bh-v330-head-specific-cut">
 /* V330: 切り候補は頭候補ごとに独立。
    頭×軸×SIM3着支持を再計算し、各頭最大1艇。 */
+</script>
+<script id="bh-v331-marker">
+/* V331: 結果監査＝頭/軸/FORMATION/切り、日別+累計、決まり手+3連単倍率 */
 </script>
 </body>
 </html>
