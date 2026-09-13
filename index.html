@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V328</title>
+<title>BOAT HUNTER V329</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14773,6 +14773,9 @@ input,
 <style id="bh-v327-ground">
 .hfdGroundNote{font-size:8px;color:#86a9ba;font-weight:800;letter-spacing:.04em;margin-top:2px}
 </style>
+<style id="bh-v329-secondary-head">
+.hfdReverseBadge{display:inline-block;margin-left:7px;padding:3px 6px;border:1px solid #ffd34e;border-radius:999px;color:#ffd34e;background:#2a2205;font-size:8px;font-style:normal;font-weight:1000;vertical-align:middle}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14783,7 +14786,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.328</div>
+  <div class="topVol">Vol.329</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15267,7 +15270,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.328: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.329: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15934,7 +15937,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.328 場時間帯補正
+/* Vol.329 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20301,12 +20304,34 @@ function chooseHeads(p){
   eligible.sort((a,b)=>(b.diff??-999)-(a.diff??-999));
 
   const top=eligible[0],second=eligible[1];
-  const standout=top&&second&&top.diff>=10&&(top.diff-second.diff)>=5;
-  if(standout && !(oneHold?.headHoldKept&&top.boat!==1))
-    return {heads:[top],pass:false,rawCount:1,standout:true,oneHold};
+  const gap=(top&&second)?(top.diff-second.diff):999;
+
+  /* V329 圧倒主頭ルール
+     主頭偏差 +40以上なら頭候補1のみ。
+     +40未満で従来の「大差単独頭」条件に入っても、
+     2番手がHUNTER・世間・SIMすべて2位以内なら頭候補2として救済。
+     頭候補2は主頭を軸固定した少数フォーメーションにする。 */
+  const topOver40=!!(top&&top.diff>=40);
+  const secondHunterRank=second?(eligible.findIndex(x=>x.boat===second.boat)+1):99;
+  const secondMarketRank=second?(marketHeadRank(second.boat)??99):99;
+  const secondSimRank=second?(simHeadRank(second.boat)??99):99;
+  const secondTripleTop=!!(second&&secondHunterRank<=2&&secondMarketRank<=2&&secondSimRank<=2);
+  const oldStandout=!!(top&&second&&top.diff>=10&&gap>=5);
+
+  if(topOver40){
+    return {heads:top?[top]:[],pass:false,rawCount:1,standout:true,over40:true,secondarySpecial:false,oneHold};
+  }
+
+  if(oldStandout){
+    if(secondTripleTop){
+      return {heads:[top,second],pass:false,rawCount:2,standout:true,over40:false,secondarySpecial:true,primaryHeadBoat:top.boat,oneHold};
+    }
+    if(!(oneHold?.headHoldKept&&top.boat!==1))
+      return {heads:[top],pass:false,rawCount:1,standout:true,over40:false,secondarySpecial:false,oneHold};
+  }
 
   const pass=eligible.length>=3;
-  return {heads:pass?eligible:eligible.slice(0,2),pass,rawCount:eligible.length,standout:false,oneHold};
+  return {heads:pass?eligible:eligible.slice(0,2),pass,rawCount:eligible.length,standout:false,over40:false,secondarySpecial:false,oneHold};
 }
 function thirdDiff(x){
   const base=va(x.boat,"p3");
@@ -20419,7 +20444,16 @@ function draw(){
   const all=R().map(met);
   const forms=pick.heads.map((h,i)=>{
     const axAll=axis(h,all);
-    const ax=axAll.slice(0,2);
+    let ax=axAll.slice(0,2);
+
+    /* V329: 圧倒主頭の逆転候補（頭候補2）は主頭を軸固定。
+       例：頭候補1=1 / 頭候補2=3 → 3-1-○ を中心に少数点。 */
+    const secondarySpecial=!!(pick.secondarySpecial&&i===1&&pick.primaryHeadBoat);
+    if(secondarySpecial){
+      const primaryAxis=axAll.find(x=>x.boat===pick.primaryHeadBoat);
+      if(primaryAxis)ax=[primaryAxis];
+    }
+
     const cutPack=cutForHead(h,all,ax);
     const a2=ax.map(x=>x.boat);
     const a3=[...new Set([h.boat,...a2,...cutPack.stay.map(x=>x.boat)])].filter(x=>x!==h.boat);
@@ -20456,9 +20490,17 @@ function draw(){
       return out;
     };
     const seen=new Set();
-    const main=unique(f.cls.main,seen);
-    const cover=unique(f.cls.cover,seen);
-    const value=unique(f.cls.value,seen);
+    let main=unique(f.cls.main,seen);
+    let cover=unique(f.cls.cover,seen);
+    let value=unique(f.cls.value,seen);
+
+    /* V329 頭候補2・逆転シナリオは最大3点。
+       主頭軸固定の本線だけを残し、押さえ/期待値は増やさない。 */
+    if(pick.secondarySpecial&&f.i===1){
+      main=main.slice(0,3);
+      cover=[];
+      value=[];
+    }
     /* V321: 結果確認は画面に実際に出した買い目だけを照合する */
     f.displayPicks={main:[...main],cover:[...cover],value:[...value]};
     f.displayCombos=[
