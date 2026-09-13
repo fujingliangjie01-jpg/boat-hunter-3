@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V340</title>
+<title>BOAT HUNTER V342</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14839,7 +14839,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.340</div>
+  <div class="topVol">Vol.342</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15323,7 +15323,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.340: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.342: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15990,7 +15990,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.340 場時間帯補正
+/* Vol.342 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20341,71 +20341,104 @@ function marketHeadRank(b){const a=market();const i=a.findIndex(x=>x.boat===b);r
 function simHeadRank(b){const a=sim();const i=a.findIndex(x=>x.boat===b);return i<0?null:i+1}
 
 function chooseHeads(p){
+  const lane1=p.find(x=>Number(x.boat)===1);
+  const lane1MarketRank=lane1?(marketHeadRank(1)??99):99;
+  const lane1SimRank=lane1?(simHeadRank(1)??99):99;
+  const lane1MarketPct=lane1?(marketHeadPct(1)??0):0;
+  const lane1SimPct=lane1?(sim().find(x=>Number(x.boat)===1)?.v??0):0;
+
+  /* V342: 1号艇頭は基本的に残す
+     - 偏差プラス → 強制的に頭候補対象
+     - 偏差 -5.0 以内 → 原則残す
+     - -5.0 未満でも 世間1位 / SIM上位 なら残す余地
+     - 完全除外は「偏差<-5 かつ 世間もSIMも弱い」場合のみ */
+  const lane1ClearlyWeak=!!(
+    lane1 &&
+    lane1.diff!=null &&
+    lane1.diff < -5 &&
+    lane1MarketRank>2 &&
+    lane1SimRank>2 &&
+    lane1MarketPct<20 &&
+    lane1SimPct<20
+  );
+  const keepLane1=!!(lane1 && !lane1ClearlyWeak);
+
   const normal=p.filter(x=>x.diff!=null&&x.diff>=-1);
-  const oneHold=p.find(x=>x.boat===1&&x.diff!=null&&x.diff>=-5&&x.diff<-1);
-
-  /* V340 1号艇救済
-     1号艇は偏差-5まで頭候補の審査対象。
-     世間評価1位なら、主頭が1号艇でない限り頭候補2へ強制救済。
-     頭候補2は主頭を軸固定した少数FORMATION。 */
-  if(oneHold){
-    const mr=marketHeadRank(1),sr=simHeadRank(1);
-    const mp=marketHeadPct(1)??0;
-    const sp=sim().find(x=>x.boat===1)?.v??0;
-    oneHold.headHold=true;
-    oneHold.marketNo1=(mr===1);
-    oneHold.headHoldKept=(mr===1)||(((mr??99)<=2&&(sr??99)<=2)||(mp>=20&&sp>=20));
-  }
-
   let eligible=[...normal];
-  if(oneHold?.headHoldKept&&!eligible.some(x=>x.boat===1))eligible.push(oneHold);
-  eligible.sort((a,b)=>(b.diff??-999)-(a.diff??-999));
 
-  let top=eligible[0],second=eligible[1];
-  const gap=(top&&second)?(top.diff-second.diff):999;
-
-  /* 主頭が1号艇で偏差+40以上なら単独頭。
-     それ以外は原則2頭を許可。 */
-  const topOver40=!!(top&&top.boat===1&&top.diff>=40);
-  if(topOver40){
-    return {heads:[top],pass:false,rawCount:1,standout:true,over40:true,secondarySpecial:false,oneHold};
+  if(keepLane1 && !eligible.some(x=>Number(x.boat)===1)){
+    eligible.push(lane1);
   }
 
-  /* 世間評価1位の1号艇を頭候補2へ。
-     HUNTER主頭は変えない。 */
-  const marketOne=p.find(x=>x.boat===1&&x.diff!=null&&x.diff>=-5&&marketHeadRank(1)===1);
-  if(top&&top.boat!==1&&marketOne){
+  /* HUNTER主頭は従来どおり能力順 */
+  eligible.sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  let top=eligible[0];
+
+  /* 1号艇が+40以上でダントツなら①単独頭 */
+  if(top && Number(top.boat)===1 && top.diff>=40){
     return {
-      heads:[top,marketOne],
+      heads:[top],
+      pass:false,
+      rawCount:1,
+      standout:true,
+      over40:true,
+      secondarySpecial:false,
+      lane1Base:true,
+      lane1ClearlyWeak:false
+    };
+  }
+
+  /* 基本は2艇頭。
+     HUNTER主頭が①以外なら、①を頭候補2として優先して残す。 */
+  if(top && Number(top.boat)!==1 && keepLane1){
+    return {
+      heads:[top,lane1],
       pass:false,
       rawCount:2,
       standout:false,
       over40:false,
-      secondarySpecial:true,
-      primaryHeadBoat:top.boat,
-      oneHold:marketOne,
-      marketOneRescue:true
+      secondarySpecial:false,
+      primaryHeadBoat:null,
+      lane1Base:true,
+      lane1ClearlyWeak:false
     };
   }
 
-  /* 旧・大差時も2番手が三評価上位なら残す */
-  second=eligible.find(x=>x.boat!==top?.boat);
-  const secondHunterRank=second?(eligible.findIndex(x=>x.boat===second.boat)+1):99;
-  const secondMarketRank=second?(marketHeadRank(second.boat)??99):99;
-  const secondSimRank=second?(simHeadRank(second.boat)??99):99;
-  const secondTripleTop=!!(second&&secondHunterRank<=2&&secondMarketRank<=2&&secondSimRank<=2);
-  const oldStandout=!!(top&&second&&top.diff>=10&&(top.diff-second.diff)>=5);
-
-  if(oldStandout&&!secondTripleTop){
-    return {heads:[top],pass:false,rawCount:1,standout:true,over40:false,secondarySpecial:false,oneHold};
+  /* 主頭が①なら、2番手を通常どおり追加 */
+  const second=eligible.find(x=>Number(x.boat)!==Number(top?.boat));
+  if(top && second){
+    return {
+      heads:[top,second],
+      pass:false,
+      rawCount:2,
+      standout:false,
+      over40:false,
+      secondarySpecial:false,
+      lane1Base:Number(top.boat)===1,
+      lane1ClearlyWeak:false
+    };
   }
-  if(oldStandout&&secondTripleTop){
-    return {heads:[top,second],pass:false,rawCount:2,standout:true,over40:false,secondarySpecial:true,primaryHeadBoat:top.boat,oneHold};
-  }
 
-  const heads=eligible.slice(0,2);
-  const pass=eligible.length>=3;
-  return {heads,pass,rawCount:eligible.length,standout:false,over40:false,secondarySpecial:false,oneHold};
+  /* ①が明確に弱く除外された場合のみ、他艇から最大2艇 */
+  const fallback=p
+    .filter(x=>Number(x.boat)!==1)
+    .filter(x=>x.diff!=null&&x.diff>=-1)
+    .sort((a,b)=>(b.diff??-999)-(a.diff??-999))
+    .slice(0,2);
+
+  const heads=(top?[top]:fallback).slice(0,2);
+  const pass=heads.length>=3;
+
+  return {
+    heads,
+    pass,
+    rawCount:heads.length,
+    standout:false,
+    over40:false,
+    secondarySpecial:false,
+    lane1Base:false,
+    lane1ClearlyWeak
+  };
 }
 function thirdDiff(x){
   const base=va(x.boat,"p3");
@@ -21686,6 +21719,26 @@ window.BH_V334_HEAD_POLICY = {
    救済頭は主頭を軸固定した少数FORMATION。
    1号艇主頭かつ偏差+40以上のみ単独頭を許可。 */
 </script>
+
+<script id="bh-v341-marker">
+/* V341:
+   世間評価1位の1号艇を頭候補2へ救済した場合は「通常頭候補」として扱う。
+   本線・押さえ・期待値・軸・切りをフル生成。
+   少数FORMATIONは、主頭大差時に残す逆転シナリオ専用。 */
+</script>
+
+
+<script id="bh-v342-marker">
+/* V342 HEAD POLICY
+   1号艇頭は基本的に出す。
+   1号艇を頭候補から外すのは
+   「頭偏差<-5、世間2位以下、SIM2位以下、世間支持<20%、SIM<20%」
+   が同時成立した明確な弱ケースだけ。
+   通常は HUNTER主頭 + 1号艇 の2頭構成。
+   1号艇が主頭なら 1号艇 + 次点。
+   1号艇主頭かつ偏差+40以上のみ単独頭。 */
+</script>
+
 </body>
 </html>
 
