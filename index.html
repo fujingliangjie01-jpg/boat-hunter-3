@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V346</title>
+<title>BOAT HUNTER V347</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14857,7 +14857,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.346</div>
+  <div class="topVol">Vol.347</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15339,7 +15339,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.346: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.347: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16006,7 +16006,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.346 場時間帯補正
+/* Vol.347 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20303,6 +20303,8 @@ function pre(){
   return R().map(met).map(x=>{
     let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r)+natWinBonus(x.nationalWin,"head");
     if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
+    /* V347: ①差され率×②差し能力 */
+    try{if(+x.boat===2)s+=twoDiffBoost(R().map(met));}catch(e){}
     /* V345: ③が壁ならダッシュ勢の頭率低下。④両対応は頭チャンス加点。 */
     try{
       const allFlow=R().map(met);
@@ -20449,9 +20451,22 @@ function fourDualAttack(all){
 
 /* 5・6は「展開が開いた時だけ」頭へ。
    前付けで実進入が内 / チルト+1.5以上は例外ルート。 */
-function outerHeadGate(x,all){
+
+function hunterHeadRank(boat,p){const a=[...(p||[])].filter(x=>x.diff!=null).sort((x,y)=>(y.diff??-999)-(x.diff??-999));const i=a.findIndex(x=>+x.boat===+boat);return i<0?99:i+1}
+function calibratedSimRank(boat){const a=bhCalibratedSim();const i=a.findIndex(x=>+x.boat===+boat);return i<0?99:i+1}
+function tripleRankOuterRelease(x,p){const r=[marketHeadRank(x.boat)??99,hunterHeadRank(x.boat,p),calibratedSimRank(x.boat)];return {ok:r.every(v=>v<=2)&&r.filter(v=>v===1).length>=2,ranks:r}}
+function motorUpper(x){const t=String(x?.motorRank??x?.motor_rank??x?.motorGrade??"");if(/上位|エース|レジェンド/i.test(t))return true;return (N(x?.motor2??x?.motor2Rate??x?.motor_2rate??x?.motor2rate)??0)>=42}
+function startAboveAverage(x){const c=actualCourseOf(x),b=({1:.15,2:.16,3:.16,4:.17,5:.17,6:.17})[c]??.17;return effectiveST(x)<=b}
+function attackHigh(x){return (x?.makuri??0)>=5||(x?.mz??0)>=5}
+function fiveAbilityRelease(x){return +x?.boat===5&&motorUpper(x)&&startAboveAverage(x)&&attackHigh(x)}
+function lane1StabRate(all){const x=all.find(v=>+v.boat===1);return x?(N(x.sasare??x.sasareRate??x.stabbedRate??x.diffLossRate)??0):0}
+function twoDiffBoost(all){const x=all.find(v=>+v.boat===2);if(!x)return 0;const loss=lane1StabRate(all),d=N(x.sashi??x.sashiRate??x.diffRate)??0;let b=0;if(loss>=10)b+=4;if(loss>=15)b+=3;if(d>=10)b+=4;if(d>=15)b+=3;if(startAboveAverage(x))b+=2;return b}
+function outerHeadGate(x,all,p){
   const b=Number(x.boat);
   if(b<5)return {ok:true,reason:"通常"};
+  const triple=p?tripleRankOuterRelease(x,p):{ok:false,ranks:[]};
+  if(triple.ok)return {ok:true,reason:`三評価解放 ${triple.ranks.join("/")}`};
+  if(b===5&&fiveAbilityRelease(x))return {ok:true,reason:"5能力解放"};
   if(frontMoved(x) && actualCourseOf(x)<=4)return {ok:true,reason:"前付け例外"};
   if(tiltJump(x)){
     const inner=all.find(v=>actualCourseOf(v)===actualCourseOf(x)-1);
@@ -20558,7 +20573,7 @@ function chooseHeads(p){
     .filter(x=>{
       if(Number(x.boat)<5)return true;
       const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
-      const gate=outerHeadGate(ax,allNow);
+      const gate=outerHeadGate(ax,allNow,p);
       x.outerHeadGate=gate;
       return gate.ok;
     })
@@ -20606,7 +20621,7 @@ function chooseHeads(p){
       .filter(x=>{
         if(Number(x.boat)<5)return true;
         const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
-        return outerHeadGate(ax,allNow).ok;
+        return outerHeadGate(ax,allNow,p).ok;
       })
       .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
     if(extras[0])heads.push(extras[0]);
@@ -20718,7 +20733,7 @@ function predictedTechnique(head,all){
   const st=Number(x?.st), atk=Number(x?.attack??x?.oneMarkAttack??0);
   const inner=(all||[]).find(v=>Number(v.boat)===b-1), ist=Number(inner?.st);
   const edge=Number.isFinite(st)&&Number.isFinite(ist)?ist-st:0;
-  if(b===2)return (edge>=.03||atk>=8)?"まくり":"差し";
+  if(b===2){if(twoDiffBoost(all)>=8)return "差し";return (edge>=.03||atk>=8)?"まくり":"差し";}
   if(b===3)return (edge>=.025||atk>=8)?"まくり":"まくり差し";
   if(b===4){
     if(fourDualAttack(all))return "まくり/まくり差し";
@@ -20754,6 +20769,12 @@ function classify(head,axes,a3,thirdStay){
     const c=`${head.boat}-${b}-${a}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
     value.push({combo:c,sim:sr,odds:o,ev,reason:'本命3着専用→2着 / 本命軸→3着'});
   }));
+  const reversals=[];
+  [...new Set((a3||[]).map(Number))].filter(b=>b&&b!==+head.boat&&!axisBoats.includes(b)).forEach(b=>axisBoats.forEach(a=>{
+    if(a===b||a===+head.boat)return;
+    const c=`${head.boat}-${b}-${a}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
+    reversals.push({combo:c,sim:sr,odds:o,ev,reason:'軸3着↔3着候補2着 折り返し'});
+  }));
 
   const uniq=a=>{
     const m=new Map();
@@ -20761,7 +20782,7 @@ function classify(head,axes,a3,thirdStay){
     return [...m.values()];
   };
   const mainU=uniq(main);
-  const coverU=uniq(cover.filter(x=>!mainU.some(m=>m.combo===x.combo)));
+  const coverU=uniq([...cover.filter(x=>!mainU.some(m=>m.combo===x.combo)),...reversals.filter(x=>!mainU.some(m=>m.combo===x.combo))]);
 
   /* V332 期待値ルール
      期待値＝「頭 → 本命3着専用艇 → 本命軸艇」。
@@ -20808,6 +20829,15 @@ function ensureToggle(){
   ranks.classList.add("hfdRanksCollapsed");
   b.onclick=()=>{const open=ranks.classList.toggle("hfdRanksOpen");ranks.classList.toggle("hfdRanksCollapsed",!open);b.textContent=open?"6艇評価を閉じる −":"6艇評価を見る ＋"};
 }
+
+function bhResultAxisHit(pred,result){
+ const r=Array.isArray(result)?result.map(Number):String(result||"").split(/[-,]/).map(Number);
+ if(r.length<2)return false;
+ const forms=pred?.forms||window.__HUNTER_FINAL_FORMATION?.forms||[];
+ const f=forms.find(x=>+(x?.h?.boat??x?.headBoat??x?.head)===r[0]);
+ if(!f)return false;
+ return (f.ax||f.axes||[]).map(x=>+(x?.boat??x)).includes(r[1]);
+}
 function draw(){
   const p=pre();if(!p.length)return;
   ensureToggle(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",sim(),"s");
@@ -20850,6 +20880,7 @@ function draw(){
     let main=[...(f.cls?.main||[])];
     let cover=[...(f.cls?.cover||[])];
     let value=[...(f.cls?.value||[])];
+    if(pick.heads.length>=3&&f.i>0)value=[];
 
     if(pick.secondarySpecial&&f.i===1){
       main=main.slice(0,3);
@@ -20927,6 +20958,7 @@ function draw(){
     let main=unique(f.cls.main,seen);
     let cover=unique(f.cls.cover,seen);
     let value=unique(f.cls.value,seen);
+    if(pick.heads.length>=3&&f.i>0)value=[];
 
     /* V329 頭候補2・逆転シナリオは最大3点。
        主頭軸固定の本線だけを残し、押さえ/期待値は増やさない。 */
@@ -22005,6 +22037,7 @@ V346
 */
 </script>
 
+<script id="bh-v347-marker">/* V347: 5/6三評価解放、1差され×2差し、5能力解放、3頭以上は本命以外期待値なし、本命折り返し拡張、見ルール維持、軸結果は頭連動 */</script>
 </body>
 </html>
 
