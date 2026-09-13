@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V323</title>
+<title>BOAT HUNTER V325</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14772,7 +14772,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.323</div>
+  <div class="topVol">Vol.325</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15256,7 +15256,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.323: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.325: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15923,7 +15923,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.323 場時間帯補正
+/* Vol.325 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20107,6 +20107,22 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 </script>
 
 
+
+<script id="bh-vol325-official-venue-base">
+/* V325
+   BOAT RACE オフィシャル「最近3ヶ月のコース別入着率」
+   集計期間: 2026/06/01〜2026/08/31
+   p1=1着率 / p2=2連対率 / p3=3連対率
+*/
+window.VENUE_BASE_202606_08={"01":{"1":{"p1":54.8,"p2":72.4,"p3":80.8,"place1":54.8,"place2":17.6,"place3":8.4},"2":{"p1":11.0,"p2":33.4,"p3":53.8,"place1":11.0,"place2":22.4,"place3":20.4},"3":{"p1":14.4,"p2":35.6,"p3":55.1,"place1":14.4,"place2":21.2,"place3":19.5},"4":{"p1":9.5,"p2":26.7,"p3":48.3,"place1":9.5,"place2":17.2,"place3":21.6},"5":{"p1":7.7,"p2":22.6,"p3":39.9,"place1":7.7,"place2":14.9,"place3":17.3},"6":{"p1":2.9,"p2":10.1,"p3":23.6,"place1":2.9,"place2":7.2,"place3":13.5}},"02":{"1":{"p1":41.2,"p2":59.5,"p3":68.7,"place1":41.2,"place2":18.3,"place3":9.2},"2":{"p1":18.3,"p2":43.8,"p3":59.8,"place1":18.3,"place2":25.5,"place3":16.0},"3":{"p1":15.5,"p2":33.6,"p3":51.3,"place1":15.5,"place2":18.1,"place3":17.7},"4":{"p1":14.4,"p2":30.3,"p3":51.6,"place1":14.4,"place2":15.9,"place3":21.3},"5":{"p1":8.4,"p2":22.2,"p3":44.4,"place1":8.4,"place2":13.8,"place3":22.2},"6":{"p1":3.0,"p2":12.4,"p3":26.8,"place1":3.0,"place2":9.4,"place3":14.4}},"03":{"1":{"p1":46.5,"p2":67.7,"p3":79.1,"place1":46.5,"place2":21.2,"place3":11.4},"2":{"p1":19.3,"p2":42.4,"p3":61.1,"place1":19.3,"place2":23.1,"place3":18.7},"3":{"p1":13.4,"p2":35.4,"p3":54.8,"place1":13.4,"place2":22.0,"place3":19.4},"4":{"p1":12.8,"p2":27.3,"p3":44.4,"place1":12.8,"place2":14.5,"place3":17.1},"5":{"p1":7.2,"p2":21.2,"p3":40.7,"place1":7.2,"place2":14.0,"place3":19.5},"6":{"p1":2.3,"p2":9.1,"p3":24.6,"place1":2.3,"place2":6.8,"place3":15.5}},"04":{"1":{"p1":40.3,"p2":61.2,"p3":73.5,"place1":40.3,"place2":20.9,"place3":12.3},"2":{"p1":20.7,"p2":41.9,"p3":62.3,"place1":20.7,"place2":21.2,"place3":20.4},"3":{"p1":18.5,"p2":38.2,"p3":54.5,"place1":18.5,"place2":19.7,"place3":16.3},"4":{"p1":11.4,"p2":28.3,"p3":44.9,"place1":11.4,"place2":16.9,"place3":16.6},"5":{"p1":7.5,"p2":20.4,"p3":38.8,"place1":7.5,"place2":12.9,"place3":18.4},"6":{"p1":2.7,"p2":12.0,"p3":29.2,"place1":2.7,"place2":9.3,"place3":17.2}},"05":{"1":{"p1":55.6,"p2":70.9,"p3":80.0,"place1":55.6,"place2":15.3,"place3":9.1},"2":{"p1":12.0,"p2":38.5,"p3":57.0,"place1":12.0,"place2":26.5,"place3":18.5},"3":{"p1":12.3,"p2":35.4,"p3":53.6,"place1":12.3,"place2":23.1,"place3":18.2},"4":{"p1":11.3,"p2":27.3,"p3":47.0,"place1":11.3,"place2":16.0,"place3":19.7},"5":{"p1":6.7,"p2":20.0,"p3":38.1,"place1":6.7,"place2":13.3,"place3":18.1},"6":{"p1":2.6,"p2":8.8,"p3":25.8,"place1":2.6,"place2":6.2,"place3":17.0}},"06":{"1":{"p1":55.2,"p2":70.7,"p3":77.8,"place1":55.2,"place2":15.5,"place3":7.1},"2":{"p1":11.9,"p2":38.3,"p3":56.6,"place1":11.9,"place2":26.4,"place3":18.3},"3":{"p1":13.6,"p2":34.1,"p3":54.7,"place1":13.6,"place2":20.5,"place3":20.6},"4":{"p1":11.3,"p2":28.2,"p3":46.2,"place1":11.3,"place2":16.9,"place3":18.0},"5":{"p1":6.9,"p2":20.7,"p3":41.6,"place1":6.9,"place2":13.8,"place3":20.9},"6":{"p1":2.1,"p2":10.0,"p3":26.1,"place1":2.1,"place2":7.9,"place3":16.1}},"07":{"1":{"p1":53.9,"p2":72.7,"p3":82.5,"place1":53.9,"place2":18.8,"place3":9.8},"2":{"p1":13.2,"p2":36.2,"p3":57.0,"place1":13.2,"place2":23.0,"place3":20.8},"3":{"p1":12.8,"p2":36.7,"p3":57.0,"place1":12.8,"place2":23.9,"place3":20.3},"4":{"p1":11.2,"p2":27.9,"p3":45.5,"place1":11.2,"place2":16.7,"place3":17.6},"5":{"p1":6.6,"p2":19.9,"p3":40.0,"place1":6.6,"place2":13.3,"place3":20.1},"6":{"p1":3.3,"p2":8.8,"p3":21.4,"place1":3.3,"place2":5.5,"place3":12.6}},"08":{"1":{"p1":61.1,"p2":75.7,"p3":82.8,"place1":61.1,"place2":14.6,"place3":7.1},"2":{"p1":14.6,"p2":40.1,"p3":59.7,"place1":14.6,"place2":25.5,"place3":19.6},"3":{"p1":9.5,"p2":32.2,"p3":52.3,"place1":9.5,"place2":22.7,"place3":20.1},"4":{"p1":8.9,"p2":24.8,"p3":44.7,"place1":8.9,"place2":15.9,"place3":19.9},"5":{"p1":4.2,"p2":19.9,"p3":38.9,"place1":4.2,"place2":15.7,"place3":19.0},"6":{"p1":2.1,"p2":8.2,"p3":23.0,"place1":2.1,"place2":6.1,"place3":14.8}},"09":{"1":{"p1":53.6,"p2":72.9,"p3":82.5,"place1":53.6,"place2":19.3,"place3":9.6},"2":{"p1":17.6,"p2":42.8,"p3":62.2,"place1":17.6,"place2":25.2,"place3":19.4},"3":{"p1":10.8,"p2":32.8,"p3":52.3,"place1":10.8,"place2":22.0,"place3":19.5},"4":{"p1":10.5,"p2":26.6,"p3":45.7,"place1":10.5,"place2":16.1,"place3":19.1},"5":{"p1":6.1,"p2":17.9,"p3":36.9,"place1":6.1,"place2":11.8,"place3":19.0},"6":{"p1":2.3,"p2":8.9,"p3":23.0,"place1":2.3,"place2":6.6,"place3":14.1}},"10":{"1":{"p1":52.8,"p2":70.6,"p3":78.7,"place1":52.8,"place2":17.8,"place3":8.1},"2":{"p1":14.2,"p2":40.1,"p3":57.3,"place1":14.2,"place2":25.9,"place3":17.2},"3":{"p1":15.3,"p2":37.2,"p3":56.1,"place1":15.3,"place2":21.9,"place3":18.9},"4":{"p1":10.8,"p2":29.3,"p3":53.8,"place1":10.8,"place2":18.5,"place3":24.5},"5":{"p1":6.4,"p2":18.2,"p3":36.1,"place1":6.4,"place2":11.8,"place3":17.9},"6":{"p1":1.5,"p2":6.2,"p3":20.3,"place1":1.5,"place2":4.7,"place3":14.1}},"11":{"1":{"p1":55.9,"p2":72.8,"p3":81.5,"place1":55.9,"place2":16.9,"place3":8.7},"2":{"p1":13.6,"p2":38.6,"p3":59.8,"place1":13.6,"place2":25.0,"place3":21.2},"3":{"p1":15.7,"p2":38.0,"p3":58.8,"place1":15.7,"place2":22.3,"place3":20.8},"4":{"p1":7.5,"p2":24.1,"p3":45.3,"place1":7.5,"place2":16.6,"place3":21.2},"5":{"p1":5.7,"p2":18.7,"p3":35.0,"place1":5.7,"place2":13.0,"place3":16.3},"6":{"p1":2.2,"p2":9.3,"p3":22.1,"place1":2.2,"place2":7.1,"place3":12.8}},"12":{"1":{"p1":51.9,"p2":71.7,"p3":82.5,"place1":51.9,"place2":19.8,"place3":10.8},"2":{"p1":15.8,"p2":40.6,"p3":57.8,"place1":15.8,"place2":24.8,"place3":17.2},"3":{"p1":14.7,"p2":34.4,"p3":55.2,"place1":14.7,"place2":19.7,"place3":20.8},"4":{"p1":12.1,"p2":30.6,"p3":51.3,"place1":12.1,"place2":18.5,"place3":20.7},"5":{"p1":4.8,"p2":17.8,"p3":36.2,"place1":4.8,"place2":13.0,"place3":18.4},"6":{"p1":1.6,"p2":6.7,"p3":19.9,"place1":1.6,"place2":5.1,"place3":13.2}},"13":{"1":{"p1":60.0,"p2":76.8,"p3":83.9,"place1":60.0,"place2":16.8,"place3":7.1},"2":{"p1":12.6,"p2":35.9,"p3":54.3,"place1":12.6,"place2":23.3,"place3":18.4},"3":{"p1":12.5,"p2":33.7,"p3":53.3,"place1":12.5,"place2":21.2,"place3":19.6},"4":{"p1":9.6,"p2":28.4,"p3":50.0,"place1":9.6,"place2":18.8,"place3":21.6},"5":{"p1":4.6,"p2":18.7,"p3":37.7,"place1":4.6,"place2":14.1,"place3":19.0},"6":{"p1":1.2,"p2":8.0,"p3":23.2,"place1":1.2,"place2":6.8,"place3":15.2}},"14":{"1":{"p1":55.3,"p2":74.7,"p3":81.7,"place1":55.3,"place2":19.4,"place3":7.0},"2":{"p1":14.4,"p2":36.4,"p3":57.7,"place1":14.4,"place2":22.0,"place3":21.3},"3":{"p1":13.2,"p2":30.8,"p3":50.4,"place1":13.2,"place2":17.6,"place3":19.6},"4":{"p1":9.5,"p2":27.0,"p3":48.9,"place1":9.5,"place2":17.5,"place3":21.9},"5":{"p1":6.8,"p2":21.4,"p3":37.8,"place1":6.8,"place2":14.6,"place3":16.4},"6":{"p1":1.5,"p2":11.2,"p3":25.8,"place1":1.5,"place2":9.7,"place3":14.6}},"15":{"1":{"p1":55.9,"p2":75.3,"p3":82.9,"place1":55.9,"place2":19.4,"place3":7.6},"2":{"p1":12.4,"p2":39.4,"p3":56.7,"place1":12.4,"place2":27.0,"place3":17.3},"3":{"p1":14.4,"p2":35.6,"p3":52.3,"place1":14.4,"place2":21.2,"place3":16.7},"4":{"p1":10.0,"p2":24.6,"p3":48.3,"place1":10.0,"place2":14.6,"place3":23.7},"5":{"p1":5.7,"p2":18.0,"p3":37.0,"place1":5.7,"place2":12.3,"place3":19.0},"6":{"p1":2.0,"p2":8.2,"p3":24.7,"place1":2.0,"place2":6.2,"place3":16.5}},"16":{"1":{"p1":54.7,"p2":72.0,"p3":82.2,"place1":54.7,"place2":17.3,"place3":10.2},"2":{"p1":10.9,"p2":37.8,"p3":56.0,"place1":10.9,"place2":26.9,"place3":18.2},"3":{"p1":14.4,"p2":32.0,"p3":50.6,"place1":14.4,"place2":17.6,"place3":18.6},"4":{"p1":11.2,"p2":28.8,"p3":47.4,"place1":11.2,"place2":17.6,"place3":18.6},"5":{"p1":8.6,"p2":22.8,"p3":41.9,"place1":8.6,"place2":14.2,"place3":19.1},"6":{"p1":1.1,"p2":8.5,"p3":24.7,"place1":1.1,"place2":7.4,"place3":16.2}},"17":{"1":{"p1":57.7,"p2":72.0,"p3":81.3,"place1":57.7,"place2":14.3,"place3":9.3},"2":{"p1":11.5,"p2":35.9,"p3":54.4,"place1":11.5,"place2":24.4,"place3":18.5},"3":{"p1":13.2,"p2":37.3,"p3":58.7,"place1":13.2,"place2":24.1,"place3":21.4},"4":{"p1":10.7,"p2":27.3,"p3":47.5,"place1":10.7,"place2":16.6,"place3":20.2},"5":{"p1":6.0,"p2":20.1,"p3":38.7,"place1":6.0,"place2":14.1,"place3":18.6},"6":{"p1":1.4,"p2":8.6,"p3":21.6,"place1":1.4,"place2":7.2,"place3":13.0}},"18":{"1":{"p1":57.8,"p2":77.9,"p3":85.9,"place1":57.8,"place2":20.1,"place3":8.0},"2":{"p1":14.9,"p2":41.3,"p3":61.3,"place1":14.9,"place2":26.4,"place3":20.0},"3":{"p1":13.6,"p2":34.8,"p3":54.1,"place1":13.6,"place2":21.2,"place3":19.3},"4":{"p1":7.7,"p2":24.0,"p3":46.6,"place1":7.7,"place2":16.3,"place3":22.6},"5":{"p1":5.4,"p2":17.1,"p3":36.0,"place1":5.4,"place2":11.7,"place3":18.9},"6":{"p1":1.3,"p2":6.2,"p3":18.3,"place1":1.3,"place2":4.9,"place3":12.1}},"19":{"1":{"p1":62.2,"p2":78.6,"p3":87.1,"place1":62.2,"place2":16.4,"place3":8.5},"2":{"p1":10.4,"p2":37.2,"p3":57.5,"place1":10.4,"place2":26.8,"place3":20.3},"3":{"p1":11.2,"p2":32.2,"p3":53.1,"place1":11.2,"place2":21.0,"place3":20.9},"4":{"p1":9.7,"p2":27.3,"p3":48.6,"place1":9.7,"place2":17.6,"place3":21.3},"5":{"p1":5.2,"p2":18.9,"p3":36.5,"place1":5.2,"place2":13.7,"place3":17.6},"6":{"p1":1.8,"p2":6.9,"p3":19.0,"place1":1.8,"place2":5.1,"place3":12.1}},"20":{"1":{"p1":56.9,"p2":75.5,"p3":86.4,"place1":56.9,"place2":18.6,"place3":10.9},"2":{"p1":12.0,"p2":36.6,"p3":58.4,"place1":12.0,"place2":24.6,"place3":21.8},"3":{"p1":12.8,"p2":35.6,"p3":56.9,"place1":12.8,"place2":22.8,"place3":21.3},"4":{"p1":10.9,"p2":29.8,"p3":47.5,"place1":10.9,"place2":18.9,"place3":17.7},"5":{"p1":5.9,"p2":15.9,"p3":32.9,"place1":5.9,"place2":10.0,"place3":17.0},"6":{"p1":1.9,"p2":7.5,"p3":19.4,"place1":1.9,"place2":5.6,"place3":11.9}},"21":{"1":{"p1":58.0,"p2":72.7,"p3":80.1,"place1":58.0,"place2":14.7,"place3":7.4},"2":{"p1":10.6,"p2":35.1,"p3":54.7,"place1":10.6,"place2":24.5,"place3":19.6},"3":{"p1":12.5,"p2":34.8,"p3":51.2,"place1":12.5,"place2":22.3,"place3":16.4},"4":{"p1":10.9,"p2":29.1,"p3":48.1,"place1":10.9,"place2":18.2,"place3":19.0},"5":{"p1":7.1,"p2":20.8,"p3":43.4,"place1":7.1,"place2":13.7,"place3":22.6},"6":{"p1":1.6,"p2":8.9,"p3":24.6,"place1":1.6,"place2":7.3,"place3":15.7}},"22":{"1":{"p1":60.2,"p2":76.3,"p3":85.5,"place1":60.2,"place2":16.1,"place3":9.2},"2":{"p1":13.5,"p2":39.9,"p3":60.6,"place1":13.5,"place2":26.4,"place3":20.7},"3":{"p1":15.8,"p2":42.1,"p3":59.3,"place1":15.8,"place2":26.3,"place3":17.2},"4":{"p1":6.6,"p2":22.9,"p3":46.8,"place1":6.6,"place2":16.3,"place3":23.9},"5":{"p1":3.5,"p2":15.2,"p3":35.7,"place1":3.5,"place2":11.7,"place3":20.5},"6":{"p1":1.2,"p2":5.4,"p3":14.9,"place1":1.2,"place2":4.2,"place3":9.5}},"23":{"1":{"p1":57.8,"p2":77.8,"p3":85.9,"place1":57.8,"place2":20.0,"place3":8.1},"2":{"p1":12.3,"p2":41.1,"p3":62.9,"place1":12.3,"place2":28.8,"place3":21.8},"3":{"p1":12.9,"p2":32.5,"p3":56.0,"place1":12.9,"place2":19.6,"place3":23.5},"4":{"p1":10.7,"p2":26.0,"p3":43.9,"place1":10.7,"place2":15.3,"place3":17.9},"5":{"p1":5.6,"p2":19.3,"p3":38.6,"place1":5.6,"place2":13.7,"place3":19.3},"6":{"p1":1.6,"p2":5.3,"p3":16.0,"place1":1.6,"place2":3.7,"place3":10.7}},"24":{"1":{"p1":57.5,"p2":76.7,"p3":84.1,"place1":57.5,"place2":19.2,"place3":7.4},"2":{"p1":13.0,"p2":41.1,"p3":60.0,"place1":13.0,"place2":28.1,"place3":18.9},"3":{"p1":11.0,"p2":33.1,"p3":55.9,"place1":11.0,"place2":22.1,"place3":22.8},"4":{"p1":10.6,"p2":25.4,"p3":44.4,"place1":10.6,"place2":14.8,"place3":19.0},"5":{"p1":6.6,"p2":17.9,"p3":35.7,"place1":6.6,"place2":11.3,"place3":17.8},"6":{"p1":1.9,"p2":7.2,"p3":22.4,"place1":1.9,"place2":5.3,"place3":15.2}}};
+window.__HUNTER_VENUE_BASE=window.VENUE_BASE_202606_08;
+window.__HUNTER_VENUE_BASE_META={
+  source:"BOAT RACE official stadium data",
+  period:"2026-06-01/2026-08-31",
+  type:"recent3months"
+};
+</script>
+
 <script id="bh-vol315-final-js">
 (function(){
 const $=id=>document.getElementById(id);
@@ -20179,7 +20195,7 @@ function pre(){
   return R().map(met).map(x=>{
     let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r);
     if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
-    s=Math.max(0,Math.min(100,s));
+    /* V325: 偏差を潰さない。0下限丸めを廃止 */
     const base=va(x.boat,"p1");
     return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.diff??-999)-(a.diff??-999));
@@ -20199,7 +20215,7 @@ function sim(){
 }
 function rank(id,a,type){
   const e=$(id);if(!e)return;
-  e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(1)+"%"):type==="p"?(x.basePending?`${x.score.toFixed(1)}<small>基準待</small>`:P(x.diff)):((x.v??0).toFixed(1)+"%")}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`;
+  e.innerHTML=a.length?a.slice(0,6).map((x,i)=>`<div class="hfdRank"><span class="hfdNo">${i+1}</span>${B(x.boat)}<span class="hfdVal">${type==="m"?(x.v==null?"—":x.v.toFixed(1)+"%"):type==="p"?(x.basePending?`${x.score.toFixed(1)}<small>基準待</small>`:`${P(x.diff)}<small>偏差</small>`):((x.v??0).toFixed(1)+"%")}</span></div>`).join(""):`<div class="hfdEmpty">—</div>`;
 }
 function move(head){
   if(head.boat===1)return "逃げ";
@@ -20668,49 +20684,94 @@ window.bhRenderFinalFormation=draw;
     $("hfrFetch").disabled=true;
 
     try{
-      const d=$("date")?.value;
-      const jo=Number($("stadium")?.value);
-      const rn=Number($("race")?.value);
+      /* V324:
+         hidden date ではなく「今選んでいる currentRace 自身の日付」を最優先。
+         日付切替後も古いhidden値に引っ張られない。 */
+      const raceDate=String(
+        currentRace?.date ||
+        $("date")?.value ||
+        (typeof today==="function"?today():"")
+      ).slice(0,10);
+      const d=raceDate;
+      const jo=Number(currentRace?.stadium_number ?? $("stadium")?.value);
+      const rn=Number(currentRace?.race_number ?? $("race")?.value);
       const ymd=String(d||"").replaceAll("-","");
       const y=ymd.slice(0,4);
 
-      /* V323:
-         結果専用API → 統合API → 既存dayJson の順で確認。
-         同じソースだけを見て「未確定」としない。 */
-      const urls=[
-        `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
-        `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`,
-        `https://boatraceopenapi.github.io/results/v3/today.json`,
-        `https://boatraceopenapi.github.io/results/v2/today.json`,
-        `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
-        `https://boatraceopenapi.github.io/api/v1/today.json`
-      ];
-
       let parsed=null,source="";
-      for(const u of urls){
-        const j=await fetchJsonNoCache(u);
-        if(!j)continue;
-        const race=findRaceAnywhere(j,jo,rn);
-        const p=parseResult(race);
-        if(p){parsed=p;source=u.includes("/results/")?"RESULT":"API";break;}
+
+      /* まず後継v1を正規スキーマで直参照 */
+      const v1url=`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`;
+      const v1=await fetchJsonNoCache(v1url);
+      if(v1){
+        const exact=
+          v1?.programs?.stadiums?.[String(jo)]?.races?.[String(rn)] ||
+          v1?.programs?.stadiums?.[String(Number(jo))]?.races?.[String(Number(rn))] ||
+          null;
+        parsed=parseResult(exact);
+        if(parsed)source="API-v1";
+      }
+
+      /* today.json も確認。更新タイミング差を吸収 */
+      if(!parsed){
+        const t=await fetchJsonNoCache(`https://boatraceopenapi.github.io/api/v1/today.json`);
+        if(t){
+          const exact=
+            t?.programs?.stadiums?.[String(jo)]?.races?.[String(rn)] ||
+            t?.programs?.stadiums?.[String(Number(jo))]?.races?.[String(Number(rn))] ||
+            null;
+          parsed=parseResult(exact)||parseResult(findRaceAnywhere(t,jo,rn));
+          if(parsed)source="API-today";
+        }
+      }
+
+      /* 非推奨resultsは最後の保険 */
+      if(!parsed){
+        const urls=[
+          `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
+          `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`
+        ];
+        for(const u of urls){
+          const j=await fetchJsonNoCache(u);
+          if(!j)continue;
+          const p=parseResult(findRaceAnywhere(j,jo,rn));
+          if(p){parsed=p;source="RESULT-legacy";break;}
+        }
+      }
+
+      /* すでにcurrentRaceにresultが入っているなら、それも必ず使う */
+      if(!parsed){
+        parsed=parseResult(currentRace);
+        if(parsed)source="CURRENT";
       }
 
       if(!parsed){
         try{
           const j=await dayJson(d);
-          parsed=parseResult(findRaceAnywhere(j,jo,rn));
+          parsed=parseResult(
+            j?.programs?.stadiums?.[String(jo)]?.races?.[String(rn)] ||
+            findRaceAnywhere(j,jo,rn)
+          );
           if(parsed)source="DAY";
         }catch(e){}
       }
 
       if(!parsed){
-        $("hfrStatus").textContent="結果データ未反映｜少し待って再確認";
+        $("hfrStatus").textContent=`結果未取得｜${S?.[jo]||jo} ${rn}R / ${d}`;
         $("hfrCombo").textContent="—";
         $("hfrTechnique").textContent="—";
         $("hfrJudge").className="hfrJudge";
         $("hfrJudgeText").textContent="結果待ち";
         return;
       }
+
+      /* 取得成功時はcurrentRaceも最新へ差し替える */
+      try{
+        if(v1){
+          const fresh=v1?.programs?.stadiums?.[String(jo)]?.races?.[String(rn)];
+          if(fresh)currentRace=fresh;
+        }
+      }catch(e){}
 
       const [a,b,c]=parsed.top3;
       $("hfrCombo").textContent=`${a}-${b}-${c}`;
@@ -21060,6 +21121,16 @@ window.bhRenderFinalFormation=draw;
 <style id="bh-vol323-flash">
 #hunterFinalDecision.bh323Flash{box-shadow:0 0 0 3px #65d9ff,0 0 28px rgba(50,198,255,.48)!important}
 </style>
+
+
+<script id="bh-vol325-base-debug">
+window.bhVenueBase=function(course,key="p1"){
+  try{
+    const j=String(Number(document.getElementById("stadium")?.value||0)).padStart(2,"0");
+    return Number(window.VENUE_BASE_202606_08?.[j]?.[String(course)]?.[key]);
+  }catch(e){return NaN}
+};
+</script>
 
 </body>
 </html>
