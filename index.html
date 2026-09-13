@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V348</title>
+<title>BOAT HUNTER V349</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14862,7 +14862,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.348</div>
+  <div class="topVol">Vol.349</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15027,7 +15027,7 @@ input,
   <div class="hfdRanks">
     <div><h4>世間評価</h4><div id="hfdMarket"></div></div>
     <div><h4>HUNTER事前評価</h4><div id="hfdPre"></div></div>
-    <div><h4>SIM最終評価 <small class="hfdSimCal">校正</small></h4><div id="hfdSim"></div></div>
+    <div><h4>SIM検証評価 <small class="hfdSimCal">検証</small></h4><div id="hfdSim"></div></div>
   </div>
   <div id="hfdPass" class="hfdPass hide">見</div>
   <div class="hfdFormHead"><b>3連単 FORMATION</b><strong id="hfdPoints">—</strong></div>
@@ -15344,7 +15344,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.348: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.349: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16011,7 +16011,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.348 場時間帯補正
+/* Vol.349 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20391,9 +20391,10 @@ function axis(head,all){
     /* ③壁成立なら④以降の攻め・連対を抑える */
     if(wall3 && x.boat>=4)exp-=5;
 
-    s+=exp;
+    const simAxisBonus=bhConditionalAxisBonus(h,x.boat);
+    s+=exp+simAxisBonus;
     const base=va(x.boat,"p2");
-    return {...x,axisScore:s,axisBase:base,axisFlowBonus:exp,ad:base==null?s:s-base,basePending:base==null};
+    return {...x,axisScore:s,axisBase:base,axisFlowBonus:exp,conditionalSimBonus:simAxisBonus,ad:base==null?s:s-base,basePending:base==null};
   }).sort((a,b)=>(b.ad??-999)-(a.ad??-999));
 }
 function simCombo(combo){
@@ -20401,6 +20402,71 @@ function simCombo(combo){
   if(!z?.combos)return 0;
   return (z.combos[combo]||0)/(z.count||5000)*100;
 }
+/* ===== V349 条件付きSIM検証 =====
+   SIMは頭候補を作る装置ではない。
+   「その頭が1着だったケース」だけを抜き出し、
+   2着・3着・来ない艇を検証する。 */
+function bhHeadConditionalSim(headBoat){
+  const z=window.__HUNTER_SIM5000;
+  const combos=z?.combos||{};
+  const h=Number(headBoat);
+  let total=0;
+  const second={1:0,2:0,3:0,4:0,5:0,6:0};
+  const third={1:0,2:0,3:0,4:0,5:0,6:0};
+
+  Object.entries(combos).forEach(([k,c])=>{
+    const a=String(k).split("-").map(Number);
+    if(a.length!==3||a[0]!==h)return;
+    const n=Number(c)||0;
+    total+=n;
+    if(second[a[1]]!=null)second[a[1]]+=n;
+    if(third[a[2]]!=null)third[a[2]]+=n;
+  });
+
+  const rows=[1,2,3,4,5,6]
+    .filter(b=>b!==h)
+    .map(boat=>{
+      const secondPct=total?second[boat]/total*100:0;
+      const thirdPct=total?third[boat]/total*100:0;
+      return {
+        boat,
+        secondPct,
+        thirdPct,
+        placePct:secondPct+thirdPct,
+        totalHeadWins:total
+      };
+    })
+    .sort((a,b)=>b.placePct-a.placePct);
+
+  return {head:h,total,rows};
+}
+function bhConditionalRow(headBoat,boat){
+  return bhHeadConditionalSim(headBoat).rows.find(x=>Number(x.boat)===Number(boat))||null;
+}
+function bhConditionalAxisBonus(headBoat,boat){
+  const r=bhConditionalRow(headBoat,boat);
+  if(!r||!r.totalHeadWins)return 0;
+  /* その頭で2着に来やすい艇を軸補強 */
+  if(r.secondPct>=25)return 8;
+  if(r.secondPct>=18)return 5;
+  if(r.secondPct>=12)return 2;
+  return 0;
+}
+function bhConditionalCutPenalty(headBoat,boat){
+  const r=bhConditionalRow(headBoat,boat);
+  if(!r||!r.totalHeadWins)return 0;
+  /* その頭で2・3着合計が極端に低い艇を切り候補へ */
+  if(r.placePct<8)return -10;
+  if(r.placePct<12)return -6;
+  return 0;
+}
+function bhExpectationCandidate(headBoat,boat){
+  const r=bhConditionalRow(headBoat,boat);
+  if(!r||!r.totalHeadWins)return false;
+  /* 3着候補の中で、2着浮上余地がある艇だけ期待値へ */
+  return r.placePct>=18 && r.secondPct>=7;
+}
+
 function odd(combo){
   const a=window.__HUNTER_ODDS120?.odds;if(!Array.isArray(a))return null;
   const x=a.find(z=>String(z.combo||z.key||"").replace(/[=>]/g,"-")===combo);
@@ -20419,7 +20485,7 @@ function previewST(boat){
 function effectiveST(x){ return previewST(x.boat)??N(x.st)??.18; }
 function actualCourseOf(x){ return Number(x?.actualCourse)||Number(x?.boat)||6; }
 function frontMoved(x){ return actualCourseOf(x)<Number(x.boat); }
-function tiltJump(x){ return N(x?.tilt)!=null && N(x.tilt)>=1.5; }
+function tiltJump(x){ return N(x?.tilt)!=null && N(x.tilt)>=2.0; }
 
 /* 壁: STが遅すぎず、コース実績/地力が一定以上なら成立。
    直外艇に0.03以上先行される場合は壁を弱める。 */
@@ -20459,7 +20525,16 @@ function fourDualAttack(all){
 
 function hunterHeadRank(boat,p){const a=[...(p||[])].filter(x=>x.diff!=null).sort((x,y)=>(y.diff??-999)-(x.diff??-999));const i=a.findIndex(x=>+x.boat===+boat);return i<0?99:i+1}
 function calibratedSimRank(boat){return bhFinalSimRank(boat)}
-function tripleRankOuterRelease(x,p){const r=[marketHeadRank(x.boat)??99,hunterHeadRank(x.boat,p),calibratedSimRank(x.boat)];return {ok:r.every(v=>v<=2)&&r.filter(v=>v===1).length>=2,ranks:r}}
+function tripleRankOuterRelease(x,p){
+  const marketRank=marketHeadRank(x.boat)??99;
+  const preRank=hunterHeadRank(x.boat,p);
+  const simRank=calibratedSimRank(x.boat);
+  /* SIM単独では解放しない。
+     世間と事前が両方2位以内で、どちらかが1位。
+     SIMは2位以内なら信用補強として解放。 */
+  const ok=marketRank<=2 && preRank<=2 && (marketRank===1||preRank===1) && simRank<=2;
+  return {ok,ranks:[marketRank,preRank,simRank]};
+}
 function motorUpper(x){const t=String(x?.motorRank??x?.motor_rank??x?.motorGrade??"");if(/上位|エース|レジェンド/i.test(t))return true;return (N(x?.motor2??x?.motor2Rate??x?.motor_2rate??x?.motor2rate)??0)>=42}
 function startAboveAverage(x){const c=actualCourseOf(x),b=({1:.15,2:.16,3:.16,4:.17,5:.17,6:.17})[c]??.17;return effectiveST(x)<=b}
 function attackHigh(x){return (x?.makuri??0)>=5||(x?.mz??0)>=5}
@@ -20739,7 +20814,8 @@ function cutForHead(head,all,axes){
 
   rows.forEach(x=>{
     x.headThirdBonus=simBonus.get(x.boat)||0;
-    x.thirdDiff=(x.baseThirdDiff??0)+x.headThirdBonus+x.techBonus;
+    x.conditionalCutPenalty=bhConditionalCutPenalty(head.boat,x.boat);
+    x.thirdDiff=(x.baseThirdDiff??0)+x.headThirdBonus+x.techBonus+x.conditionalCutPenalty;
   });
 
   const candidates=rows
@@ -20783,7 +20859,7 @@ function predictedTechnique(head,all){
   if(b===6)return (atk>=9&&edge>=.03)?"まくり":"まくり差し";
   return "—";
 }
-function classify(head,axes,a3,thirdStay){
+function classify(head,axes,a3,thirdStay,headIndex=0){
   const axisBoats=axes.map(x=>x.boat);
   const baseCombos=combinations(head.boat,axisBoats,a3);
   const scored=baseCombos.map(c=>{
@@ -20804,17 +20880,58 @@ function classify(head,axes,a3,thirdStay){
   const mainThird=new Set(main.map(x=>+String(x.combo).split('-')[2]));
   const thirdOnly=[...mainThird].filter(b=>!mainSecond.has(b)&&!axisBoats.includes(b)&&b!==head.boat);
   const value=[];
-  thirdOnly.forEach(b=>axisBoats.forEach(a=>{
-    if(a===b||a===head.boat)return;
-    const c=`${head.boat}-${b}-${a}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
-    value.push({combo:c,sim:sr,odds:o,ev,reason:'本命3着専用→2着 / 本命軸→3着'});
-  }));
+
+  /* V349 期待値:
+     3着候補の中で「その頭の条件付きSIM」で2着浮上余地がある艇を採用。
+     頭 → 3着候補 → 軸候補 の形でフォーメーション化。 */
+  thirdOnly
+    .filter(b=>bhExpectationCandidate(head.boat,b))
+    .forEach(b=>axisBoats.forEach(a=>{
+      if(a===b||a===head.boat)return;
+      const c=`${head.boat}-${b}-${a}`;
+      const sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
+      const cr=bhConditionalRow(head.boat,b);
+      value.push({
+        combo:c,sim:sr,odds:o,ev,
+        reason:`3着候補→2着浮上 ${cr?cr.secondPct.toFixed(1):"—"}% / 軸→3着`
+      });
+    }));
   const reversals=[];
-  [...new Set((a3||[]).map(Number))].filter(b=>b&&b!==+head.boat&&!axisBoats.includes(b)).forEach(b=>axisBoats.forEach(a=>{
-    if(a===b||a===+head.boat)return;
-    const c=`${head.boat}-${b}-${a}`,sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
-    reversals.push({combo:c,sim:sr,odds:o,ev,reason:'軸3着↔3着候補2着 折り返し'});
-  }));
+  const axisScores=new Map((axes||[]).map((x,i)=>[Number(x.boat),{rank:i+1,score:Number(x.ad??x.axisScore??0)}]));
+  const topAxisScore=axes?.length?Number(axes[0]?.ad??axes[0]?.axisScore??0):0;
+
+  [...new Set((a3||[]).map(Number))]
+    .filter(b=>b&&b!==+head.boat&&!axisBoats.includes(b))
+    .forEach(b=>axisBoats.forEach(a=>{
+      if(a===b||a===+head.boat)return;
+      const meta=axisScores.get(Number(a));
+      const allowReverse=
+        meta?.rank===1 ||
+        (meta?.rank>1 && Math.abs(topAxisScore-(meta?.score??-999))<=1.0);
+
+      if(!allowReverse)return;
+
+      const cr=bhConditionalRow(head.boat,b);
+      /* 3着候補側にも2着浮上の可能性がある時だけ */
+      if(cr?.totalHeadWins && cr.secondPct<7)return;
+
+      const c=`${head.boat}-${b}-${a}`;
+      const sr=simCombo(c),o=odd(c),ev=o==null?null:sr/100*o;
+      reversals.push({
+        combo:c,sim:sr,odds:o,ev,
+        reason:meta?.rank===1?"軸1 折り返し":"軸得点差1pt以内 折り返し"
+      });
+    }));
+
+  if(headIndex>0){
+    const filtered=reversals.filter(x=>{
+      const parts=String(x.combo).split("-").map(Number);
+      const cr=bhConditionalRow(head.boat,parts[1]);
+      return cr && cr.secondPct>=12;
+    });
+    reversals.length=0;
+    reversals.push(...filtered.slice(0,2));
+  }
 
   const uniq=a=>{
     const m=new Map();
@@ -20909,7 +21026,7 @@ function draw(){
     }
     const a2=ax.map(x=>x.boat);
     const a3=[...new Set([h.boat,...a2,...cutPack.stay.map(x=>x.boat)])].filter(x=>x!==h.boat);
-    const cls=classify(h,ax,a3,cutPack.stay);
+    const cls=classify(h,ax,a3,cutPack.stay,i);
     const pts=combinations(h.boat,a2,a3).length;
     return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:cutPack.stay,cls,pts,i};
   });
@@ -21215,7 +21332,7 @@ window.bhRenderFinalFormation=draw;
       const cuts=(f.cut||[]).map(x=>Number(x.boat));
       const headOk=head===a;
       const axisTest=headOk;
-      const axisOk=headOk&&axes.some(x=>x===b||x===c);
+      const axisOk=headOk&&axes.some(x=>x===b);
       const cutTest=cuts.length>0;
       const cutOk=cutTest?!cuts.some(x=>top3.has(x)):null;
       return {i:i+1,head,headOk,axes,axisTest,axisOk,cuts,cutTest,cutOk};
@@ -22086,6 +22203,21 @@ V346
    - ⑤⑥の三評価解放も、この画面表示と同じ最終SIM順位を使用。
    - ①保護判定も同じ最終SIMへ統一。
    - 生SIMは内部シミュレーション/買い目検証用として保持。 */
+</script>
+
+
+<script id="bh-v349-marker">
+/* V349
+- 高チルト例外は +2.0以上。
+- SIMは世間評価/HUNTER事前評価の信用検証専用。SIM単独で頭候補を作らない。
+- 各頭候補が1着になったSIMだけを抽出し、頭別の2着率/3着率/来ない艇を判定。
+- 軸候補は条件付き2着率で補強。
+- 切り候補は条件付き2+3着率が低い艇を強く減点。
+- 期待値は3着候補のうち条件付きSIMで2着浮上余地がある艇だけ、
+  頭→その艇→軸 で生成。
+- 折り返し: 軸1は許可。軸2以降は軸1との差が1pt以内のみ。
+- 頭候補2以降の折り返しはさらに厳しく、条件付き2着率12%以上かつ最大2点。
+- 結果確認の軸○は、頭的中かつその頭の軸が実際に2着の時のみ。 */
 </script>
 
 </body>
