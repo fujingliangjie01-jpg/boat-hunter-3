@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V355</title>
+<title>BOAT HUNTER V356</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14972,7 +14972,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.355</div>
+  <div class="topVol">Vol.356</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15463,7 +15463,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.355: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.356: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16130,7 +16130,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.355 場時間帯補正
+/* Vol.356 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -21337,8 +21337,56 @@ function bhSixHeadGate(x,all){
   const sim1=Number((bhFinalSimEval().find(v=>Number(v.boat)===6)||{}).v||0);
   return {allow:trust>=62&&sim1>=8,reason:front?"前付け審査":"チルト3＋ST審査"};
 }
+function bhFiveHeadGateV356(x,all){
+  if(Number(x?.boat)!==5)return {allow:true,reason:"not5"};
+
+  const win=Number(x.courseWin ?? x.courseWinRate ?? x.winRateCourse ?? 0);
+  const makuri=Number(x.makuri ?? x.makuriRate ?? 0);
+  const ms=Number(x.makuriSashi ?? x.makuriSashiRate ?? 0);
+  const nat=Number(x.nationalWinRate ?? x.nationalRate ?? x.winRate ?? 0);
+
+  /* ⑤は「強い艇」と「頭を取れる艇」を分離。
+     1着ルートが無い艇は機力/STだけでHEADへ上げない。 */
+  let noRoute=0;
+  if(win<=0) noRoute++;
+  if(makuri<=0) noRoute++;
+  if(ms<=0) noRoute++;
+  if(Number.isFinite(nat) && nat>0 && nat<5.0) noRoute++;
+
+  if(noRoute>=2){
+    return {allow:false,reason:"⑤1着ルート不足"};
+  }
+
+  /* ⑤HEAD解放には明確な自力/展開ルートを要求 */
+  const st=effectiveST(x);
+  const sr=Number(x.sr ?? x.stRank ?? 99);
+  const motor2=Number(x.motor2 ?? x.motor2Rate ?? x.motorRate2 ?? 0);
+  const moveRoute=(makuri>=6 || ms>=6 || win>=5);
+  const startOK=(Number.isFinite(st)&&st<=.17) || (Number.isFinite(sr)&&sr<=3.0);
+  const motorOK=motor2>=42;
+  const trust=Number(x.trustScore||0);
+  const sim1=Number((bhFinalSimEval().find(v=>Number(v.boat)===5)||{}).v||0);
+
+  const allow=moveRoute && startOK && (motorOK || trust>=62) && sim1>=8;
+  return {allow,reason:allow?"⑤HEADルート確認":"⑤HEAD根拠不足"};
+}
 function bhHeadEligibleV355(x,all){
-  return Number(x?.boat)!==6 || bhSixHeadGate(x,all).allow;
+  const b=Number(x?.boat);
+  if(b===6)return bhSixHeadGate(x,all).allow;
+  if(b===5)return bhFiveHeadGateV356(x,all).allow;
+  return true;
+}
+
+function bhFiveOpponentRoleV356(x){
+  if(Number(x?.boat)!==5)return null;
+  const gate=bhFiveHeadGateV356(x,[]);
+  if(gate.allow)return null;
+  const motor2=Number(x.motor2 ?? x.motor2Rate ?? x.motorRate2 ?? 0);
+  const motor3=Number(x.motor3 ?? x.motor3Rate ?? 0);
+  const st=effectiveST(x), sr=Number(x.sr ?? x.stRank ?? 99);
+  const support=(motor2>=35 || motor3>=50 ||
+    (Number.isFinite(st)&&st<=.17) || (Number.isFinite(sr)&&sr<=3.5));
+  return support ? {role:"期待2着 / 本命3着",reason:"⑤相手浮上・HEAD不可"} : null;
 }
 
 function bhSelectHeadsV354(){
@@ -23254,6 +23302,16 @@ V346
    ⑥HEADは前付け、またはチルト3.0＋ST根拠から解放審査し、
    さらにHEAD信頼62以上＋SIM1着8%以上を要求。
    頭3はHEAD信頼58未満を総合加点だけで昇格させない。 */
+</script>
+
+<script id="bh-v356-marker">
+/* V356
+⑤は「強い艇」と「頭を取れる艇」を分離。
+- コース1着率0 / まくり0 / まくり差し0 / 全国勝率低位 の複数該当でHEADロック。
+- 機力・ST・総合点だけでは⑤HEADへ昇格しない。
+- ⑤HEAD解放には1着ルート＋ST根拠＋機力/信頼＋SIM裏付けを要求。
+- HEAD不可でも機力/ST等があれば「期待2着 / 本命3着」の相手評価対象として保持。
+⑥HEAD厳格ゲートはV355を継続。 */
 </script>
 
 </body>
