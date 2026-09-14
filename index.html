@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V352</title>
+<title>BOAT HUNTER V354</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14922,6 +14922,46 @@ input,
 .hfrStats5{grid-template-columns:repeat(3,1fr)!important}
 </style>
 
+
+<style id="bh-v353-pre-scenario">
+.hfdPreNew{font-size:6px!important;color:#69d7ff!important;opacity:.9;font-weight:1000!important;margin-left:2px}
+.hfdPreScenario{margin:4px;padding:6px;border:1px solid rgba(255,255,255,.10);border-radius:8px;background:#071923}
+.hfdPreScenario.head{border-color:rgba(255,72,94,.38);background:#1f0b12}
+.hfdPreScenario.axis{border-color:rgba(53,190,255,.35);background:#081c28}
+.hfdPreScenario.third{border-color:rgba(255,211,69,.25)}
+.hfdPreTop{display:grid;grid-template-columns:14px 23px 1fr;align-items:center;gap:4px}
+.hfdPreTop>b{font-size:8px;color:#fff;text-align:right}
+.hfdPreBoat{width:22px!important;height:22px!important;border-radius:5px!important;font-size:10px!important}
+.hfdPreTrust{display:flex;align-items:center;justify-content:space-between;margin-top:5px}
+.hfdPreTrust strong{font-size:9px;color:#fff}
+.hfdPreTrust em{font-size:8px;color:#7ee0ff;font-style:normal;font-weight:1000}
+.hfdPreRole{margin-top:3px;font-size:7px;font-weight:1000;color:#ffd76a}
+.hfdPreNotes{margin-top:4px;font-size:6px;line-height:1.35;color:#91aebb}
+</style>
+
+
+<style id="bh-v354-compare-buy">
+.hfdCompare6{margin:8px 0;padding:8px;border:1px solid rgba(74,196,255,.22);border-radius:11px;background:#07151e}
+.hfdCompare6Head{display:flex;justify-content:space-between;align-items:end;gap:8px;margin-bottom:6px}
+.hfdCompare6Head small{display:block;font-size:6px;color:#6ea8c0;font-weight:1000;letter-spacing:.1em}
+.hfdCompare6Head b{display:block;font-size:10px;color:#fff}
+.hfdCompare6Head>span{font-size:7px;color:#ffd76d;font-weight:1000}
+.hfdCompare6Grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.hfdCompare6Row{display:grid;grid-template-columns:24px 1fr 1fr;gap:5px;align-items:center;padding:5px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#0b1b25}
+.hfdCompareBoat{width:23px!important;height:23px!important;border-radius:5px!important;font-size:10px!important}
+.hfdCompareMetric{display:grid;grid-template-columns:1fr auto;gap:1px 4px;min-width:0}
+.hfdCompareMetric small{grid-column:1/-1;font-size:5px;color:#7794a3;font-weight:1000}
+.hfdCompareMetric span,.hfdCompareMetric b{font-size:6px;color:#c6d8e0}
+.hfdCompareMetric b{color:#fff}
+.hfdCompareMetric em{grid-column:1/-1;font-size:7px;font-style:normal;font-weight:1000}
+.hfdCompareMetric em.up{color:#62e3ff}.hfdCompareMetric em.down{color:#ff6d76}.hfdCompareMetric em.same{color:#9aaab2}
+.hfdCompareFlags{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:3px}
+.hfdCompareFlags strong{font-size:5px;padding:2px 4px;border-radius:4px;background:#102c3b;color:#7edfff}
+.hfdPickBand.chaos{border-color:rgba(255,118,58,.35)!important;background:#241006!important}
+.hfdPickBand.chaos>strong{color:#ff9c62!important}
+@media(max-width:520px){.hfdCompare6Grid{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14932,7 +14972,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.352</div>
+  <div class="topVol">Vol.354</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15104,9 +15144,10 @@ input,
       <div id="hfdMarketNonEscape" class="hfdMarketNonEscape hide"></div>
       <div id="hfdMarket"></div>
     </div>
-    <div><h4>HUNTER事前評価</h4><div id="hfdPre"></div></div>
+    <div><h4>HUNTER事前評価 <small class="hfdPreNew">展開診断</small></h4><div id="hfdPre"></div></div>
     <div><h4>SIM検証評価 <small class="hfdSimCal">検証</small></h4><div id="hfdSim"></div></div>
   </div>
+  <div id="hfdCompare6" class="hfdCompare6"></div>
   <div id="hfdPass" class="hfdPass hide">見</div>
   <div class="hfdFormHead"><b>3連単 FORMATION</b><strong id="hfdPoints">—</strong></div>
   <div id="hfdForms" class="hfdForms"><div class="hfdEmpty">AI解析後に自動生成</div></div>
@@ -15422,7 +15463,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.352: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.354: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16089,7 +16130,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.352 場時間帯補正
+/* Vol.354 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -19871,15 +19912,11 @@ setTimeout(bhApplyTokuyamaDayFix,0);
 <script id="bh-vol302-doubletap-guard">
 (function(){
   let lastTouchEnd=0;
-
   document.addEventListener('touchend',function(e){
     const now=Date.now();
-    if(now-lastTouchEnd<=320){
-      e.preventDefault();
-    }
+    if(now-lastTouchEnd<=320)e.preventDefault();
     lastTouchEnd=now;
   },{passive:false});
-},{passive:false});
 })();
 </script>
 
@@ -20382,22 +20419,280 @@ function va(c,k="p1"){
   }catch(e){}
   return null;
 }
+
+/* ===== V353 HUNTER事前評価：展開診断型へ全面置換 =====
+   旧「偏差ランキング」は廃止。
+   世間評価で抽出した展開を、ST・ST順位・展示・旋回系タイム・技術・壁/耐性で検証する。 */
+function bhPrePreviewRow(boat){
+  return (window.__HUNTER_PREVIEW||[]).find(x=>Number(x.boat||x.entry_number)===Number(boat))||{};
+}
+function bhPreRankBy(field,boat,lowerIsBetter=true){
+  const a=[1,2,3,4,5,6].map(b=>({boat:b,v:N(bhPrePreviewRow(b)?.[field])})).filter(x=>x.v!=null);
+  a.sort((x,y)=>lowerIsBetter?(x.v-y.v):(y.v-x.v));
+  const i=a.findIndex(x=>x.boat===Number(boat));
+  return i<0?null:i+1;
+}
+function bhInsideBoat(x,all){
+  const c=actualCourseOf(x);
+  return (all||[]).find(v=>actualCourseOf(v)===c-1)||null;
+}
+function bhStEdgeInside(x,all){
+  const inner=bhInsideBoat(x,all);
+  if(!inner)return 0;
+  return effectiveST(inner)-effectiveST(x); // + = 自分が早い
+}
+function bhExhibitionEdgeInside(x,all){
+  const inner=bhInsideBoat(x,all);
+  if(!inner)return 0;
+  const a=N(bhPrePreviewRow(x.boat)?.exhibition),b=N(bhPrePreviewRow(inner.boat)?.exhibition);
+  if(a==null||b==null)return 0;
+  return b-a; // + = 自分が早い
+}
+function bhLossRate(one,tech){
+  const h=one?.h||[];
+  if(!h.length)return 0;
+  return h.filter(r=>Number(r.place)!==1 && Number(r.tech)===Number(tech)).length/h.length*100;
+}
+function bhTrustLabel(score){
+  if(score>=82)return "信頼大";
+  if(score>=68)return "信頼";
+  if(score>=54)return "普通";
+  if(score>=40)return "信頼小";
+  return "信頼なし";
+}
+function bhRoleFromScore(score){
+  if(score>=72)return "頭候補";
+  if(score>=58)return "2着候補";
+  if(score>=42)return "3着候補";
+  return "評価下げ";
+}
+function bhMakuriTrust(x,all){
+  const inner=bhInsideBoat(x,all);
+  const one=all.find(v=>Number(v.boat)===1);
+  let score=50,notes=[];
+  const edge=bhStEdgeInside(x,all);
+
+  if(edge>=.10){score+=28;notes.push("ST差+0.10以上")}
+  else if(edge>=.05){score+=20;notes.push("ST差+0.05以上")}
+  else if(edge>=.03){score+=13;notes.push("ST差+0.03以上")}
+  else if(edge<=-.10){score-=28;notes.push("ST差-0.10以下")}
+  else if(edge<=-.05){score-=20;notes.push("ST差-0.05以下")}
+  else if(edge<=-.03){score-=13;notes.push("ST差-0.03以下")}
+
+  const sr=N(x.sr);
+  if(sr!=null){
+    if(sr<=2.2){score+=13;notes.push("ST順位2.2以下")}
+    else if(sr<=2.9){score+=7;notes.push("ST順位2.9以下")}
+    else if(sr>=3.6){score-=13;notes.push("ST順位3.6以上")}
+    else if(sr>=3.2){score-=7;notes.push("ST順位3.2以上")}
+  }
+
+  /* 展示差は実データの桁に合わせ 0.08 / 0.12 / 0.15 秒で評価 */
+  const ex=bhExhibitionEdgeInside(x,all);
+  if(ex>=.15){score+=15;notes.push("展示+0.15以上")}
+  else if(ex>=.12){score+=11;notes.push("展示+0.12以上")}
+  else if(ex>=.08){score+=7;notes.push("展示+0.08以上")}
+  else if(ex<=-.08){score-=7;notes.push("展示劣勢")}
+
+  if(one){
+    const makurare=bhLossRate(one,3);
+    if(makurare>=15){score+=9;notes.push("①まくられ率15%以上")}
+    else if(makurare<=5){score-=6;notes.push("①まくり耐性強")}
+  }
+
+  const outer=(all||[]).find(v=>actualCourseOf(v)===actualCourseOf(x)+1);
+  if(outer && predictedTechnique(outer,all)==="まくり" && effectiveST(outer)<effectiveST(x)){
+    score-=8;notes.push("後ろに強いまくり");
+  }
+  if(tiltJump(x)){score+=6;notes.push("チルト+2以上")}
+  if((x.mz??0)>=12){score+=4;notes.push("第二戦法まくり差し有")}
+  return {score:Math.max(0,Math.min(100,score)),notes};
+}
+function bhMakuriZashiTrust(x,all,priorMakuriScore){
+  const one=all.find(v=>Number(v.boat)===1);
+  let score=42,notes=[];
+
+  /* 前のまくり信頼が弱いほど展開が向く */
+  if(priorMakuriScore<40){score+=18;notes.push("前攻め信頼なし")}
+  else if(priorMakuriScore<54){score+=12;notes.push("前攻め信頼小")}
+  else if(priorMakuriScore<68){score+=7;notes.push("前攻め普通")}
+  else if(priorMakuriScore>=82){score-=8;notes.push("前攻め信頼大")}
+
+  const edge=bhStEdgeInside(x,all);
+  if(edge>=.05)score+=10;
+  else if(edge>=.03)score+=7;
+  else if(edge<=-.05)score-=9;
+
+  const sr=N(x.sr);
+  if(sr!=null){
+    if(sr<=2.2)score+=8;
+    else if(sr<=2.9)score+=4;
+    else if(sr>=3.6)score-=8;
+    else if(sr>=3.2)score-=4;
+  }
+
+  const ex=bhExhibitionEdgeInside(x,all);
+  if(ex>=.15)score+=10;
+  else if(ex>=.12)score+=7;
+  else if(ex>=.08)score+=4;
+  else if(ex<=-.08)score-=4;
+
+  const mz=N(x.mz)??0;
+  if(mz>=20){score+=18;notes.push("まくり差し20%以上")}
+  else if(mz>=12){score+=12;notes.push("まくり差し12%以上")}
+  else if(mz>=6){score+=5;notes.push("まくり差し6%以上")}
+  else if(mz===0){score=Math.min(score,57);notes.push("まくり差し0%→頭制限")}
+
+  ["lap","straight","turn"].forEach(f=>{
+    const r=bhPreRankBy(f,x.boat,true);
+    if(r===1)score+=7;
+    else if(r===2)score+=5;
+    else if(r===3)score+=3;
+  });
+
+  if(one){
+    const mzLoss=bhLossRate(one,4);
+    if(mzLoss>=15){score+=12;notes.push("①まくり差され15%以上")}
+  }
+
+  /* 指定ルール: 前攻め信頼なし + ①まくり差され15%以上なら頭候補ラインへ */
+  if(one && priorMakuriScore<40 && bhLossRate(one,4)>=15)score=Math.max(score,74);
+
+  if(tiltJump(x)){score+=4;notes.push("チルト+2以上")}
+  return {score:Math.max(0,Math.min(100,score)),notes};
+}
+function bhSashiTrust(x,all){
+  const one=all.find(v=>Number(v.boat)===1);
+  let score=42,notes=[];
+  const selfSashi=N(x.sashi)??0;
+  const sasare=one?bhLossRate(one,2):0;
+  const makurare=one?bhLossRate(one,3):0;
+
+  /* 自力差し + ①が流れる差し の2経路 */
+  if(selfSashi>=15){score+=14;notes.push("自力差し強")}
+  else if(selfSashi>=10){score+=9;notes.push("自力差し有")}
+  else if(selfSashi>=5){score+=4}
+
+  if(sasare>=15){score+=16;notes.push("①差され率15%以上")}
+  else if(sasare>=10){score+=9;notes.push("①差され率10%以上")}
+  if(sasare>0 && sasare>=makurare*.85){score+=6;notes.push("①差され負け多い")}
+
+  if(one){
+    const d=effectiveST(x)-effectiveST(one); // + = 自分が遅い
+    if(d<=0){score+=10;notes.push("ST①以上")}
+    else if(d<=.02){score+=6;notes.push("ST+0.02以内")}
+    else if(d>=.04){score-=9;notes.push("ST遅れ")}
+  }
+
+  const sr=N(x.sr);
+  if(sr!=null){
+    if(sr<=3.0)score+=6;
+    else if(sr>3.5)score-=5;
+  }
+
+  const exRank=bhPreRankBy("exhibition",x.boat,true);
+  if(exRank!=null && exRank<=3)score+=6;
+
+  ["lap","straight"].forEach(f=>{
+    const r=bhPreRankBy(f,x.boat,true);
+    if(r===1)score+=8;
+    else if(r===2)score+=6;
+    else if(r===3)score+=4;
+  });
+
+  /* 後ろに強いまくり艇がいると差し信頼DOWN */
+  const outer=(all||[]).find(v=>actualCourseOf(v)===actualCourseOf(x)+1);
+  if(outer && predictedTechnique(outer,all)==="まくり"){
+    const fast=effectiveST(outer)<=effectiveST(x);
+    if(fast){score-=11;notes.push("後ろのまくり艇が速い")}
+    else score-=5;
+  }
+
+  /* ③が壁で、③自身のまくり信頼なし → ②を軸中心 */
+  const b3=all.find(v=>Number(v.boat)===3);
+  if(Number(x.boat)===2 && b3 && isWall(3,all)){
+    const m3=bhMakuriTrust(b3,all).score;
+    if(m3<40){score=Math.max(score,66);notes.push("③壁+③まくり信頼なし→軸中心")}
+  }
+
+  return {score:Math.max(0,Math.min(100,score)),notes};
+}
+function bhEscapeTrust(one,all){
+  let score=50,notes=[];
+  const mp=marketHeadPct(1)??0;
+  score+=Math.min(22,Math.max(-8,(mp-35)*.55));
+  const sasare=bhLossRate(one,2),makurare=bhLossRate(one,3),mzLoss=bhLossRate(one,4);
+  if(sasare>=15){score-=10;notes.push("差され率高")}
+  if(makurare>=15){score-=10;notes.push("まくられ率高")}
+  if(mzLoss>=15){score-=8;notes.push("まくり差され率高")}
+  if(isWall(2,all)){score+=7;notes.push("②壁")}
+  const st=effectiveST(one);
+  if(st<=.15)score+=6;
+  else if(st>=.19)score-=7;
+  return {score:Math.max(0,Math.min(100,score)),notes};
+}
+function bhPreScenarioRows(){
+  const all=R().map(met);
+  if(!all.length)return [];
+  const sc=marketScenario();
+  const non=marketNonEscapeTop3();
+  const rows=[];
+
+  const one=all.find(x=>Number(x.boat)===1);
+  if(one){
+    const z=bhEscapeTrust(one,all);
+    rows.push({...one,move:"逃げ",scenario:"イン逃げ",trustScore:z.score,trustLabel:bhTrustLabel(z.score),role:bhRoleFromScore(z.score),notes:z.notes});
+  }
+
+  let priorMakuriScore=50;
+  non.forEach((m,idx)=>{
+    const x=all.find(v=>Number(v.boat)===Number(m.head));
+    if(!x)return;
+    let z,move=m.move;
+    if(/まくり差し/.test(move) && !/^まくり\s*\/\s*まくり差し$/.test(move)){
+      z=bhMakuriZashiTrust(x,all,priorMakuriScore);
+      move="まくり差し";
+    }else if(/差し/.test(move) && Number(x.boat)===2){
+      z=bhSashiTrust(x,all);
+      move="差し";
+    }else{
+      z=bhMakuriTrust(x,all);
+      move="まくり";
+      if(idx===0)priorMakuriScore=z.score;
+    }
+    rows.push({...x,move,scenario:`非イン${idx+1}`,marketPct:m.headPct,trustScore:z.score,trustLabel:bhTrustLabel(z.score),role:bhRoleFromScore(z.score),notes:z.notes});
+  });
+
+  /* 重複艇は最も強いシナリオだけ残す */
+  const best=new Map();
+  rows.forEach(x=>{
+    const old=best.get(Number(x.boat));
+    if(!old || x.trustScore>old.trustScore)best.set(Number(x.boat),x);
+  });
+  let out=[...best.values()];
+
+  /* 世間がイン逃げ本線なら①は、逃げ信頼なし(<40)以外は頭候補1として先頭維持 */
+  if(sc.type==="escape"){
+    out.sort((a,b)=>{
+      if(Number(a.boat)===1 && a.trustScore>=40)return -1;
+      if(Number(b.boat)===1 && b.trustScore>=40)return 1;
+      return b.trustScore-a.trustScore;
+    });
+  }else{
+    out.sort((a,b)=>b.trustScore-a.trustScore);
+  }
+  return out;
+}
 function pre(){
-  return R().map(met).map(x=>{
-    let s=(x.p1||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+mb(x.r)+natWinBonus(x.nationalWin,"head");
-    if(x.boat===1&&document.body.classList.contains("theme-sg"))s-=15;
-    /* V347: ①差され率×②差し能力 */
-    try{if(+x.boat===2)s+=twoDiffBoost(R().map(met));}catch(e){}
-    /* V345: ③が壁ならダッシュ勢の頭率低下。④両対応は頭チャンス加点。 */
-    try{
-      const allFlow=R().map(met);
-      if(x.boat>=4 && isWall(3,allFlow))s-=(x.boat===4?6:x.boat===5?9:12);
-      if(x.boat===4 && fourDualAttack(allFlow))s+=7;
-    }catch(e){}
-    /* V325: 偏差を潰さない。0下限丸めを廃止 */
-    const base=va(x.boat,"p1");
-    return {...x,score:s,base,diff:base==null?s:s-base,basePending:base==null};
-  }).sort((a,b)=>(b.headDecisionDiff??b.diff??-999)-(a.headDecisionDiff??a.diff??-999));
+  /* 下流互換のため diff/score は残すが、意味は「展開信頼スコア」。
+     旧偏差ではない。 */
+  return bhPreScenarioRows().map(x=>({
+    ...x,
+    score:x.trustScore,
+    diff:x.trustScore-50,
+    headDecisionDiff:x.trustScore-50,
+    basePending:false
+  }));
 }
 function marketOddsRows(){
   const o=window.__HUNTER_ODDS120?.odds;
@@ -20545,18 +20840,23 @@ function move(head){
   return z[0][0];
 }
 function axis(head,all){
-  const mv=predictedTechnique(head,all);
+  const mv=String(head.move||predictedTechnique(head,all));
   const h=Number(head.boat);
   const wall2=isWall(2,all);
   const wall3=isWall(3,all);
   const dual4=fourDualAttack(all);
 
+  /* まくり差し時に「まくりに行く艇」を探す */
+  const innerAttack=[...all]
+    .filter(x=>actualCourseOf(x)<actualCourseOf(head)&&Number(x.boat)!==1)
+    .map(x=>({...x,mk:bhMakuriTrust(x,all).score}))
+    .sort((a,b)=>b.mk-a.mk)[0]||null;
+
   return all.filter(x=>x.boat!==head.boat).map(x=>{
     let s=(x.p2||0)+sb(x.st)+rb(x.sr)+fp(x.fc)+natWinBonus(x.nationalWin,"axis");
     let exp=0;
 
-    /* ①逃げ: 2壁なら2・4、2壁なしなら3 */
-    if(h===1 && mv==="逃げ"){
+    if(h===1 && mv.includes("逃げ")){
       if(wall2){
         if(x.boat===2)exp+=9;
         if(x.boat===4)exp+=6;
@@ -20567,34 +20867,53 @@ function axis(head,all){
       }
     }
 
-    /* ②差し: ①が最優先、④にも軸チャンス */
-    if(h===2 && mv==="差し"){
-      if(x.boat===1)exp+=10;
-      if(x.boat===4)exp+=6;
+    /* 2コース差し：①が軸になりやすい。①ST遅れなら④へ */
+    if(h===2 && mv.includes("差し")){
+      const one=all.find(v=>Number(v.boat)===1);
+      const oneSlow=one ? effectiveST(one)>=.19 : false;
+      if(x.boat===1)exp+=oneSlow?2:12;
+      if(x.boat===4)exp+=oneSlow?11:5;
     }
 
-    /* ③まくり差し: ①内残りを強く軸へ */
-    if(h===3 && mv==="まくり差し"){
-      if(x.boat===1)exp+=11;
+    /* まくり：一個前のコースは厳しい。ST力が無いならさらにDOWN */
+    if(mv.includes("まくり") && !mv.includes("まくり差し")){
+      const hc=actualCourseOf(head),xc=actualCourseOf(x);
+      if(xc===hc-1){
+        exp-=10;
+        if(effectiveST(x)>=.18)exp-=7;
+      }
+      if(xc===hc+1)exp+=8;
     }
 
-    /* ③まくり: ④追走 */
+    /* まくり差し：①と、まくりに行く艇が軸として残りやすい */
+    if(mv.includes("まくり差し")){
+      const one=all.find(v=>Number(v.boat)===1);
+      const oneSlow=one ? effectiveST(one)>=.19 : false;
+      if(x.boat===1)exp+=oneSlow?1:11;
+      if(innerAttack && Number(x.boat)===Number(innerAttack.boat))exp+=9;
+    }
+
     if(h===3 && mv==="まくり"){
       if(x.boat===4)exp+=10;
       if(x.boat===2)exp-=5;
       if(x.boat===1)exp-=3;
     }
 
-    /* ④がまくり/まくり差し両対応なら2着軸力も加点 */
     if(x.boat===4 && dual4)exp+=7;
-
-    /* ③壁成立なら④以降の攻め・連対を抑える */
     if(wall3 && x.boat>=4)exp-=5;
 
     const simAxisBonus=bhConditionalAxisBonus(h,x.boat);
     s+=exp+simAxisBonus;
     const base=va(x.boat,"p2");
-    return {...x,axisScore:s,axisBase:base,axisFlowBonus:exp,conditionalSimBonus:simAxisBonus,ad:base==null?s:s-base,basePending:base==null};
+    return {
+      ...x,
+      axisScore:s,
+      axisBase:base,
+      axisFlowBonus:exp,
+      conditionalSimBonus:simAxisBonus,
+      ad:base==null?s:s-base,
+      basePending:base==null
+    };
   }).sort((a,b)=>(b.ad??-999)-(a.ad??-999));
 }
 function simCombo(combo){
@@ -20849,7 +21168,7 @@ function bhFinalSimEval(){
   const p=pre();
   const m=market();
 
-  const preSorted=[...p].sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  const preSorted=[...p].sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
   const rankPts=[0,36,24,16,11,8,5]; // index=rank
   const preMap=new Map(preSorted.map((x,i)=>[Number(x.boat),rankPts[i+1]||0]));
   const preSum=[...preMap.values()].reduce((a,b)=>a+b,0)||1;
@@ -20875,107 +21194,262 @@ function bhFinalSimRank(boat){
   return i<0?99:i+1;
 }
 
-function chooseHeads(p){
-  const lane1=p.find(x=>Number(x.boat)===1);
-  const lane1MarketRank=lane1?(marketHeadRank(1)??99):99;
-  const lane1SimRank=lane1?bhFinalSimRank(1):99;
-  const lane1MarketPct=lane1?(marketHeadPct(1)??0):0;
-  const lane1SimPct=lane1?(bhFinalSimEval().find(x=>Number(x.boat)===1)?.v??0):0;
 
-  /* V343:
-     1号艇は「保護して追加」する。
-     本来のHUNTER頭候補を押し出さない。 */
-  const lane1ClearlyWeak=!!(
-    lane1 &&
-    lane1.diff!=null &&
-    lane1.diff < -5 &&
-    lane1MarketRank>2 &&
-    lane1SimRank>2 &&
-    lane1MarketPct<20 &&
-    lane1SimPct<20
-  );
-  const keepLane1=!!(lane1 && !lane1ClearlyWeak);
+/* ===== V354 世間 vs HUNTER 6艇比較 ===== */
+function bhAllHunterHeadRows(){
+  const all=R().map(met);
+  const preRows=pre();
+  const preMap=new Map(preRows.map(x=>[Number(x.boat),x]));
+  const result=[];
 
-  /* 本来の頭候補群。
-     -1以上を基本採用。並びはHUNTER偏差順。 */
-  const allNow=R().map(met);
-  /* V346: 表示偏差はそのまま、頭選定では極端な負偏差の暴走を防止 */
-  p.forEach(x=>{
-    x.headDecisionDiff = x.diff==null ? null : Math.max(-30,Math.min(60,Number(x.diff)));
+  all.forEach(x=>{
+    let row=preMap.get(Number(x.boat));
+    if(!row){
+      let z,move;
+      if(Number(x.boat)===1){
+        z=bhEscapeTrust(x,all); move="逃げ";
+      }else if(Number(x.boat)===2){
+        z=bhSashiTrust(x,all); move="差し";
+      }else{
+        const tech=predictedTechnique(x,all);
+        if(String(tech).includes("まくり差し")){
+          const prior=(all.find(v=>actualCourseOf(v)===actualCourseOf(x)-2));
+          const pm=prior?bhMakuriTrust(prior,all).score:50;
+          z=bhMakuriZashiTrust(x,all,pm); move="まくり差し";
+        }else{
+          z=bhMakuriTrust(x,all); move="まくり";
+        }
+      }
+      row={...x,trustScore:z.score,trustLabel:bhTrustLabel(z.score),role:bhRoleFromScore(z.score),move,notes:z.notes||[]};
+    }
+    result.push(row);
   });
-  const natural=p
-    .filter(x=>x.headDecisionDiff!=null&&x.headDecisionDiff>=-1)
-    .filter(x=>{
-      if(Number(x.boat)<5)return true;
-      const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
-      const gate=outerHeadGate(ax,allNow,p);
-      x.outerHeadGate=gate;
-      return gate.ok;
-    })
-    .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  return result;
+}
+function bhHunterHeadRank6(boat){
+  const a=bhAllHunterHeadRows().sort((x,y)=>(y.trustScore??0)-(x.trustScore??0));
+  const i=a.findIndex(x=>Number(x.boat)===Number(boat));
+  return i<0?99:i+1;
+}
+function bhHunterAxisProbabilities(headBoat){
+  const all=R().map(met);
+  const h=all.find(x=>Number(x.boat)===Number(headBoat));
+  if(!h)return [];
+  const a=axis(h,all);
+  if(!a.length)return [];
+  const raw=a.map(x=>({boat:Number(x.boat),score:Number(x.ad??x.axisScore??0)}));
+  const max=Math.max(...raw.map(x=>x.score));
+  const ex=raw.map(x=>({...x,e:Math.exp((x.score-max)/8)}));
+  const sum=ex.reduce((q,x)=>q+x.e,0)||1;
+  return ex.map(x=>({boat:x.boat,v:x.e/sum*100,score:x.score}))
+    .sort((x,y)=>y.v-x.v);
+}
+function bhCompareHeadAxis(){
+  const marketP=marketProfile();
+  const hunterH=bhAllHunterHeadRows();
+  const marketSc=marketScenario();
+  const axisHead=marketSc.head || marketP.firstRank?.[0]?.boat || 1;
+  const marketAxis=marketConditionalAxis(axisHead);
+  const hunterAxis=bhHunterAxisProbabilities(axisHead);
+  const mAxisMap=new Map(marketAxis.map(x=>[Number(x.boat),Number(x.v)||0]));
+  const hAxisMap=new Map(hunterAxis.map(x=>[Number(x.boat),Number(x.v)||0]));
 
-  const top=natural[0];
+  return [1,2,3,4,5,6].map(boat=>{
+    const hh=hunterH.find(x=>Number(x.boat)===boat);
+    const mh=Number(marketP.first?.[boat]||0);
+    const hhv=Number(hh?.trustScore||0);
+    const ma=Number(mAxisMap.get(boat)||0);
+    const ha=Number(hAxisMap.get(boat)||0);
+    const headDelta=hhv-mh;
+    const axisDelta=ha-ma;
 
-  /* 1号艇主頭 +40以上だけは単独頭 */
-  if(top && Number(top.boat)===1 && top.diff>=40){
+    let headFlag="一致";
+    if(hhv>=72 && (marketHeadRank(boat)??99)>2)headFlag="HUNTER頭浮上";
+    else if(headDelta>=15)headFlag="HUNTER頭↑";
+    else if(headDelta<=-15)headFlag="HUNTER頭↓";
+
+    let axisFlag="一致";
+    if(axisDelta>=12)axisFlag="HUNTER軸浮上";
+    else if(axisDelta<=-12)axisFlag="HUNTER軸↓";
+
     return {
-      heads:[top],
-      pass:false,
-      rawCount:1,
-      standout:true,
-      over40:true,
-      lane1Protected:true,
-      lane1ClearlyWeak:false
+      boat,
+      marketHead:mh,hunterHead:hhv,headDelta,headFlag,
+      marketAxis:ma,hunterAxis:ha,axisDelta,axisFlag,
+      move:hh?.move||"—",role:hh?.role||"—"
     };
+  });
+}
+function bhHeadAgreement(boat){
+  const r=bhCompareHeadAxis().find(x=>Number(x.boat)===Number(boat));
+  if(!r)return false;
+  const mr=marketHeadRank(boat)??99,hr=bhHunterHeadRank6(boat);
+  return mr<=2 && hr<=2 && r.hunterHead>=58 && Math.abs(r.headDelta)<=25;
+}
+function bhMarketHunterAxisAgreement(headBoat){
+  const m=marketConditionalAxis(headBoat);
+  const h=bhHunterAxisProbabilities(headBoat);
+  return !!(m[0]&&h[0]&&Number(m[0].boat)===Number(h[0].boat));
+}
+
+/* ===== V354 頭候補1/2/3 決定 ===== */
+function bhOverallThirdHeadScore(x,head12,all){
+  let s=Number(x.trustScore||0);
+  const boat=Number(x.boat);
+  const marketPct=marketHeadPct(boat)??0;
+  s+=marketPct*.35;
+
+  /* まくり頭が既にある時は、その後ろで展開を拾う艇を加点 */
+  const makuriHeads=(head12||[]).filter(h=>String(h.move||predictedTechnique(h,all)).includes("まくり"));
+  makuriHeads.forEach(h=>{
+    const hc=actualCourseOf(h);
+    const xc=actualCourseOf(x);
+    if(xc===hc+1)s+=13;
+    else if(xc===hc+2)s+=8;
+  });
+
+  /* 総合能力 */
+  s+=(Number(x.nationalWin)||0)*2.2;
+  s+=(Number(x.localWin)||Number(x.local_win)||0)*1.4;
+  if(String(x.motorRank||x.motor_rank||"").match(/エース|レジェンド/))s+=10;
+  else if(String(x.motorRank||x.motor_rank||"").match(/上位/))s+=6;
+  if(startAboveAverage(x))s+=5;
+
+  const pr=bhPrePreviewRow(boat);
+  ["lap","straight","turn"].forEach(f=>{
+    const r=bhPreRankBy(f,boat,true);
+    if(r===1)s+=5;
+    else if(r===2)s+=3;
+    else if(r===3)s+=1;
+  });
+  return s;
+}
+function bhSelectHeadsV354(){
+  const p=pre();
+  const all=R().map(met);
+  const marketTop=market()[0]||null;
+  const hunterAll=bhAllHunterHeadRows().sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
+  if(!marketTop||!hunterAll.length)return {heads:[],dominant:false,primaryHeadBoat:null};
+
+  const marketBoat=Number(marketTop.boat);
+  const marketHunter=hunterAll.find(x=>Number(x.boat)===marketBoat);
+  let h1;
+
+  /* 頭候補1：世間1位とHUNTERにズレが無ければ決定 */
+  if(marketHunter && bhHeadAgreement(marketBoat)){
+    h1=marketHunter;
+  }else{
+    h1=hunterAll[0];
   }
 
-  /* 通常は自然な頭候補を最大3艇まで残す。
-     ①が自然候補外でも保護対象なら追加。
-     例: ② +28.8 / ① +25.2 / ⑤ +13.6 → ②①⑤を全部残す。 */
-  let heads=natural.slice(0,3);
+  /* 世間イン逃げ本線で①逃げが信頼なしでなければ①を優先 */
+  const sc=marketScenario();
+  const one=hunterAll.find(x=>Number(x.boat)===1);
+  if(sc.type==="escape" && one && one.trustScore>=40)h1=one;
 
-  if(keepLane1 && !heads.some(x=>Number(x.boat)===1)){
-    heads.push(lane1);
-  }
+  const mGap=(market()[0]?.v||0)-(market()[1]?.v||0);
+  const hSorted=[...hunterAll].sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
+  const hGap=(hSorted[0]?.trustScore||0)-(hSorted[1]?.trustScore||0);
+  const dominant=!!(
+    h1 &&
+    (marketHeadPct(h1.boat)??0)>=50 &&
+    Number(h1.trustScore)>=82 &&
+    (mGap>=20 || hGap>=20)
+  );
 
-  /* ①保護で4艇になった場合:
-     ①は残しつつ、非①の上位3艇まで＝最大4頭。
-     見判定は後段で総点数と合わせて決める。 */
-  heads=[
-    ...heads.filter(x=>Number(x.boat)!==1)
-      .sort((a,b)=>(b.diff??-999)-(a.diff??-999))
-      .slice(0,3),
-    ...heads.filter(x=>Number(x.boat)===1).slice(0,1)
-  ].sort((a,b)=>(b.diff??-999)-(a.diff??-999));
+  /* 頭候補2：非イン世間は参考程度。HUNTER展開信頼を主に採用 */
+  const h2Pool=hunterAll
+    .filter(x=>Number(x.boat)!==Number(h1.boat))
+    .filter(x=>Number(x.trustScore)>=54)
+    .sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
+  let h2=h2Pool[0]||null;
 
-  /* 2頭未満なら非①から補充 */
-  if(heads.length<2){
-    const extras=p
-      .filter(x=>!heads.some(h=>Number(h.boat)===Number(x.boat)))
-      .filter(x=>x.diff!=null)
-      .filter(x=>{
-        if(Number(x.boat)<5)return true;
-        const ax=allNow.find(v=>Number(v.boat)===Number(x.boat))||x;
-        return outerHeadGate(ax,allNow,p).ok;
-      })
-      .sort((a,b)=>(b.diff??-999)-(a.diff??-999));
-    if(extras[0])heads.push(extras[0]);
-  }
+  /* 頭候補3：世間＋HUNTER＋展開利＋機力/直前/地力 */
+  const h3Pool=hunterAll
+    .filter(x=>![Number(h1?.boat),Number(h2?.boat)].includes(Number(x.boat)))
+    .map(x=>({...x,overall3:bhOverallThirdHeadScore(x,[h1,h2].filter(Boolean),all)}))
+    .sort((a,b)=>b.overall3-a.overall3);
+  let h3=h3Pool[0]||null;
 
+  const heads=[h1,h2,h3].filter(Boolean);
   return {
     heads,
-    /* 3頭以上だけでは即「見」にしない。
-       実際の全買い目点数を作った後に20点超かで判定する。 */
+    dominant,
+    primaryHeadBoat:Number(h1?.boat||0),
+    secondaryHeadBoat:Number(h2?.boat||0),
+    tertiaryHeadBoat:Number(h3?.boat||0),
+    multiHead:heads.length>=3,
     pass:false,
     rawCount:heads.length,
-    multiHead:heads.length>=3,
-    standout:false,
-    over40:false,
-    secondarySpecial:false,
-    lane1Protected:keepLane1,
-    lane1ClearlyWeak
+    secondarySpecial:dominant && !!h2
   };
 }
+function chooseHeads(p){
+  return bhSelectHeadsV354();
+}
+
+/* ===== V354 頭ごとの軸選定 ===== */
+function bhSelectAxesForHead(head,headIndex,all){
+  const hunter=axis(head,all);
+  const marketA=marketConditionalAxis(head.boat);
+  const marketTop=marketA[0]?.boat;
+  const hunterTop=hunter[0]?.boat;
+
+  if(!hunter.length)return [];
+
+  /* 頭1：世間軸とHUNTER軸一致なら1艇 */
+  if(headIndex===0 && marketTop && hunterTop && Number(marketTop)===Number(hunterTop)){
+    return [hunter[0]];
+  }
+
+  const picked=[];
+  const addBoat=b=>{
+    const x=hunter.find(v=>Number(v.boat)===Number(b));
+    if(x&&!picked.some(v=>Number(v.boat)===Number(b)))picked.push(x);
+  };
+
+  /* ズレ時はHUNTER軸を中心に、世間軸も残す */
+  addBoat(hunterTop);
+  if(headIndex===0 && marketTop)addBoat(marketTop);
+
+  if(hunter[1]){
+    const d=Math.abs(Number(hunter[0]?.ad??hunter[0]?.axisScore??0)-Number(hunter[1]?.ad??hunter[1]?.axisScore??0));
+    if(d<=1.0 || picked.length<2)addBoat(hunter[1].boat);
+  }
+  if(headIndex===0 && hunter[2]){
+    const d=Math.abs(Number(hunter[0]?.ad??hunter[0]?.axisScore??0)-Number(hunter[2]?.ad??hunter[2]?.axisScore??0));
+    if(d<=1.0)addBoat(hunter[2].boat);
+  }
+
+  /* 頭2/3は世間より決まり手＋SIMを優先し、基本1〜2艇 */
+  const limit=headIndex===0?3:2;
+  return picked.slice(0,limit);
+}
+
+/* ===== V354 ①抵抗×まくり 混戦穴目 ===== */
+function bhLane1ResistsMakuri(all){
+  const one=all.find(x=>Number(x.boat)===1);
+  if(!one)return false;
+  const makurare=bhLossRate(one,3);
+  const esc=marketHeadPct(1)??0;
+  return makurare<=10 || effectiveST(one)<=.15 || esc>=45;
+}
+function bhChaosLongshots(head,all){
+  const tech=String(head?.move||predictedTechnique(head,all));
+  if(!tech.includes("まくり") || !bhLane1ResistsMakuri(all))return [];
+  const fixed={
+    2:["2-3-4","2-6-1"],
+    3:["3-2-5","3-2-6"],
+    4:["4-2-6"],
+    5:["5-1-3","5-3-1"],
+    6:["6-1-2","6-2-1"]
+  };
+  return (fixed[Number(head.boat)]||[]).map(combo=>{
+    const o=odd(combo),sr=simCombo(combo);
+    return {combo,odds:o,sim:sr,ev:o==null?null:o*sr/100,reason:"①抵抗×攻め艇 混戦穴目"};
+  });
+}
+
 function thirdDiff(x){
   const base=va(x.boat,"p3");
   const course=base==null?(x.p3??0):(x.p3??0)-base;
@@ -21179,10 +21653,14 @@ function classify(head,axes,a3,thirdStay,headIndex=0){
   const usedExact=new Set([...mainU,...coverU].map(x=>String(x.combo||"")));
   const valueU=uniq(value)
     .filter(x=>x?.combo && !usedExact.has(String(x.combo)))
+    .filter(x=>x.odds!=null && x.odds>=30)
     .sort((a,b)=>(b.ev??-1)-(a.ev??-1)||b.sim-a.sim)
-    .slice(0,2);
+    .slice(0,headIndex===0?2:1);
 
-  return {main:mainU,cover:coverU,value:valueU};
+  const chaos=bhChaosLongshots(head,R().map(met))
+    .filter(x=>!usedExact.has(String(x.combo)))
+    .filter(x=>!valueU.some(v=>String(v.combo)===String(x.combo)));
+  return {main:mainU,cover:coverU,value:valueU,chaos};
 }
 function rowList(items){
   if(!items.length)return `<span class="hfdNone">—</span>`;
@@ -21280,6 +21758,30 @@ function ensureMarketNonEscapeToggle(){
     btn.textContent=open?"イン逃げ以外 TOP3を閉じる −":"イン逃げ以外 TOP3を見る ＋";
   });
 }
+
+function renderHunterPre(){
+  const el=$("hfdPre");
+  if(!el)return;
+  const rows=pre();
+  if(!rows.length){
+    el.innerHTML=`<div class="hfdEmpty">—</div>`;
+    return;
+  }
+  el.innerHTML=rows.slice(0,4).map((x,i)=>`
+    <div class="hfdPreScenario ${x.role==="頭候補"?"head":x.role==="2着候補"?"axis":"third"}">
+      <div class="hfdPreTop">
+        <span class="hfdNo">${i+1}</span>
+        ${B(x.boat,"hfdPreBoat")}
+        <b>${x.move}</b>
+      </div>
+      <div class="hfdPreTrust">
+        <strong>${x.trustLabel}</strong>
+        <em>${x.trustScore.toFixed(0)}点</em>
+      </div>
+      <div class="hfdPreRole">${x.role}</div>
+      <div class="hfdPreNotes">${(x.notes||[]).slice(0,3).join(" / ")||"基礎条件"}</div>
+    </div>`).join("");
+}
 function renderMarketScenario(){
   const el=$("hfdMarketScenario");
   if(!el)return;
@@ -21313,23 +21815,58 @@ function renderMarketScenario(){
       <div>${axisText}</div>
     </div>`;
 }
+function renderCompare6(){
+  const el=$("hfdCompare6");
+  if(!el)return;
+  const rows=bhCompareHeadAxis();
+  const discoveries=rows.filter(x=>/浮上|↑/.test(x.headFlag)||/浮上/.test(x.axisFlag));
+  el.innerHTML=`
+    <div class="hfdCompare6Head">
+      <div><small>MARKET × HUNTER</small><b>6艇 HEAD / AXIS 差異</b></div>
+      <span>${discoveries.length?`発見 ${discoveries.map(x=>x.boat).join("・")}号艇`:"大きな差異なし"}</span>
+    </div>
+    <div class="hfdCompare6Grid">
+      ${rows.map(x=>`
+        <div class="hfdCompare6Row">
+          ${B(x.boat,"hfdCompareBoat")}
+          <div class="hfdCompareMetric">
+            <small>HEAD</small>
+            <span>世 ${x.marketHead.toFixed(1)}</span>
+            <b>H ${x.hunterHead.toFixed(0)}</b>
+            <em class="${x.headDelta>=12?"up":x.headDelta<=-12?"down":"same"}">${x.headDelta>=0?"+":""}${x.headDelta.toFixed(0)}</em>
+          </div>
+          <div class="hfdCompareMetric">
+            <small>AXIS</small>
+            <span>世 ${x.marketAxis.toFixed(1)}</span>
+            <b>H ${x.hunterAxis.toFixed(1)}</b>
+            <em class="${x.axisDelta>=12?"up":x.axisDelta<=-12?"down":"same"}">${x.axisDelta>=0?"+":""}${x.axisDelta.toFixed(0)}</em>
+          </div>
+          <div class="hfdCompareFlags">
+            ${x.headFlag!=="一致"?`<strong>${x.headFlag}</strong>`:""}
+            ${x.axisFlag!=="一致"?`<strong>${x.axisFlag}</strong>`:""}
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
 function draw(){
   const p=pre();if(!p.length)return;
-  ensureToggle(); renderMarketScenario(); rank("hfdMarket",market(),"m");rank("hfdPre",p,"p");rank("hfdSim",bhFinalSimEval(),"s");
+  ensureToggle(); renderMarketScenario(); renderHunterPre(); renderCompare6(); rank("hfdMarket",market(),"m");rank("hfdSim",bhFinalSimEval(),"s");
   const pick=chooseHeads(p);
   const marketPass=divergencePass(p);
 
   const all=R().map(met);
   const forms=pick.heads.map((h,i)=>{
     const axAll=axis(h,all);
-    let ax=axAll.slice(0,2);
+    let ax=bhSelectAxesForHead(h,i,all);
 
-    /* V329: 圧倒主頭の逆転候補（頭候補2）は主頭を軸固定。
-       例：頭候補1=1 / 頭候補2=3 → 3-1-○ を中心に少数点。 */
+    /* 頭1が突出した時の頭2：
+       頭1を2着/3着に残す。ただし軸は決まり手+SIMを優先。 */
     const secondarySpecial=!!(pick.secondarySpecial&&i===1&&pick.primaryHeadBoat);
     if(secondarySpecial){
-      const primaryAxis=axAll.find(x=>x.boat===pick.primaryHeadBoat);
-      if(primaryAxis)ax=[primaryAxis];
+      const primaryAxis=axAll.find(x=>Number(x.boat)===Number(pick.primaryHeadBoat));
+      if(primaryAxis && !ax.some(x=>Number(x.boat)===Number(primaryAxis.boat))){
+        ax=[primaryAxis,...ax].slice(0,2);
+      }
     }
 
     const cutPack=cutForHead(h,all,ax);
@@ -21346,10 +21883,22 @@ function draw(){
 
     /* V352: 事前3着候補は頭別偏差上位を基礎にし、
        SIM5000で候補外から浮上する艇を別枠で追加する */
-    const baselineThird=[...cutPack.stay]
+    let baselineThird=[...cutPack.stay]
       .filter(x=>!a2.includes(Number(x.boat))&&Number(x.boat)!==Number(h.boat))
-      .sort((a,b)=>(b.thirdDiff??-999)-(a.thirdDiff??-999))
-      .slice(0,2);
+      .sort((a,b)=>(b.thirdDiff??-999)-(a.thirdDiff??-999));
+
+    /* 切り艇が無い場合は、軸以外の全艇を3着候補へ残す */
+    if(cutPack.cut.length){
+      baselineThird=baselineThird.filter(x=>!cutPack.cut.some(c=>Number(c.boat)===Number(x.boat)));
+    }
+
+    /* 頭1突出時、頭2の買い目には頭1を2/3着へ必ず残す */
+    if(secondarySpecial){
+      const p1=all.find(x=>Number(x.boat)===Number(pick.primaryHeadBoat));
+      if(p1 && !a2.includes(Number(p1.boat)) && !baselineThird.some(x=>Number(x.boat)===Number(p1.boat))){
+        baselineThird.unshift({...p1,thirdDiff:99,techNote:"主頭残り"});
+      }
+    }
 
     const outside=bhSimOutsideCandidates(h.boat,ax,baselineThird);
     const a3=[...new Set([
@@ -21369,6 +21918,7 @@ function draw(){
     let main=[...(f.cls?.main||[])];
     let cover=[...(f.cls?.cover||[])];
     let value=[...(f.cls?.value||[])];
+    let chaos=[...(f.cls?.chaos||[])];
     if(pick.heads.length>=3&&f.i>0)value=[];
 
     if(pick.secondarySpecial&&f.i===1){
@@ -21386,7 +21936,7 @@ function draw(){
       });
       return n;
     };
-    return sum+countUnique(main)+countUnique(cover)+countUnique(value);
+    return sum+countUnique(main)+countUnique(cover)+countUnique(value)+countUnique(chaos);
   },0);
 
   /* 頭候補3艇以上でも、全買い目が20点以下なら
@@ -21447,6 +21997,7 @@ function draw(){
     let main=unique(f.cls.main,seen);
     let cover=unique(f.cls.cover,seen);
     let value=unique(f.cls.value,seen);
+    let chaos=unique(f.cls.chaos,seen);
     if(pick.heads.length>=3&&f.i>0)value=[];
 
     /* V329 頭候補2・逆転シナリオは最大3点。
@@ -21457,11 +22008,12 @@ function draw(){
       value=[];
     }
     /* V321: 結果確認は画面に実際に出した買い目だけを照合する */
-    f.displayPicks={main:[...main],cover:[...cover],value:[...value]};
+    f.displayPicks={main:[...main],cover:[...cover],value:[...value],chaos:[...chaos]};
     f.displayCombos=[
       ...main.map(x=>x.combo),
       ...cover.map(x=>x.combo),
-      ...value.map(x=>x.combo)
+      ...value.map(x=>x.combo),
+      ...chaos.map(x=>x.combo)
     ];
     const points=a=>a?.length||0;
     return `
@@ -21469,7 +22021,7 @@ function draw(){
       <div class="hfdHeadTitle">
         <div><small>HEAD ${f.i+1}</small><b>頭候補${f.i+1}</b></div>
         ${B(f.h.boat,"hfdHeadBig")}
-        <em>偏差 ${P(f.h.diff)}</em>
+        <em>${f.h.trustLabel||"—"} ${f.h.trustScore!=null?f.h.trustScore.toFixed(0)+"点":""}</em>
       </div>
       <div class="hfdTechnique"><small>WINNING MOVE / 想定決まり手</small><b>${predictedTechnique(f.h,all)}</b></div>
 
@@ -21513,6 +22065,12 @@ function draw(){
         <strong>期待値</strong>
         <div>${makeForm(value,"value")}</div>
         <div class="hfdPickPoints">計<b>${points(value)}</b>点</div>
+      </div>
+
+      <div class="hfdPickBand chaos">
+        <strong>混戦穴目</strong>
+        <div>${makeForm(chaos,"chaos")}</div>
+        <div class="hfdPickPoints">計<b>${points(chaos)}</b>点</div>
       </div>
 
       <div class="hfdCutBand">
@@ -21663,7 +22221,7 @@ window.bhRenderFinalFormation=draw;
     if(!pack?.forms?.length)return null;
     for(const f of pack.forms){
       const d=f.displayPicks||{};
-      for(const [kind,label] of [["main","本線"],["cover","押さえ"],["value","期待値"]]){
+      for(const [kind,label] of [["main","本線"],["cover","押さえ"],["value","期待値"],["chaos","混戦穴目"]]){
         const hit=(d[kind]||[]).find(x=>String(x?.combo||"")===combo);
         if(hit)return {hit:true,kind,label,head:Number(f.h?.boat||0),item:hit};
       }
@@ -22614,6 +23172,36 @@ V346
 - 切り艇はその頭で明らかに来ない時だけ。SIM母数80以上を基本。
 - 切り成功/失敗は実際にその頭が当たったレースだけ判定。
 - 結果確認に候補外浮上○×を追加し、今日/累計にも蓄積。 */
+</script>
+
+
+<script id="bh-v353-marker">
+/* V353 HUNTER事前評価を旧偏差方式から完全置換
+- 世間評価の展開候補を起点に検証。
+- 逃げ / まくり / まくり差し / 差しを別診断。
+- まくり: 直内ST差、ST順位、展示差、①まくり耐性、外攻め、チルト+2、第二戦法。
+- まくり差し: 前攻め信頼度、技術成功率、ST/展示、一周/直線/回り足、①まくり差され率。
+- 差し: 自力差し + ①流れ、①との差ST、ST順位、展示、一周/直線、後ろのまくり壁。
+- ③壁 + ③まくり信頼なし → ②を軸中心へ。
+- 世間イン逃げ本線なら、①逃げ信頼なし以外は頭候補1を維持。
+- 旧 +8.2 / -7.8 の偏差ランキング表示は廃止。 */
+</script>
+
+
+<script id="bh-v354-marker">
+/* V354
+- 6艇すべてを HEAD / AXIS で世間評価 vs HUNTER評価比較。
+- HUNTER頭浮上・HUNTER軸浮上・評価DOWNを可視化。
+- 頭候補1: 世間1位とHUNTERにズレが無ければ確定。
+- 頭候補2: HUNTER展開診断主体。主頭が突出なら主頭を2/3着に残す。
+- 頭候補3: 世間+HUNTER+まくり展開利+機力+直前+全国/当地勝率で総合評価。
+- 軸: 頭1は世間/HUNTER一致なら1艇、ズレ時は2〜3艇。頭2/3は決まり手+条件付きSIM中心で1〜2艇。
+- まくり: 一個内側を減点、ST力不足なら追加減点。
+- 2差し: ①軸優先。①ST遅れなら④軸を強化。
+- まくり差し: ①と内側のまくり艇を軸強化。①ST遅れなら①を弱化。
+- 切り艇が無い場合、軸以外の全艇を3着候補へ残す。
+- 期待: 軸3着固定の折り返し。30倍以上のみ、頭1最大2点、頭2/3最大1点。
+- ①抵抗×まくりの固定混戦穴目を追加。 */
 </script>
 
 </body>
