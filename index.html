@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V357</title>
+<title>BOAT HUNTER V359</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14962,6 +14962,45 @@ input,
 @media(max-width:520px){.hfdCompare6Grid{grid-template-columns:1fr}}
 </style>
 
+
+<style id="bh-v358-value-ui">
+.bhLegacyForms{display:none!important}
+.hfdValueTickets{display:grid;gap:7px;margin-top:6px}
+.bhValueSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:6px;border:1px solid rgba(80,210,255,.22);border-radius:9px;background:#071b27}
+.bhValueSummary>div{text-align:center}.bhValueSummary small{display:block;font-size:6px;color:#7d9baa;font-weight:1000}.bhValueSummary b{font-size:10px;color:#fff}
+.bhValueSection{padding:6px;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:#071923}
+.bhValueSection.main{border-color:rgba(70,207,255,.35)}
+.bhValueSection.value{border-color:rgba(255,207,73,.36);background:#211a08}
+.bhValueSection.manshu{border-color:rgba(255,99,99,.45);background:#250b0c}
+.bhValueSectionHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.bhValueSectionHead b{font-size:10px;color:#fff}.bhValueSectionHead span{font-size:7px;color:#8eacba;font-weight:1000}
+.bhValueTicket{display:grid;grid-template-columns:52px repeat(5,minmax(0,1fr));gap:4px;align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,.06)}
+.bhValueTicket:first-child{border-top:0}
+.bhValueCombo{font-size:14px;font-weight:1000;color:#fff;letter-spacing:.04em}
+.bhValueTicket small{display:block;font-size:5px;color:#7994a2;font-weight:1000}.bhValueTicket b{font-size:8px;color:#fff}
+.bhValuePct b{color:#72dcff}.bhValueRatio b{color:#ffd563}.bhValueStake b{color:#a6efc1}
+.bhValuePass{padding:15px;text-align:center;border:2px solid rgba(255,206,72,.5);border-radius:11px;background:#2c2308}
+.bhValuePass small{display:block;font-size:7px;color:#c2a94e;font-weight:1000;letter-spacing:.12em}.bhValuePass b{display:block;font-size:28px;color:#ffe373}.bhValuePass span{font-size:8px;color:#d2c37f}
+.hfrProfitPanel{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:5px;margin-top:7px}
+.hfrProfitPanel>div,.hfrTotalMoney{padding:7px;border-radius:9px;background:#081c27;border:1px solid rgba(255,255,255,.09);text-align:center}
+.hfrProfitPanel small,.hfrTotalMoney span,.hfrTotalMoney small{display:block;font-size:7px;color:#7e9aa9;font-weight:1000}
+.hfrProfitPanel b{font-size:14px;color:#fff}.hfrProfitPanel b.plus,#hfrTotalProfit.plus{color:#79e8a7}.hfrProfitPanel b.minus,#hfrTotalProfit.minus{color:#ff7f88}
+.hfrTotalMoney{margin-top:8px}.hfrTotalMoney b{display:block;font-size:16px;color:#fff}
+@media(max-width:560px){
+  .bhValueTicket{grid-template-columns:48px repeat(3,minmax(0,1fr));}
+  .bhValueAgree,.bhValueStake{grid-column:auto}
+}
+</style>
+
+
+<style id="bh-v359-manshu-separate">
+.bhManshuSeparate{margin-top:8px;padding-top:8px;border-top:2px dashed rgba(255,93,93,.35)}
+.bhManshuSeparateHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.bhManshuSeparateHead b{font-size:10px;color:#ff8c93}
+.bhManshuSeparateHead span{font-size:6px;color:#ad8e91;font-weight:1000}
+.bhManshuSeparate .bhValueSection.manshu{margin:0}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14972,7 +15011,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.357</div>
+  <div class="topVol">Vol.359</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15133,7 +15172,7 @@ input,
   
   
 <section id="hunterFinalDecision" class="hunterFinalDecision">
-  <div class="hfdHead"><div><small>HUNTER FINAL</small><b>3評価 × 3連単 FORMATION</b></div><strong id="hfdState">AI解析待ち</strong></div>
+  <div class="hfdHead"><div><small>HUNTER FINAL</small><b>MARKET × HUNTER VALUE PICK</b></div><strong id="hfdState">AI解析待ち</strong></div>
   <div class="hfdRanks">
     <div class="hfdMarketBox">
       <h4>世間評価</h4>
@@ -15149,8 +15188,9 @@ input,
   </div>
   <div id="hfdCompare6" class="hfdCompare6"></div>
   <div id="hfdPass" class="hfdPass hide">見</div>
-  <div class="hfdFormHead"><b>3連単 FORMATION</b><strong id="hfdPoints">—</strong></div>
-  <div id="hfdForms" class="hfdForms"><div class="hfdEmpty">AI解析後に自動生成</div></div>
+  <div class="hfdFormHead"><b>3連単 VALUE PICKS</b><strong id="hfdPoints">—</strong></div>
+  <div id="hfdValueTickets" class="hfdValueTickets"><div class="hfdEmpty">AI解析後に買い目を抽出</div></div>
+  <div id="hfdForms" class="hfdForms bhLegacyForms"><div class="hfdEmpty">AI解析後に自動生成</div></div>
 </section>
 <section id="oddsPanel" class="oddsPanel">
     <div class="oddsHead">
@@ -15463,7 +15503,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.357: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.359: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16130,7 +16170,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.357 場時間帯補正
+/* Vol.359 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -21934,6 +21974,181 @@ function renderCompare6(){
         </div>`).join("")}
     </div>`;
 }
+
+/* ===== V358 MARKET × HUNTER VALUE ENGINE =====
+   フォーメーション中心を廃止し、3連単1点ごとに判定。
+   本命 = 世間×HUNTER一致
+   期待 = HUNTER/SIM再現率がオッズの損益分岐を2倍以上上回る
+   万舟 = 100倍以上かつ同じ期待値基準を満たす
+*/
+function bhMarketComboPct(combo){
+  const rows=marketOddsRows();
+  const sum=rows.reduce((q,r)=>q+(Number(r.w)||0),0)||1;
+  const r=rows.find(x=>String(x.combo)===String(combo));
+  return r ? (Number(r.w)||0)/sum*100 : 0;
+}
+function bhRankIn(arr,boat){
+  const i=(arr||[]).findIndex(x=>Number(x.boat)===Number(boat));
+  return i<0?99:i+1;
+}
+function bhMarketConditionalThird(head,second){
+  const rows=marketOddsRows().filter(r=>r.a[0]===Number(head)&&r.a[1]===Number(second));
+  const q={1:0,2:0,3:0,4:0,5:0,6:0};
+  rows.forEach(r=>q[r.a[2]]+=r.w);
+  const sum=Object.values(q).reduce((a,b)=>a+b,0)||1;
+  return Object.entries(q)
+    .filter(([b])=>![Number(head),Number(second)].includes(Number(b)))
+    .map(([boat,v])=>({boat:Number(boat),v:v/sum*100}))
+    .sort((a,b)=>b.v-a.v);
+}
+function bhSimConditionalThird(head,second){
+  const z=window.__HUNTER_SIM5000, combos=z?.combos||{};
+  const q={1:0,2:0,3:0,4:0,5:0,6:0}; let total=0;
+  Object.entries(combos).forEach(([k,n])=>{
+    const a=String(k).split("-").map(Number);
+    if(a.length!==3||a[0]!==Number(head)||a[1]!==Number(second))return;
+    const c=Number(n)||0; total+=c; q[a[2]]+=c;
+  });
+  if(!total)return [];
+  return Object.entries(q)
+    .filter(([b])=>![Number(head),Number(second)].includes(Number(b)))
+    .map(([boat,v])=>({boat:Number(boat),v:v/total*100}))
+    .sort((a,b)=>b.v-a.v);
+}
+function bhComboAgreement(combo){
+  const a=String(combo).split("-").map(Number);
+  if(a.length!==3)return {score:0,head:false,axis:false,third:false};
+  const [h,s2,t3]=a;
+
+  const mrH=marketHeadRank(h)??99;
+  const hrH=bhHunterHeadRank6(h);
+  const head=(mrH<=3&&hrH<=3&&Math.abs(mrH-hrH)<=1);
+
+  const ma=marketConditionalAxis(h);
+  const ha=bhHunterAxisProbabilities(h);
+  const mrA=bhRankIn(ma,s2),hrA=bhRankIn(ha,s2);
+  const axis=(mrA<=3&&hrA<=3&&Math.abs(mrA-hrA)<=1);
+
+  const mt=bhMarketConditionalThird(h,s2);
+  const ht=bhSimConditionalThird(h,s2);
+  const mrT=bhRankIn(mt,t3),hrT=bhRankIn(ht,t3);
+  const third=(mrT<=3&&hrT<=3&&Math.abs(mrT-hrT)<=1);
+
+  return {score:[head,axis,third].filter(Boolean).length,head,axis,third,mrH,hrH,mrA,hrA,mrT,hrT};
+}
+function bhTicketValueRatio(simPct,odds){
+  const o=Number(odds)||0, p=Number(simPct)||0;
+  if(o<=0)return 0;
+  const breakEven=100/o;        // 10倍 => 10%
+  return breakEven>0 ? p/breakEven : 0;
+}
+function bhAllTicketCandidates(){
+  return marketOddsRows().map(r=>{
+    const combo=r.combo,odds=Number(r.odds)||0;
+    const simPct=simCombo(combo);
+    const marketPct=bhMarketComboPct(combo);
+    const agreement=bhComboAgreement(combo);
+    const valueRatio=bhTicketValueRatio(simPct,odds);
+    return {combo,odds,simPct,marketPct,agreement,valueRatio};
+  });
+}
+function bhAllocate1000(tickets){
+  const a=(tickets||[]).map(x=>({...x,stake:100}));
+  if(!a.length)return a;
+  let units=Math.floor((1000-a.length*100)/100);
+  let i=0;
+  while(units>0){
+    a[i%a.length].stake+=100;
+    units--; i++;
+  }
+  return a;
+}
+function bhBuildValueTickets(){
+  const all=bhAllTicketCandidates().filter(x=>x.odds>0&&x.simPct>0);
+
+  /* 本命：世間とHUNTERが頭・軸で一致。最大5点 */
+  const main=all
+    .filter(x=>x.agreement.head&&x.agreement.axis&&x.agreement.score>=2)
+    .sort((a,b)=>b.agreement.score-a.agreement.score||b.simPct-a.simPct||b.marketPct-a.marketPct)
+    .slice(0,5)
+    .map(x=>({...x,kind:"main",label:"本命"}));
+
+  const used=new Set(main.map(x=>x.combo));
+
+  /* 期待：100倍未満、期待倍率2.0以上。
+     通常枠は「本命＋期待」で最大10点。 */
+  const value=all
+    .filter(x=>!used.has(x.combo)&&x.odds<100&&x.valueRatio>=2)
+    .sort((a,b)=>b.valueRatio-a.valueRatio||b.simPct-a.simPct)
+    .slice(0,Math.max(0,10-main.length))
+    .map(x=>({...x,kind:"value",label:"期待"}));
+  value.forEach(x=>used.add(x.combo));
+
+  let tickets=[...main,...value].slice(0,10);
+
+  /* 万舟は通常10点とは完全別枠。
+     100倍以上かつ「期待値が高い」ものだけ最大4点。
+     基準は通常期待より厳しく 期待倍率2.50以上。 */
+  const manshu=all
+    .filter(x=>!used.has(x.combo)&&x.odds>=100&&x.valueRatio>=2.5)
+    .sort((a,b)=>b.valueRatio-a.valueRatio||b.simPct-a.simPct)
+    .slice(0,4)
+    .map(x=>({...x,kind:"manshu",label:"万舟"}));
+
+  /* 見判定は通常枠（本命＋期待）の有無で決定。
+     万舟だけあるレースは「通常見・万舟参考」にする。 */
+  const pass=tickets.length===0;
+
+  tickets=bhAllocate1000(tickets);
+
+  return {
+    tickets,
+    pass,
+    main:tickets.filter(x=>x.kind==="main"),
+    value:tickets.filter(x=>x.kind==="value"),
+    manshu,
+    investment:pass?0:1000,
+    manshuSeparate:true
+  };
+}
+function bhTicketRow(x){
+  const agree=x.agreement?.score??0;
+  return `<div class="bhValueTicket ${x.kind}">
+    <div class="bhValueCombo">${x.combo}</div>
+    <div class="bhValuePct"><small>SIM再現率</small><b>${x.simPct.toFixed(1)}%</b></div>
+    <div class="bhValueOdds"><small>オッズ</small><b>${x.odds.toFixed(1)}倍</b></div>
+    <div class="bhValueRatio"><small>期待倍率</small><b>${x.valueRatio.toFixed(2)}×</b></div>
+    <div class="bhValueAgree"><small>一致</small><b>${agree}/3</b></div>
+    <div class="bhValueStake"><small>投資</small><b>¥${x.stake}</b></div>
+  </div>`;
+}
+function bhRenderValueTickets(pack){
+  const el=$("hfdValueTickets");
+  if(!el)return;
+  if(pack.pass){
+    el.innerHTML=`<div class="bhValuePass"><small>VALUE JUDGE</small><b>見</b><span>本命一致・期待値条件を満たす買い目なし</span></div>`;
+    return;
+  }
+  const section=(title,arr,cls)=>arr.length?`
+    <div class="bhValueSection ${cls}">
+      <div class="bhValueSectionHead"><b>${title}</b><span>${arr.length}点</span></div>
+      <div>${arr.map(bhTicketRow).join("")}</div>
+    </div>`:"";
+
+  el.innerHTML=`
+    <div class="bhValueSummary">
+      <div><small>通常BET</small><b>${pack.tickets.length}点</b></div>
+      <div><small>通常1R投資</small><b>¥1,000</b></div>
+      <div><small>期待基準</small><b>2.00×</b></div>
+    </div>
+    ${section("本命",pack.main,"main")}
+    ${section("期待",pack.value,"value")}
+    ${pack.manshu.length?`
+      <div class="bhManshuSeparate">
+        <div class="bhManshuSeparateHead"><b>万舟・別枠</b><span>通常10点/¥1,000には含めない</span></div>
+        ${section("高期待値 万舟",pack.manshu,"manshu")}
+      </div>`:""}`;
+}
 function draw(){
   const p=pre();if(!p.length)return;
   ensureToggle(); renderMarketScenario(); renderHunterPre(); renderCompare6(); rank("hfdMarket",market(),"m");rank("hfdSim",bhFinalSimEval(),"s");
@@ -22189,7 +22404,22 @@ function draw(){
     </article>`;
   }).join("");
 
-  window.__HUNTER_FINAL_FORMATION={pass,heads:pick.heads,forms};
+  const valuePack=bhBuildValueTickets();
+  bhRenderValueTickets(valuePack);
+  if($("hfdPoints")){
+    $("hfdPoints").textContent=valuePack.pass
+      ? (valuePack.manshu.length?`見 / 万舟${valuePack.manshu.length}点`:"見")
+      : `${valuePack.tickets.length}点 / ¥1,000${valuePack.manshu.length?` ＋ 万舟${valuePack.manshu.length}点`:""}`;
+  }
+  window.__HUNTER_VALUE_TICKETS=valuePack;
+  window.__HUNTER_FINAL_FORMATION={
+    pass:valuePack.pass,
+    heads:pick.heads,
+    forms,
+    valueTickets:valuePack.tickets,
+    manshuTickets:valuePack.manshu,
+    valuePack
+  };
 }
 let sig="";
 setInterval(()=>{
@@ -22224,6 +22454,12 @@ window.bhRenderFinalFormation=draw;
       <button type="button" id="hfrFetch">結果を確認</button>
       <div id="hfrStatus">結果待ち</div>
 
+      <div class="hfrProfitPanel">
+        <div><small>TODAY PROFIT</small><b id="hfrTodayProfit">¥0</b></div>
+        <div><small>今日の投資</small><b id="hfrTodayInvest">¥0</b></div>
+        <div><small>今日の払戻</small><b id="hfrTodayReturn">¥0</b></div>
+      </div>
+
       <div class="hfrMain">
         <div class="hfrComboBox">
           <small>確定着順</small>
@@ -22243,17 +22479,21 @@ window.bhRenderFinalFormation=draw;
         <div class="hfrStat"><b id="hfrCount">0</b><span>R</span></div>
         <div class="hfrStat"><b id="hfrHeadRate">—</b><span>頭的中</span></div>
         <div class="hfrStat"><b id="hfrAxisRate">—</b><span>軸的中</span></div>
-        <div class="hfrStat"><b id="hfrRate">—</b><span>FORMATION</span></div>
+        <div class="hfrStat"><b id="hfrRate">—</b><span>買い目的中</span></div>
         <div class="hfrStat"><b id="hfrCutRate">—</b><span>切り成功</span></div>
         <div class="hfrStat"><b id="hfrOutsideRate">—</b><span>候補外浮上</span></div>
       </div>
 
+      <div class="hfrTotalMoney">
+        <span>累計収支</span><b id="hfrTotalProfit">¥0</b>
+        <small id="hfrTotalMoneySub">投資 ¥0 / 払戻 ¥0</small>
+      </div>
       <div class="hfrStatsTitle cumulative">TOTAL / 累計</div>
       <div class="hfrStats hfrStats5">
         <div class="hfrStat"><b id="hfrTotalCount">0</b><span>R</span></div>
         <div class="hfrStat"><b id="hfrTotalHeadRate">—</b><span>頭的中</span></div>
         <div class="hfrStat"><b id="hfrTotalAxisRate">—</b><span>軸的中</span></div>
-        <div class="hfrStat"><b id="hfrTotalFormRate">—</b><span>FORMATION</span></div>
+        <div class="hfrStat"><b id="hfrTotalFormRate">—</b><span>買い目的中</span></div>
         <div class="hfrStat"><b id="hfrTotalCutRate">—</b><span>切り成功</span></div>
         <div class="hfrStat"><b id="hfrTotalOutsideRate">—</b><span>候補外浮上</span></div>
       </div>
@@ -22285,7 +22525,8 @@ window.bhRenderFinalFormation=draw;
   }
   function emptyStats(){
     return {races:0,headHit:0,axisHit:0,axisTests:0,formHit:0,cutSuccess:0,cutTests:0,
-      outsideHit:0,outsideTests:0,mainHit:0,coverHit:0,valueHit:0,seen:{}};
+      outsideHit:0,outsideTests:0,mainHit:0,coverHit:0,valueHit:0,manshuHit:0,
+      investment:0,returnAmount:0,profit:0,seen:{}};
   }
   function loadAllStats(){
     try{
@@ -22307,6 +22548,14 @@ window.bhRenderFinalFormation=draw;
     if($("hfrRate"))$("hfrRate").textContent=pct(st.formHit,st.races);
     if($("hfrCutRate"))$("hfrCutRate").textContent=pct(st.cutSuccess,st.cutTests);
     if($("hfrOutsideRate"))$("hfrOutsideRate").textContent=pct(st.outsideHit,st.outsideTests);
+    const yen=n=>"¥"+Math.round(Number(n)||0).toLocaleString("ja-JP");
+    if($("hfrTodayProfit")){
+      const p=Number(st.profit)||0;
+      $("hfrTodayProfit").textContent=(p>=0?"+":"")+yen(p).replace("¥-","-¥");
+      $("hfrTodayProfit").className=p>0?"plus":p<0?"minus":"";
+    }
+    if($("hfrTodayInvest"))$("hfrTodayInvest").textContent=yen(st.investment||0);
+    if($("hfrTodayReturn"))$("hfrTodayReturn").textContent=yen(st.returnAmount||0);
 
     if($("hfrTotalCount"))$("hfrTotalCount").textContent=tt.races||0;
     if($("hfrTotalHeadRate"))$("hfrTotalHeadRate").textContent=pct(tt.headHit,tt.races);
@@ -22314,6 +22563,12 @@ window.bhRenderFinalFormation=draw;
     if($("hfrTotalFormRate"))$("hfrTotalFormRate").textContent=pct(tt.formHit,tt.races);
     if($("hfrTotalCutRate"))$("hfrTotalCutRate").textContent=pct(tt.cutSuccess,tt.cutTests);
     if($("hfrTotalOutsideRate"))$("hfrTotalOutsideRate").textContent=pct(tt.outsideHit,tt.outsideTests);
+    if($("hfrTotalProfit")){
+      const p=Number(tt.profit)||0;
+      $("hfrTotalProfit").textContent=(p>=0?"+":"")+yen(p).replace("¥-","-¥");
+      $("hfrTotalProfit").className=p>0?"plus":p<0?"minus":"";
+    }
+    if($("hfrTotalMoneySub"))$("hfrTotalMoneySub").textContent=`投資 ${yen(tt.investment||0)} / 払戻 ${yen(tt.returnAmount||0)}`;
   }
 
   function syncRace(){
@@ -22327,16 +22582,22 @@ window.bhRenderFinalFormation=draw;
 
   function comboMatch(pack,a,b,c){
     const combo=`${a}-${b}-${c}`;
+    const vt=pack?.valueTickets||window.__HUNTER_VALUE_TICKETS?.tickets||[];
+    const mt=pack?.manshuTickets||window.__HUNTER_VALUE_TICKETS?.manshu||[];
+    if(vt.length||mt.length){
+      const hit=vt.find(x=>String(x.combo)===combo);
+      if(hit)return {hit:true,kind:hit.kind,label:hit.label,head:a,item:hit,separate:false};
+      const mh=mt.find(x=>String(x.combo)===combo);
+      if(mh)return {hit:true,kind:"manshu",label:"万舟別枠",head:a,item:mh,separate:true};
+      return {hit:false,combo};
+    }
     if(!pack?.forms?.length)return null;
     for(const f of pack.forms){
       const d=f.displayPicks||{};
-      for(const [kind,label] of [["main","本線"],["cover","押さえ"],["value","期待値"],["chaos","混戦穴目"]]){
+      for(const [kind,label] of [["main","本命"],["value","期待"],["manshu","万舟"],["cover","押さえ"],["chaos","混戦穴目"]]){
         const hit=(d[kind]||[]).find(x=>String(x?.combo||"")===combo);
         if(hit)return {hit:true,kind,label,head:Number(f.h?.boat||0),item:hit};
       }
-      /* V320以前の保存状態への互換 */
-      if(Array.isArray(f.displayCombos)&&f.displayCombos.includes(combo))
-        return {hit:true,kind:"formation",label:"買い目",head:Number(f.h?.boat||0)};
     }
     return {hit:false,combo};
   }
@@ -22617,31 +22878,38 @@ window.bhRenderFinalFormation=draw;
          頭候補1〜Nのどれか1つでも本線/押さえ/期待値で完全一致すれば○。
          複数候補が当たっても1Rにつき1的中だけ加算する。 */
       const match=comboMatch(pack,a,b,c);
-      const formationHit=!pass&&!!match?.hit;
+      const separateManshuHit=!!match?.hit&&!!match?.separate;
+      const formationHit=!pass&&!!match?.hit&&!separateManshuHit;
       const hit=formationHit;
+      const raceInvestment=pass?0:1000;
+      const hitStake=formationHit?Number(match?.item?.stake||0):0;
+      const raceReturn=formationHit&&parsed.trifectaOdds!=null ? hitStake*Number(parsed.trifectaOdds) : 0;
+      const raceProfit=pass?0:raceReturn-raceInvestment;
       const logic=evaluateLogic(pack,a,b,c);
       if($("hfrLogicChecks")){
         $("hfrLogicChecks").innerHTML=
           `<div class="hfrFormationOverall ${formationHit?"ok":"ng"}">
-             <b>FORMATION</b><strong>${formationHit?"○":"×"}</strong>
+             <b>買い目</b><strong>${formationHit?"○":"×"}</strong>
              <span>${formationHit?"頭候補のいずれかで的中":"全頭候補で不的中"}</span>
            </div>` + logicHtml(logic);
       }
 
-      if(pass){
+      if(separateManshuHit){
+        $("hfrJudge").className="hfrJudge pass";
+        $("hfrJudgeText").textContent="万舟別枠";
+        $("hfrStatus").textContent=`万舟別枠 的中｜通常¥1,000収支には含めない`;
+      }else if(pass){
         $("hfrJudge").className="hfrJudge pass";
         $("hfrJudgeText").textContent="見";
-        $("hfrStatus").textContent=
-          match?.hit ? `見レース｜参考 ${match.label} 的中（集計外）`
-                     : "見レース｜成績集計対象外";
+        $("hfrStatus").textContent="見レース｜通常成績集計対象外";
       }else if(hit){
         $("hfrJudge").className="hfrJudge hit";
         $("hfrJudgeText").textContent="的中";
-        $("hfrStatus").textContent=`${match.label} 的中｜頭候補 ${match.head}号艇`;
+        $("hfrStatus").textContent=`${match.label} 的中｜投資 ¥1,000 → 払戻 ¥${Math.round(raceReturn).toLocaleString("ja-JP")}｜収支 ${raceProfit>=0?"+":""}¥${Math.round(raceProfit).toLocaleString("ja-JP")}`;
       }else{
         $("hfrJudge").className="hfrJudge miss";
         $("hfrJudgeText").textContent="不的中";
-        $("hfrStatus").textContent="本線・押さえ・期待値に該当なし";
+        $("hfrStatus").textContent="不的中｜投資 ¥1,000｜収支 -¥1,000";
       }
 
       if(!pass){
@@ -22665,6 +22933,10 @@ window.bhRenderFinalFormation=draw;
             cutTests:logic.cutTests,
             outsideHit:logic.outsideHit,
             outsideTests:logic.outsideTests,
+            investment:raceInvestment,
+            returnAmount:raceReturn,
+            profit:raceProfit,
+            stake:hitStake,
             headChecks:logic.rows,
             at:Date.now()
           };
@@ -22683,6 +22955,9 @@ window.bhRenderFinalFormation=draw;
           st.cutSuccess+=logic.cutSuccess;
           st.outsideTests=(st.outsideTests||0)+logic.outsideTests;
           if(logic.outsideHit)st.outsideHit=(st.outsideHit||0)+1;
+          st.investment=(st.investment||0)+raceInvestment;
+          st.returnAmount=(st.returnAmount||0)+raceReturn;
+          st.profit=(st.profit||0)+raceProfit;
 
           tt.races++;
           if(logic.headHit)tt.headHit++;
@@ -22698,6 +22973,10 @@ window.bhRenderFinalFormation=draw;
           tt.cutSuccess+=logic.cutSuccess;
           tt.outsideTests=(tt.outsideTests||0)+logic.outsideTests;
           if(logic.outsideHit)tt.outsideHit=(tt.outsideHit||0)+1;
+          tt.investment=(tt.investment||0)+raceInvestment;
+          tt.returnAmount=(tt.returnAmount||0)+raceReturn;
+          tt.profit=(tt.profit||0)+raceProfit;
+          /* 万舟はV359から通常収支と別枠のため、通常集計には加算しない */
           if(!tt.seen)tt.seen={};
           tt.seen[key]=rec;
 
@@ -23340,6 +23619,32 @@ V346
   +0.03以上遅れ = 減点、+0.05以上 = 強い減点。
 - まくり/まくり差し/逃げの事前ST比較も平均ST基準へ統一。
 - 展示STはSIM/直前情報側で別評価し、平均STと混同しない。 */
+</script>
+
+
+<script id="bh-v358-marker">
+/* V358
+- フォーメーション表示を廃止し、3連単1点ごとのVALUE PICKへ。
+- 各買い目にSIM再現率%、オッズ、期待倍率、一致度、投資額を表示。
+- 本命: 世間×HUNTERのHEAD/AXIS一致を優先。最大4点。
+- 期待: 期待倍率2.00以上、100倍未満。最大4点。
+- 万舟: 100倍以上かつ期待倍率2.00以上。最大2点。
+- 全体最大10点。弱い買い目を点数合わせで補充しない。
+- 期待倍率 = SIM再現率 ÷ (100/オッズ)。10倍なら20%以上で2.00×。
+- 条件該当なしは「見」。
+- 1R投資は固定1,000円。選出点へ100円単位で自動配分。
+- 結果確認に今日の投資・払戻・収支、累計収支を追加。 */
+</script>
+
+
+<script id="bh-v359-marker">
+/* V359
+- 万舟は通常最大10点とは完全に別枠。
+- 通常買い目 = 本命＋期待で最大10点、1R投資¥1,000。
+- 万舟 = 100倍以上かつ期待倍率2.50以上の高期待値だけ、最大4点。
+- 万舟は通常10点/¥1,000の資金配分・通常収支には含めない。
+- 通常買い目0点でも万舟候補だけ存在する場合は「見 / 万舟参考」表示。
+- 結果確認でも万舟別枠的中は通常¥1,000収支と分離。 */
 </script>
 
 </body>
