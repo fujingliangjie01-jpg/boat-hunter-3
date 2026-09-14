@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V361</title>
+<title>BOAT HUNTER V362</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14447,6 +14447,26 @@ input,
 @media(max-width:560px){.hrmKpis{grid-template-columns:repeat(2,1fr)}.hrmVenueRow{grid-template-columns:58px repeat(4,1fr)}}
 </style>
 
+
+<style id="bh-v362-analysis-base">
+.hab{margin:8px 0 12px;padding:10px;border:1px solid rgba(70,200,255,.22);border-radius:12px;background:#071821}
+.habHead{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:7px}
+.habHead small{display:block;font-size:7px;color:#6ec7e9;font-weight:1000;letter-spacing:.12em}
+.habHead b{font-size:14px}.habHead span{font-size:7px;color:#859ca8;font-weight:1000}
+.habGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.habCard{padding:7px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#081a24}
+.habCard h4{margin:0 0 6px;font-size:10px}
+.habCard.market{border-color:rgba(76,196,255,.28)}
+.habCard.pre{border-color:rgba(255,207,74,.24)}
+.habCard.sim{border-color:rgba(166,125,255,.25)}
+.habWait{padding:10px 5px;text-align:center;font-size:7px;color:#748f9d}
+.habRankRow{display:grid;grid-template-columns:18px 24px 1fr;gap:5px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.05)}
+.habRankRow:first-child{border-top:0}.habRankNo{font-size:7px;color:#7894a1;font-weight:1000}
+.habRankRow b{font-size:9px;text-align:right}.habBoat{width:22px;height:22px;display:grid;place-items:center;border-radius:5px;font-size:10px;font-weight:1000}
+.habBoat.b1{background:#fff;color:#111}.habBoat.b2{background:#111;color:#fff}.habBoat.b3{background:#e51f2a;color:#fff}.habBoat.b4{background:#176fd1;color:#fff}.habBoat.b5{background:#f0db19;color:#111}.habBoat.b6{background:#1fa34a;color:#fff}
+@media(max-width:620px){.habGrid{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14457,7 +14477,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.361</div>
+  <div class="topVol">Vol.362</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14582,49 +14602,37 @@ input,
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
   </section>
-<section id="hunterResultManager" class="hrm">
-  <div class="hrmHead">
-    <div>
-      <small>HUNTER PERFORMANCE</small>
-      <b>結果確認・収支管理</b>
-    </div>
-    <button id="hrmToggle" type="button">結果確認</button>
+<section id="hunterAnalysisBase" class="hab">
+  <div class="habHead">
+    <div><small>ANALYSIS BASE</small><b>世間評価・事前評価・SIM</b></div>
+    <span>再構築用</span>
   </div>
 
-  <div id="hrmBody" class="hrmBody hidden">
-    <div class="hrmToday">
-      <div class="hrmTitle"><b>今日</b><span id="hrmDate">—</span></div>
-      <div class="hrmKpis">
-        <div><small>全場収支</small><b id="hrmTodayProfit">¥0</b></div>
-        <div><small>投資</small><b id="hrmTodayStake">¥0</b></div>
-        <div><small>払戻</small><b id="hrmTodayReturn">¥0</b></div>
-        <div><small>的中率</small><b id="hrmTodayHit">—</b></div>
+  <div class="habGrid">
+    <article class="habCard market">
+      <h4>世間評価</h4>
+      <div id="habMarketBody" class="habBody">
+        <div class="habWait">3連単120通り取得後に表示</div>
       </div>
-    </div>
+    </article>
 
-    <div class="hrmBlock">
-      <div class="hrmTitle"><b>場別・今日の成績</b><span>収支順</span></div>
-      <div id="hrmTodayVenues" class="hrmVenueList"><div class="hrmEmpty">結果データなし</div></div>
-    </div>
-
-    <div class="hrmBlock cumulative">
-      <div class="hrmTitle"><b>累計</b><span id="hrmBestVenue">BEST —</span></div>
-      <div class="hrmKpis">
-        <div><small>累計収支</small><b id="hrmTotalProfit">¥0</b></div>
-        <div><small>累計投資</small><b id="hrmTotalStake">¥0</b></div>
-        <div><small>累計払戻</small><b id="hrmTotalReturn">¥0</b></div>
-        <div><small>累計的中率</small><b id="hrmTotalHit">—</b></div>
+    <article class="habCard pre">
+      <h4>HUNTER事前評価</h4>
+      <div id="habPreBody" class="habBody">
+        <div class="habWait">新しい偏差ロジックをここに実装</div>
       </div>
-      <div id="hrmTotalVenues" class="hrmVenueList"><div class="hrmEmpty">累計データなし</div></div>
-    </div>
+    </article>
 
-    <div class="hrmDanger">
-      <button id="hrmResetDay" type="button">今日をリセット</button>
-      <button id="hrmResetAll" type="button">累計をリセット</button>
-      <small>誤操作防止：ボタンを長押ししてから確認コードを入力</small>
-    </div>
+    <article class="habCard sim">
+      <h4>SIM確率</h4>
+      <div id="habSimBody" class="habBody">
+        <div class="habWait">新SIMは「来る確率」だけを表示予定</div>
+      </div>
+    </article>
   </div>
 </section>
+
+
 
 
 
@@ -14944,7 +14952,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.361: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.362: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15611,7 +15619,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.361 場時間帯補正
+/* Vol.362 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -19838,6 +19846,106 @@ window.bhVenueBase=function(course,key="p1"){
 - 今日リセット / 累計リセットを分離。
 - リセットは1.8秒長押し＋確認文字入力の二段階。
 - 新買い目完成後は BH_RESULT_MANAGER.record(...) に接続する。
+*/
+</script>
+
+<section id="hunterResultManager" class="hrm">
+  <div class="hrmHead">
+    <div>
+      <small>HUNTER PERFORMANCE</small>
+      <b>結果確認・収支管理</b>
+    </div>
+    <button id="hrmToggle" type="button">結果確認</button>
+  </div>
+
+  <div id="hrmBody" class="hrmBody hidden">
+    <div class="hrmToday">
+      <div class="hrmTitle"><b>今日</b><span id="hrmDate">—</span></div>
+      <div class="hrmKpis">
+        <div><small>全場収支</small><b id="hrmTodayProfit">¥0</b></div>
+        <div><small>投資</small><b id="hrmTodayStake">¥0</b></div>
+        <div><small>払戻</small><b id="hrmTodayReturn">¥0</b></div>
+        <div><small>的中率</small><b id="hrmTodayHit">—</b></div>
+      </div>
+    </div>
+
+    <div class="hrmBlock">
+      <div class="hrmTitle"><b>場別・今日の成績</b><span>収支順</span></div>
+      <div id="hrmTodayVenues" class="hrmVenueList"><div class="hrmEmpty">結果データなし</div></div>
+    </div>
+
+    <div class="hrmBlock cumulative">
+      <div class="hrmTitle"><b>累計</b><span id="hrmBestVenue">BEST —</span></div>
+      <div class="hrmKpis">
+        <div><small>累計収支</small><b id="hrmTotalProfit">¥0</b></div>
+        <div><small>累計投資</small><b id="hrmTotalStake">¥0</b></div>
+        <div><small>累計払戻</small><b id="hrmTotalReturn">¥0</b></div>
+        <div><small>累計的中率</small><b id="hrmTotalHit">—</b></div>
+      </div>
+      <div id="hrmTotalVenues" class="hrmVenueList"><div class="hrmEmpty">累計データなし</div></div>
+    </div>
+
+    <div class="hrmDanger">
+      <button id="hrmResetDay" type="button">今日をリセット</button>
+      <button id="hrmResetAll" type="button">累計をリセット</button>
+      <small>誤操作防止：ボタンを長押ししてから確認コードを入力</small>
+    </div>
+  </div>
+</section>
+
+<script id="bh-v362-analysis-base-js">
+(()=>{
+  const $=id=>document.getElementById(id);
+  function oddsRows(){
+    const o=window.__HUNTER_ODDS120?.odds;
+    if(!Array.isArray(o))return [];
+    return o.map(x=>{
+      const combo=String(x.combo||x.key||"").replace(/[=>]/g,"-");
+      const a=combo.split("-").map(Number);
+      const odds=Number(x.odds??x.value);
+      if(a.length!==3||a.some(v=>v<1||v>6)||!(odds>0))return null;
+      return {combo,a,odds,w:1/odds};
+    }).filter(Boolean);
+  }
+  function marketHead(){
+    const rows=oddsRows();
+    if(!rows.length)return [];
+    const q={1:0,2:0,3:0,4:0,5:0,6:0};
+    rows.forEach(r=>q[r.a[0]]+=r.w);
+    const sum=Object.values(q).reduce((a,b)=>a+b,0)||1;
+    return Object.entries(q).map(([boat,v])=>({boat:+boat,v:v/sum*100}))
+      .sort((a,b)=>b.v-a.v);
+  }
+  function renderMarket(){
+    const el=$("habMarketBody"); if(!el)return;
+    const a=marketHead();
+    if(!a.length){
+      el.innerHTML=`<div class="habWait">3連単120通り取得後に表示</div>`;
+      return;
+    }
+    el.innerHTML=a.map((x,i)=>`
+      <div class="habRankRow">
+        <span class="habRankNo">${i+1}</span>
+        <span class="habBoat b${x.boat}">${x.boat}</span>
+        <b>${x.v.toFixed(1)}%</b>
+      </div>`).join("");
+  }
+  let sig="";
+  setInterval(()=>{
+    const x=window.__HUNTER_ODDS120?.odds?.length||0;
+    if(String(x)!==sig){sig=String(x);renderMarket()}
+  },400);
+  document.addEventListener("DOMContentLoaded",renderMarket);
+})();
+</script>
+
+
+<script id="bh-v362-marker">
+/* V362
+- 世間評価 / HUNTER事前評価 / SIM の表示枠を復活。
+- 世間評価は3連単120通りから1着支持率を軽量表示。
+- HUNTER事前評価とSIMは旧ロジックを戻さず、新仕様を入れるための空枠。
+- 結果確認・収支管理をページ最下部へ移動。
 */
 </script>
 
