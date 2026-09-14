@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V354</title>
+<title>BOAT HUNTER V355</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14972,7 +14972,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.354</div>
+  <div class="topVol">Vol.355</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15463,7 +15463,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.354: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.355: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -16130,7 +16130,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.354 場時間帯補正
+/* Vol.355 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -21324,11 +21324,29 @@ function bhOverallThirdHeadScore(x,head12,all){
   });
   return s;
 }
+/* ===== V355 ⑥HEAD厳格ゲート ===== */
+function bhSixHeadGate(x,all){
+  if(Number(x?.boat)!==6)return {allow:true,reason:"not6"};
+  const c=actualCourseOf(x), tilt=Number(x.tilt??x.exhibitionTilt??x.preTilt??0);
+  const st=effectiveST(x), sr=Number(x.sr??x.stRank??99);
+  const front=Number.isFinite(c)&&c<=5;
+  const canStart=(Number.isFinite(st)&&st<=.16)||(Number.isFinite(sr)&&sr<=2.2);
+  const special=front||(tilt>=3.0&&canStart);
+  if(!special)return {allow:false,reason:"通常6コース・特殊条件なし"};
+  const trust=Number(x.trustScore||0);
+  const sim1=Number((bhFinalSimEval().find(v=>Number(v.boat)===6)||{}).v||0);
+  return {allow:trust>=62&&sim1>=8,reason:front?"前付け審査":"チルト3＋ST審査"};
+}
+function bhHeadEligibleV355(x,all){
+  return Number(x?.boat)!==6 || bhSixHeadGate(x,all).allow;
+}
+
 function bhSelectHeadsV354(){
   const p=pre();
   const all=R().map(met);
   const marketTop=market()[0]||null;
-  const hunterAll=bhAllHunterHeadRows().sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
+  const hunterAllRaw=bhAllHunterHeadRows().sort((a,b)=>(b.trustScore??0)-(a.trustScore??0));
+  const hunterAll=hunterAllRaw.filter(x=>bhHeadEligibleV355(x,all));
   if(!marketTop||!hunterAll.length)return {heads:[],dominant:false,primaryHeadBoat:null};
 
   const marketBoat=Number(marketTop.boat);
@@ -21367,6 +21385,7 @@ function bhSelectHeadsV354(){
   /* 頭候補3：世間＋HUNTER＋展開利＋機力/直前/地力 */
   const h3Pool=hunterAll
     .filter(x=>![Number(h1?.boat),Number(h2?.boat)].includes(Number(x.boat)))
+    .filter(x=>Number(x.trustScore)>=58)
     .map(x=>({...x,overall3:bhOverallThirdHeadScore(x,[h1,h2].filter(Boolean),all)}))
     .sort((a,b)=>b.overall3-a.overall3);
   let h3=h3Pool[0]||null;
@@ -21389,41 +21408,43 @@ function chooseHeads(p){
 }
 
 /* ===== V354 頭ごとの軸選定 ===== */
+function bhAxisSplitV355(head,headIndex,all){
+  const hunter=axis(head,all), marketA=marketConditionalAxis(head.boat);
+  if(!hunter.length)return {main:[],expect:[],cover:[]};
+  const hp=bhHunterAxisProbabilities(head.boat);
+  const mm=new Map(marketA.map(x=>[Number(x.boat),Number(x.v)||0]));
+  const hm=new Map(hp.map(x=>[Number(x.boat),Number(x.v)||0]));
+  const main=[],expect=[],cover=[];
+  const hx=b=>hunter.find(v=>Number(v.boat)===Number(b));
+  const add=(arr,b)=>{const x=hx(b);if(x&&!arr.some(v=>Number(v.boat)===Number(b)))arr.push(x);};
+
+  if(headIndex===0){
+    marketA.slice(0,2).forEach(m=>{
+      const b=Number(m.boat),d=Number(hm.get(b)||0)-Number(m.v||0);
+      if(Number(hm.get(b)||0)>0&&Math.abs(d)<12)add(main,b); else add(cover,b);
+    });
+  }else{
+    add(main,hunter[0]?.boat);
+    if(hunter[1]&&Math.abs(Number(hunter[0]?.ad??0)-Number(hunter[1]?.ad??0))<=1)add(main,hunter[1].boat);
+  }
+
+  hunter.forEach(x=>{
+    const boat=Number(x.boat), delta=Number(hm.get(boat)||0)-Number(mm.get(boat)||0);
+    if(delta>=12 && (Number(x.conditionalSimBonus||0)>0 || Number(hm.get(boat)||0)>=15))add(expect,boat);
+  });
+
+  if(!main.length){
+    const stable=hunter.find(x=>{
+      const boat=Number(x.boat);
+      return Number(hm.get(boat)||0)-Number(mm.get(boat)||0)<12;
+    });
+    if(stable)add(main,stable.boat); else if(marketA[0])add(main,marketA[0].boat);
+  }
+  const ms=new Set(main.map(x=>Number(x.boat)));
+  return {main:main.slice(0,2),expect:expect.filter(x=>!ms.has(Number(x.boat))).slice(0,2),cover};
+}
 function bhSelectAxesForHead(head,headIndex,all){
-  const hunter=axis(head,all);
-  const marketA=marketConditionalAxis(head.boat);
-  const marketTop=marketA[0]?.boat;
-  const hunterTop=hunter[0]?.boat;
-
-  if(!hunter.length)return [];
-
-  /* 頭1：世間軸とHUNTER軸一致なら1艇 */
-  if(headIndex===0 && marketTop && hunterTop && Number(marketTop)===Number(hunterTop)){
-    return [hunter[0]];
-  }
-
-  const picked=[];
-  const addBoat=b=>{
-    const x=hunter.find(v=>Number(v.boat)===Number(b));
-    if(x&&!picked.some(v=>Number(v.boat)===Number(b)))picked.push(x);
-  };
-
-  /* ズレ時はHUNTER軸を中心に、世間軸も残す */
-  addBoat(hunterTop);
-  if(headIndex===0 && marketTop)addBoat(marketTop);
-
-  if(hunter[1]){
-    const d=Math.abs(Number(hunter[0]?.ad??hunter[0]?.axisScore??0)-Number(hunter[1]?.ad??hunter[1]?.axisScore??0));
-    if(d<=1.0 || picked.length<2)addBoat(hunter[1].boat);
-  }
-  if(headIndex===0 && hunter[2]){
-    const d=Math.abs(Number(hunter[0]?.ad??hunter[0]?.axisScore??0)-Number(hunter[2]?.ad??hunter[2]?.axisScore??0));
-    if(d<=1.0)addBoat(hunter[2].boat);
-  }
-
-  /* 頭2/3は世間より決まり手＋SIMを優先し、基本1〜2艇 */
-  const limit=headIndex===0?3:2;
-  return picked.slice(0,limit);
+  return bhAxisSplitV355(head,headIndex,all).main;
 }
 
 /* ===== V354 ①抵抗×まくり 混戦穴目 ===== */
@@ -21857,7 +21878,8 @@ function draw(){
   const all=R().map(met);
   const forms=pick.heads.map((h,i)=>{
     const axAll=axis(h,all);
-    let ax=bhSelectAxesForHead(h,i,all);
+    const axisSplit=bhAxisSplitV355(h,i,all);
+    let ax=axisSplit.main;
 
     /* 頭1が突出した時の頭2：
        頭1を2着/3着に残す。ただし軸は決まり手+SIMを優先。 */
@@ -21908,6 +21930,28 @@ function draw(){
     ])].filter(x=>x!==Number(h.boat));
 
     const cls=classify(h,ax,a3,[...baselineThird,...outside],i);
+
+    /* 世間→HUNTERで急上昇した軸は本線でなく期待。
+       頭→中間艇→急上昇軸、30倍以上。 */
+    const expAxisTickets=[];
+    for(const ex of (axisSplit.expect||[])){
+      const eb=Number(ex.boat);
+      const mids=[...new Set([...a3,...all.map(v=>Number(v.boat))])]
+        .filter(mid=>mid!==Number(h.boat)&&mid!==eb);
+      for(const mid of mids){
+        const combo=`${h.boat}-${mid}-${eb}`,o=odd(combo);
+        if(o!=null&&o>=30){
+          const sr=simCombo(combo);
+          expAxisTickets.push({combo,odds:o,sim:sr,ev:o*sr/100,reason:"HUNTER軸急上昇・期待"});
+        }
+      }
+    }
+    expAxisTickets.sort((a,b)=>(b.ev??-1)-(a.ev??-1)||(b.sim??0)-(a.sim??0));
+    const existing=new Set((cls.value||[]).map(x=>String(x.combo)));
+    for(const t of expAxisTickets){
+      if((cls.value||[]).length>=(i===0?2:1))break;
+      if(!existing.has(String(t.combo))){cls.value.push(t);existing.add(String(t.combo));}
+    }
     const pts=combinations(h.boat,a2,a3).length;
     return {h,ax,a2,a3,cut:cutPack.cut,thirdStay:baselineThird,outside,cls,pts,i};
   });
@@ -23202,6 +23246,14 @@ V346
 - 切り艇が無い場合、軸以外の全艇を3着候補へ残す。
 - 期待: 軸3着固定の折り返し。30倍以上のみ、頭1最大2点、頭2/3最大1点。
 - ①抵抗×まくりの固定混戦穴目を追加。 */
+</script>
+
+<script id="bh-v355-marker">
+/* V355: 世間×HUNTER一致軸=本線。HUNTER急上昇軸=SIM裏付け時に期待。
+   世間上位2軸を保護。⑥通常6コースHEADロック。
+   ⑥HEADは前付け、またはチルト3.0＋ST根拠から解放審査し、
+   さらにHEAD信頼62以上＋SIM1着8%以上を要求。
+   頭3はHEAD信頼58未満を総合加点だけで昇格させない。 */
 </script>
 
 </body>
