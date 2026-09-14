@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V365</title>
+<title>BOAT HUNTER V366</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14520,6 +14520,45 @@ input,
 }
 </style>
 
+
+<style id="bh-v366-race-select-balance">
+/* V366: 上段3列のバランス調整
+   開催場を広げ、出走表取得を少し細くする */
+.controls.racePanel{
+  grid-template-columns:
+    minmax(0,1.08fr)
+    minmax(0,.92fr)
+    minmax(0,.72fr)!important;
+  gap:6px!important;
+}
+#get{
+  width:100%!important;
+  padding:7px 5px!important;
+  font-size:14px!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+}
+@media(max-width:430px){
+  .controls.racePanel{
+    grid-template-columns:
+      minmax(0,1.12fr)
+      minmax(0,.90fr)
+      minmax(0,.68fr)!important;
+    gap:5px!important;
+  }
+  #get{
+    font-size:13px!important;
+    padding:6px 4px!important;
+  }
+  #get::after,
+  #get:not(.done)::after{
+    right:4px!important;
+    font-size:7px!important;
+    padding:3px 6px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14530,7 +14569,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.365</div>
+  <div class="topVol">Vol.366</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14650,7 +14689,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V365</small>
+      <small>HUNTER RESET / V366</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15005,7 +15044,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.365: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.366: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15672,7 +15711,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.365 場時間帯補正
+/* Vol.366 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20231,6 +20270,16 @@ window.bhVenueBase=function(course,key="p1"){
 /* V365
 - iPhone/Safariで開催場セレクトの場名が途中で見切れる問題を修正。
 - 開催場selectを100%幅、右側余白を確保、文字サイズをモバイルで微調整。
+*/
+</script>
+
+
+<script id="bh-v366-marker">
+/* V366
+- 開催場列を拡大
+- 出走表取得列を縮小
+- レース列は中間幅
+- iPhone縦画面で「平和島」など場名が見切れにくい比率へ調整
 */
 </script>
 
