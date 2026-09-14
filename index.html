@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V363</title>
+<title>BOAT HUNTER V364</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14476,6 +14476,20 @@ input,
 .habSimRow:first-of-type{border-top:0}.habSimRow span{font-size:6px;color:#78909e}.habSimRow b{font-size:10px;color:#fff}.habSimRow strong{font-size:9px;color:#d0b8ff;text-align:right}.habSimRow em{font-size:7px;color:#92aab6;font-style:normal;text-align:right}
 </style>
 
+
+<style id="bh-v364-sim120">
+.habSim120Toggle{
+  width:100%;margin-top:8px;padding:9px 10px;border-radius:9px;
+  border:1px solid rgba(173,145,255,.35);background:#10142a;
+  color:#d8c9ff;font-size:9px;font-weight:1000
+}
+.habSim120All{margin-top:6px;max-height:520px;overflow:auto;border-top:1px solid rgba(255,255,255,.06)}
+.habSim120All.hidden{display:none}
+.habSimRow.full{grid-template-columns:20px 62px 1fr 56px}
+.habSim120All::-webkit-scrollbar{width:4px}
+.habSim120All::-webkit-scrollbar-thumb{background:rgba(177,150,255,.35);border-radius:99px}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14486,7 +14500,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.363</div>
+  <div class="topVol">Vol.364</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14606,7 +14620,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V363</small>
+      <small>HUNTER RESET / V364</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -14961,7 +14975,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.363: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.364: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15628,7 +15642,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.363 場時間帯補正
+/* Vol.364 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20105,10 +20119,30 @@ window.bhVenueBase=function(course,key="p1"){
     window.__HUNTER_SIM_V363=rows;
     el.innerHTML=`
       <div class="habSimMeta">5000回 / 120通り確率化</div>
-      ${rows.slice(0,10).map((x,i)=>`
-        <div class="habSimRow">
-          <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong><em>${x.odds.toFixed(1)}倍</em>
-        </div>`).join("")}`;
+      <div class="habSimTop10">
+        ${rows.slice(0,10).map((x,i)=>`
+          <div class="habSimRow">
+            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong><em>${x.odds.toFixed(1)}倍</em>
+          </div>`).join("")}
+      </div>
+
+      <button type="button" id="habSim120Toggle" class="habSim120Toggle">
+        120通りすべて見る ＋
+      </button>
+
+      <div id="habSim120All" class="habSim120All hidden">
+        ${rows.map((x,i)=>`
+          <div class="habSimRow full">
+            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong><em>${x.odds.toFixed(1)}倍</em>
+          </div>`).join("")}
+      </div>`; 
+
+    const t=$("habSim120Toggle"),all=$("habSim120All");
+    t?.addEventListener("click",()=>{
+      const opening=all?.classList.contains("hidden");
+      all?.classList.toggle("hidden");
+      if(t)t.textContent=opening?"120通りを閉じる −":"120通りすべて見る ＋";
+    });
   }
   function runAll(){
     renderMarket();
@@ -20150,6 +20184,16 @@ window.bhVenueBase=function(course,key="p1"){
 - 場平均補正と特質偏差は数値ルール未確定のため勝手に加点せずSTAY
 - SIM: 120通りすべてを5000回で確率化。SIMは確率算出専用
 */
+</script>
+
+
+<script id="bh-v364-marker">
+/* V364
+- SIMは上位10点を通常表示。
+- 「120通りすべて見る＋」ボタンを追加。
+- 押すと3連単120通りすべての順位 / SIM確率 / オッズを表示。
+- もう一度押すと閉じる。
+- 全120通りはスクロール表示で画面を長くしすぎない。 */
 </script>
 
 </body>
