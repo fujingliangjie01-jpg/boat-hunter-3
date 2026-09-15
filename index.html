@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V370</title>
+<title>BOAT HUNTER V374</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14750,7 +14750,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.372</div>
+  <div class="topVol">Vol.374</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20236,12 +20236,14 @@ window.bhVenueBase=function(course,key="p1"){
       if(!armed){btn.textContent=kind==="day"?"今日をリセット":"累計をリセット";return}
       armed=false;
       const code=prompt(kind==="day"
-        ?"今日の成績をリセットします。確認のため RESET と入力してください。"
-        :"累計成績をすべてリセットします。確認のため ALL RESET と入力してください。");
-      if(kind==="day"&&code==="RESET"){
-        save(DAY_KEY,{...empty(),date:todayKey()});render();
-      }else if(kind==="all"&&code==="ALL RESET"){
-        save(TOTAL_KEY,empty());render();
+        ?"今日の成績をリセットします。暗証番号を入力してください。"
+        :"累計成績をすべてリセットします。暗証番号を入力してください。");
+      if(code==="456"){
+        if(kind==="day") save(DAY_KEY,{...empty(),date:todayKey()});
+        else if(kind==="all") save(TOTAL_KEY,empty());
+        render();
+      }else if(code!==null){
+        alert("暗証番号が違います。リセットしませんでした。");
       }
       btn.textContent=kind==="day"?"今日をリセット":"累計をリセット";
     };
@@ -20599,7 +20601,8 @@ window.bhVenueBase=function(course,key="p1"){
     if(!arr.length)return `<div class="habBuyEmpty">条件を満たす買い目なし</div>`;
     return arr.map(x=>`
       <div class="habBuyRow">
-        <div class="habBuyCombo">${comboHTML(x.combo)}<span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span></div>
+        <div class="habBuyCombo">${comboHTML(x.combo)}</div>
+        <span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span>
         <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div>
         <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
         <div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
@@ -20654,21 +20657,9 @@ window.bhVenueBase=function(course,key="p1"){
     const keep120Open=window.__BH_SIM120_OPEN===true;
     const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
     el.innerHTML=`
-      <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を1画面で比較</div>
-      <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
-      <div id="habUnifiedTop">
-        ${top.map((x,i)=>`
-          <div class="habUnifiedRow">
-            <span class="rank">#${i+1}</span>
-            <div>${comboHTML(x.combo)}${patchFor(x.combo,tickets)}</div>
-            <div class="habMetric"><small>SIM発生確率</small><b>${x.simPct.toFixed(1)}%</b></div>
-            <div class="habMetric odds"><small>世間 ${rank.get(x.combo)}人気</small><b>${x.odds.toFixed(1)}倍</b></div>
-            <div class="habMetric ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
-          </div>`).join("")}
-      </div>
-
-      <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通り全部を比較する ＋</button>
-      <div id="habSim120All" class="habSim120All ${keep120Open?"":"hidden"}">
+      <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を120通りで比較</div>
+      <div id="habSim120All" class="habSim120All">
+        <div class="habWhereBar"><b>120通り比較</b><span>SIM確率・人気・期待値</span></div>
         <div class="habAnalysisToolbar">
           <button class="habSortBtn ${keepSortMode==="sim"?"active":""}" data-sort="sim">SIM確率順</button>
           <button class="habSortBtn ${keepSortMode==="market"?"active":""}" data-sort="market">人気順</button>
@@ -20689,14 +20680,7 @@ window.bhVenueBase=function(course,key="p1"){
     const jump=document.getElementById("jumpToHunterBuy");
     if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
 
-    const toggle=$("habSim120Toggle"),all=$("habSim120All");
-    if(toggle)toggle.textContent=keep120Open?"120通りを閉じる −":"120通り全部を比較する ＋";
-    toggle?.addEventListener("click",()=>{
-      const opening=all?.classList.contains("hidden");
-      all?.classList.toggle("hidden");
-      window.__BH_SIM120_OPEN=!!opening;
-      if(toggle)toggle.textContent=opening?"120通りを閉じる −":"120通り全部を比較する ＋";
-    });
+    const all=$("habSim120All");
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
       el.querySelectorAll(".habSortBtn").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
@@ -20721,7 +20705,7 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
-  setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
+  /* V374: 自動2.5秒再描画を廃止。操作中のスクロール位置・ソートを固定 */
 })();
 </script>
 
@@ -20824,6 +20808,50 @@ window.bhVenueBase=function(course,key="p1"){
 - 人気順/期待値順/SIM順の選択状態も維持。
 - 勝負掛けの「圏外」は表示対象から除外。
 - AI解析直下に「買い目まで行く」ボタンを追加し、最終買い目へスクロール。
+*/
+</script>
+
+<style id="bh-v373-readability">
+/* V374: 120通りを一本化、現在位置をsticky表示、文字拡大 */
+.habSim120All{display:block!important;max-height:none!important;overflow:visible!important}
+.habWhereBar{position:sticky;top:0;z-index:35;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin:0 -2px 8px;border:1px solid #315568;border-radius:10px;background:rgba(5,20,29,.97);box-shadow:0 7px 18px rgba(0,0,0,.34)}
+.habWhereBar b{font-size:15px;color:#fff}.habWhereBar span{font-size:10px;color:#8fdcff;font-weight:900}
+.habAnalysisToolbar{position:sticky;top:48px;z-index:34;background:rgba(7,19,27,.97);padding:7px 0;margin:0!important}
+.habSortBtn{min-height:44px!important;font-size:12px!important}
+.habUnifiedHeader{position:sticky;top:106px;z-index:33;background:#071923;font-size:10px!important;padding:9px 8px!important}
+.habUnifiedRow{min-height:68px!important;padding:10px 8px!important}
+.habUnifiedRow .rank{font-size:12px!important}
+.habMiniBoat{width:31px!important;height:31px!important;font-size:16px!important}
+.habArrow{font-size:13px!important}.habMetric small{font-size:8px!important}.habMetric b{font-size:16px!important}
+.habMetric.odds b{font-size:17px!important}.habMetric.ev b{font-size:17px!important}
+.habPickPatch{font-size:9px!important;padding:4px 8px!important;margin-left:0!important}
+.habBuyBlock{scroll-margin-top:64px!important}
+.habBuyHead b{font-size:23px!important}.habBuyHead>strong{font-size:15px!important}
+.habBuyGroup h5{font-size:15px!important}.habBuyGroup h5 span{font-size:10px!important}
+.habBuyRow{grid-template-columns:minmax(118px,1.35fr) 48px 62px 76px 70px!important;gap:7px!important;min-height:74px!important}
+.habBuyRow>.habPickPatch{justify-self:center;align-self:center}
+.habBuyStat small{font-size:9px!important}.habBuyStat.sim b{font-size:16px!important}.habBuyStat.odds b{font-size:20px!important}.habBuyStat.ev b{font-size:21px!important}
+@media(max-width:560px){
+ .habUnifiedHeader,.habUnifiedRow{grid-template-columns:28px 92px 1fr 62px 58px!important;gap:5px!important}
+ .habBuyRow{grid-template-columns:108px 43px 52px 66px 58px!important;gap:4px!important}
+ .habBuyStat small{font-size:7px!important}.habBuyStat.sim b{font-size:14px!important}.habBuyStat.odds b{font-size:17px!important}.habBuyStat.ev b{font-size:18px!important}
+}
+</style>
+<script id="bh-v373-marker">
+/* V374
+- SIM上位10＋隠しボタンの重複表示を廃止し、120通り比較を1ブロックに一本化。
+- SIM確率順 / 人気順 / 期待値順はその場で切替。自動2.5秒再描画を停止し、勝手に先頭へ戻らない。
+- スクロール中も「120通り比較」・ソート・列見出しをsticky表示して現在位置を把握可能。
+- 一覧と最終買い目の文字・倍率・期待値を拡大。
+- 最終買い目パッチを艇番と発生率の間の独立列へ移動し、重なりを解消。
+*/
+</script>
+
+<script id="bh-v374-reset-pin-marker">
+/* V374
+- 結果確認・収支管理の「今日をリセット」「累計をリセット」を暗証番号方式へ変更。
+- 暗証番号: 456。誤入力時はリセットしない。
+- 長押し保護は維持し、長押し後に暗証番号入力で確定。
 */
 </script>
 </body>
