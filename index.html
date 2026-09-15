@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V367</title>
+<title>BOAT HUNTER V368</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14602,6 +14602,45 @@ input,
 }
 </style>
 
+
+<style id="bh-v368-buy-and-sim">
+.habSimRow.v368,.hab120Header{
+  display:grid!important;grid-template-columns:24px 62px 1fr 58px 48px!important;
+  gap:5px;align-items:center
+}
+.habSimRow.v368 i,.hab120Header i{
+  font-size:8px;font-style:normal;text-align:right;color:#73e2a0;font-weight:1000
+}
+.hab120Header{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.10)}
+.hab120Header span,.hab120Header b,.hab120Header strong,.hab120Header em,.hab120Header i{
+  font-size:6px;color:#7895a3;font-style:normal;text-align:right
+}
+.hab120Header b{text-align:left}
+.habBuyBlock{
+  margin-top:10px;padding:9px;border-radius:11px;
+  border:1px solid rgba(255,197,67,.35);background:#0a171b
+}
+.habBuyHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.habBuyHead small{display:block;font-size:6px;color:#f4bf45;font-weight:1000;letter-spacing:.13em}
+.habBuyHead b{font-size:14px}.habBuyHead>strong{font-size:10px;color:#ffd96a}
+.habBuyGroup{margin-top:7px;padding:7px;border-radius:9px;background:#07131a}
+.habBuyGroup h5{display:flex;justify-content:space-between;margin:0 0 5px;font-size:9px}
+.habBuyGroup h5 span{font-size:6px;color:#7f98a4}
+.habBuyGroup.main{border-left:3px solid #65d4ff}
+.habBuyGroup.mid{border-left:3px solid #ffba55}
+.habBuyGroup.long{border-left:3px solid #ff6d82}
+.habBuyRow{
+  display:grid;grid-template-columns:58px 1fr 55px 56px 38px;gap:4px;
+  align-items:center;padding:5px 0;border-top:1px solid rgba(255,255,255,.05)
+}
+.habBuyRow:first-of-type{border-top:0}
+.habBuyRow b{font-size:10px}.habBuyRow span{font-size:7px;color:#9bb0ba}
+.habBuyRow strong{font-size:8px;color:#6fe09c;text-align:right}
+.habBuyRow em{font-size:7px;color:#ffd56b;font-style:normal;text-align:right}
+.habBuyEmpty{padding:7px;text-align:center;font-size:7px;color:#718995}
+.habBuyNote{margin-top:7px;font-size:6px;color:#738a95;text-align:center;font-weight:900}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14612,7 +14651,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.367</div>
+  <div class="topVol">Vol.368</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14732,7 +14771,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V367</small>
+      <small>HUNTER RESET / V368</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15087,7 +15126,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.367: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.368: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15754,7 +15793,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.367 場時間帯補正
+/* Vol.368 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20200,7 +20239,7 @@ window.bhVenueBase=function(course,key="p1"){
 </section>
 
 
-<script id="bh-v363-analysis-engine-js">
+<script id="bh-v368-analysis-engine-js">
 (()=>{
   const $=id=>document.getElementById(id);
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -20220,12 +20259,9 @@ window.bhVenueBase=function(course,key="p1"){
     if(!Number.isFinite(current)||!a.length)return null;
     const m=mean(a),d=sd(a);
     if(!d)return 50;
-    const z=(current-m)/d*(reverse?-1:1);
-    return clamp(50+10*z,20,80);
+    return clamp(50+10*((current-m)/d)*(reverse?-1:1),20,80);
   }
-  function rr(){
-    try{return racers(currentRace)||[]}catch(e){return []}
-  }
+  function rr(){try{return racers(currentRace)||[]}catch(e){return []}}
   function histFor(r){
     try{
       const obj=historyCache?.get?.(Number(r.number));
@@ -20237,17 +20273,33 @@ window.bhVenueBase=function(course,key="p1"){
     const sts=h.map(x=>num(x.st)).filter(x=>x!=null&&x>=0);
     const ranks=h.map(x=>num(x.stRank)).filter(x=>x!=null);
     return {
-      courseWin:n?h.filter(x=>Number(x.place)===1).length/n*100:null,
       course2:n?h.filter(x=>[1,2].includes(Number(x.place))).length/n*100:null,
       course3:n?h.filter(x=>[1,2,3].includes(Number(x.place))).length/n*100:null,
       avgST:sts.length?mean(sts):null,
       avgRank:ranks.length?mean(ranks):null
     };
   }
+
+  /* 直前情報はAI解析済みデータを優先。
+     未セットでも、画面に取得済みなら直前情報テーブルから拾う。 */
+  function previewFromTable(boat){
+    const tr=document.querySelectorAll("#previewBody tr")?.[Number(boat)-1];
+    if(!tr)return {};
+    const td=tr.querySelectorAll("td");
+    const val=i=>{
+      const t=(td[i]?.textContent||"").trim();
+      if(!t||t==="—")return null;
+      return num(t);
+    };
+    return {boat:Number(boat),st:val(1),lap:val(2),turn:val(3),straight:val(4),exhibition:val(5),tilt:val(6)};
+  }
   function pRow(boat){
     const p=window.__HUNTER_PREVIEW;
-    if(!Array.isArray(p))return {};
-    return p.find((x,i)=>Number(x.boat||x.entry||x.entry_number||i+1)===Number(boat))||{};
+    if(Array.isArray(p)){
+      const hit=p.find((x,i)=>Number(x.boat||x.entry||x.entry_number||i+1)===Number(boat));
+      if(hit)return hit;
+    }
+    return previewFromTable(boat);
   }
   function actualCourse(boat){
     try{
@@ -20255,22 +20307,19 @@ window.bhVenueBase=function(course,key="p1"){
       return Number(e?.course)||Number(boat);
     }catch(e){return Number(boat)}
   }
+
   function baseRows(){
     const racers6=rr();
     if(racers6.length!==6)return [];
     const raw=racers6.map(r=>{
-      const h=histFor(r),hm=hMetrics(h);
+      const hm=hMetrics(histFor(r));
       return {
-        boat:Number(r.entry_number),
-        name:r.name||"—",
+        boat:Number(r.entry_number), name:r.name||"—",
         national:num(r.national_win_rate),
         local:(typeof bhLocalWin==="function"?bhLocalWin(r):num(r.local_win_rate)),
-        course2:hm.course2,
-        course3:hm.course3,
-        avgST:hm.avgST,
-        avgRank:hm.avgRank,
-        motor2:num(r.motor_top_2_percent),
-        motor3:num(r.motor_top_3_percent)
+        course2:hm.course2, course3:hm.course3,
+        avgST:hm.avgST, avgRank:hm.avgRank,
+        motor2:num(r.motor_top_2_percent), motor3:num(r.motor_top_3_percent)
       };
     });
     const defs=[
@@ -20280,104 +20329,127 @@ window.bhVenueBase=function(course,key="p1"){
     raw.forEach(x=>{
       const ds=[];
       defs.forEach(([k,rev])=>{
-        const vals=raw.map(z=>Number(z[k])).filter(Number.isFinite);
-        const d=dev(vals,Number(x[k]),rev);
-        x[k+"Dev"]=d;
-        if(d!=null)ds.push(d);
+        const d=dev(raw.map(z=>Number(z[k])).filter(Number.isFinite),Number(x[k]),rev);
+        x[k+"Dev"]=d;if(d!=null)ds.push(d);
       });
       x.baseDev=ds.length?mean(ds):50;
     });
     return raw;
   }
+
   function preRows(base){
     const rows=base.map(x=>{
-      const p=pRow(x.boat);
-      const c=actualCourse(x.boat);
+      const p=pRow(x.boat),c=actualCourse(x.boat);
       const exhibition=num(p.exhibition??p.exhibition_time);
       const lap=num(p.lap??p.lap_time??p.one_lap_time);
       const turn=num(p.turn??p.turn_time??p.turning_time);
       const straight=num(p.straight??p.straight_time);
-      const pst=num(p.st??p.start_timing);
-      /* 一周タイム: 1コース基準。1コース外へ1つ進むごとに0.15秒遅くても同等 */
+      let pst=num(p.st??p.start_timing);
+      if(pst!=null&&pst<0)pst=null; // F展示STは単純な速さ加点に使わない
+      /* 外へ1コース進むごとに一周0.15秒遅くても同等 */
       const lapAdjusted=lap==null?null:lap-(c-1)*0.15;
       return {...x,course:c,exhibition,lap,lapAdjusted,turn,straight,previewST:pst};
     });
-    const defs=[
-      ["lapAdjusted",true],["turn",true],["straight",true],["exhibition",true],["previewST",true]
-    ];
+    const defs=[["lapAdjusted",true],["turn",true],["straight",true],["exhibition",true],["previewST",true]];
     rows.forEach(x=>{
       const ds=[];
       defs.forEach(([k,rev])=>{
-        const vals=rows.map(z=>Number(z[k])).filter(Number.isFinite);
-        const d=dev(vals,Number(x[k]),rev);
-        x[k+"Dev"]=d;
-        if(d!=null)ds.push(d);
+        const d=dev(rows.map(z=>Number(z[k])).filter(Number.isFinite),Number(x[k]),rev);
+        x[k+"Dev"]=d;if(d!=null)ds.push(d);
       });
       x.preDev=ds.length?mean(ds):null;
-      /* 場平均/特質の重みは未確定なので勝手に加点しない。
-         現時点の総合は基礎＋直前の単純平均。 */
       x.finalDev=x.preDev==null?x.baseDev:mean([x.baseDev,x.preDev]);
-      x.venueStep="STAY";
-      x.traitDev=null;
+      x.venueStep="STAY"; // 場平均補正は±1段階ルール確定後に接続
     });
     return rows.sort((a,b)=>b.finalDev-a.finalDev);
   }
+
   function oddsRows(){
     const o=window.__HUNTER_ODDS120?.odds;
     if(!Array.isArray(o))return [];
     return o.map(x=>{
       const combo=String(x.combo||x.key||"").replace(/[=>]/g,"-");
-      const a=combo.split("-").map(Number);
-      const odds=Number(x.odds??x.value);
-      if(a.length!==3||a.some(v=>v<1||v>6)||!(odds>0))return null;
+      const a=combo.split("-").map(Number),odds=Number(x.odds??x.value);
+      if(a.length!==3||new Set(a).size!==3||a.some(v=>v<1||v>6)||!(odds>0))return null;
       return {combo,a,odds,w:1/odds};
     }).filter(Boolean);
   }
+
   function marketHead(){
-    const rows=oddsRows();
-    if(!rows.length)return [];
+    const rows=oddsRows();if(!rows.length)return [];
     const q={1:0,2:0,3:0,4:0,5:0,6:0};
     rows.forEach(r=>q[r.a[0]]+=r.w);
     const sum=Object.values(q).reduce((a,b)=>a+b,0)||1;
     return Object.entries(q).map(([boat,v])=>({boat:+boat,v:v/sum*100})).sort((a,b)=>b.v-a.v);
   }
+
+  /* V368 SIM:
+     世間オッズ/世間順位を抽選確率へ一切入れない。
+     HUNTER事前評価だけで5000回の1→2→3着を順次抽選。
+     オッズはSIM終了後の期待値計算にだけ結合する。 */
   function sim5000(pre){
     const odds=oddsRows();
     if(!odds.length||pre.length!==6)return [];
-    const sm=new Map(pre.map(x=>[Number(x.boat),Number(x.finalDev)||50]));
-    const weighted=odds.map(r=>{
-      const h=sm.get(r.a[0])??50,s2=sm.get(r.a[1])??50,t3=sm.get(r.a[2])??50;
-      const hunter=Math.exp((h-50)/18+(s2-50)/28+(t3-50)/38);
-      return {...r,ww:r.w*hunter};
-    });
-    const total=weighted.reduce((q,x)=>q+x.ww,0)||1;
-    let cum=0;
-    weighted.forEach(x=>{x.p=x.ww/total;cum+=x.p;x.cum=cum});
-    /* deterministic 5000-run sampler */
+    const score=new Map(pre.map(x=>[Number(x.boat),Number(x.finalDev)||50]));
+    const boats=[1,2,3,4,5,6];
+
     let seed=2166136261>>>0;
-    const key=String(document.getElementById("stadium")?.value||"")+"-"+String(document.getElementById("race")?.value||"");
+    const key=[
+      document.getElementById("date")?.value||"",
+      document.getElementById("stadium")?.value||"",
+      document.getElementById("race")?.value||"",
+      ...pre.map(x=>`${x.boat}:${x.finalDev.toFixed(3)}`)
+    ].join("|");
     for(let i=0;i<key.length;i++){seed^=key.charCodeAt(i);seed=Math.imul(seed,16777619)}
     const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+
+    function pick(pool,position){
+      const temp=position===1?13:position===2?16:20;
+      const ws=pool.map(b=>Math.exp(((score.get(b)??50)-50)/temp));
+      const total=ws.reduce((a,b)=>a+b,0)||1;
+      let u=rnd()*total;
+      for(let i=0;i<pool.length;i++){u-=ws[i];if(u<=0)return pool[i]}
+      return pool[pool.length-1];
+    }
+
     const count=new Map();
     for(let i=0;i<5000;i++){
-      const u=rnd();
-      let lo=0,hi=weighted.length-1;
-      while(lo<hi){
-        const mid=(lo+hi)>>1;
-        if(u<=weighted[mid].cum)hi=mid;else lo=mid+1;
-      }
-      const c=weighted[lo].combo;
-      count.set(c,(count.get(c)||0)+1);
+      let pool=boats.slice();
+      const a=pick(pool,1);pool=pool.filter(x=>x!==a);
+      const b=pick(pool,2);pool=pool.filter(x=>x!==b);
+      const c=pick(pool,3);
+      const combo=`${a}-${b}-${c}`;
+      count.set(combo,(count.get(combo)||0)+1);
     }
-    return weighted.map(x=>({...x,count:count.get(x.combo)||0,simPct:(count.get(x.combo)||0)/50}))
-      .sort((a,b)=>b.simPct-a.simPct);
+
+    return odds.map(r=>{
+      const cnt=count.get(r.combo)||0;
+      const simPct=cnt/50;
+      const ev=(simPct/100)*r.odds;
+      return {...r,count:cnt,simPct,ev};
+    }).sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev);
   }
+
+  function selectTickets(rows){
+    const available=rows.filter(x=>x.simPct>0&&x.ev>=1.00);
+    const main=available.filter(x=>x.odds<50&&x.simPct>=0.8)
+      .sort((a,b)=>(b.simPct*b.ev)-(a.simPct*a.ev)||b.simPct-a.simPct).slice(0,9);
+    const mid=available.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=0.35)
+      .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,4);
+    const long=available.filter(x=>x.odds>=100&&x.simPct>=0.15)
+      .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,2);
+    const all=[...main,...mid,...long];
+    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
+    return {main,mid,long,all};
+  }
+
   function renderMarket(){
     const el=$("habMarketBody");if(!el)return;
     const a=marketHead();
     if(!a.length){el.innerHTML=`<div class="habWait">3連単120通り取得後に表示</div>`;return}
     el.innerHTML=a.map((x,i)=>`<div class="habRankRow"><span class="habRankNo">${i+1}</span><span class="habBoat b${x.boat}">${x.boat}</span><b>${x.v.toFixed(1)}%</b></div>`).join("");
   }
+
   function renderPre(){
     const el=$("habPreBody");if(!el)return [];
     const base=baseRows();
@@ -20391,34 +20463,67 @@ window.bhVenueBase=function(course,key="p1"){
         <div><small>総合</small><strong>${x.finalDev.toFixed(1)}</strong></div>
         <em>${x.venueStep}</em>
       </div>`).join("");
-    window.__HUNTER_PRE_V363=rows;
+    window.__HUNTER_PRE_V368=rows;
     return rows;
   }
+
+  function ticketRows(arr){
+    if(!arr.length)return `<div class="habBuyEmpty">条件を満たす買い目なし</div>`;
+    return arr.map(x=>`
+      <div class="habBuyRow">
+        <b>${x.combo}</b>
+        <span>確率 ${x.simPct.toFixed(1)}%</span>
+        <span>${x.odds.toFixed(1)}倍</span>
+        <strong>期待 ${x.ev.toFixed(2)}</strong>
+        <em>¥100</em>
+      </div>`).join("");
+  }
+
+  function renderBuyBlock(t){
+    return `
+      <section class="habBuyBlock">
+        <div class="habBuyHead">
+          <div><small>HUNTER BUY</small><b>最終買い目</b></div>
+          <strong>${t.all.length}点 / ¥${(t.all.length*100).toLocaleString("ja-JP")}</strong>
+        </div>
+        <div class="habBuyGroup main"><h5>本線｜的中 × 回収 <span>最大9点</span></h5>${ticketRows(t.main)}</div>
+        <div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid)}</div>
+        <div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long)}</div>
+        <div class="habBuyNote">期待値1.00未満・発生確率不足は無理に補充しません</div>
+      </section>`;
+  }
+
   function renderSim(pre){
     const el=$("habSimBody");if(!el)return;
-    if(!window.__HUNTER_ODDS120?.odds?.length){el.innerHTML=`<div class="habWait">120通りオッズ取得後にSIM確率を表示</div>`;return}
+    if(!window.__HUNTER_ODDS120?.odds?.length){
+      el.innerHTML=`<div class="habWait">120通りオッズ取得後にSIM確率を表示</div>`;return;
+    }
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後にSIM開始</div>`;return}
-    const rows=sim5000(pre);
-    window.__HUNTER_SIM_V363=rows;
+    const rows=sim5000(pre),tickets=selectTickets(rows);
+    window.__HUNTER_SIM_V368=rows;
+
     el.innerHTML=`
-      <div class="habSimMeta">5000回 / 120通り確率化</div>
+      <div class="habSimMeta">5000回 / HUNTER独立SIM → 120通り発生確率</div>
       <div class="habSimTop10">
         ${rows.slice(0,10).map((x,i)=>`
-          <div class="habSimRow">
-            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong><em>${x.odds.toFixed(1)}倍</em>
+          <div class="habSimRow v368">
+            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong>
+            <em>${x.odds.toFixed(1)}倍</em><i>${x.ev.toFixed(2)}</i>
           </div>`).join("")}
       </div>
 
-      <button type="button" id="habSim120Toggle" class="habSim120Toggle">
-        120通りすべて見る ＋
-      </button>
-
+      <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通りすべて見る ＋</button>
       <div id="habSim120All" class="habSim120All hidden">
+        <div class="hab120Header"><span>順位</span><b>3連単</b><strong>発生確率</strong><em>オッズ</em><i>期待値</i></div>
         ${rows.map((x,i)=>`
-          <div class="habSimRow full">
-            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong><em>${x.odds.toFixed(1)}倍</em>
+          <div class="habSimRow full v368">
+            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong>
+            <em>${x.odds.toFixed(1)}倍</em><i>${x.ev.toFixed(2)}</i>
           </div>`).join("")}
-      </div>`; 
+      </div>
+
+      ${renderBuyBlock(tickets)}
+    `;
 
     const t=$("habSim120Toggle"),all=$("habSim120All");
     t?.addEventListener("click",()=>{
@@ -20427,20 +20532,15 @@ window.bhVenueBase=function(course,key="p1"){
       if(t)t.textContent=opening?"120通りを閉じる −":"120通りすべて見る ＋";
     });
   }
-  function runAll(){
-    renderMarket();
-    const p=renderPre();
-    renderSim(p);
-  }
-  window.BH_V363_RUN=runAll;
+
+  function runAll(){renderMarket();const p=renderPre();renderSim(p)}
+  window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
-  document.getElementById("aiAnalyze")?.addEventListener("click",()=>setTimeout(runAll,300));
-  document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,800));
-  document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,800));
+  document.getElementById("aiAnalyze")?.addEventListener("click",()=>setTimeout(runAll,350));
+  document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
+  document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("get")?.addEventListener("click",()=>setTimeout(runAll,1200));
-  setInterval(()=>{
-    if(document.getElementById("hunterAnalysisBase"))runAll();
-  },2500);
+  setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
 })();
 </script>
 
@@ -20506,6 +20606,21 @@ window.bhVenueBase=function(course,key="p1"){
 - 買い目データがある場合は「的中 / ハズレ」を大型表示。
 - 現在は買い目ロジック再構築中のため、買い目未作成時は「買い目未作成」と表示。
 - 将来 window.__HUNTER_BUY_TICKETS を接続すると、そのまま的中判定・収支管理へ連動。
+*/
+</script>
+
+
+<script id="bh-v368-marker">
+/* V368
+- SIMの抽選確率から世間オッズ/世間順位を完全分離。
+- HUNTER事前評価だけで5000回を実行し、3連単120通りの発生確率を算出。
+- オッズはSIM終了後に期待値 = 発生確率 × オッズ としてのみ使用。
+- 120通りは同じSIMページ内の隠しボタンで全件確認。
+- 120通りの直下に最終買い目ブロックを追加。
+  本線 最大9点 / 50〜99.9倍 最大4点 / 100倍以上 最大2点。
+- 条件不足は無理に点数を埋めない。
+- 選出買い目を window.__HUNTER_BUY_TICKETS に渡し、V367結果確認と連動。
+- 直前偏差は取得済み直前情報テーブルも直接参照し、50固定化を回避。
 */
 </script>
 
