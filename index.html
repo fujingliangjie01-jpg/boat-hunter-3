@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V384: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V385: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -14993,7 +14993,11 @@ input,
 }
 #hunterBuyBlock,.hunter-buy-block,[data-hunter-buy-block]{margin-top:30px!important}
 </style>
-<style id="bh-v384-layout">.bhIndependentBuy{display:block!important;margin:28px 0!important}.habBuyGroup.extra{border-left:6px solid #ff9f2f!important}</style></head>
+<style id="bh-v384-layout">.bhIndependentBuy{display:block!important;margin:28px 0!important}.habBuyGroup.extra{border-left:6px solid #ff9f2f!important}</style><style id="bh-v385-render-fix">
+.hab120Toggle{width:100%;margin:12px 0;padding:14px;border-radius:13px;border:1px solid #248ac2;background:#082233;color:#9fe5ff;font-size:15px;font-weight:900}
+#habSim120All.hab120Hidden{display:none!important}
+#hunterFinalBuyBlock,.bhIndependentBuy{display:block!important;visibility:visible!important;opacity:1!important}
+</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15003,7 +15007,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.384</div>
+  <div class="topVol">Vol.385</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20923,8 +20927,10 @@ window.bhVenueBase=function(course,key="p1"){
     const keepWindowY=window.scrollY;
     const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
 
+    let __bh120open=false;try{__bh120open=sessionStorage.getItem("BH_120_OPEN")==="1"}catch(e){}
     el.innerHTML=`
-      <div id="habSim120All" class="habSim120All">
+      <button type="button" id="bh120Toggle" class="hab120Toggle">${__bh120open?"120通りを閉じる −":"120通りを見る ＋"}</button>
+      <div id="habSim120All" class="habSim120All ${__bh120open?"":"hab120Hidden"}">
         <div class="habAnalysisToolbar">
           <button class="habSortBtn ${keepSortMode==="sim"?"active":""}" data-sort="sim">SIM確率順</button>
           <button class="habSortBtn ${keepSortMode==="market"?"active":""}" data-sort="market">人気順</button>
@@ -20936,6 +20942,12 @@ window.bhVenueBase=function(course,key="p1"){
       ${renderBuyBlock(tickets)}
     `;
 
+    const t120=document.getElementById("bh120Toggle"), panel120=document.getElementById("habSim120All");
+    if(t120&&panel120)t120.addEventListener("click",()=>{
+      const open=panel120.classList.toggle("hab120Hidden")===false;
+      t120.textContent=open?"120通りを閉じる −":"120通りを見る ＋";
+      try{sessionStorage.setItem("BH_120_OPEN",open?"1":"0")}catch(e){}
+    });
     requestAnimationFrame(()=>window.scrollTo({top:keepWindowY,left:0,behavior:"auto"}));
     const jump=document.getElementById("jumpToHunterBuy");
     if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
@@ -21110,7 +21122,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V384
+/* V385
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21119,7 +21131,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V384_FORCE_2BOX__=true;
+window.__BH_V385_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
