@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V369</title>
+<title>BOAT HUNTER V370</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14643,7 +14643,7 @@ input,
 
 
 <style id="bh-v369-unified-analysis">
-/* V369: SIM + MARKET ODDS are unified in the analysis card. */
+/* V370: SIM + MARKET ODDS are unified in the analysis card. */
 #oddsPanel{
   position:absolute!important;left:-99999px!important;top:auto!important;
   width:1px!important;height:1px!important;overflow:hidden!important;
@@ -14712,6 +14712,28 @@ input,
 }
 </style>
 
+
+<style id="bh-v370-buy-layout">
+/* V370: buy rows readability + persistent 120-list UI */
+.habBuyRow{
+  grid-template-columns:minmax(128px,1.45fr) minmax(62px,.72fr) minmax(78px,.86fr) minmax(72px,.82fr)!important;
+  gap:10px!important;min-height:66px!important;padding:10px 0!important
+}
+.habBuyCombo{display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:wrap!important}
+.habBuyCombo .habPickPatch{
+  flex-basis:max-content;margin-left:0!important;margin-top:3px!important;padding:4px 8px!important;font-size:9px!important
+}
+.habBuyStat{min-width:0}
+.habBuyStat small{display:block;font-size:8px;color:#7894a0;font-weight:900;margin-bottom:3px;white-space:nowrap}
+.habBuyStat b{display:block;font-size:16px!important;line-height:1.05;white-space:nowrap}
+.habBuyStat.sim b{color:#d7bdff}.habBuyStat.odds b{color:#ffd469;font-size:18px!important}.habBuyStat.ev b{color:#73e2a0;font-size:19px!important}
+@media(max-width:560px){
+  .habBuyRow{grid-template-columns:minmax(112px,1.35fr) 58px 72px 64px!important;gap:6px!important}
+  .habBuyStat small{font-size:7px}.habBuyStat b{font-size:14px!important}
+  .habBuyStat.odds b{font-size:16px!important}.habBuyStat.ev b{font-size:17px!important}
+  .habBuyCombo .habPickPatch{font-size:8px!important;padding:3px 7px!important}
+}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14722,7 +14744,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.369</div>
+  <div class="topVol">Vol.370</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14842,7 +14864,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V369</small>
+      <small>HUNTER RESET / V370</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15197,7 +15219,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.369: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.370: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15864,7 +15886,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.369 場時間帯補正
+/* Vol.370 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20562,10 +20584,9 @@ window.bhVenueBase=function(course,key="p1"){
     return arr.map(x=>`
       <div class="habBuyRow">
         <div class="habBuyCombo">${comboHTML(x.combo)}<span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span></div>
-        <span>発生 <b>${x.simPct.toFixed(1)}%</b></span>
-        <span>${x.odds.toFixed(1)}倍</span>
-        <strong>期待 ${x.ev.toFixed(2)}</strong>
-        <em>¥100</em>
+        <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div>
+        <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
+        <div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
       </div>`).join("");
   }
 
@@ -20606,10 +20627,11 @@ window.bhVenueBase=function(course,key="p1"){
     }
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
     const rows=sim5000(pre),tickets=selectTickets(rows);
-    window.__HUNTER_SIM_V369=rows;
+    window.__HUNTER_SIM_V370=rows;
     const rank=marketRankMap(rows);
 
     const top=[...rows].sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,10);
+    const keep120Open=window.__BH_SIM120_OPEN===true;
     el.innerHTML=`
       <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を1画面で比較</div>
       <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
@@ -20625,7 +20647,7 @@ window.bhVenueBase=function(course,key="p1"){
       </div>
 
       <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通り全部を比較する ＋</button>
-      <div id="habSim120All" class="habSim120All hidden">
+      <div id="habSim120All" class="habSim120All ${keep120Open?"":"hidden"}">
         <div class="habAnalysisToolbar">
           <button class="habSortBtn active" data-sort="sim">SIM確率順</button>
           <button class="habSortBtn" data-sort="market">人気順</button>
@@ -20639,9 +20661,11 @@ window.bhVenueBase=function(course,key="p1"){
     `;
 
     const toggle=$("habSim120Toggle"),all=$("habSim120All");
+    if(toggle)toggle.textContent=keep120Open?"120通りを閉じる −":"120通り全部を比較する ＋";
     toggle?.addEventListener("click",()=>{
       const opening=all?.classList.contains("hidden");
       all?.classList.toggle("hidden");
+      window.__BH_SIM120_OPEN=!!opening;
       if(toggle)toggle.textContent=opening?"120通りを閉じる −":"120通り全部を比較する ＋";
     });
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
@@ -20655,10 +20679,11 @@ window.bhVenueBase=function(course,key="p1"){
   function runAll(){renderMarket();const p=renderPre();renderSim(p)}
   window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
-  document.getElementById("aiAnalyze")?.addEventListener("click",()=>setTimeout(runAll,350));
+  const reset120=()=>{window.__BH_SIM120_OPEN=false};
+  document.getElementById("aiAnalyze")?.addEventListener("click",()=>{reset120();setTimeout(runAll,350)});
   document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
-  document.getElementById("get")?.addEventListener("click",()=>setTimeout(runAll,1200));
+  document.getElementById("get")?.addEventListener("click",()=>{reset120();setTimeout(runAll,1200)});
   setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
 })();
 </script>
@@ -20745,7 +20770,7 @@ window.bhVenueBase=function(course,key="p1"){
 
 
 <script id="bh-v369-marker">
-/* V369
+/* V370
 - SIM確率とMARKET ODDS 120通りを「120通り分析」へ統合。
 - 旧MARKET ODDS一覧は重複表示しない。取得DOMはデータ取得用に保持。
 - 120通りを SIM確率順 / 人気順 / 期待値順 で切替可能。
