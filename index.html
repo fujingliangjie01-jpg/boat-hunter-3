@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V374</title>
+<title>BOAT HUNTER V376</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14814,6 +14814,155 @@ input,
 #habSim120All .habUnifiedHeader{position:sticky!important;top:84px!important;z-index:75!important;background:#081721!important}
 .habBuyBlock{display:block!important;visibility:visible!important;opacity:1!important;margin-top:16px!important}
 </style>
+<style id="bh-v375-box">
+.habPickPatch.box{border-color:#b987ff!important;background:#321c51!important;color:#dfcaff!important}.habBuyGroup.box{border-left:4px solid #b987ff!important}.habBoxSummary{padding:8px 12px;color:#9fb5c1;font-size:14px}.habBoxSummary b{font-size:18px;color:#c7a4ff}
+</style>
+<style id="bh-v376-neon-buy-ui">
+/* ===== V376: 120通り比較と最終買い目を完全に視覚分離 ===== */
+
+/* 120通り比較 = BLUE ANALYSIS ZONE */
+#habUnifiedMarket,
+.habUnifiedMarket,
+.habMarketBlock,
+#hunter120Compare,
+.hunter120Compare{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(0,132,255,.13),transparent 42%),
+    linear-gradient(180deg,#061b2a 0%,#061722 100%)!important;
+  border:2px solid #168fe5!important;
+  box-shadow:0 0 0 1px rgba(40,184,255,.15) inset,0 0 22px rgba(0,140,255,.16)!important;
+  border-radius:18px!important;
+}
+.habMarketHead h3,.habMarketHead b,
+#hunter120Compare h3,.hunter120Compare h3{
+  font-size:26px!important;font-weight:1000!important;color:#fff!important;
+}
+.habSortBtn,.habSortButton{
+  min-height:50px!important;border:1px solid #7e9cac!important;
+  border-radius:13px!important;font-size:15px!important;font-weight:900!important;
+}
+.habSortBtn.active,.habSortButton.active{
+  color:#fff!important;background:linear-gradient(180deg,#0875aa,#064c70)!important;
+  border-color:#38d6ff!important;box-shadow:0 0 14px rgba(29,200,255,.34)!important;
+}
+
+/* FINAL BUY = GOLD FRAME. Completely different surface from analysis. */
+#hunterFinalBuyBlock,.habBuyBlock{
+  position:relative!important;
+  margin-top:22px!important;
+  padding:16px!important;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,204,0,.12),transparent 38%),
+    linear-gradient(180deg,#12150d 0%,#071417 100%)!important;
+  border:3px solid #e5bc2d!important;
+  border-radius:20px!important;
+  box-shadow:
+    0 0 0 2px rgba(255,215,68,.12) inset,
+    0 0 22px rgba(255,196,0,.20)!important;
+}
+#hunterFinalBuyBlock:before,.habBuyBlock:before{
+  content:"AI SELECTED TICKETS";
+  display:block;
+  margin:0 0 3px;
+  color:#ffc82f;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.19em;
+}
+.habBuyHead{
+  padding:2px 4px 14px!important;
+  border-bottom:1px solid rgba(255,221,79,.18)!important;
+}
+.habBuyHead b{
+  font-size:29px!important;line-height:1.05!important;color:#fff!important;
+  text-shadow:0 0 12px rgba(255,255,255,.12);
+}
+.habBuyHead strong{
+  font-size:23px!important;color:#ffd84b!important;font-weight:1000!important;
+}
+
+/* Each purchase category gets its own unmistakable color */
+.habBuyGroup{
+  margin-top:13px!important;
+  padding:13px 14px 8px!important;
+  border-radius:17px!important;
+  overflow:hidden!important;
+}
+.habBuyGroup.main{
+  background:linear-gradient(180deg,rgba(84,8,14,.90),rgba(37,7,10,.92))!important;
+  border:1px solid #ff3848!important;border-left:6px solid #ff3848!important;
+  box-shadow:inset 0 0 24px rgba(255,35,55,.10)!important;
+}
+.habBuyGroup.mid{
+  background:linear-gradient(180deg,rgba(71,56,0,.80),rgba(28,27,5,.94))!important;
+  border:1px solid #f0bf17!important;border-left:6px solid #ffd42b!important;
+  box-shadow:inset 0 0 22px rgba(255,208,30,.09)!important;
+}
+.habBuyGroup.long{
+  background:linear-gradient(180deg,rgba(0,62,37,.86),rgba(4,31,25,.96))!important;
+  border:1px solid #20d978!important;border-left:6px solid #2be887!important;
+  box-shadow:inset 0 0 22px rgba(34,225,124,.09)!important;
+}
+.habBuyGroup.box{
+  background:linear-gradient(180deg,rgba(42,21,74,.91),rgba(20,11,38,.96))!important;
+  border:1px solid #ae79ff!important;border-left:6px solid #b987ff!important;
+}
+.habBuyGroup h5{
+  margin:0 0 8px!important;font-size:20px!important;font-weight:1000!important;color:#fff!important;
+}
+.habBuyGroup h5 span{
+  float:right;font-size:12px!important;padding:5px 9px!important;border-radius:999px!important;
+}
+
+/* Ticket rows: larger and cleaner */
+.habBuyRow{
+  min-height:70px!important;
+  padding:11px 4px!important;
+  border-bottom:1px solid rgba(255,255,255,.09)!important;
+  align-items:center!important;
+}
+.habBuyCombo{font-size:18px!important}
+.habBuyCombo .boat,.habBuyCombo span[class*="boat"]{
+  min-width:35px!important;min-height:35px!important;font-size:17px!important;font-weight:1000!important;
+}
+.habBuyPatchCell{min-width:60px!important;text-align:center!important}
+.habPickPatch{
+  font-size:12px!important;font-weight:1000!important;padding:6px 10px!important;border-radius:999px!important;
+}
+.habBuyStat small{
+  display:block!important;font-size:10px!important;line-height:1.1!important;color:#8fa8b5!important;
+  margin-bottom:4px!important;
+}
+.habBuyStat b{font-size:21px!important;line-height:1!important;font-weight:1000!important}
+.habBuyStat.sim b{color:#c6a8ff!important}
+.habBuyStat.odds b{color:#ffd448!important}
+.habBuyStat.ev b{color:#56dfa2!important;font-size:23px!important}
+
+/* Strong section separator */
+#hunterFinalBuyBlock:after,.habBuyBlock:after{
+  content:"120通り＝分析　｜　ここから下＝実際の買い目";
+  display:block;
+  margin-top:13px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#071c28;
+  color:#7fdcff;
+  font-size:11px;
+  font-weight:900;
+  text-align:center;
+  letter-spacing:.04em;
+}
+
+/* mobile */
+@media(max-width:520px){
+  #hunterFinalBuyBlock,.habBuyBlock{padding:11px!important}
+  .habBuyHead b{font-size:26px!important}
+  .habBuyRow{min-height:68px!important}
+  .habBuyStat b{font-size:19px!important}
+  .habBuyStat.ev b{font-size:21px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14824,7 +14973,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.374</div>
+  <div class="topVol">Vol.376</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20618,27 +20767,27 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function selectTickets(rows){
-    const positive=rows.filter(x=>x.simPct>0);
-    const value=positive.filter(x=>x.ev>=1.00);
-
-    // 本線: 50倍未満。期待値だけで全消しせず、発生確率×回収性で最大9点。
-    let main=positive.filter(x=>x.odds<50&&x.simPct>=0.8)
-      .sort((a,b)=>(b.simPct*Math.max(b.ev,.25))-(a.simPct*Math.max(a.ev,.25))||b.simPct-a.simPct)
-      .slice(0,9);
-    // それでも0点なら50倍未満のSIM上位を最低限候補化。
-    if(!main.length){
-      main=positive.filter(x=>x.odds<50)
-        .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,5);
+    const positive=rows.filter(x=>x.simPct>0), value=positive.filter(x=>x.ev>=1);
+    const main=value.filter(x=>x.odds<50&&x.simPct>=.8).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,9);
+    const mid=value.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=.35).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,4);
+    const long=value.filter(x=>x.odds>=100&&x.simPct>=.15).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,2);
+    const boxes=[];
+    for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){
+      const boats=[a,b,c], members=positive.filter(x=>String(x.combo).split("-").map(Number).every(n=>boats.includes(n)));
+      if(members.length!==6)continue;
+      const hitPct=members.reduce((z,x)=>z+x.simPct,0), avgEv=members.reduce((z,x)=>z+x.ev,0)/6;
+      const valueCount=members.filter(x=>x.ev>=1).length, valuePct=members.filter(x=>x.ev>=1).reduce((z,x)=>z+x.simPct,0);
+      boxes.push({boats,members,hitPct,avgEv,valueCount,score:hitPct*(.7+Math.min(avgEv,2.5)*.3)+valuePct*.35});
     }
-
-    const mid=value.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=0.35)
-      .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,4);
-    const long=value.filter(x=>x.odds>=100&&x.simPct>=0.15)
-      .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,2);
-
-    const all=[...main,...mid,...long];
+    boxes.sort((a,b)=>b.score-a.score||b.hitPct-a.hitPct);
+    const good=x=>x&&x.valueCount>=2&&x.avgEv>=.9&&x.hitPct>=4;
+    const b1=boxes[0], b2=boxes.find((x,i)=>i>0&&good(x));
+    let mode="NORMAL", activeBoxes=[], all=[...main,...mid,...long];
+    if(!mid.length&&!long.length&&good(b1)&&good(b2)){mode="TWO_BOX";activeBoxes=[b1,b2];all=[...new Map(activeBoxes.flatMap(q=>q.members).map(x=>[x.combo,x])).values()];}
+    else if(main.length&&good(b1)){mode="MAIN_PLUS_BOX";activeBoxes=[b1];all=[...new Map([...main,...b1.members].map(x=>[x.combo,x])).values()];}
+    window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=activeBoxes;
     window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
-    return {main,mid,long,all};
+    return {main,mid,long,all,mode,boxes:activeBoxes};
   }
 
   function renderMarket(){
@@ -20677,6 +20826,7 @@ window.bhVenueBase=function(course,key="p1"){
     if(t.main.some(x=>x.combo===combo))return `<span class="habPickPatch main">本線</span>`;
     if(t.mid.some(x=>x.combo===combo))return `<span class="habPickPatch mid">中穴</span>`;
     if(t.long.some(x=>x.combo===combo))return `<span class="habPickPatch long">万舟</span>`;
+    if(t.boxes?.some(q=>q.members.some(x=>x.combo===combo)))return `<span class="habPickPatch box">BOX</span>`;
     return "";
   }
   function marketRankMap(rows){
@@ -20696,18 +20846,17 @@ window.bhVenueBase=function(course,key="p1"){
       </div>`).join("");
   }
 
+  function boxRows(q,n){
+    return `<div class="habBuyGroup box"><h5>BOX ${n}｜${q.boats.join("・")} <span>6点</span></h5>
+      <div class="habBoxSummary">合算発生率 <b>${q.hitPct.toFixed(1)}%</b>　BOX平均期待値 <b>${q.avgEv.toFixed(2)}</b></div>
+      ${q.members.sort((a,b)=>b.simPct-a.simPct).map(x=>`
+      <div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyPatchCell"><span class="habPickPatch box">BOX</span></div>
+      <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`).join("")}</div>`;
+  }
   function renderBuyBlock(t){
-    return `
-      <section id="hunterFinalBuyBlock" class="habBuyBlock">
-        <div class="habBuyHead">
-          <div><small>HUNTER BUY / VALUE PICK</small><b>最終買い目</b></div>
-          <strong>${t.all.length}点 / ¥${(t.all.length*100).toLocaleString("ja-JP")}</strong>
-        </div>
-        <div class="habBuyGroup main"><h5>本線｜的中 × 回収 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div>
-        <div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid,"mid")}</div>
-        <div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long,"long")}</div>
-        <div class="habBuyNote">本線は50倍未満の発生確率×回収性を総合評価。中穴・万舟は期待値条件を満たす候補を採用</div>
-      </section>`;
+    if(t.mode==="TWO_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>🔥 期待値2BOX</b></div><strong>${t.all.length}点</strong></div>${boxRows(t.boxes[0],1)}${boxRows(t.boxes[1],2)}<div class="habBuyNote">2BOX発動時は他の買い目を出しません</div></section>`;
+    if(t.mode==="MAIN_PLUS_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>⚡ 本線＋1BOX</b></div><strong>${t.all.length}点</strong></div><div class="habBuyGroup main"><h5>本線｜期待値1.00以上 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div>${boxRows(t.boxes[0],1)}<div class="habBuyNote">重複買い目は1点に統合</div></section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE PICK</small><b>最終買い目</b></div><strong>${t.all.length}点</strong></div><div class="habBuyGroup main"><h5>本線｜期待値1.00以上 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div><div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid,"mid")}</div><div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long,"long")}</div><div class="habBuyNote">${t.all.length?"期待値1.00未満は買いません":"買い目0点：見推奨"}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -20896,7 +21045,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v374-marker">
-/* V374: 120通りを独立スクロール窓化。最終買い目は窓外直下。
+/* V376: 120通りを独立スクロール窓化。最終買い目は窓外直下。
    本線0点問題を修正し、50倍未満は発生確率×回収性で最大9点。 */
 </script>
 </body>
