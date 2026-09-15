@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V387: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V388: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -15047,7 +15047,10 @@ input,
   #habSim120All .habUnifiedHeader strong{padding-left:7px!important}
 }
 </style>
-</head>
+<style id="bh-v388-axis">
+.bhMainAxis{display:inline-block;margin-left:12px;padding:5px 10px;border:1px solid #59d7ff;border-radius:999px;color:#9beaff;font-style:normal;font-size:12px;font-weight:900;vertical-align:middle}
+@media(max-width:560px){.bhMainAxis{display:block;width:max-content;margin:8px 0 0;font-size:11px}}
+</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15057,7 +15060,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.387</div>
+  <div class="topVol">Vol.388</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20296,7 +20299,7 @@ window.bhVenueBase=function(course,key="p1"){
   const DAY_KEY="BH_RESULT_DAY_V361";
   const TOTAL_KEY="BH_RESULT_TOTAL_V361";
   const RESET_HOLD_MS=1800;
-  const RESULT_SNAPSHOT_KEY="BH_RESULT_SNAPSHOT_V387";
+  const RESULT_SNAPSHOT_KEY="BH_RESULT_SNAPSHOT_V388";
   const TECH={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
   const snapshotKey=sel=>`${sel.date}|${sel.venue}|${sel.race}`;
   function loadSnapshots(){try{return JSON.parse(localStorage.getItem(RESULT_SNAPSHOT_KEY)||"{}")}catch(e){return {}}}
@@ -20881,9 +20884,49 @@ window.bhVenueBase=function(course,key="p1"){
     let mode,main=[],boxes=[],extra=[],all=[];
     if(consensus){
       mode="CONSENSUS_MAIN_BOX";
-      const axes=sr.slice(2,4);let six=hr.filter(x=>axes.includes(cb(x)[1])||axes.includes(cb(x)[2])).sort(sort).slice(0,6);if(six.length<6)six=uniq([...six,...hr.sort(sort)]).slice(0,6);
-      const top=sr[0];let three=hr.filter(x=>cb(x)[2]===top&&!six.some(y=>y.combo===x.combo)).sort(sort).slice(0,3);if(three.length<3)three=uniq([...three,...hr.filter(x=>!six.some(y=>y.combo===x.combo)).sort(sort)]).slice(0,3);
-      main=uniq([...six,...three]).slice(0,9);const ms=new Set(main.map(x=>x.combo));
+
+      /* V388 本命軸:
+         頭は世間/HUNTER一致1位。
+         軸は「期待値の高い買い目」から逆算せず、世間評価3〜4位帯を優先。
+         その中でHUNTER順位も近く、極端な評価ズレがない艇を1艇だけ選ぶ。
+         例: 世間 3>1>2>4>5>6 / HUNTER 3>1>5>2>6>4 => 軸2。 */
+      const mpos=n=>{const i=market.indexOf(n);return i<0?99:i+1};
+      const hpos=n=>{const i=hunter.indexOf(n);return i<0?99:i+1};
+      const axisCandidates=market.filter(n=>n!==head && mpos(n)>=3 && mpos(n)<=4);
+      const axis=(axisCandidates.length?axisCandidates:[...new Set([...market,...hunter])].filter(n=>n!==head))
+        .map(n=>({n,mp:mpos(n),hp:hpos(n),gap:Math.abs(mpos(n)-hpos(n))}))
+        .sort((a,b)=>a.gap-b.gap || Math.abs(a.mp-3.5)-Math.abs(b.mp-3.5) || a.mp-b.mp)[0]?.n;
+
+      // First 6 = 3-axis-X / 3-X-axis. Choose three partners by SIM+EV,
+      // but don't let the strongest public 2nd candidate monopolize this block.
+      const partnerPool=[1,2,3,4,5,6].filter(n=>n!==head&&n!==axis);
+      const partnerScore=partnerPool.map(n=>{
+        const rr=hr.filter(x=>{const c=cb(x);return (c[1]===axis&&c[2]===n)||(c[1]===n&&c[2]===axis)});
+        return {n,score:rr.reduce((z,x)=>z+x.simPct*(Math.max(x.ev,0.15)),0),best:rr.sort(sort)[0]?.ev||0};
+      }).sort((a,b)=>b.score-a.score||b.best-a.best);
+
+      // Prefer three partners; if top public 2nd is overbought/low EV, it may be omitted here.
+      const partners=partnerScore.slice(0,3).map(x=>x.n);
+      let six=[];
+      for(const p of partners){
+        const a=hr.find(x=>x.combo===`${head}-${axis}-${p}`);
+        const b=hr.find(x=>x.combo===`${head}-${p}-${axis}`);
+        if(a)six.push(a); if(b)six.push(b);
+      }
+      if(six.length<6){
+        six=uniq([...six,...hr.filter(x=>{const c=cb(x);return c[1]===axis||c[2]===axis}).sort(sort)]).slice(0,6);
+      }
+
+      // Remaining 3 = strongest 2nd candidate fixed in 3rd: head-X-topSecond.
+      // Never duplicate the first six.
+      const top=sr[0];
+      let three=hr.filter(x=>cb(x)[2]===top&&!six.some(y=>y.combo===x.combo)).sort(sort).slice(0,3);
+      if(three.length<3)three=uniq([...three,...hr.filter(x=>!six.some(y=>y.combo===x.combo)).sort(sort)]).slice(0,3);
+
+      main=uniq([...six,...three]).slice(0,9);
+      window.__HUNTER_MAIN_AXIS=axis;
+      window.__HUNTER_MAIN_PARTNERS=partners;
+      const ms=new Set(main.map(x=>x.combo));
       const q=mkbox(50,200).map(x=>({...x,adj:x.score-x.members.filter(y=>ms.has(y.combo)).length*70})).sort((a,b)=>b.adj-a.adj)[0];if(q)boxes=[q];all=uniq([...main,...(q?q.members.filter(x=>!ms.has(x.combo)):[])]);
     }else{
       mode="SPLIT_2BOX_EXTRA3";let q=mkbox(30,150);const follower=Number(window.__HUNTER_ATTACK_FOLLOWER||window.__BH_ATTACK_FOLLOWER||0);q=q.map(x=>({...x,adj:x.score+(follower&&x.boats.includes(follower)?120:0)})).sort((a,b)=>b.adj-a.adj);
@@ -20969,7 +21012,7 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function renderBuyBlock(t){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    if(t.mode==="CONSENSUS_MAIN_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhIndependentBuy"><div class="habBuyHead"><div><small>評価一致 MODE</small><b>本命9点 ＋ 1BOX</b></div></div><div class="habBuyGroup main"><h5>本命 <span>${t.main.length}点</span></h5>${t.main.map(row).join("")}</div>${t.boxes[0]?boxRows(t.boxes[0],1):""}</section>`;
+    if(t.mode==="CONSENSUS_MAIN_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhIndependentBuy"><div class="habBuyHead"><div><small>評価一致 MODE</small><b>本命9点 ＋ 1BOX</b><em class="bhMainAxis">頭 ${t.head} ／ 本命軸 ${window.__HUNTER_MAIN_AXIS||"-"}</em></div></div><div class="habBuyGroup main"><h5>本命 <span>${t.main.length}点</span></h5>${t.main.map(row).join("")}</div>${t.boxes[0]?boxRows(t.boxes[0],1):""}</section>`;
     return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhIndependentBuy"><div class="habBuyHead"><div><small>評価分裂 MODE</small><b>2BOX ＋ 追加3点</b></div></div>${t.boxes.map((q,i)=>boxRows(q,i+1)).join("")}<div class="habBuyGroup extra"><h5>追加3点</h5>${t.extra.map(row).join("")}</div></section>`;
   }
 
@@ -21000,7 +21043,7 @@ window.bhVenueBase=function(course,key="p1"){
     try{
       rows=sim5000(pre);tickets=selectTickets(rows);
     }catch(err){
-      console.error("HUNTER V387 render error",err);
+      console.error("HUNTER V388 render error",err);
       el.innerHTML=`<div class="habWait" style="color:#ff9b9b">SIM/買い目描画エラー：${String(err?.message||err)}</div>`;
       return;
     }
@@ -21080,8 +21123,8 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
-  /* V387: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
-  window.__BH_V387_RUN_ALL=runAll;
+  /* V388: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
+  window.__BH_V388_RUN_ALL=runAll;
 })();
 </script>
 
@@ -21210,7 +21253,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V387
+/* V388
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21219,7 +21262,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V387_FORCE_2BOX__=true;
+window.__BH_V388_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
