@@ -14734,6 +14734,12 @@ input,
   .habBuyCombo .habPickPatch{font-size:8px!important;padding:3px 7px!important}
 }
 </style>
+
+<style id="bh-v372-navigation-fix">
+.jumpToHunterBuy{width:100%;margin-top:7px;min-height:42px;border-radius:10px;border:1px solid #ffbd3d;background:linear-gradient(180deg,#3a2708,#211705);color:#ffd76d;font-size:14px;font-weight:1000;letter-spacing:.02em}
+.jumpToHunterBuy:disabled{opacity:.28;filter:saturate(.25)}
+#hunterFinalBuyBlock{scroll-margin-top:14px}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14744,7 +14750,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.371</div>
+  <div class="topVol">Vol.372</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14788,6 +14794,7 @@ input,
       <button type="button" id="getPreview" class="previewBtn quickMainAction" disabled>② 直前情報取得</button>
       <button type="button" id="aiAnalyze" class="aiBtn quickMainAction" disabled>③ AI解析</button>
     </div>
+    <button type="button" id="jumpToHunterBuy" class="jumpToHunterBuy" disabled>買い目まで行く ↓</button>
 
     <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
     <input id="voiceFallbackInput" class="voiceFallbackInput hide"
@@ -14864,7 +14871,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V371</small>
+      <small>HUNTER RESET / V372</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15219,7 +15226,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.371: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.372: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15886,7 +15893,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.371 場時間帯補正
+/* Vol.372 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -17246,6 +17253,9 @@ $('top').classList.remove('hide');
       }else{
         continue;
       }
+
+      /* V372: 圏外は勝負掛け欄に表示しない */
+      if(condition==="圏外") continue;
 
       hits.push({
         b,name,rate,rank,remaining,needPlace,needPoint,condition,
@@ -20598,7 +20608,7 @@ window.bhVenueBase=function(course,key="p1"){
 
   function renderBuyBlock(t){
     return `
-      <section class="habBuyBlock">
+      <section id="hunterFinalBuyBlock" class="habBuyBlock">
         <div class="habBuyHead">
           <div><small>HUNTER BUY / VALUE PICK</small><b>最終買い目</b></div>
           <strong>${t.all.length}点 / ¥${(t.all.length*100).toLocaleString("ja-JP")}</strong>
@@ -20634,6 +20644,10 @@ window.bhVenueBase=function(course,key="p1"){
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
     const rows=sim5000(pre),tickets=selectTickets(rows);
     window.__HUNTER_SIM_V370=rows;
+    /* V372: 自動再描画でも現在位置を動かさない */
+    const keepWindowY=window.scrollY;
+    const oldAll=document.getElementById("habSim120All");
+    const keepInnerScroll=oldAll?oldAll.scrollTop:0;
     const rank=marketRankMap(rows);
 
     const top=[...rows].sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,10);
@@ -20667,6 +20681,14 @@ window.bhVenueBase=function(course,key="p1"){
       ${renderBuyBlock(tickets)}
     `;
 
+    requestAnimationFrame(()=>{
+      const newAll=document.getElementById("habSim120All");
+      if(newAll)newAll.scrollTop=keepInnerScroll;
+      window.scrollTo({top:keepWindowY,left:0,behavior:"auto"});
+    });
+    const jump=document.getElementById("jumpToHunterBuy");
+    if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
+
     const toggle=$("habSim120Toggle"),all=$("habSim120All");
     if(toggle)toggle.textContent=keep120Open?"120通りを閉じる −":"120通り全部を比較する ＋";
     toggle?.addEventListener("click",()=>{
@@ -20681,7 +20703,10 @@ window.bhVenueBase=function(course,key="p1"){
       const mode=btn.dataset.sort||"sim";
       window.__BH_SIM120_SORT=mode;
       const holder=$("habUnifiedAllRows");
+      const y=window.scrollY, inner=all?all.scrollTop:0;
       if(holder)holder.innerHTML=unifiedRows(rows,tickets,mode);
+      if(all)all.scrollTop=inner;
+      window.scrollTo({top:y,left:0,behavior:"auto"});
     }));
   }
 
@@ -20693,6 +20718,9 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("get")?.addEventListener("click",()=>{reset120();setTimeout(runAll,1200)});
+  document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
+    document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
   setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
 })();
 </script>
@@ -20789,6 +20817,15 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 
+
+<script id="bh-v372-marker">
+/* V372
+- 120通りのソート時・自動再描画時に window と一覧内部のスクロール位置を保持。
+- 人気順/期待値順/SIM順の選択状態も維持。
+- 勝負掛けの「圏外」は表示対象から除外。
+- AI解析直下に「買い目まで行く」ボタンを追加し、最終買い目へスクロール。
+*/
+</script>
 </body>
 </html>
 
