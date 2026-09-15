@@ -14978,10 +14978,17 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V379: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V381: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
+</style>
+
+<style id="bh-v381-spacing-fix">
+/* 120通り比較と最終買い目を別ブロックとして視認しやすくする */
+#hunterBuyBlock,.hunter-buy-block,[data-hunter-buy-block]{
+  margin-top:30px !important;
+}
 </style>
 </head>
 <body>
@@ -14993,7 +15000,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.379</div>
+  <div class="topVol">Vol.381</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20783,48 +20790,59 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function selectTickets(rows){
-    const positive=rows.filter(x=>x.simPct>0), value=positive.filter(x=>x.ev>=1);
+    const positive=rows.filter(x=>x.simPct>0);
+    const value=positive.filter(x=>x.ev>=1);
     const main=value.filter(x=>x.odds<50&&x.simPct>=.8).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,9);
     const mid=value.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=.35).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,4);
     const long=value.filter(x=>x.odds>=100&&x.simPct>=.15).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,2);
 
-    // BOXの狙い目は「本命〜中穴(100倍未満)に期待値が集まる部分」。万舟はBOX評価に使わない。
-    const zone=rows.filter(x=>x.odds<100&&x.simPct>0);
-    const boxes=[];
-    for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){
-      const boats=[a,b,c];
-      const members=rows.filter(x=>String(x.combo).split('-').map(Number).every(n=>boats.includes(n)));
-      if(members.length!==6)continue;
-      const zoneMembers=zone.filter(x=>String(x.combo).split('-').map(Number).every(n=>boats.includes(n)));
-      const valueZone=zoneMembers.filter(x=>x.ev>=1);
-      const zoneHitPct=zoneMembers.reduce((z,x)=>z+x.simPct,0);
-      const zoneValuePct=valueZone.reduce((z,x)=>z+x.simPct,0);
-      const zoneEvSum=valueZone.reduce((z,x)=>z+x.ev,0);
-      const zoneAvgEv=valueZone.length?zoneEvSum/valueZone.length:0;
-      const hitPct=members.reduce((z,x)=>z+x.simPct,0);
-      const avgEv=members.reduce((z,x)=>z+x.ev,0)/6;
-      // 期待値の「点」ではなく、100倍未満で複数目に期待値が集中するBOXを優先。
-      const concentration=valueZone.length*2.0 + zoneValuePct*1.15 + zoneHitPct*.35 + zoneAvgEv*1.4;
-      boxes.push({boats,members,hitPct,avgEv,zoneCount:zoneMembers.length,valueCount:valueZone.length,zoneHitPct,zoneValuePct,zoneAvgEv,score:concentration});
-    }
-    boxes.sort((a,b)=>b.score-a.score||b.valueCount-a.valueCount||b.zoneValuePct-a.zoneValuePct||b.zoneHitPct-a.zoneHitPct);
-    // BOXは本命〜中穴ゾーンに期待値1以上が最低2点集まることを条件にする。
-    const good=x=>x&&x.valueCount>=2&&x.zoneValuePct>0;
-    const goodBoxes=boxes.filter(good);
-    const b1=goodBoxes[0], b2=goodBoxes[1];
-    let mode='NORMAL', activeBoxes=[], all=[...main,...mid,...long];
+    const makeBoxes=(minOdds,maxOdds)=>{
+      const boxes=[];
+      for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){
+        const boats=[a,b,c];
+        const inBox=x=>{
+          const p=String(x.combo).split("-").map(Number);
+          return p.length===3 && p.every(n=>boats.includes(n));
+        };
+        const members=rows.filter(inBox);
+        if(members.length!==6)continue;
+        const zone=members.filter(x=>x.simPct>0&&x.odds>=minOdds&&(maxOdds==null||x.odds<maxOdds));
+        const valueZone=zone.filter(x=>x.ev>=1);
+        const hit=zone.reduce((z,x)=>z+x.simPct,0);
+        const valueHit=valueZone.reduce((z,x)=>z+x.simPct,0);
+        const evSum=valueZone.reduce((z,x)=>z+x.ev,0);
+        // 単発高EVより、対象レンジ内で複数目に期待値が集中するBOXを優先。
+        const score=valueZone.length*100 + valueHit*12 + hit*2 + evSum*5;
+        boxes.push({boats,members,valueCount:valueZone.length,zoneHitPct:hit,zoneValuePct:valueHit,score});
+      }
+      return boxes.sort((a,b)=>b.score-a.score||b.valueCount-a.valueCount||b.zoneValuePct-a.zoneValuePct||b.zoneHitPct-a.zoneHitPct);
+    };
 
-    // 本線＋中穴が弱く、穴目だけ1〜2点になる場合は必ず2BOXを優先。
-    const thinHoleOnly=(main.length===0&&mid.length===0&&long.length>=1&&long.length<=2);
-    const thinAll=(main.length===0&&mid.length===0&&long.length===0);
-    if((thinHoleOnly||thinAll)&&good(b1)&&good(b2)){
-      mode='TWO_BOX'; activeBoxes=[b1,b2];
+    // 2BOX用：本命〜中穴（100倍未満）の期待値集中。
+    const normalBoxes=makeBoxes(0,100);
+    // 本線9点＋1BOX用：回収担当なので中穴〜大穴（50倍以上）の期待値集中。
+    const recoveryBoxes=makeBoxes(50,null);
+
+    let mode="NORMAL", activeBoxes=[], all=[...main,...mid,...long];
+
+    // 固定分岐1：本線0・中穴0・大穴1〜2 → 2BOX
+    const caseLongOnly=(main.length===0&&mid.length===0&&long.length>=1&&long.length<=2);
+    // 固定分岐2：本線0・中穴4・大穴0 → 2BOX
+    const caseMidFour=(main.length===0&&mid.length===4&&long.length===0);
+    if((caseLongOnly||caseMidFour) && normalBoxes.length>=2){
+      mode="TWO_BOX";
+      activeBoxes=[normalBoxes[0],normalBoxes[1]];
       all=[...new Map(activeBoxes.flatMap(q=>q.members).map(x=>[x.combo,x])).values()];
-    }else if(main.length&&good(b1)){
-      mode='MAIN_PLUS_BOX'; activeBoxes=[b1];
-      all=[...new Map([...main,...b1.members].map(x=>[x.combo,x])).values()];
     }
-    window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=activeBoxes;
+    // 固定分岐3：本線9・中穴0・大穴0 → 本線9＋中穴〜大穴狙い1BOX
+    else if(main.length===9&&mid.length===0&&long.length===0&&recoveryBoxes.length){
+      mode="MAIN_PLUS_BOX";
+      activeBoxes=[recoveryBoxes[0]];
+      all=[...new Map([...main,...activeBoxes[0].members].map(x=>[x.combo,x])).values()];
+    }
+
+    window.__HUNTER_BUY_MODE=mode;
+    window.__HUNTER_VALUE_BOXES=activeBoxes;
     window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
     return {main,mid,long,all,mode,boxes:activeBoxes};
   }
@@ -20903,7 +20921,7 @@ window.bhVenueBase=function(course,key="p1"){
     </div>`;
   }
   function renderBuyBlock(t){
-    if(t.mode==="TWO_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>🔥 期待値2BOX</b></div><strong>${t.all.length}点</strong></div>${boxRows(t.boxes[0],1)}${boxRows(t.boxes[1],2)}<div class="habBuyNote">2BOX発動時は他の買い目を出しません</div></section>`;
+    if(t.mode==="TWO_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>🔥 期待値2BOX</b></div><strong>${t.all.length}点</strong></div>${boxRows(t.boxes[0],1)}${boxRows(t.boxes[1],2)}<div class="habBuyNote">本線0・中穴0・穴目1〜2点 → 本命〜中穴の期待値集中上位2BOXへ切替</div></section>`;
     if(t.mode==="MAIN_PLUS_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>⚡ 本線＋1BOX</b></div><strong>${t.all.length}点</strong></div><div class="habBuyGroup main"><h5>本線｜期待値1.00以上 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div>${boxRows(t.boxes[0],1)}<div class="habBuyNote">重複買い目は1点に統合</div></section>`;
     return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE PICK</small><b>最終買い目</b></div><strong>${t.all.length}点</strong></div><div class="habBuyGroup main"><h5>本線｜期待値1.00以上 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div><div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid,"mid")}</div><div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long,"long")}</div><div class="habBuyNote">${t.all.length?"期待値1.00未満は買いません":"買い目0点：見推奨"}</div></section>`;
   }
@@ -21123,13 +21141,16 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V379
+/* V381
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
 - BOX候補はSIM 0%を含む6通り全件で評価し、条件を満たす上位2BOXがあれば最大12点へ切替。
 - BOX成立時は通常の万舟単独買い目を表示しない。
 */
+</script>
+<script id="bh-v380-force-two-box">
+window.__BH_V381_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
