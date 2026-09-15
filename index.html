@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V386: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V387: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -14997,7 +14997,57 @@ input,
 .hab120Toggle{width:100%;margin:12px 0;padding:14px;border-radius:13px;border:1px solid #248ac2;background:#082233;color:#9fe5ff;font-size:15px;font-weight:900}
 #habSim120All.hab120Hidden{display:none!important}
 #hunterFinalBuyBlock,.bhIndependentBuy{display:block!important;visibility:visible!important;opacity:1!important}
-</style></head>
+</style>
+<style id="bh-v387-balance">
+/* 買い目：スマホ横幅を使い切る4列。右側の空白と数値重なりを解消 */
+#hunterFinalBuyBlock .habBuyRow{
+  display:grid!important;
+  grid-template-columns:minmax(150px,1.55fr) minmax(72px,.72fr) minmax(92px,.92fr) minmax(82px,.82fr)!important;
+  column-gap:14px!important;
+  align-items:center!important;
+  width:100%!important;
+  padding:13px 8px!important;
+}
+#hunterFinalBuyBlock .habBuyCombo{min-width:0!important}
+#hunterFinalBuyBlock .habBuyStat{min-width:0!important;text-align:left!important}
+#hunterFinalBuyBlock .habBuyStat small{font-size:10px!important;letter-spacing:.02em!important}
+#hunterFinalBuyBlock .habBuyStat b{font-size:20px!important}
+#hunterFinalBuyBlock .habBuyStat.odds b{font-size:23px!important}
+#hunterFinalBuyBlock .habBuyStat.ev b{font-size:24px!important}
+
+/* 120通り：3連単の右に余白を作り、SIM発生確率を右寄せ */
+#habSim120All .habUnifiedHeader,
+#habSim120All .habUnifiedRow{
+  grid-template-columns:34px minmax(118px,1.30fr) minmax(92px,.92fr) 66px minmax(88px,.88fr) minmax(78px,.78fr)!important;
+  column-gap:10px!important;
+}
+#habSim120All .habUnifiedRow .habMetric:first-of-type,
+#habSim120All .habUnifiedHeader strong{
+  padding-left:10px!important;
+}
+#habSim120All .habMetric{min-width:0!important}
+#habSim120All .habMetric b{white-space:nowrap!important}
+
+@media(max-width:560px){
+  #hunterFinalBuyBlock .habBuyRow{
+    grid-template-columns:minmax(118px,1.45fr) minmax(58px,.68fr) minmax(76px,.88fr) minmax(66px,.76fr)!important;
+    column-gap:8px!important;padding:12px 5px!important
+  }
+  #hunterFinalBuyBlock .habBuyStat small{font-size:8px!important}
+  #hunterFinalBuyBlock .habBuyStat b{font-size:17px!important}
+  #hunterFinalBuyBlock .habBuyStat.odds b{font-size:20px!important}
+  #hunterFinalBuyBlock .habBuyStat.ev b{font-size:21px!important}
+
+  #habSim120All .habUnifiedHeader,
+  #habSim120All .habUnifiedRow{
+    grid-template-columns:25px 98px minmax(70px,1fr) 50px 70px 64px!important;
+    column-gap:5px!important;
+  }
+  #habSim120All .habUnifiedRow .habMetric:first-of-type,
+  #habSim120All .habUnifiedHeader strong{padding-left:7px!important}
+}
+</style>
+</head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15007,7 +15057,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.386</div>
+  <div class="topVol">Vol.387</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20246,7 +20296,20 @@ window.bhVenueBase=function(course,key="p1"){
   const DAY_KEY="BH_RESULT_DAY_V361";
   const TOTAL_KEY="BH_RESULT_TOTAL_V361";
   const RESET_HOLD_MS=1800;
+  const RESULT_SNAPSHOT_KEY="BH_RESULT_SNAPSHOT_V387";
   const TECH={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
+  const snapshotKey=sel=>`${sel.date}|${sel.venue}|${sel.race}`;
+  function loadSnapshots(){try{return JSON.parse(localStorage.getItem(RESULT_SNAPSHOT_KEY)||"{}")}catch(e){return {}}}
+  function saveSnapshot(sel,data){
+    const all=loadSnapshots();all[snapshotKey(sel)]={...data,savedAt:Date.now()};
+    try{localStorage.setItem(RESULT_SNAPSHOT_KEY,JSON.stringify(all))}catch(e){}
+  }
+  function restoreSnapshot(){
+    const sel=currentSelection(), snap=loadSnapshots()[snapshotKey(sel)];
+    if(!snap){renderCurrentResult({state:"waiting"});const st=$("hrmCurrentState");if(st)st.textContent="結果待ち";return}
+    renderCurrentResult(snap);
+    const st=$("hrmCurrentState");if(st)st.textContent=snap.statusText||"結果確認済み";
+  }
 
   function currentSelection(){
     const date=document.getElementById("date")?.value||todayKey();
@@ -20346,13 +20409,14 @@ window.bhVenueBase=function(course,key="p1"){
         hit=!!hitTicket;
       }
 
-      renderCurrentResult({
+      const resultView={
         state:tickets.length?"done":"no-pick",
         combo,technique,
         payout:Number.isFinite(payout)?payout:null,
         odds,
         hit
-      });
+      };
+      renderCurrentResult(resultView);
 
       if(state){
         if(!tickets.length){
@@ -20363,6 +20427,8 @@ window.bhVenueBase=function(course,key="p1"){
             : `結果確定｜${combo} ハズレ`;
         }
       }
+
+      saveSnapshot(sel,{...resultView,statusText:state?.textContent||"結果確認済み"});
 
       /* 新買い目が接続された後は収支管理へ自動登録 */
       if(tickets.length && window.BH_RESULT_MANAGER?.record){
@@ -20387,6 +20453,11 @@ window.bhVenueBase=function(course,key="p1"){
       if(btn){btn.disabled=false;btn.textContent="結果を確認"}
     }
   }
+  document.addEventListener("DOMContentLoaded",()=>{
+    setTimeout(restoreSnapshot,80);
+    ["date","stadium","race"].forEach(id=>document.getElementById(id)?.addEventListener("change",()=>setTimeout(restoreSnapshot,30)));
+  });
+
   const venueNames={
     "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
     "07":"蒲郡","08":"常滑","09":"津","10":"三国","11":"びわこ","12":"住之江",
@@ -20929,12 +21000,14 @@ window.bhVenueBase=function(course,key="p1"){
     try{
       rows=sim5000(pre);tickets=selectTickets(rows);
     }catch(err){
-      console.error("HUNTER V386 render error",err);
+      console.error("HUNTER V387 render error",err);
       el.innerHTML=`<div class="habWait" style="color:#ff9b9b">SIM/買い目描画エラー：${String(err?.message||err)}</div>`;
       return;
     }
     window.__HUNTER_SIM_V373=rows;
     const keepWindowY=window.scrollY;
+    const old120=document.getElementById("habSim120All");
+    const keep120Y=old120?old120.scrollTop:Number(window.__BH_120_SCROLL_TOP||0);
     const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
 
     let __bh120open=false;try{__bh120open=sessionStorage.getItem("BH_120_OPEN")==="1"}catch(e){}
@@ -20953,6 +21026,10 @@ window.bhVenueBase=function(course,key="p1"){
     `;
 
     const t120=document.getElementById("bh120Toggle"), panel120=document.getElementById("habSim120All");
+    if(panel120){
+      panel120.scrollTop=keep120Y;
+      panel120.addEventListener("scroll",()=>{window.__BH_120_SCROLL_TOP=panel120.scrollTop},{passive:true});
+    }
     if(t120&&panel120)t120.addEventListener("click",()=>{
       const open=panel120.classList.toggle("hab120Hidden")===false;
       t120.textContent=open?"120通りを閉じる −":"120通りを見る ＋";
@@ -20963,14 +21040,14 @@ window.bhVenueBase=function(course,key="p1"){
     if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
 
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
-      const y=window.scrollY;
+      const y=window.scrollY, sy=panel120?.scrollTop||0;
       el.querySelectorAll(".habSortBtn").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       const mode=btn.dataset.sort||"sim";
       window.__BH_SIM120_SORT=mode;
       const holder=$("habUnifiedAllRows");
       if(holder)holder.innerHTML=unifiedRows(rows,tickets,mode);
-      requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:"auto"}));
+      requestAnimationFrame(()=>{if(panel120)panel120.scrollTop=sy;window.scrollTo({top:y,left:0,behavior:"auto"});});
     }));
   }
 
@@ -21003,7 +21080,8 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
-  setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
+  /* V387: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
+  window.__BH_V387_RUN_ALL=runAll;
 })();
 </script>
 
@@ -21132,7 +21210,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V386
+/* V387
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21141,7 +21219,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V386_FORCE_2BOX__=true;
+window.__BH_V387_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
