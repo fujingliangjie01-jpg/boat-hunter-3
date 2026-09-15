@@ -14744,7 +14744,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.370</div>
+  <div class="topVol">Vol.371</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14864,7 +14864,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V370</small>
+      <small>HUNTER RESET / V371</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15219,7 +15219,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.370: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.371: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15886,7 +15886,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.370 場時間帯補正
+/* Vol.371 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -17236,7 +17236,13 @@ $('top').classList.remove('hide');
       if(needPlace){
         condition=needPlace===1?"1着条件":`${needPlace}着以上`;
       }else if(hasLaterRace&&dependentPlaces.length){
-        condition="次走勝負";
+        /* V371: bit2だけで「次走勝負」と断定しない。
+           現在順位が大きく圏外の艇は、残り1走での急浮上を勝手に期待しない。
+           19〜30位は境界帯として「次走要確認」、31位以下は「圏外」。
+           18位以内だけを「次走勝負」とする。 */
+        if(rank<=18) condition="次走勝負";
+        else if(rank<=30) condition="次走要確認";
+        else condition="圏外";
       }else{
         continue;
       }
@@ -17244,7 +17250,7 @@ $('top').classList.remove('hide');
       hits.push({
         b,name,rate,rank,remaining,needPlace,needPoint,condition,
         hasLaterRace,currentBorderCode,
-        urgency:needPlace?7-needPlace:1
+        urgency:needPlace?7-needPlace:(condition==="次走勝負"?2:condition==="次走要確認"?1:0)
       });
     }
 
@@ -20632,6 +20638,7 @@ window.bhVenueBase=function(course,key="p1"){
 
     const top=[...rows].sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,10);
     const keep120Open=window.__BH_SIM120_OPEN===true;
+    const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
     el.innerHTML=`
       <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を1画面で比較</div>
       <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
@@ -20649,12 +20656,12 @@ window.bhVenueBase=function(course,key="p1"){
       <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通り全部を比較する ＋</button>
       <div id="habSim120All" class="habSim120All ${keep120Open?"":"hidden"}">
         <div class="habAnalysisToolbar">
-          <button class="habSortBtn active" data-sort="sim">SIM確率順</button>
-          <button class="habSortBtn" data-sort="market">人気順</button>
-          <button class="habSortBtn" data-sort="ev">期待値順</button>
+          <button class="habSortBtn ${keepSortMode==="sim"?"active":""}" data-sort="sim">SIM確率順</button>
+          <button class="habSortBtn ${keepSortMode==="market"?"active":""}" data-sort="market">人気順</button>
+          <button class="habSortBtn ${keepSortMode==="ev"?"active":""}" data-sort="ev">期待値順</button>
         </div>
         <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
-        <div id="habUnifiedAllRows">${unifiedRows(rows,tickets,"sim")}</div>
+        <div id="habUnifiedAllRows">${unifiedRows(rows,tickets,keepSortMode)}</div>
       </div>
 
       ${renderBuyBlock(tickets)}
@@ -20671,15 +20678,17 @@ window.bhVenueBase=function(course,key="p1"){
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
       el.querySelectorAll(".habSortBtn").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
+      const mode=btn.dataset.sort||"sim";
+      window.__BH_SIM120_SORT=mode;
       const holder=$("habUnifiedAllRows");
-      if(holder)holder.innerHTML=unifiedRows(rows,tickets,btn.dataset.sort||"sim");
+      if(holder)holder.innerHTML=unifiedRows(rows,tickets,mode);
     }));
   }
 
   function runAll(){renderMarket();const p=renderPre();renderSim(p)}
   window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
-  const reset120=()=>{window.__BH_SIM120_OPEN=false};
+  const reset120=()=>{window.__BH_SIM120_OPEN=false;window.__BH_SIM120_SORT="sim"};
   document.getElementById("aiAnalyze")?.addEventListener("click",()=>{reset120();setTimeout(runAll,350)});
   document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
@@ -20785,3 +20794,12 @@ window.bhVenueBase=function(course,key="p1"){
 
 
 <style id="bh-vol281-hide-date-input">#date{display:none!important}</style>
+
+<script id="bh-v371-marker">
+/* V371
+- 120通り比較: SIM確率順 / 人気順 / 期待値順の選択状態を再描画後も保持。
+- 場・レース再取得 / AI再解析時のみSIM確率順へリセット。
+- 勝負掛け: bit2だけで次走勝負と断定しない。18位以内=次走勝負、19〜30位=次走要確認、31位以下=圏外。
+- 43位など明確な下位艇を「次走勝負」と誤表示しない。
+*/
+</script>
