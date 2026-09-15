@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V383: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V384: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -14993,7 +14993,7 @@ input,
 }
 #hunterBuyBlock,.hunter-buy-block,[data-hunter-buy-block]{margin-top:30px!important}
 </style>
-</head>
+<style id="bh-v384-layout">.bhIndependentBuy{display:block!important;margin:28px 0!important}.habBuyGroup.extra{border-left:6px solid #ff9f2f!important}</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15003,7 +15003,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.383</div>
+  <div class="topVol">Vol.384</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20793,46 +20793,27 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function selectTickets(rows){
-    const positive=rows.filter(x=>x.simPct>0), value=positive.filter(x=>x.ev>=1);
-    const main=value.filter(x=>x.odds<50&&x.simPct>=.8).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,9);
-    const inBox=(boats,x)=>{const p=String(x.combo).split("-").map(Number);return p.length===3&&p.every(n=>boats.includes(n));};
-    const boxes=[];
-    for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){
-      const boats=[a,b,c],members=rows.filter(x=>inBox(boats,x));if(members.length!==6)continue;
-      const mid=members.filter(x=>x.simPct>0&&x.odds>=50&&x.odds<100),near=members.filter(x=>x.simPct>0&&x.odds>=30&&x.odds<50);
-      const mv=mid.filter(x=>x.ev>=1),nv=near.filter(x=>x.ev>=1);
-      const mh=mid.reduce((z,x)=>z+x.simPct,0),mvh=mv.reduce((z,x)=>z+x.simPct,0),nh=near.reduce((z,x)=>z+x.simPct,0);
-      const score=mv.length*120+mvh*16+mh*6+nv.length*25+nh*1.5+mv.reduce((z,x)=>z+x.ev,0)*4;
-      boxes.push({boats,members,score,midCount:mv.length,midHitPct:mh});
-    }
-    boxes.sort((a,b)=>b.score-a.score||b.midCount-a.midCount||b.midHitPct-a.midHitPct);
-    const mainOne=main.filter(x=>String(x.combo).startsWith("1-"));
-    const oneShare=main.length?mainOne.length/main.length:0;
-    const oneSim=positive.filter(x=>String(x.combo).startsWith("1-")).reduce((z,x)=>z+x.simPct,0);
-    const ironEscape=main.length>=3&&oneShare>=.78&&oneSim>=55;
-    let mode="NORMAL",activeBoxes=[],all=[],supplements=[];
-    if(main.length===0){
-      mode="TWO_BOX";activeBoxes=boxes.slice(0,2);all=activeBoxes.flatMap(q=>q.members);
-    }else if(ironEscape){
-      mode="IRON_MAIN";all=[...main];
+    const pos=rows.filter(x=>x.simPct>0), sort=(a,b)=>b.ev-a.ev||b.simPct-a.simPct, cb=x=>String(x.combo).split("-").map(Number), uniq=a=>[...new Map(a.map(x=>[x.combo,x])).values()];
+    const hs=[1,2,3,4,5,6].map(n=>({n,p:pos.filter(x=>cb(x)[0]===n).reduce((z,x)=>z+x.simPct,0)})).sort((a,b)=>b.p-a.p), fb=hs.map(x=>x.n);
+    const market=(window.__HUNTER_MARKET_RANK||window.__BH_MARKET_RANK||fb).map(Number), hunter=(window.__HUNTER_PRE_RANK||window.__BH_HUNTER_RANK||fb).map(Number);
+    const consensus=market[0]===hunter[0]&&market.slice(0,3).filter(n=>hunter.slice(0,3).includes(n)).length>=2, head=market[0]||fb[0];
+    const hr=pos.filter(x=>cb(x)[0]===head);
+    const sr=[1,2,3,4,5,6].filter(n=>n!==head).map(n=>({n,p:hr.filter(x=>cb(x)[1]===n).reduce((z,x)=>z+x.simPct,0)})).sort((a,b)=>b.p-a.p).map(x=>x.n);
+    const mkbox=(lo,hi)=>{const z=[];for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){const boats=[a,b,c],m=pos.filter(x=>cb(x).every(n=>boats.includes(n)));if(m.length!==6)continue;const q=m.filter(x=>x.odds>=lo&&x.odds<=hi),v=q.filter(x=>x.ev>=1);z.push({boats,members:m,score:v.length*100+v.reduce((z,x)=>z+x.simPct,0)*14+q.reduce((z,x)=>z+x.simPct,0)*5+v.reduce((z,x)=>z+x.ev,0)*4});}return z.sort((a,b)=>b.score-a.score);};
+    let mode,main=[],boxes=[],extra=[],all=[];
+    if(consensus){
+      mode="CONSENSUS_MAIN_BOX";
+      const axes=sr.slice(2,4);let six=hr.filter(x=>axes.includes(cb(x)[1])||axes.includes(cb(x)[2])).sort(sort).slice(0,6);if(six.length<6)six=uniq([...six,...hr.sort(sort)]).slice(0,6);
+      const top=sr[0];let three=hr.filter(x=>cb(x)[2]===top&&!six.some(y=>y.combo===x.combo)).sort(sort).slice(0,3);if(three.length<3)three=uniq([...three,...hr.filter(x=>!six.some(y=>y.combo===x.combo)).sort(sort)]).slice(0,3);
+      main=uniq([...six,...three]).slice(0,9);const ms=new Set(main.map(x=>x.combo));
+      const q=mkbox(50,200).map(x=>({...x,adj:x.score-x.members.filter(y=>ms.has(y.combo)).length*70})).sort((a,b)=>b.adj-a.adj)[0];if(q)boxes=[q];all=uniq([...main,...(q?q.members.filter(x=>!ms.has(x.combo)):[])]);
     }else{
-      mode="MAIN_PLUS_BOX";
-      const ms=new Set(main.map(x=>x.combo));
-      const ranked=boxes.map(q=>({...q,overlap:q.members.filter(x=>ms.has(x.combo)).length}))
-        .map(q=>({...q,adjusted:q.score-q.overlap*80})).sort((a,b)=>b.adjusted-a.adjusted||a.overlap-b.overlap);
-      const box=ranked[0]||null;if(box)activeBoxes=[box];
-      const picked=new Map(main.map(x=>[x.combo,x]));
-      if(box)box.members.forEach(x=>{if(!picked.has(x.combo))picked.set(x.combo,x);});
-      const candidates=positive.filter(x=>!picked.has(x.combo)).map(x=>{
-        let band=0;if(x.odds>=50&&x.odds<100)band=5;else if(x.odds>=30&&x.odds<50)band=4;else if(x.odds>=100&&x.odds<150)band=2;else if(x.odds<30)band=1;
-        return {...x,__band:band};
-      }).filter(x=>x.__band>0).sort((a,b)=>b.__band-a.__band||b.ev-a.ev||b.simPct-a.simPct);
-      for(const x of candidates){if(picked.size>=15)break;picked.set(x.combo,x);supplements.push(x);}
-      all=[...picked.values()].slice(0,15);
+      mode="SPLIT_2BOX_EXTRA3";let q=mkbox(30,150);const follower=Number(window.__HUNTER_ATTACK_FOLLOWER||window.__BH_ATTACK_FOLLOWER||0);q=q.map(x=>({...x,adj:x.score+(follower&&x.boats.includes(follower)?120:0)})).sort((a,b)=>b.adj-a.adj);
+      const under1=pos.some(x=>cb(x)[0]===1&&x.odds>=25);if(under1){const x=q.find(v=>v.boats.includes(1)),y=q.find(v=>!x||v.boats.join()!=x.boats.join());boxes=[x,y].filter(Boolean);}else boxes=q.slice(0,2);
+      const bt=uniq(boxes.flatMap(x=>x.members)),used=new Set(bt.map(x=>x.combo)),boats=new Set(boxes.flatMap(x=>x.boats));extra=pos.filter(x=>cb(x).every(n=>boats.has(n))&&!used.has(x.combo)).sort(sort).slice(0,3);all=[...bt,...extra];
     }
-    window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=activeBoxes;window.__HUNTER_BUY_SUPPLEMENTS=supplements;
-    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
-    return {main,mid:[],long:[],all,mode,boxes:activeBoxes,supplements,ironEscape};
+    window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=boxes;window.__HUNTER_BUY_EXTRA=extra;window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
+    return {mode,consensus,market,hunter,head,main,boxes,extra,all};
   }
 
   function renderMarket(){
@@ -20909,12 +20890,9 @@ window.bhVenueBase=function(course,key="p1"){
     </div>`;
   }
   function renderBuyBlock(t){
-    const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    if(t.mode==="TWO_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / MID HIT</small><b>中穴狙い 2BOX</b></div><strong>12点</strong></div>${boxRows(t.boxes[0],1)}${boxRows(t.boxes[1],2)}<div class="habBuyNote">本命なし → 2BOXのみ</div></section>`;
-    if(t.mode==="IRON_MAIN")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / IRON ESCAPE</small><b>イン逃げ鉄板・本命のみ</b></div><strong>${t.main.length}点</strong></div><div class="habBuyGroup main"><h5>本命 <span>${t.main.length}通り</span></h5>${t.main.map(row).join("")}</div></section>`;
-    const ms=new Set(t.main.map(x=>x.combo)),box=t.boxes[0],bn=box?box.members.filter(x=>!ms.has(x.combo)):[];
-    const used=new Set([...t.main,...bn].map(x=>x.combo)),supp=t.all.filter(x=>!used.has(x.combo));
-    return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / MID HIT</small><b>本命＋中穴狙い</b></div><strong>15点</strong></div><div class="habBuyGroup main"><h5>本命 <span>${t.main.length}通り</span></h5>${t.main.map(row).join("")}</div><div class="habBuyGroup box"><h5>${box?box.boats.join("")+" BOX":"BOX"} ＋ 補充 <span>${15-t.main.length}通り</span></h5>${bn.map(row).join("")}${supp.map(row).join("")}</div><div class="habBuyNote">重複分は中穴寄り・高期待値・非重複目で補充</div></section>`;
+    const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
+    if(t.mode==="CONSENSUS_MAIN_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhIndependentBuy"><div class="habBuyHead"><div><small>評価一致 MODE</small><b>本命9点 ＋ 1BOX</b></div></div><div class="habBuyGroup main"><h5>本命 <span>${t.main.length}点</span></h5>${t.main.map(row).join("")}</div>${t.boxes[0]?boxRows(t.boxes[0],1):""}</section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhIndependentBuy"><div class="habBuyHead"><div><small>評価分裂 MODE</small><b>2BOX ＋ 追加3点</b></div></div>${t.boxes.map((q,i)=>boxRows(q,i+1)).join("")}<div class="habBuyGroup extra"><h5>追加3点</h5>${t.extra.map(row).join("")}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -21132,7 +21110,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V383
+/* V384
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21141,7 +21119,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V383_FORCE_2BOX__=true;
+window.__BH_V384_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
