@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V366</title>
+<title>BOAT HUNTER V367</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14559,6 +14559,49 @@ input,
 }
 </style>
 
+
+<style id="bh-v367-current-result">
+.hrmCurrentResult{
+  padding:10px;border-radius:12px;background:#071923;
+  border:1px solid rgba(72,199,255,.28)
+}
+.hrmCurrentHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hrmCurrentHead small{display:block;font-size:7px;color:#62c9ee;font-weight:1000;letter-spacing:.13em}
+.hrmCurrentHead b{font-size:13px}
+#hrmCheckCurrent{
+  min-height:38px;padding:7px 13px;border-radius:9px;border:1px solid #68d5ff;
+  background:linear-gradient(180deg,#1fa9e2,#1079aa);color:#fff;font-weight:1000;font-size:11px
+}
+.hrmCurrentState{margin:7px 0;font-size:8px;color:#829eab;font-weight:900}
+.hrmResultHero{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:7px;align-items:stretch;
+  padding:8px;border-radius:12px;border:2px solid rgba(255,255,255,.10);
+  background:#08151d
+}
+.hrmResultHero>div{padding:10px;border-radius:9px;background:rgba(0,0,0,.16)}
+.hrmResultHero small{display:block;font-size:7px;color:#8aa0aa;font-weight:1000}
+.hrmResultComboBox b{display:block;margin-top:3px;font-size:30px;line-height:1;color:#fff;letter-spacing:.05em}
+.hrmResultVerdict{display:flex;flex-direction:column;justify-content:center;text-align:center}
+.hrmResultVerdict b{display:block;margin-top:3px;font-size:29px;line-height:1;font-weight:1000}
+.hrmResultHero.hit{border-color:#43df87;background:linear-gradient(135deg,#082519,#071b13)}
+.hrmResultHero.hit .hrmResultVerdict b{color:#69f0a3}
+.hrmResultHero.miss{border-color:#ff5f6c;background:linear-gradient(135deg,#2b090d,#19080b)}
+.hrmResultHero.miss .hrmResultVerdict b{color:#ff7a84}
+.hrmResultHero.no-pick{border-color:#e4bc49;background:linear-gradient(135deg,#2a2208,#171305)}
+.hrmResultHero.no-pick .hrmResultVerdict b{font-size:18px;color:#ffe071}
+.hrmResultMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
+.hrmResultMeta>div{padding:8px 5px;text-align:center;border-radius:9px;background:#06151d;border:1px solid rgba(255,255,255,.06)}
+.hrmResultMeta small{display:block;font-size:6px;color:#7893a0;font-weight:1000}
+.hrmResultMeta b{display:block;margin-top:2px;font-size:15px;color:#fff}
+#hrmResultTechnique{color:#7bdcff!important}
+#hrmResultPayout,#hrmResultOdds{color:#ffd766!important}
+@media(max-width:430px){
+  .hrmResultComboBox b{font-size:27px}
+  .hrmResultVerdict b{font-size:26px}
+  .hrmResultMeta b{font-size:13px}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14569,7 +14612,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.366</div>
+  <div class="topVol">Vol.367</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14689,7 +14732,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V366</small>
+      <small>HUNTER RESET / V367</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -15044,7 +15087,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.366: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.367: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15711,7 +15754,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.366 場時間帯補正
+/* Vol.367 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -19800,6 +19843,147 @@ window.bhVenueBase=function(course,key="p1"){
   const DAY_KEY="BH_RESULT_DAY_V361";
   const TOTAL_KEY="BH_RESULT_TOTAL_V361";
   const RESET_HOLD_MS=1800;
+  const TECH={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
+
+  function currentSelection(){
+    const date=document.getElementById("date")?.value||todayKey();
+    const venue=String(document.getElementById("stadium")?.value||"").padStart(2,"0");
+    const race=Number(document.getElementById("race")?.value||0);
+    return {date,venue,race};
+  }
+  function dailyApiUrl(date){
+    const ymd=String(date||"").replaceAll("-","");
+    return `https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`;
+  }
+  function findRaceInDaily(json,venue,race){
+    const st=json?.programs?.stadiums||{};
+    const v=st[String(Number(venue))]||st[String(venue)]||null;
+    if(!v)return null;
+    return v?.races?.[String(Number(race))]||v?.races?.[String(race)]||null;
+  }
+  function normalizeComboFromResult(result){
+    const racers=result?.racers||{};
+    const rows=Object.values(racers)
+      .map(x=>({boat:Number(x.entry_number),place:Number(x.place_number)}))
+      .filter(x=>Number.isFinite(x.boat)&&Number.isFinite(x.place)&&x.place>=1&&x.place<=3)
+      .sort((a,b)=>a.place-b.place);
+    if(rows.length>=3)return rows.slice(0,3).map(x=>x.boat).join("-");
+    const tf=result?.payouts?.trifecta?.[0]?.combination;
+    return tf?String(tf).replace(/\s/g,""):"";
+  }
+  function currentBuyTickets(){
+    const src=
+      window.__HUNTER_BUY_TICKETS ||
+      window.__HUNTER_VALUE_TICKETS?.tickets ||
+      window.__HUNTER_FINAL_TICKETS ||
+      [];
+    if(!Array.isArray(src))return [];
+    return src.map(x=>typeof x==="string"?{combo:x,stake:100}:x)
+      .map(x=>({
+        combo:String(x.combo||x.key||"").replace(/[=>]/g,"-"),
+        stake:Number(x.stake)||100
+      }))
+      .filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x.combo));
+  }
+  function renderCurrentResult({state="waiting",combo="",technique="",payout=null,odds=null,hit=null}={}){
+    const hero=$("hrmResultHero"),verdict=$("hrmResultVerdict");
+    if($("hrmResultCombo"))$("hrmResultCombo").textContent=combo||"—";
+    if($("hrmResultTechnique"))$("hrmResultTechnique").textContent=technique||"—";
+    if($("hrmResultPayout"))$("hrmResultPayout").textContent=payout!=null?`¥${Number(payout).toLocaleString("ja-JP")}`:"—";
+    if($("hrmResultOdds"))$("hrmResultOdds").textContent=odds!=null?`${Number(odds).toFixed(1)}倍`:"—";
+
+    hero?.classList.remove("waiting","hit","miss","no-pick");
+    if(hit===true){
+      hero?.classList.add("hit");
+      if(verdict)verdict.textContent="的中";
+    }else if(hit===false){
+      hero?.classList.add("miss");
+      if(verdict)verdict.textContent="ハズレ";
+    }else if(state==="no-pick"){
+      hero?.classList.add("no-pick");
+      if(verdict)verdict.textContent="買い目未作成";
+    }else{
+      hero?.classList.add("waiting");
+      if(verdict)verdict.textContent="未判定";
+    }
+  }
+  async function checkCurrentRaceResult(){
+    const btn=$("hrmCheckCurrent"),state=$("hrmCurrentState");
+    const sel=currentSelection();
+    if(!sel.venue||!sel.race){
+      if(state)state.textContent="開催場・レースを選択してください";
+      return;
+    }
+    if(btn){btn.disabled=true;btn.textContent="結果取得中…"}
+    if(state)state.textContent=`${venueNames[sel.venue]||sel.venue} ${sel.race}R の結果を確認中…`;
+
+    try{
+      const json=await fetch(dailyApiUrl(sel.date),{cache:"no-store"}).then(r=>{
+        if(!r.ok)throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      });
+      const race=findRaceInDaily(json,sel.venue,sel.race);
+      const result=race?.result;
+      if(!result){
+        renderCurrentResult({state:"waiting"});
+        if(state)state.textContent="結果はまだ公開されていません";
+        return;
+      }
+
+      const combo=normalizeComboFromResult(result);
+      const technique=TECH[Number(result.technique_number)]||result.technique_number_source||"—";
+      const tf=Array.isArray(result?.payouts?.trifecta)?result.payouts.trifecta[0]:null;
+      const payout=Number(tf?.amount);
+      const odds=Number.isFinite(payout)?payout/100:null;
+
+      const tickets=currentBuyTickets();
+      let hit=null,hitTicket=null;
+      if(tickets.length){
+        hitTicket=tickets.find(x=>x.combo===combo)||null;
+        hit=!!hitTicket;
+      }
+
+      renderCurrentResult({
+        state:tickets.length?"done":"no-pick",
+        combo,technique,
+        payout:Number.isFinite(payout)?payout:null,
+        odds,
+        hit
+      });
+
+      if(state){
+        if(!tickets.length){
+          state.textContent="結果確定｜現在のバージョンでは買い目未作成のため的中判定なし";
+        }else{
+          state.textContent=hit
+            ? `結果確定｜${combo} 的中`
+            : `結果確定｜${combo} ハズレ`;
+        }
+      }
+
+      /* 新買い目が接続された後は収支管理へ自動登録 */
+      if(tickets.length && window.BH_RESULT_MANAGER?.record){
+        const stake=tickets.reduce((q,x)=>q+(Number(x.stake)||0),0);
+        const returns=hit&&Number.isFinite(payout)
+          ? (Number(hitTicket?.stake)||100)*(payout/100)
+          : 0;
+        const raceKey=`${sel.race}R`;
+        window.BH_RESULT_MANAGER.record({
+          venueCode:sel.venue,
+          hit:!!hit,
+          stake,
+          returns,
+          raceKey
+        });
+      }
+    }catch(e){
+      console.warn("result fetch",e);
+      renderCurrentResult({state:"waiting"});
+      if(state)state.textContent="結果取得に失敗しました";
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent="結果を確認"}
+    }
+  }
   const venueNames={
     "01":"桐生","02":"戸田","03":"江戸川","04":"平和島","05":"多摩川","06":"浜名湖",
     "07":"蒲郡","08":"常滑","09":"津","10":"三国","11":"びわこ","12":"住之江",
@@ -19919,6 +20103,7 @@ window.bhVenueBase=function(course,key="p1"){
 
   document.addEventListener("DOMContentLoaded",()=>{
     $("hrmToggle")?.addEventListener("click",()=>$("hrmBody")?.classList.toggle("hidden"));
+    $("hrmCheckCurrent")?.addEventListener("click",checkCurrentRaceResult);
     if($("hrmResetDay"))protectedReset($("hrmResetDay"),"day");
     if($("hrmResetAll"))protectedReset($("hrmResetAll"),"all");
     render();
@@ -19951,6 +20136,35 @@ window.bhVenueBase=function(course,key="p1"){
   </div>
 
   <div id="hrmBody" class="hrmBody hidden">
+
+    <div class="hrmCurrentResult">
+      <div class="hrmCurrentHead">
+        <div>
+          <small>CURRENT RACE RESULT</small>
+          <b>選択中レース結果</b>
+        </div>
+        <button id="hrmCheckCurrent" type="button">結果を確認</button>
+      </div>
+
+      <div id="hrmCurrentState" class="hrmCurrentState">結果待ち</div>
+
+      <div id="hrmResultHero" class="hrmResultHero waiting">
+        <div class="hrmResultComboBox">
+          <small>確定着順</small>
+          <b id="hrmResultCombo">—</b>
+        </div>
+        <div class="hrmResultVerdict">
+          <small>HUNTER判定</small>
+          <b id="hrmResultVerdict">未判定</b>
+        </div>
+      </div>
+
+      <div class="hrmResultMeta">
+        <div><small>決まり手</small><b id="hrmResultTechnique">—</b></div>
+        <div><small>3連単払戻</small><b id="hrmResultPayout">—</b></div>
+        <div><small>倍率換算</small><b id="hrmResultOdds">—</b></div>
+      </div>
+    </div>
     <div class="hrmToday">
       <div class="hrmTitle"><b>今日</b><span id="hrmDate">—</span></div>
       <div class="hrmKpis">
@@ -20280,6 +20494,18 @@ window.bhVenueBase=function(course,key="p1"){
 - 出走表取得列を縮小
 - レース列は中間幅
 - iPhone縦画面で「平和島」など場名が見切れにくい比率へ調整
+*/
+</script>
+
+
+<script id="bh-v367-marker">
+/* V367 RESULT
+- ページ最下部の結果確認に「選択中レース結果」を追加。
+- Boatrace Open API v1 の result から確定着順 / 決まり手 / 3連単払戻を取得。
+- 払戻100円を倍率換算して大きく表示。
+- 買い目データがある場合は「的中 / ハズレ」を大型表示。
+- 現在は買い目ロジック再構築中のため、買い目未作成時は「買い目未作成」と表示。
+- 将来 window.__HUNTER_BUY_TICKETS を接続すると、そのまま的中判定・収支管理へ連動。
 */
 </script>
 
