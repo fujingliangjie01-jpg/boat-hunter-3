@@ -14978,17 +14978,20 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V381: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V382: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
 </style>
 
-<style id="bh-v381-spacing-fix">
-/* 120通り比較と最終買い目を別ブロックとして視認しやすくする */
-#hunterBuyBlock,.hunter-buy-block,[data-hunter-buy-block]{
-  margin-top:30px !important;
+
+<style id="bh-v382-scroll-fix">
+#marketList,.market-list,.hunter-market-list,[data-market-list]{
+ max-height:68vh!important;min-height:360px;overflow-y:auto!important;overflow-x:hidden!important;
+ -webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;
+ padding-bottom:72px!important;scroll-padding-bottom:72px;
 }
+#hunterBuyBlock,.hunter-buy-block,[data-hunter-buy-block]{margin-top:30px!important}
 </style>
 </head>
 <body>
@@ -15000,7 +15003,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.381</div>
+  <div class="topVol">Vol.382</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20819,7 +20822,7 @@ window.bhVenueBase=function(course,key="p1"){
     };
 
     // 2BOX用：本命〜中穴（100倍未満）の期待値集中。
-    const normalBoxes=makeBoxes(0,100);
+    const normalBoxes=makeBoxes(50,100);
     // 本線9点＋1BOX用：回収担当なので中穴〜大穴（50倍以上）の期待値集中。
     const recoveryBoxes=makeBoxes(50,null);
 
@@ -21141,7 +21144,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V381
+/* V382
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21150,7 +21153,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V381_FORCE_2BOX__=true;
+window.__BH_V382_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
