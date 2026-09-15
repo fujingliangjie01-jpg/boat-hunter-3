@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V376</title>
+<title>BOAT HUNTER V377</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14963,6 +14963,19 @@ input,
 }
 </style>
 
+
+<style id="bh-v377-style">
+/* V377: compact persistent analysis + expandable BOX details */
+#hunterAnalysisBase{padding:8px!important}
+.habAnalysisToggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid #1e7898;border-radius:14px;background:linear-gradient(135deg,#071923,#0b2633);color:#fff;text-align:left}
+.habAnalysisToggle small{display:block;font-size:9px;letter-spacing:.16em;color:#6fd7ff;font-weight:1000}.habAnalysisToggle b{display:block;margin-top:3px;font-size:17px}.habAnalysisToggle strong{font-size:14px;color:#8de4ff;white-space:nowrap}
+.habAnalysisContent{margin-top:8px}.habCollapsed .habAnalysisContent{display:none}
+.habBoxCard{padding:0!important;overflow:hidden;border:1px solid rgba(185,135,255,.55)!important;background:linear-gradient(135deg,rgba(38,19,61,.96),rgba(13,24,39,.98))!important}
+.habBoxToggle{width:100%;display:grid;grid-template-columns:minmax(110px,1fr) auto;gap:8px 14px;align-items:center;padding:17px 18px;border:0;background:transparent;color:#fff;text-align:left}
+.habBoxName{font-size:26px;font-weight:1000;letter-spacing:.03em;color:#e4d1ff}.habBoxMeta{display:flex;gap:12px;align-items:center;justify-content:flex-end}.habBoxMeta b{font-size:15px;color:#c9a9ff}.habBoxMeta em{font-style:normal;font-size:13px;color:#fff;border:1px solid #9b6ddd;border-radius:999px;padding:4px 8px}.habBoxToggle>strong{grid-column:1/-1;display:block;text-align:center;border-top:1px solid rgba(255,255,255,.08);padding-top:10px;font-size:14px;color:#d7c2ff}
+.habBoxDetails{padding:0 16px 12px}.habBoxDetailHead,.habBoxDetailRow{display:grid;grid-template-columns:1.2fr .8fr 1fr .8fr;gap:8px;align-items:center}.habBoxDetailHead{padding:8px 4px;color:#7993a0;font-size:10px;font-weight:900}.habBoxDetailRow{padding:13px 4px;border-top:1px solid rgba(255,255,255,.08)}.habBoxDetailRow>b{font-size:20px;color:#fff}.habBoxDetailRow span{font-size:17px;font-weight:900;color:#c9a9ff}.habBoxDetailRow strong{font-size:18px;color:#ffd45c}.habBoxDetailRow em{font-size:19px;font-style:normal;font-weight:1000;color:#69e6a7}
+@media(max-width:520px){.habAnalysisToggle{padding:12px}.habAnalysisToggle b{font-size:14px}.habAnalysisToggle strong{font-size:12px}.habBoxName{font-size:23px}.habBoxMeta{gap:7px}.habBoxMeta b{font-size:12px}.habBoxDetailRow>b{font-size:18px}.habBoxDetailRow span,.habBoxDetailRow strong,.habBoxDetailRow em{font-size:15px}}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14973,7 +14986,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.376</div>
+  <div class="topVol">Vol.377</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15092,19 +15105,11 @@ input,
     <div class="aiReadyMark">AI</div>
     <div><b id="aiModeTitle">解析データ準備完了</b><small id="aiModeSub">HUNTER解析用データを固定しました</small></div>
   </section>
-  <section id="hunterResetBase" class="hunterResetBase">
-    <div>
-      <small>HUNTER RESET / V372</small>
-      <b>解析ロジック再構築モード</b>
-      <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
-    </div>
-  </section>
-<section id="hunterAnalysisBase" class="hab">
-  <div class="habHead">
-    <div><small>ANALYSIS BASE</small><b>世間評価・事前評価・SIM</b></div>
-    <span>再構築用</span>
-  </div>
-
+<section id="hunterAnalysisBase" class="hab habCollapsed">
+  <button type="button" id="hunterAnalysisToggle" class="habAnalysisToggle" aria-expanded="false">
+    <span><small>ANALYSIS DATA</small><b>世間評価・HUNTER事前評価・SIM</b></span><strong>詳細を見る ＋</strong>
+  </button>
+  <div id="hunterAnalysisContent" class="habAnalysisContent">
   <div class="habGrid">
     <article class="habCard market">
       <h4>世間評価</h4>
@@ -15126,6 +15131,7 @@ input,
         <div class="habWait">事前評価＋120通り取得後に5000回SIM</div>
       </div>
     </article>
+  </div>
   </div>
 </section>
 
@@ -20847,11 +20853,21 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function boxRows(q,n){
-    return `<div class="habBuyGroup box"><h5>BOX ${n}｜${q.boats.join("・")} <span>6点</span></h5>
-      <div class="habBoxSummary">合算発生率 <b>${q.hitPct.toFixed(1)}%</b>　BOX平均期待値 <b>${q.avgEv.toFixed(2)}</b></div>
-      ${q.members.sort((a,b)=>b.simPct-a.simPct).map(x=>`
-      <div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyPatchCell"><span class="habPickPatch box">BOX</span></div>
-      <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`).join("")}</div>`;
+    const code=q.boats.join("");
+    const key=`BH_BOX_OPEN_${code}`;
+    let open=false;try{open=localStorage.getItem(key)==="1"}catch(e){}
+    const members=[...q.members].sort((a,b)=>b.simPct-a.simPct);
+    return `<div class="habBuyGroup box habBoxCard" data-box="${code}">
+      <button type="button" class="habBoxToggle" data-box-key="${key}" aria-expanded="${open}">
+        <span class="habBoxName">${code} BOX</span>
+        <span class="habBoxMeta"><b>総合発生率 ${q.hitPct.toFixed(1)}%</b><em>6点</em></span>
+        <strong>${open?"詳細を閉じる −":"詳細を見る ＋"}</strong>
+      </button>
+      <div class="habBoxDetails ${open?"":"hide"}">
+        <div class="habBoxDetailHead"><span>買い目</span><span>SIM確率</span><span>オッズ</span><span>期待値</span></div>
+        ${members.map(x=>`<div class="habBoxDetailRow"><b>${x.combo}</b><span>${x.simPct.toFixed(1)}%</span><strong>${x.odds.toFixed(1)}倍</strong><em>${x.ev.toFixed(2)}</em></div>`).join("")}
+      </div>
+    </div>`;
   }
   function renderBuyBlock(t){
     if(t.mode==="TWO_BOX")return `<section id="hunterFinalBuyBlock" class="habBuyBlock"><div class="habBuyHead"><div><small>HUNTER BUY / VALUE BOX</small><b>🔥 期待値2BOX</b></div><strong>${t.all.length}点</strong></div>${boxRows(t.boxes[0],1)}${boxRows(t.boxes[1],2)}<div class="habBuyNote">2BOX発動時は他の買い目を出しません</div></section>`;
@@ -20916,7 +20932,25 @@ window.bhVenueBase=function(course,key="p1"){
     }));
   }
 
-  function runAll(){renderMarket();const p=renderPre();renderSim(p)}
+  function bindV377UI(){
+    const toggle=document.getElementById("hunterAnalysisToggle"), base=document.getElementById("hunterAnalysisBase");
+    if(toggle&&base&&!toggle.dataset.bound){
+      toggle.dataset.bound="1";
+      let open=false;try{open=localStorage.getItem("BH_ANALYSIS_OPEN")==="1"}catch(e){}
+      const apply=()=>{base.classList.toggle("habCollapsed",!open);toggle.setAttribute("aria-expanded",String(open));const st=toggle.querySelector("strong");if(st)st.textContent=open?"詳細を閉じる −":"詳細を見る ＋"};
+      apply();toggle.addEventListener("click",()=>{open=!open;try{localStorage.setItem("BH_ANALYSIS_OPEN",open?"1":"0")}catch(e){}apply()});
+    }
+    if(!document.body.dataset.boxV377){
+      document.body.dataset.boxV377="1";
+      document.addEventListener("click",e=>{
+        const b=e.target.closest?.(".habBoxToggle");if(!b)return;
+        const card=b.closest(".habBoxCard"), details=card?.querySelector(".habBoxDetails");if(!details)return;
+        const open=details.classList.contains("hide");details.classList.toggle("hide",!open);b.setAttribute("aria-expanded",String(open));const st=b.querySelector("strong");if(st)st.textContent=open?"詳細を閉じる −":"詳細を見る ＋";
+        try{localStorage.setItem(b.dataset.boxKey,open?"1":"0")}catch(err){}
+      });
+    }
+  }
+  function runAll(){bindV377UI();renderMarket();const p=renderPre();renderSim(p)}
   window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
   const reset120=()=>{window.__BH_SIM120_SORT="sim"};
@@ -21048,6 +21082,12 @@ window.bhVenueBase=function(course,key="p1"){
 /* V376: 120通りを独立スクロール窓化。最終買い目は窓外直下。
    本線0点問題を修正し、50倍未満は発生確率×回収性で最大9点。 */
 </script>
+<script id="bh-v377-marker">/* V377
+- 再構築モード告知を削除。
+- 世間評価 / HUNTER事前評価 / SIM を1つの隠し解析ブロックへ統合し、開閉状態をlocalStorage保持。
+- BOX表示を「123 BOX」形式へ変更。通常はBOX名・総合発生率・6点のみ。
+- 詳細ボタンで6通りの買い目 / SIM確率 / オッズ / 期待値を展開し、BOXごとの開閉状態を保持。
+*/</script>
 </body>
 </html>
 
