@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V385: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V386: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -15007,7 +15007,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.385</div>
+  <div class="topVol">Vol.386</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20799,7 +20799,10 @@ window.bhVenueBase=function(course,key="p1"){
   function selectTickets(rows){
     const pos=rows.filter(x=>x.simPct>0), sort=(a,b)=>b.ev-a.ev||b.simPct-a.simPct, cb=x=>String(x.combo).split("-").map(Number), uniq=a=>[...new Map(a.map(x=>[x.combo,x])).values()];
     const hs=[1,2,3,4,5,6].map(n=>({n,p:pos.filter(x=>cb(x)[0]===n).reduce((z,x)=>z+x.simPct,0)})).sort((a,b)=>b.p-a.p), fb=hs.map(x=>x.n);
-    const market=(window.__HUNTER_MARKET_RANK||window.__BH_MARKET_RANK||fb).map(Number), hunter=(window.__HUNTER_PRE_RANK||window.__BH_HUNTER_RANK||fb).map(Number);
+    const normRank=(v,fallback)=>Array.isArray(v)&&v.length?v.map(x=>Number(x?.boat??x?.n??x)).filter(n=>n>=1&&n<=6):fallback;
+    const market=normRank(window.__HUNTER_MARKET_RANK||window.__BH_MARKET_RANK,fb);
+    const preRank=Array.isArray(window.__HUNTER_PRE_V368)?[...window.__HUNTER_PRE_V368].sort((a,b)=>(b.finalDev??0)-(a.finalDev??0)).map(x=>Number(x.boat)):[];
+    const hunter=normRank(window.__HUNTER_PRE_RANK||window.__BH_HUNTER_RANK||preRank,fb);
     const consensus=market[0]===hunter[0]&&market.slice(0,3).filter(n=>hunter.slice(0,3).includes(n)).length>=2, head=market[0]||fb[0];
     const hr=pos.filter(x=>cb(x)[0]===head);
     const sr=[1,2,3,4,5,6].filter(n=>n!==head).map(n=>({n,p:hr.filter(x=>cb(x)[1]===n).reduce((z,x)=>z+x.simPct,0)})).sort((a,b)=>b.p-a.p).map(x=>x.n);
@@ -20817,7 +20820,7 @@ window.bhVenueBase=function(course,key="p1"){
       const bt=uniq(boxes.flatMap(x=>x.members)),used=new Set(bt.map(x=>x.combo)),boats=new Set(boxes.flatMap(x=>x.boats));extra=pos.filter(x=>cb(x).every(n=>boats.has(n))&&!used.has(x.combo)).sort(sort).slice(0,3);all=[...bt,...extra];
     }
     window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=boxes;window.__HUNTER_BUY_EXTRA=extra;window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
-    return {mode,consensus,market,hunter,head,main,boxes,extra,all};
+    return {mode,consensus,market,hunter,head,main,mid:[],long:[],boxes,extra,all};
   }
 
   function renderMarket(){
@@ -20853,9 +20856,9 @@ window.bhVenueBase=function(course,key="p1"){
     </div>`;
   }
   function patchFor(combo,t){
-    if(t.main.some(x=>x.combo===combo))return `<span class="habPickPatch main">本線</span>`;
-    if(t.mid.some(x=>x.combo===combo))return `<span class="habPickPatch mid">中穴</span>`;
-    if(t.long.some(x=>x.combo===combo))return `<span class="habPickPatch long">万舟</span>`;
+    if((t.main||[]).some(x=>x.combo===combo))return `<span class="habPickPatch main">本線</span>`;
+    if((t.mid||[]).some(x=>x.combo===combo))return `<span class="habPickPatch mid">中穴</span>`;
+    if((t.long||[]).some(x=>x.combo===combo))return `<span class="habPickPatch long">万舟</span>`;
     if(t.boxes?.some(q=>q.members.some(x=>x.combo===combo)))return `<span class="habPickPatch box">BOX</span>`;
     return "";
   }
@@ -20884,7 +20887,7 @@ window.bhVenueBase=function(course,key="p1"){
     return `<div class="habBuyGroup box habBoxCard" data-box="${code}">
       <button type="button" class="habBoxToggle" data-box-key="${key}" aria-expanded="${open}">
         <span class="habBoxName">${code} BOX</span>
-        <span class="habBoxMeta"><b>本命〜中穴 集中度 ${q.valueCount}点</b><em>6点</em></span>
+        <span class="habBoxMeta"><b>本命〜中穴 集中度 ${q.valueCount??q.members.filter(x=>x.ev>=1).length}点</b><em>6点</em></span>
         <strong>${open?"詳細を閉じる −":"詳細を見る ＋"}</strong>
       </button>
       <div class="habBoxDetails ${open?"":"hide"}">
@@ -20922,7 +20925,14 @@ window.bhVenueBase=function(course,key="p1"){
       el.innerHTML=`<div class="habWait">120通りオッズ取得後に「SIM確率 × オッズ × 期待値」を表示</div>`;return;
     }
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
-    const rows=sim5000(pre),tickets=selectTickets(rows);
+    let rows,tickets;
+    try{
+      rows=sim5000(pre);tickets=selectTickets(rows);
+    }catch(err){
+      console.error("HUNTER V386 render error",err);
+      el.innerHTML=`<div class="habWait" style="color:#ff9b9b">SIM/買い目描画エラー：${String(err?.message||err)}</div>`;
+      return;
+    }
     window.__HUNTER_SIM_V373=rows;
     const keepWindowY=window.scrollY;
     const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
@@ -21122,7 +21132,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V385
+/* V386
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21131,7 +21141,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V385_FORCE_2BOX__=true;
+window.__BH_V386_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
