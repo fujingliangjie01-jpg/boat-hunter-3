@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V373</title>
+<title>BOAT HUNTER V374</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14808,6 +14808,12 @@ input,
 }
 </style>
 
+<style id="bh-v374-window">
+#habSim120All{display:block!important;max-height:52vh!important;min-height:330px!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;border:1px solid rgba(92,202,255,.24)!important;border-radius:16px!important;background:#06131c!important}
+#habSim120All .habAnalysisToolbar{position:sticky!important;top:0!important;z-index:80!important;margin:0!important;padding:9px 7px 8px!important;background:rgba(5,17,26,.98)!important}
+#habSim120All .habUnifiedHeader{position:sticky!important;top:84px!important;z-index:75!important;background:#081721!important}
+.habBuyBlock{display:block!important;visibility:visible!important;opacity:1!important;margin-top:16px!important}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14818,7 +14824,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.373</div>
+  <div class="topVol">Vol.374</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20612,13 +20618,24 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function selectTickets(rows){
-    const available=rows.filter(x=>x.simPct>0&&x.ev>=1.00);
-    const main=available.filter(x=>x.odds<50&&x.simPct>=0.8)
-      .sort((a,b)=>(b.simPct*b.ev)-(a.simPct*a.ev)||b.simPct-a.simPct).slice(0,9);
-    const mid=available.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=0.35)
+    const positive=rows.filter(x=>x.simPct>0);
+    const value=positive.filter(x=>x.ev>=1.00);
+
+    // 本線: 50倍未満。期待値だけで全消しせず、発生確率×回収性で最大9点。
+    let main=positive.filter(x=>x.odds<50&&x.simPct>=0.8)
+      .sort((a,b)=>(b.simPct*Math.max(b.ev,.25))-(a.simPct*Math.max(a.ev,.25))||b.simPct-a.simPct)
+      .slice(0,9);
+    // それでも0点なら50倍未満のSIM上位を最低限候補化。
+    if(!main.length){
+      main=positive.filter(x=>x.odds<50)
+        .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,5);
+    }
+
+    const mid=value.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=0.35)
       .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,4);
-    const long=available.filter(x=>x.odds>=100&&x.simPct>=0.15)
+    const long=value.filter(x=>x.odds>=100&&x.simPct>=0.15)
       .sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,2);
+
     const all=[...main,...mid,...long];
     window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
     return {main,mid,long,all};
@@ -20689,7 +20706,7 @@ window.bhVenueBase=function(course,key="p1"){
         <div class="habBuyGroup main"><h5>本線｜的中 × 回収 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div>
         <div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid,"mid")}</div>
         <div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long,"long")}</div>
-        <div class="habBuyNote">期待値1.00未満・発生確率不足は無理に補充しません</div>
+        <div class="habBuyNote">本線は50倍未満の発生確率×回収性を総合評価。中穴・万舟は期待値条件を満たす候補を採用</div>
       </section>`;
   }
 
@@ -20877,6 +20894,10 @@ window.bhVenueBase=function(course,key="p1"){
 - 最終買い目: パッチ専用列、倍率・期待値を大型化。
 - 結果確認リセット: 長押し + 暗証番号456。
 */
+</script>
+<script id="bh-v374-marker">
+/* V374: 120通りを独立スクロール窓化。最終買い目は窓外直下。
+   本線0点問題を修正し、50倍未満は発生確率×回収性で最大9点。 */
 </script>
 </body>
 </html>
