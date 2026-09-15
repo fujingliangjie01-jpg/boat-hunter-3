@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V368</title>
+<title>BOAT HUNTER V369</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14641,6 +14641,77 @@ input,
 .habBuyNote{margin-top:7px;font-size:6px;color:#738a95;text-align:center;font-weight:900}
 </style>
 
+
+<style id="bh-v369-unified-analysis">
+/* V369: SIM + MARKET ODDS are unified in the analysis card. */
+#oddsPanel{
+  position:absolute!important;left:-99999px!important;top:auto!important;
+  width:1px!important;height:1px!important;overflow:hidden!important;
+  opacity:0!important;pointer-events:none!important
+}
+.habCard.sim h4{font-size:18px!important;letter-spacing:.01em}
+.habSimMeta{font-size:10px!important;line-height:1.5!important;margin-bottom:8px}
+.habSimTop10{display:none!important}
+.habAnalysisToolbar{display:flex;gap:6px;margin:8px 0}
+.habSortBtn{
+  flex:1;min-height:36px;border:1px solid #315568;border-radius:9px;
+  background:#0a1b24;color:#a9c1cc;font-size:10px;font-weight:1000
+}
+.habSortBtn.active{border-color:#55d3ff;color:#fff;background:#0b3345}
+.habUnifiedHeader,.habUnifiedRow{
+  display:grid;grid-template-columns:34px 92px 1fr 66px 64px;
+  gap:6px;align-items:center
+}
+.habUnifiedHeader{
+  padding:7px 8px;color:#7895a3;font-size:8px;font-weight:1000;
+  border-bottom:1px solid rgba(255,255,255,.10)
+}
+.habUnifiedRow{
+  min-height:54px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.07)
+}
+.habUnifiedRow .rank{font-size:10px;color:#6f8996;font-weight:1000}
+.habComboBig{display:flex;align-items:center;gap:4px;font-size:0}
+.habMiniBoat{
+  width:27px;height:27px;border-radius:6px;display:inline-flex;align-items:center;
+  justify-content:center;border:1px solid rgba(255,255,255,.8);font-size:14px;font-weight:1000
+}
+.habMiniBoat.b1{background:#fff;color:#111}.habMiniBoat.b2{background:#111;color:#fff}
+.habMiniBoat.b3{background:#e52c3a;color:#fff}.habMiniBoat.b4{background:#1671c8;color:#fff}
+.habMiniBoat.b5{background:#f2ce23;color:#111}.habMiniBoat.b6{background:#169a50;color:#fff}
+.habArrow{font-size:10px;color:#54d7ff;font-weight:1000}
+.habMetric small{display:block;font-size:7px;color:#7894a0;margin-bottom:2px}
+.habMetric b{font-size:14px;color:#d7bdff}
+.habMetric.odds b{color:#ffd469}.habMetric.ev b{color:#73e2a0}
+.habPickPatch{
+  display:inline-flex;margin-left:5px;padding:3px 6px;border-radius:999px;
+  font-size:7px;font-weight:1000;vertical-align:middle;white-space:nowrap
+}
+.habPickPatch.main{background:#0d5d7b;color:#9ee9ff;border:1px solid #2abde8}
+.habPickPatch.mid{background:#62410b;color:#ffd26b;border:1px solid #d6941f}
+.habPickPatch.long{background:#671d31;color:#ff9eb0;border:1px solid #e74466}
+.habSim120Toggle{font-size:12px!important;min-height:44px!important}
+.habSim120All{max-height:620px!important}
+.habBuyBlock{margin-top:14px!important;padding:12px!important;border-width:2px!important}
+.habBuyHead b{font-size:20px!important}.habBuyHead small{font-size:8px!important}
+.habBuyHead>strong{font-size:13px!important}
+.habBuyGroup{padding:10px!important}.habBuyGroup h5{font-size:13px!important;margin-bottom:8px!important}
+.habBuyGroup h5 span{font-size:8px!important}
+.habBuyRow{
+  display:grid!important;grid-template-columns:minmax(118px,1.35fr) 1fr 70px 70px 45px!important;
+  gap:7px!important;min-height:52px!important;padding:8px 0!important
+}
+.habBuyCombo{display:flex;align-items:center;gap:4px}
+.habBuyRow span{font-size:9px!important}.habBuyRow strong{font-size:11px!important}
+.habBuyRow em{font-size:9px!important}.habBuyEmpty{font-size:10px!important;padding:12px!important}
+.habBuyNote{font-size:8px!important;line-height:1.5!important}
+@media(max-width:560px){
+  .habUnifiedHeader,.habUnifiedRow{grid-template-columns:26px 84px 1fr 56px 56px;gap:4px}
+  .habMiniBoat{width:24px;height:24px;font-size:13px}
+  .habMetric b{font-size:12px}
+  .habBuyRow{grid-template-columns:112px 1fr 58px 58px 38px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14651,7 +14722,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.368</div>
+  <div class="topVol">Vol.369</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -14771,7 +14842,7 @@ input,
   </section>
   <section id="hunterResetBase" class="hunterResetBase">
     <div>
-      <small>HUNTER RESET / V368</small>
+      <small>HUNTER RESET / V369</small>
       <b>解析ロジック再構築モード</b>
       <span>買い目・SIM・HUNTER事前評価は一度すべて削除済み</span>
     </div>
@@ -14798,7 +14869,7 @@ input,
     </article>
 
     <article class="habCard sim">
-      <h4>SIM確率</h4>
+      <h4>120通り分析</h4>
       <div id="habSimBody" class="habBody">
         <div class="habWait">事前評価＋120通り取得後に5000回SIM</div>
       </div>
@@ -15126,7 +15197,7 @@ function bhRenderFAfterCompact(rr,map){
 window.bhRenderFAfterCompact=bhRenderFAfterCompact;
 
 
-/* Vol.368: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
+/* Vol.369: 場選択は当日「6艇の出走表が実在する開催場」のみ表示 */
 async function bhRefreshHeldVenues(){
   try{
     if(typeof window.loadTodayVenues==="function"){
@@ -15793,7 +15864,7 @@ function raceTheme(r){
   return "normal";
 }
 
-/* Vol.368 場時間帯補正
+/* Vol.369 場時間帯補正
    徳山ダイヤモンドカップ 2026-09-12〜09-17 はデー開催表示。 */
 function bhVenueTimeZoneOverride(date,jcd,current){
   const ymd=String(date||"").replaceAll("-","");
@@ -20467,12 +20538,31 @@ window.bhVenueBase=function(course,key="p1"){
     return rows;
   }
 
-  function ticketRows(arr){
+  function comboHTML(combo){
+    const a=String(combo).split("-").map(Number);
+    return `<div class="habComboBig">
+      <span class="habMiniBoat b${a[0]}">${a[0]}</span><span class="habArrow">›</span>
+      <span class="habMiniBoat b${a[1]}">${a[1]}</span><span class="habArrow">›</span>
+      <span class="habMiniBoat b${a[2]}">${a[2]}</span>
+    </div>`;
+  }
+  function patchFor(combo,t){
+    if(t.main.some(x=>x.combo===combo))return `<span class="habPickPatch main">本線</span>`;
+    if(t.mid.some(x=>x.combo===combo))return `<span class="habPickPatch mid">中穴</span>`;
+    if(t.long.some(x=>x.combo===combo))return `<span class="habPickPatch long">万舟</span>`;
+    return "";
+  }
+  function marketRankMap(rows){
+    const m=new Map();
+    [...rows].sort((a,b)=>a.odds-b.odds).forEach((x,i)=>m.set(x.combo,i+1));
+    return m;
+  }
+  function ticketRows(arr,kind){
     if(!arr.length)return `<div class="habBuyEmpty">条件を満たす買い目なし</div>`;
     return arr.map(x=>`
       <div class="habBuyRow">
-        <b>${x.combo}</b>
-        <span>確率 ${x.simPct.toFixed(1)}%</span>
+        <div class="habBuyCombo">${comboHTML(x.combo)}<span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span></div>
+        <span>発生 <b>${x.simPct.toFixed(1)}%</b></span>
         <span>${x.odds.toFixed(1)}倍</span>
         <strong>期待 ${x.ev.toFixed(2)}</strong>
         <em>¥100</em>
@@ -20483,54 +20573,83 @@ window.bhVenueBase=function(course,key="p1"){
     return `
       <section class="habBuyBlock">
         <div class="habBuyHead">
-          <div><small>HUNTER BUY</small><b>最終買い目</b></div>
+          <div><small>HUNTER BUY / VALUE PICK</small><b>最終買い目</b></div>
           <strong>${t.all.length}点 / ¥${(t.all.length*100).toLocaleString("ja-JP")}</strong>
         </div>
-        <div class="habBuyGroup main"><h5>本線｜的中 × 回収 <span>最大9点</span></h5>${ticketRows(t.main)}</div>
-        <div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid)}</div>
-        <div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long)}</div>
+        <div class="habBuyGroup main"><h5>本線｜的中 × 回収 <span>最大9点</span></h5>${ticketRows(t.main,"main")}</div>
+        <div class="habBuyGroup mid"><h5>中穴｜50〜99.9倍 <span>最大4点</span></h5>${ticketRows(t.mid,"mid")}</div>
+        <div class="habBuyGroup long"><h5>万舟｜100倍以上 <span>最大2点</span></h5>${ticketRows(t.long,"long")}</div>
         <div class="habBuyNote">期待値1.00未満・発生確率不足は無理に補充しません</div>
       </section>`;
+  }
+
+  function unifiedRows(rows,tickets,sortMode){
+    const rank=marketRankMap(rows);
+    let list=[...rows];
+    if(sortMode==="market")list.sort((a,b)=>a.odds-b.odds);
+    else if(sortMode==="ev")list.sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct);
+    else list.sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev);
+    return list.map((x,i)=>`
+      <div class="habUnifiedRow">
+        <span class="rank">${sortMode==="market"?(i+1):("#"+(i+1))}</span>
+        <div>${comboHTML(x.combo)}${patchFor(x.combo,tickets)}</div>
+        <div class="habMetric"><small>SIM発生確率</small><b>${x.simPct.toFixed(1)}%</b></div>
+        <div class="habMetric odds"><small>世間 ${rank.get(x.combo)}人気</small><b>${x.odds.toFixed(1)}倍</b></div>
+        <div class="habMetric ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
+      </div>`).join("");
   }
 
   function renderSim(pre){
     const el=$("habSimBody");if(!el)return;
     if(!window.__HUNTER_ODDS120?.odds?.length){
-      el.innerHTML=`<div class="habWait">120通りオッズ取得後にSIM確率を表示</div>`;return;
+      el.innerHTML=`<div class="habWait">120通りオッズ取得後に「SIM確率 × オッズ × 期待値」を統合表示</div>`;return;
     }
-    if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後にSIM開始</div>`;return}
+    if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
     const rows=sim5000(pre),tickets=selectTickets(rows);
-    window.__HUNTER_SIM_V368=rows;
+    window.__HUNTER_SIM_V369=rows;
+    const rank=marketRankMap(rows);
 
+    const top=[...rows].sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,10);
     el.innerHTML=`
-      <div class="habSimMeta">5000回 / HUNTER独立SIM → 120通り発生確率</div>
-      <div class="habSimTop10">
-        ${rows.slice(0,10).map((x,i)=>`
-          <div class="habSimRow v368">
-            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong>
-            <em>${x.odds.toFixed(1)}倍</em><i>${x.ev.toFixed(2)}</i>
+      <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を1画面で比較</div>
+      <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
+      <div id="habUnifiedTop">
+        ${top.map((x,i)=>`
+          <div class="habUnifiedRow">
+            <span class="rank">#${i+1}</span>
+            <div>${comboHTML(x.combo)}${patchFor(x.combo,tickets)}</div>
+            <div class="habMetric"><small>SIM発生確率</small><b>${x.simPct.toFixed(1)}%</b></div>
+            <div class="habMetric odds"><small>世間 ${rank.get(x.combo)}人気</small><b>${x.odds.toFixed(1)}倍</b></div>
+            <div class="habMetric ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
           </div>`).join("")}
       </div>
 
-      <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通りすべて見る ＋</button>
+      <button type="button" id="habSim120Toggle" class="habSim120Toggle">120通り全部を比較する ＋</button>
       <div id="habSim120All" class="habSim120All hidden">
-        <div class="hab120Header"><span>順位</span><b>3連単</b><strong>発生確率</strong><em>オッズ</em><i>期待値</i></div>
-        ${rows.map((x,i)=>`
-          <div class="habSimRow full v368">
-            <span>${i+1}</span><b>${x.combo}</b><strong>${x.simPct.toFixed(1)}%</strong>
-            <em>${x.odds.toFixed(1)}倍</em><i>${x.ev.toFixed(2)}</i>
-          </div>`).join("")}
+        <div class="habAnalysisToolbar">
+          <button class="habSortBtn active" data-sort="sim">SIM確率順</button>
+          <button class="habSortBtn" data-sort="market">人気順</button>
+          <button class="habSortBtn" data-sort="ev">期待値順</button>
+        </div>
+        <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
+        <div id="habUnifiedAllRows">${unifiedRows(rows,tickets,"sim")}</div>
       </div>
 
       ${renderBuyBlock(tickets)}
     `;
 
-    const t=$("habSim120Toggle"),all=$("habSim120All");
-    t?.addEventListener("click",()=>{
+    const toggle=$("habSim120Toggle"),all=$("habSim120All");
+    toggle?.addEventListener("click",()=>{
       const opening=all?.classList.contains("hidden");
       all?.classList.toggle("hidden");
-      if(t)t.textContent=opening?"120通りを閉じる −":"120通りすべて見る ＋";
+      if(toggle)toggle.textContent=opening?"120通りを閉じる −":"120通り全部を比較する ＋";
     });
+    el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
+      el.querySelectorAll(".habSortBtn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const holder=$("habUnifiedAllRows");
+      if(holder)holder.innerHTML=unifiedRows(rows,tickets,btn.dataset.sort||"sim");
+    }));
   }
 
   function runAll(){renderMarket();const p=renderPre();renderSim(p)}
@@ -20621,6 +20740,18 @@ window.bhVenueBase=function(course,key="p1"){
 - 条件不足は無理に点数を埋めない。
 - 選出買い目を window.__HUNTER_BUY_TICKETS に渡し、V367結果確認と連動。
 - 直前偏差は取得済み直前情報テーブルも直接参照し、50固定化を回避。
+*/
+</script>
+
+
+<script id="bh-v369-marker">
+/* V369
+- SIM確率とMARKET ODDS 120通りを「120通り分析」へ統合。
+- 旧MARKET ODDS一覧は重複表示しない。取得DOMはデータ取得用に保持。
+- 120通りを SIM確率順 / 人気順 / 期待値順 で切替可能。
+- 一覧に SIM発生確率 / 世間人気 / オッズ / 期待値 を同時表示。
+- 採用買い目には 本線 / 中穴 / 万舟 パッチ。
+- 買い目艇番を艇色大型ボックス化し、文字・数値・期待値を拡大。
 */
 </script>
 
