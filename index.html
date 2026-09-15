@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V374</title>
+<title>BOAT HUNTER V373</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -14740,6 +14740,74 @@ input,
 .jumpToHunterBuy:disabled{opacity:.28;filter:saturate(.25)}
 #hunterFinalBuyBlock{scroll-margin-top:14px}
 </style>
+
+<style id="bh-v373-restart-ui">
+/* V373 restart from V372 */
+.habCard.sim h4{display:none!important}
+.habSimMeta{display:none!important}
+#habUnifiedTop{display:none!important}
+#habSim120Toggle{display:none!important}
+#habSim120All{
+  display:block!important;max-height:none!important;overflow:visible!important
+}
+.habAnalysisToolbar{
+  position:sticky!important;top:0!important;z-index:60!important;
+  margin:0 -2px 8px!important;padding:9px 4px 8px!important;
+  background:rgba(5,17,26,.97)!important;
+  border-bottom:1px solid rgba(92,202,255,.24)!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)
+}
+.habAnalysisToolbar:before{
+  content:"120通り比較"!important;display:block!important;width:100%!important;
+  margin:0 0 7px!important;color:#fff!important;font-size:16px!important;
+  font-weight:1000!important;letter-spacing:.03em!important
+}
+.habSortBtn{min-height:42px!important;font-size:13px!important}
+.habUnifiedHeader{
+  position:sticky!important;top:84px!important;z-index:55!important;
+  background:#081721!important;
+  grid-template-columns:30px 104px minmax(72px,1fr) 62px 76px 76px!important;
+  gap:5px!important;padding:9px 7px!important;font-size:10px!important
+}
+.habUnifiedRow{
+  grid-template-columns:30px 104px minmax(72px,1fr) 62px 76px 76px!important;
+  gap:5px!important;min-height:64px!important;padding:9px 7px!important
+}
+.habUnifiedRow .rank{font-size:12px!important}
+.habMiniBoat{width:28px!important;height:28px!important;font-size:15px!important}
+.habMetric small{font-size:8px!important}
+.habMetric b{font-size:16px!important}
+.habMetric.odds b{font-size:17px!important}
+.habMetric.ev b{font-size:18px!important}
+.habPatchCell{display:flex!important;align-items:center!important;justify-content:center!important;min-width:0}
+.habPatchCell .habPickPatch{margin:0!important;padding:5px 8px!important;font-size:9px!important}
+.habBuyRow{
+  grid-template-columns:minmax(108px,1.35fr) 58px minmax(60px,.75fr) minmax(72px,.88fr) minmax(72px,.88fr)!important;
+  gap:7px!important;min-height:72px!important;padding:11px 0!important
+}
+.habBuyCombo{flex-wrap:nowrap!important}
+.habBuyPatchCell{display:flex!important;align-items:center!important;justify-content:center!important}
+.habBuyPatchCell .habPickPatch{margin:0!important;padding:5px 8px!important;font-size:9px!important}
+.habBuyStat small{font-size:9px!important}
+.habBuyStat b{font-size:17px!important}
+.habBuyStat.odds b{font-size:21px!important}
+.habBuyStat.ev b{font-size:22px!important}
+#hunterFinalBuyBlock{scroll-margin-top:12px}
+@media(max-width:560px){
+  .habUnifiedHeader,.habUnifiedRow{
+    grid-template-columns:24px 88px minmax(60px,1fr) 54px 64px 64px!important;
+    gap:3px!important
+  }
+  .habUnifiedHeader{top:84px!important;font-size:9px!important}
+  .habMiniBoat{width:24px!important;height:24px!important;font-size:13px!important}
+  .habMetric b{font-size:14px!important}.habMetric.odds b{font-size:15px!important}.habMetric.ev b{font-size:16px!important}
+  .habPatchCell .habPickPatch{font-size:8px!important;padding:4px 6px!important}
+  .habBuyRow{grid-template-columns:98px 52px 58px 68px 68px!important;gap:4px!important}
+  .habBuyStat b{font-size:15px!important}.habBuyStat.odds b{font-size:18px!important}.habBuyStat.ev b{font-size:19px!important}
+}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -14750,7 +14818,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.374</div>
+  <div class="topVol">Vol.373</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15909,8 +15977,10 @@ function applyVenueTheme(){
 }
 
 $("date").value=today();
-$("stadium").innerHTML=Object.entries(S).map(([k,v])=>`<option value="${k}">${venueTimeIcon(k)} ${v}</option>`).join("");
+$("stadium").innerHTML=`<option value="">開催場取得中…</option>`;
 $("race").innerHTML=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}R</option>`).join("");
+/* V373: 24場を初期表示せず、当日開催場取得を優先 */
+queueMicrotask(()=>{ try{ window.bhRefreshHeldVenues?.(); }catch(e){} });
 
 /* Vol.242: レース矢印切替。変更時は既存のchange処理をすべて発火 */
 (function(){
@@ -20239,11 +20309,11 @@ window.bhVenueBase=function(course,key="p1"){
         ?"今日の成績をリセットします。暗証番号を入力してください。"
         :"累計成績をすべてリセットします。暗証番号を入力してください。");
       if(code==="456"){
-        if(kind==="day") save(DAY_KEY,{...empty(),date:todayKey()});
-        else if(kind==="all") save(TOTAL_KEY,empty());
+        if(kind==="day")save(DAY_KEY,{...empty(),date:todayKey()});
+        else save(TOTAL_KEY,empty());
         render();
       }else if(code!==null){
-        alert("暗証番号が違います。リセットしませんでした。");
+        alert("暗証番号が違います");
       }
       btn.textContent=kind==="day"?"今日をリセット":"累計をリセット";
     };
@@ -20602,7 +20672,7 @@ window.bhVenueBase=function(course,key="p1"){
     return arr.map(x=>`
       <div class="habBuyRow">
         <div class="habBuyCombo">${comboHTML(x.combo)}</div>
-        <span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span>
+        <div class="habBuyPatchCell"><span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span></div>
         <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div>
         <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
         <div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
@@ -20632,8 +20702,9 @@ window.bhVenueBase=function(course,key="p1"){
     return list.map((x,i)=>`
       <div class="habUnifiedRow">
         <span class="rank">${sortMode==="market"?(i+1):("#"+(i+1))}</span>
-        <div>${comboHTML(x.combo)}${patchFor(x.combo,tickets)}</div>
+        <div>${comboHTML(x.combo)}</div>
         <div class="habMetric"><small>SIM発生確率</small><b>${x.simPct.toFixed(1)}%</b></div>
+        <div class="habPatchCell">${patchFor(x.combo,tickets)}</div>
         <div class="habMetric odds"><small>世間 ${rank.get(x.combo)}人気</small><b>${x.odds.toFixed(1)}倍</b></div>
         <div class="habMetric ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
       </div>`).join("");
@@ -20642,62 +20713,47 @@ window.bhVenueBase=function(course,key="p1"){
   function renderSim(pre){
     const el=$("habSimBody");if(!el)return;
     if(!window.__HUNTER_ODDS120?.odds?.length){
-      el.innerHTML=`<div class="habWait">120通りオッズ取得後に「SIM確率 × オッズ × 期待値」を統合表示</div>`;return;
+      el.innerHTML=`<div class="habWait">120通りオッズ取得後に「SIM確率 × オッズ × 期待値」を表示</div>`;return;
     }
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
     const rows=sim5000(pre),tickets=selectTickets(rows);
-    window.__HUNTER_SIM_V370=rows;
-    /* V372: 自動再描画でも現在位置を動かさない */
+    window.__HUNTER_SIM_V373=rows;
     const keepWindowY=window.scrollY;
-    const oldAll=document.getElementById("habSim120All");
-    const keepInnerScroll=oldAll?oldAll.scrollTop:0;
-    const rank=marketRankMap(rows);
-
-    const top=[...rows].sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev).slice(0,10);
-    const keep120Open=window.__BH_SIM120_OPEN===true;
     const keepSortMode=["sim","market","ev"].includes(window.__BH_SIM120_SORT)?window.__BH_SIM120_SORT:"sim";
+
     el.innerHTML=`
-      <div class="habSimMeta">5000回 HUNTER独立SIM × 世間120通りオッズ<br>発生確率・人気・オッズ・期待値を120通りで比較</div>
       <div id="habSim120All" class="habSim120All">
-        <div class="habWhereBar"><b>120通り比較</b><span>SIM確率・人気・期待値</span></div>
         <div class="habAnalysisToolbar">
           <button class="habSortBtn ${keepSortMode==="sim"?"active":""}" data-sort="sim">SIM確率順</button>
           <button class="habSortBtn ${keepSortMode==="market"?"active":""}" data-sort="market">人気順</button>
           <button class="habSortBtn ${keepSortMode==="ev"?"active":""}" data-sort="ev">期待値順</button>
         </div>
-        <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><em>オッズ</em><i>期待値</i></div>
+        <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><u>採用</u><em>オッズ</em><i>期待値</i></div>
         <div id="habUnifiedAllRows">${unifiedRows(rows,tickets,keepSortMode)}</div>
       </div>
-
       ${renderBuyBlock(tickets)}
     `;
 
-    requestAnimationFrame(()=>{
-      const newAll=document.getElementById("habSim120All");
-      if(newAll)newAll.scrollTop=keepInnerScroll;
-      window.scrollTo({top:keepWindowY,left:0,behavior:"auto"});
-    });
+    requestAnimationFrame(()=>window.scrollTo({top:keepWindowY,left:0,behavior:"auto"}));
     const jump=document.getElementById("jumpToHunterBuy");
     if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
 
-    const all=$("habSim120All");
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
+      const y=window.scrollY;
       el.querySelectorAll(".habSortBtn").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       const mode=btn.dataset.sort||"sim";
       window.__BH_SIM120_SORT=mode;
       const holder=$("habUnifiedAllRows");
-      const y=window.scrollY, inner=all?all.scrollTop:0;
       if(holder)holder.innerHTML=unifiedRows(rows,tickets,mode);
-      if(all)all.scrollTop=inner;
-      window.scrollTo({top:y,left:0,behavior:"auto"});
+      requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:"auto"}));
     }));
   }
 
   function runAll(){renderMarket();const p=renderPre();renderSim(p)}
   window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
-  const reset120=()=>{window.__BH_SIM120_OPEN=false;window.__BH_SIM120_SORT="sim"};
+  const reset120=()=>{window.__BH_SIM120_SORT="sim"};
   document.getElementById("aiAnalyze")?.addEventListener("click",()=>{reset120();setTimeout(runAll,350)});
   document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
@@ -20705,7 +20761,7 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
-  /* V374: 自動2.5秒再描画を廃止。操作中のスクロール位置・ソートを固定 */
+  setInterval(()=>{if(document.getElementById("hunterAnalysisBase"))runAll()},2500);
 })();
 </script>
 
@@ -20811,47 +20867,15 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 
-<style id="bh-v373-readability">
-/* V374: 120通りを一本化、現在位置をsticky表示、文字拡大 */
-.habSim120All{display:block!important;max-height:none!important;overflow:visible!important}
-.habWhereBar{position:sticky;top:0;z-index:35;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin:0 -2px 8px;border:1px solid #315568;border-radius:10px;background:rgba(5,20,29,.97);box-shadow:0 7px 18px rgba(0,0,0,.34)}
-.habWhereBar b{font-size:15px;color:#fff}.habWhereBar span{font-size:10px;color:#8fdcff;font-weight:900}
-.habAnalysisToolbar{position:sticky;top:48px;z-index:34;background:rgba(7,19,27,.97);padding:7px 0;margin:0!important}
-.habSortBtn{min-height:44px!important;font-size:12px!important}
-.habUnifiedHeader{position:sticky;top:106px;z-index:33;background:#071923;font-size:10px!important;padding:9px 8px!important}
-.habUnifiedRow{min-height:68px!important;padding:10px 8px!important}
-.habUnifiedRow .rank{font-size:12px!important}
-.habMiniBoat{width:31px!important;height:31px!important;font-size:16px!important}
-.habArrow{font-size:13px!important}.habMetric small{font-size:8px!important}.habMetric b{font-size:16px!important}
-.habMetric.odds b{font-size:17px!important}.habMetric.ev b{font-size:17px!important}
-.habPickPatch{font-size:9px!important;padding:4px 8px!important;margin-left:0!important}
-.habBuyBlock{scroll-margin-top:64px!important}
-.habBuyHead b{font-size:23px!important}.habBuyHead>strong{font-size:15px!important}
-.habBuyGroup h5{font-size:15px!important}.habBuyGroup h5 span{font-size:10px!important}
-.habBuyRow{grid-template-columns:minmax(118px,1.35fr) 48px 62px 76px 70px!important;gap:7px!important;min-height:74px!important}
-.habBuyRow>.habPickPatch{justify-self:center;align-self:center}
-.habBuyStat small{font-size:9px!important}.habBuyStat.sim b{font-size:16px!important}.habBuyStat.odds b{font-size:20px!important}.habBuyStat.ev b{font-size:21px!important}
-@media(max-width:560px){
- .habUnifiedHeader,.habUnifiedRow{grid-template-columns:28px 92px 1fr 62px 58px!important;gap:5px!important}
- .habBuyRow{grid-template-columns:108px 43px 52px 66px 58px!important;gap:4px!important}
- .habBuyStat small{font-size:7px!important}.habBuyStat.sim b{font-size:14px!important}.habBuyStat.odds b{font-size:17px!important}.habBuyStat.ev b{font-size:18px!important}
-}
-</style>
-<script id="bh-v373-marker">
-/* V374
-- SIM上位10＋隠しボタンの重複表示を廃止し、120通り比較を1ブロックに一本化。
-- SIM確率順 / 人気順 / 期待値順はその場で切替。自動2.5秒再描画を停止し、勝手に先頭へ戻らない。
-- スクロール中も「120通り比較」・ソート・列見出しをsticky表示して現在位置を把握可能。
-- 一覧と最終買い目の文字・倍率・期待値を拡大。
-- 最終買い目パッチを艇番と発生率の間の独立列へ移動し、重なりを解消。
-*/
-</script>
-
-<script id="bh-v374-reset-pin-marker">
-/* V374
-- 結果確認・収支管理の「今日をリセット」「累計をリセット」を暗証番号方式へ変更。
-- 暗証番号: 456。誤入力時はリセットしない。
-- 長押し保護は維持し、長押し後に暗証番号入力で確定。
+<script id="bh-v373-restart-marker">
+/* V373 RESTART from V372
+- 場選択: 24場初期投入を廃止。当日6艇出走表がある開催場だけ。
+- 120通り: 重複TOP10と開閉ボタンを廃止し、比較一覧を常時表示。
+- SIM確率順 / 人気順 / 期待値順の選択状態を保持。
+- 比較画面のツールバーと見出しをsticky化し、スクロール中も現在位置を把握可能。
+- 採用パッチを中央専用列へ移動。全体の主要文字を拡大。
+- 最終買い目: パッチ専用列、倍率・期待値を大型化。
+- 結果確認リセット: 長押し + 暗証番号456。
 */
 </script>
 </body>
