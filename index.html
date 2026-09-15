@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V378: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V379: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -14993,7 +14993,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.378</div>
+  <div class="topVol">Vol.379</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15114,7 +15114,7 @@ input,
   </section>
 <section id="hunterAnalysisBase" class="hab habCollapsed">
   <button type="button" id="hunterAnalysisToggle" class="habAnalysisToggle" aria-expanded="false">
-    <span><small>ANALYSIS DATA</small><b>世間評価・HUNTER事前評価・SIM</b></span><strong>詳細を見る ＋</strong>
+    <span><small>ANALYSIS DETAIL</small><b>世間評価・HUNTER事前評価</b></span><strong>詳細を見る ＋</strong>
   </button>
   <div id="hunterAnalysisContent" class="habAnalysisContent">
   <div class="habGrid">
@@ -20787,24 +20787,43 @@ window.bhVenueBase=function(course,key="p1"){
     const main=value.filter(x=>x.odds<50&&x.simPct>=.8).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,9);
     const mid=value.filter(x=>x.odds>=50&&x.odds<100&&x.simPct>=.35).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,4);
     const long=value.filter(x=>x.odds>=100&&x.simPct>=.15).sort((a,b)=>b.ev-a.ev||b.simPct-a.simPct).slice(0,2);
+
+    // BOXの狙い目は「本命〜中穴(100倍未満)に期待値が集まる部分」。万舟はBOX評価に使わない。
+    const zone=rows.filter(x=>x.odds<100&&x.simPct>0);
     const boxes=[];
     for(let a=1;a<=4;a++)for(let b=a+1;b<=5;b++)for(let c=b+1;c<=6;c++){
-      const boats=[a,b,c], members=rows.filter(x=>String(x.combo).split("-").map(Number).every(n=>boats.includes(n)));
+      const boats=[a,b,c];
+      const members=rows.filter(x=>String(x.combo).split('-').map(Number).every(n=>boats.includes(n)));
       if(members.length!==6)continue;
-      const hitPct=members.reduce((z,x)=>z+x.simPct,0), avgEv=members.reduce((z,x)=>z+x.ev,0)/6;
-      const valueCount=members.filter(x=>x.ev>=1).length, valuePct=members.filter(x=>x.ev>=1).reduce((z,x)=>z+x.simPct,0);
-      boxes.push({boats,members,hitPct,avgEv,valueCount,score:hitPct*(.7+Math.min(avgEv,2.5)*.3)+valuePct*.35});
+      const zoneMembers=zone.filter(x=>String(x.combo).split('-').map(Number).every(n=>boats.includes(n)));
+      const valueZone=zoneMembers.filter(x=>x.ev>=1);
+      const zoneHitPct=zoneMembers.reduce((z,x)=>z+x.simPct,0);
+      const zoneValuePct=valueZone.reduce((z,x)=>z+x.simPct,0);
+      const zoneEvSum=valueZone.reduce((z,x)=>z+x.ev,0);
+      const zoneAvgEv=valueZone.length?zoneEvSum/valueZone.length:0;
+      const hitPct=members.reduce((z,x)=>z+x.simPct,0);
+      const avgEv=members.reduce((z,x)=>z+x.ev,0)/6;
+      // 期待値の「点」ではなく、100倍未満で複数目に期待値が集中するBOXを優先。
+      const concentration=valueZone.length*2.0 + zoneValuePct*1.15 + zoneHitPct*.35 + zoneAvgEv*1.4;
+      boxes.push({boats,members,hitPct,avgEv,zoneCount:zoneMembers.length,valueCount:valueZone.length,zoneHitPct,zoneValuePct,zoneAvgEv,score:concentration});
     }
-    boxes.sort((a,b)=>b.score-a.score||b.hitPct-a.hitPct);
-    const good=x=>x&&x.valueCount>=2&&x.avgEv>=.9&&x.hitPct>=4;
+    boxes.sort((a,b)=>b.score-a.score||b.valueCount-a.valueCount||b.zoneValuePct-a.zoneValuePct||b.zoneHitPct-a.zoneHitPct);
+    // BOXは本命〜中穴ゾーンに期待値1以上が最低2点集まることを条件にする。
+    const good=x=>x&&x.valueCount>=2&&x.zoneValuePct>0;
     const goodBoxes=boxes.filter(good);
     const b1=goodBoxes[0], b2=goodBoxes[1];
-    let mode="NORMAL", activeBoxes=[], all=[...main,...mid,...long];
-    // V378: 本線・中穴が成立せず、万舟だけが1〜2点残るケースも「通常買い目不足」と判定。
-    // 良質BOXが2組あれば万舟単独表示をやめ、期待値2BOX（最大12点）へ切り替える。
-    const thinNormal=(main.length===0&&mid.length===0&&long.length<=2);
-    if(thinNormal&&good(b1)&&good(b2)){mode="TWO_BOX";activeBoxes=[b1,b2];all=[...new Map(activeBoxes.flatMap(q=>q.members).map(x=>[x.combo,x])).values()];}
-    else if(main.length&&good(b1)){mode="MAIN_PLUS_BOX";activeBoxes=[b1];all=[...new Map([...main,...b1.members].map(x=>[x.combo,x])).values()];}
+    let mode='NORMAL', activeBoxes=[], all=[...main,...mid,...long];
+
+    // 本線＋中穴が弱く、穴目だけ1〜2点になる場合は必ず2BOXを優先。
+    const thinHoleOnly=(main.length===0&&mid.length===0&&long.length>=1&&long.length<=2);
+    const thinAll=(main.length===0&&mid.length===0&&long.length===0);
+    if((thinHoleOnly||thinAll)&&good(b1)&&good(b2)){
+      mode='TWO_BOX'; activeBoxes=[b1,b2];
+      all=[...new Map(activeBoxes.flatMap(q=>q.members).map(x=>[x.combo,x])).values()];
+    }else if(main.length&&good(b1)){
+      mode='MAIN_PLUS_BOX'; activeBoxes=[b1];
+      all=[...new Map([...main,...b1.members].map(x=>[x.combo,x])).values()];
+    }
     window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=activeBoxes;
     window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
     return {main,mid,long,all,mode,boxes:activeBoxes};
@@ -20874,7 +20893,7 @@ window.bhVenueBase=function(course,key="p1"){
     return `<div class="habBuyGroup box habBoxCard" data-box="${code}">
       <button type="button" class="habBoxToggle" data-box-key="${key}" aria-expanded="${open}">
         <span class="habBoxName">${code} BOX</span>
-        <span class="habBoxMeta"><b>総合発生率 ${q.hitPct.toFixed(1)}%</b><em>6点</em></span>
+        <span class="habBoxMeta"><b>本命〜中穴 集中度 ${q.valueCount}点</b><em>6点</em></span>
         <strong>${open?"詳細を閉じる −":"詳細を見る ＋"}</strong>
       </button>
       <div class="habBoxDetails ${open?"":"hide"}">
@@ -20950,9 +20969,9 @@ window.bhVenueBase=function(course,key="p1"){
     const toggle=document.getElementById("hunterAnalysisToggle"), base=document.getElementById("hunterAnalysisBase");
     if(toggle&&base&&!toggle.dataset.bound){
       toggle.dataset.bound="1";
-      let open=false;try{open=localStorage.getItem("BH_ANALYSIS_OPEN")==="1"}catch(e){}
+      let open=false;try{open=sessionStorage.getItem("BH_ANALYSIS_OPEN")==="1"}catch(e){}
       const apply=()=>{base.classList.toggle("habCollapsed",!open);toggle.setAttribute("aria-expanded",String(open));const st=toggle.querySelector("strong");if(st)st.textContent=open?"詳細を閉じる −":"詳細を見る ＋"};
-      apply();toggle.addEventListener("click",()=>{open=!open;try{localStorage.setItem("BH_ANALYSIS_OPEN",open?"1":"0")}catch(e){}apply()});
+      apply();toggle.addEventListener("click",()=>{open=!open;try{sessionStorage.setItem("BH_ANALYSIS_OPEN",open?"1":"0")}catch(e){}apply()});
     }
     if(!document.body.dataset.boxV377){
       document.body.dataset.boxV377="1";
@@ -21104,7 +21123,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V378
+/* V379
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
