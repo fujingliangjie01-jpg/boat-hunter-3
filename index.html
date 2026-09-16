@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V398</title>
+<title>BOAT HUNTER V399</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15068,7 +15068,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.397</div>
+  <div class="topVol">Vol.399</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20951,9 +20951,17 @@ window.bhVenueBase=function(course,key="p1"){
       const atk6=Math.round(Math.max(0,Math.min(100,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12)));
       const rivalAttackMax=Math.max(atk2,atk4,atk5,atk6),c3TopAttack=attackPct>rivalAttackMax,c3HighAttack=attackPct>=70&&c3TopAttack,c3CanRemain=makuriPct>=31;
       let axis;
-      if(c3HighAttack&&c3CanRemain)axis=3;
+      // V399: イン逃げ時は「3が攻めを作る力」と「3自身のまくり成功」を分離。
+      // 3攻め45%以上で壁を崩す構造なら、まくり成功が低くても3を軸候補から落とさない。
+      // その攻めを受ける4展開利も比較し、3/4のどちらかを優先。5への飛び越しを防ぐ。
+      const c3CreatesRace=attackPct>=45 && (attackPct>=atk2 || d.wall<=40);
+      if(c3CreatesRace){
+        const c3AxisScore=attackPct + Math.min(20,makuriPct*.25);
+        const c4AxisScore=atk4 + Math.max(0,attackPct-45)*.35;
+        axis=c4AxisScore>c3AxisScore?4:3;
+      }else if(c3HighAttack&&c3CanRemain)axis=3;
       else{
-        const drop3=c3TopAttack&&makuriPct<=30,pool=drop3?axisRank.filter(x=>x.n!==3):axisRank;
+        const drop3=attackPct<=30&&makuriPct<=30,pool=drop3?axisRank.filter(x=>x.n!==3):axisRank;
         if(c3TopAttack&&c3CanRemain&&attackPct-rivalAttackMax>=10)axis=pool.map(x=>({n:x.n,v:x.v+(x.n===3?70:0)})).sort((a,b)=>b.v-a.v||a.n-b.n)[0]?.n;
         else axis=pool[0]?.n;
       }
@@ -20989,7 +20997,7 @@ window.bhVenueBase=function(course,key="p1"){
     window.__HUNTER_SECOND_CUT=secondCut;
     window.__HUNTER_REQUIRED_COMBO=requiredCombo;
     window.__HUNTER_BUY_MODE="MAIN_ONLY";
-    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
+    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:head===1?200:100,units:head===1?2:1,odds:x.odds,simPct:x.simPct,ev:x.ev}));
     const byPopularity=(a,b)=>a.odds-b.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo));
     main=[...main].sort(byPopularity);
     return {mode:"MAIN_ONLY",market,hunter,head,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
@@ -21069,7 +21077,7 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function renderBuyBlock(t){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}</b><em>${t.head===1?`3攻め ${Math.round(t.attackDiag.attackChance)}% / まくり ${Math.round(t.attackDiag.makuriSuccess)}%`:`必須 ${t.requiredCombo||"—"} / 軸買い優先`}</em><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}</b><em>${t.head===1?`3攻め ${Math.round(t.attackDiag.attackChance)}% / まくり ${Math.round(t.attackDiag.makuriSuccess)}% / 2枚投資`:`必須 ${t.requiredCombo||"—"} / 軸買い優先`}</em><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -21330,7 +21338,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V398 NON-IN AXIS LOCK: required 1 + axis tickets, low-consensus boat cut from 2nd; head1 keeps C3 attack theory -->
+<!-- V399: IN escape axis fix = C3 attack-maker vs C4 benefit; head1 tickets use 2 units. Non-IN axis/required-ticket logic retained. -->
 </body>
 </html>
 
