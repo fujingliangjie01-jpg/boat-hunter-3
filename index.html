@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V406</title>
+<title>BOAT HUNTER V407</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15081,7 +15081,7 @@ input,
 
 <style id="bh-v402-clarity-outcomes">
 .bhV401SimpleTicket.bhTwoUnits{outline:3px solid #ffd43b!important;box-shadow:0 0 18px rgba(255,212,59,.35)!important}
-.bhTwoUnitBadge{display:inline-block;margin-left:8px;padding:5px 9px;border-radius:999px;background:#ffd43b;color:#111;font-size:12px;font-weight:1000;vertical-align:middle}
+.bhTwoUnitBadge{font-size:14px!important;padding:7px 11px!important;box-shadow:0 0 0 2px rgba(0,0,0,.25);display:inline-block;margin-left:8px;padding:5px 9px;border-radius:999px;background:#ffd43b;color:#111;font-size:12px;font-weight:1000;vertical-align:middle}
 .bhTwoUnits .units{background:rgba(255,212,59,.16)!important;border:2px solid #ffd43b!important;border-radius:10px}
 .bhTwoUnits .units b{font-size:24px!important}
 .bhOutcomeSecret{margin-top:18px;text-align:right}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.406</div>
+  <div class="topVol">Vol.407</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20396,11 +20396,15 @@ window.bhVenueBase=function(course,key="p1"){
       window.__HUNTER_FINAL_TICKETS ||
       [];
     if(!Array.isArray(src))return [];
-    return src.map(x=>typeof x==="string"?{combo:x,stake:100}:x)
-      .map(x=>({
-        combo:String(x.combo||x.key||"").replace(/[=>]/g,"-"),
-        stake:Number(x.stake)||100
-      }))
+    const analyzedHead=Number(window.__HUNTER_LAST_HEAD||window.__HUNTER_SELECTED_HEAD||0);
+    return src.map(x=>typeof x==="string"?{combo:x,stake:100,units:1}:x)
+      .map(x=>{
+        const combo=String(x.combo||x.key||"").replace(/[=>]/g,"-");
+        // V407: 本命頭1の解析結果なら、買い目オブジェクト側が古くても必ず2枚へ正規化。
+        const isInMain=analyzedHead===1 || Number(window.__HUNTER_CURRENT_HEAD)===1 || Number(window.__HUNTER_BUY_HEAD)===1;
+        const units=isInMain?2:(Number(x.units)||Math.max(1,Math.round((Number(x.stake)||100)/100)));
+        return {combo,units,stake:units*100};
+      })
       .filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x.combo));
   }
   function renderCurrentResult({state="waiting",combo="",technique="",payout=null,odds=null,hit=null}={}){
@@ -20478,9 +20482,11 @@ window.bhVenueBase=function(course,key="p1"){
           const hitStake=Number(hitTicket?.stake)||100;
           const calcReturn=hit&&Number.isFinite(payout)?hitStake*(payout/100):0;
           const calcProfit=calcReturn-totalStake;
+          const recovery=totalStake>0?(calcReturn/totalStake*100):0;
+          const isTwoUnit=tickets.some(x=>Number(x.units)===2);
           state.textContent=hit
-            ? `結果確定｜${combo} 的中｜投資 ${totalStake.toLocaleString("ja-JP")}円｜払戻 ${Math.round(calcReturn).toLocaleString("ja-JP")}円｜収支 ${calcProfit>=0?"+":""}${Math.round(calcProfit).toLocaleString("ja-JP")}円${hitStake===200?"（イン逃げ2枚計算）":""}`
-            : `結果確定｜${combo} ハズレ｜投資 ${totalStake.toLocaleString("ja-JP")}円｜収支 -${totalStake.toLocaleString("ja-JP")}円`;
+            ? `結果確定｜${combo} 的中｜${isTwoUnit?"イン逃げ2枚投資｜":""}総投資 ${totalStake.toLocaleString("ja-JP")}円｜的中買い目 ${hitStake}円｜払戻 ${Math.round(calcReturn).toLocaleString("ja-JP")}円｜収支 ${calcProfit>=0?"+":""}${Math.round(calcProfit).toLocaleString("ja-JP")}円｜回収率 ${recovery.toFixed(1)}%`
+            : `結果確定｜${combo} ハズレ｜${isTwoUnit?"イン逃げ2枚投資｜":""}総投資 ${totalStake.toLocaleString("ja-JP")}円｜収支 -${totalStake.toLocaleString("ja-JP")}円｜回収率 0.0%`;
         }
       }
 
@@ -20561,11 +20567,24 @@ window.bhVenueBase=function(course,key="p1"){
       let d=ensureDay(),t=load(TOTAL_KEY);
       d.seen=d.seen||{};t.seen=t.seen||{};
       const key=raceKey?`${todayKey()}_${code}_${raceKey}`:"";
-      if(key&&d.seen[key])return false;
-      addTo(d,code,!!hit,Number(stake)||0,Number(returns)||0);
-      addTo(t,code,!!hit,Number(stake)||0,Number(returns)||0);
+      const ns=Number(stake)||0,nr=Number(returns)||0,nh=!!hit;
+      if(key&&d.seen[key]){
+        // V407: 同一レース再確認時、旧100円計算などが残っていれば差分訂正する。
+        const oldD=typeof d.seen[key]==="object"?d.seen[key]:null;
+        const oldT=typeof t.seen[key]==="object"?t.seen[key]:oldD;
+        if(oldD){
+          const undo=(st,old)=>{
+            st.races=Math.max(0,(st.races||0)-1);st.hits=Math.max(0,(st.hits||0)-(old.hit?1:0));
+            st.stake=(st.stake||0)-(Number(old.stake)||0);st.returns=(st.returns||0)-(Number(old.returns)||0);st.profit=st.returns-st.stake;
+            const v=venueObj(st,code);v.races=Math.max(0,v.races-1);v.hits=Math.max(0,v.hits-(old.hit?1:0));v.stake-=Number(old.stake)||0;v.returns-=Number(old.returns)||0;v.profit=v.returns-v.stake;
+          };
+          undo(d,oldD);if(oldT)undo(t,oldT);
+        }else return false;
+      }
+      addTo(d,code,nh,ns,nr);
+      addTo(t,code,nh,ns,nr);
 
-      if(key){d.seen[key]=1;t.seen[key]=1}
+      if(key){d.seen[key]={hit:nh,stake:ns,returns:nr};t.seen[key]={hit:nh,stake:ns,returns:nr}}
       save(DAY_KEY,d);save(TOTAL_KEY,t);render();
       return true;
     },
@@ -21189,7 +21208,11 @@ window.bhVenueBase=function(course,key="p1"){
     window.__HUNTER_SECOND_CUT=secondCut;
     window.__HUNTER_REQUIRED_COMBO=requiredCombo;
     window.__HUNTER_BUY_MODE="MAIN_ONLY";
-    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:head===1?200:100,units:head===1?2:1,odds:x.odds,simPct:x.simPct,ev:x.ev,projectedReturn:(head===1?200:100)*x.odds}));
+    window.__HUNTER_LAST_HEAD=head;
+    window.__HUNTER_CURRENT_HEAD=head;
+    window.__HUNTER_BUY_HEAD=head;
+    const buyUnits=head===1?2:1;
+    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,units:buyUnits,stake:buyUnits*100,odds:x.odds,simPct:x.simPct,ev:x.ev,projectedReturn:(buyUnits*100)*x.odds}));
     const byPopularity=(a,b)=>a.odds-b.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo));
     main=[...main].sort(byPopularity);
     return {mode:"MAIN_ONLY",market,hunter,head,hardCut3,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
@@ -21532,7 +21555,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V406: IN-head main buy fixed to 7 tickets; shortages are filled using next-best axis candidates in 2nd/3rd, preferring higher odds. IN tickets explicitly display 'イン逃げ 2枚投資'. V405 hard cuts retained. -->
+<!-- V407: authoritative IN-head flag forces every IN-main ticket to 2 units/200 yen through display and result accounting; cumulative manager stores per-race stake/return ledger for correction on recheck. -->
 </body>
 </html>
 
