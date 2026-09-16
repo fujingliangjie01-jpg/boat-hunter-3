@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V403</title>
+<title>BOAT HUNTER V404</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15091,6 +15091,14 @@ input,
 .bhOutcomeRow{display:grid;grid-template-columns:28px 1fr 60px;gap:8px;padding:6px 3px;border-bottom:1px solid rgba(255,255,255,.07)}
 .bhOutcomeRow strong{text-align:right}
 </style>
+
+<style id="bh-v404-outcome-audit-style">
+.bhOutcomeAudit{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px;margin:8px 0 12px;border-radius:10px;background:rgba(255,255,255,.06)}
+.bhOutcomeAudit.ok strong{font-weight:1000}.bhOutcomeAudit.ng{outline:2px solid currentColor}.bhOutcomeAudit.ng strong{font-weight:1000}
+.bhOutcomeDetails{margin-top:10px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px}
+.bhOutcomeDetails summary{cursor:pointer;font-weight:900;padding:8px 2px}
+#bhOutcomeAll120{max-height:520px;overflow:auto;padding-right:3px}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15101,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.403</div>
+  <div class="topVol">Vol.404</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20601,8 +20609,8 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   // V403 全国確定結果3連単データ。収支リセットとは完全に別保存。
-  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_V403";
-  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_V403";
+  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_V404";
+  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_V404";
   function all120Combos(){
     const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)for(let k=1;k<=6;k++)if(i!==j&&i!==k&&j!==k)a.push(`${i}-${j}-${k}`);
     return a;
@@ -20638,7 +20646,9 @@ window.bhVenueBase=function(course,key="p1"){
         if(!result)continue;
         const combo=extractResultCombo(result);
         if(!combo)continue;
-        const key=`${ymd}_${String(venueKey).padStart(2,"0")}_${Number(raceKey)||raceKey}`;
+        const venueNo=String(Number(venueKey)||venueKey).padStart(2,"0");
+        const raceNo=String(Number(raceKey)||raceKey);
+        const key=`${ymd}_${venueNo}_${raceNo}`;
         if(seen[key])continue;
         seen[key]=1;counts[combo]=(Number(counts[combo])||0)+1;added++;
       }
@@ -20646,14 +20656,27 @@ window.bhVenueBase=function(course,key="p1"){
     if(added){saveOutcome(counts);saveOutcomeSeen(seen)}
     return added;
   }
+  function outcomeAudit(){
+    const counts=loadOutcome(),seen=loadOutcomeSeen();
+    const countSum=all120Combos().reduce((q,c)=>q+(Number(counts[c])||0),0);
+    const seenCount=Object.keys(seen).length;
+    return {counts,seen,countSum,seenCount,ok:countSum===seenCount};
+  }
   function renderOutcomeWorst30(){
-    const el=$("bhOutcomeWorst30");if(!el)return;
-    const counts=loadOutcome();
-    const total=Object.values(counts).reduce((q,n)=>q+(Number(n)||0),0);
-    const worst=all120Combos().map(combo=>({combo,count:Number(counts[combo])||0}))
-      .sort((a,b)=>a.count-b.count||a.combo.localeCompare(b.combo)).slice(0,30);
-    el.innerHTML=`<div class="bhOutcomeTotal">全国確定結果 累計 <b>${total.toLocaleString("ja-JP")}R</b></div>`+
-      worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
+    const allEl=$("bhOutcomeAll120"),worstEl=$("bhOutcomeWorst30"),auditEl=$("bhOutcomeAudit");
+    if(!allEl||!worstEl)return;
+    const a=outcomeAudit();
+    if(auditEl){
+      auditEl.innerHTML=`<div class="bhOutcomeAudit ${a.ok?"ok":"ng"}">
+        <span>集計済み実レース <b>${a.seenCount.toLocaleString("ja-JP")}R</b></span>
+        <span>120通り合計 <b>${a.countSum.toLocaleString("ja-JP")}回</b></span>
+        <strong>${a.ok?"✓ 一致":"⚠ 不一致"}</strong>
+      </div>`;
+    }
+    const rows=all120Combos().map(combo=>({combo,count:Number(a.counts[combo])||0}));
+    allEl.innerHTML=rows.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
+    const worst=[...rows].sort((x,y)=>x.count-y.count||x.combo.localeCompare(y.combo)).slice(0,30);
+    worstEl.innerHTML=worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
   }
   async function openOutcomePanel(){
     const p=$("bhOutcomePanel"),btn=$("bhOutcomeToggle");if(!p)return;
@@ -20790,8 +20813,16 @@ window.bhVenueBase=function(course,key="p1"){
     <div class="bhOutcomeSecret">
       <button id="bhOutcomeToggle" type="button" class="bhOutcomeToggle">全国出目</button>
       <div id="bhOutcomePanel" class="bhOutcomePanel hidden">
-        <div class="bhOutcomeTitle"><b>全国3連単120通り 出目回数</b><small>実レース確定結果 / ワースト30 / リセット対象外</small></div>
-        <div id="bhOutcomeWorst30"></div>
+        <div class="bhOutcomeTitle"><b>全国3連単 出目カウンター</b><small>実レース確定結果 / リセット対象外</small></div>
+        <div id="bhOutcomeAudit"></div>
+        <details class="bhOutcomeDetails" open>
+          <summary>120通りすべて表示</summary>
+          <div id="bhOutcomeAll120"></div>
+        </details>
+        <details class="bhOutcomeDetails">
+          <summary>ワースト30</summary>
+          <div id="bhOutcomeWorst30"></div>
+        </details>
       </div>
     </div>
 </section>
@@ -21464,7 +21495,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V403: nationwide actual trifecta outcomes stored independently and permanently; hidden bottom button shows worst 30. Performance reset never clears outcome DB. -->
+<!-- V404: clean outcome DB starts at 0; all 120 actual-result counts shown; worst30 separate; seen-race count must equal sum of 120 counts. Performance resets do not touch this DB. -->
 </body>
 </html>
 
