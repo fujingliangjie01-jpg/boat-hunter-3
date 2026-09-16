@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V399</title>
+<title>BOAT HUNTER V401</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15058,6 +15058,26 @@ input,
 .bhV390Group .habBuyRow:before{counter-increment:bhpop}
 .bhV390Group{counter-reset:bhpop}
 </style>
+
+<style id="bh-v401-simple-ticket-style">
+.bhV401SimpleTicket{
+  grid-template-columns:minmax(128px,1.35fr) minmax(70px,.65fr) minmax(72px,.7fr) minmax(105px,1fr)!important;
+  gap:7px!important;
+}
+.bhV401SimpleTicket .habBuyStat{min-width:0!important}
+.bhV401SimpleTicket .habBuyStat small{font-size:10px!important;opacity:.78}
+.bhV401SimpleTicket .habBuyStat b{font-size:17px!important}
+.bhV401SimpleTicket .units b{font-size:20px!important;font-weight:1000!important}
+.bhV401SimpleTicket .payout b{font-size:18px!important;font-weight:1000!important}
+@media(max-width:560px){
+ .bhV401SimpleTicket{
+   grid-template-columns:minmax(112px,1.25fr) 58px 65px minmax(92px,.9fr)!important;
+   gap:4px!important;
+ }
+ .bhV401SimpleTicket .habBuyStat b{font-size:14px!important}
+ .bhV401SimpleTicket .units b,.bhV401SimpleTicket .payout b{font-size:15px!important}
+}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15068,7 +15088,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.399</div>
+  <div class="topVol">Vol.401</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20433,9 +20453,13 @@ window.bhVenueBase=function(course,key="p1"){
         if(!tickets.length){
           state.textContent="結果確定｜現在のバージョンでは買い目未作成のため的中判定なし";
         }else{
+          const totalStake=tickets.reduce((q,x)=>q+(Number(x.stake)||0),0);
+          const hitStake=Number(hitTicket?.stake)||100;
+          const calcReturn=hit&&Number.isFinite(payout)?hitStake*(payout/100):0;
+          const calcProfit=calcReturn-totalStake;
           state.textContent=hit
-            ? `結果確定｜${combo} 的中`
-            : `結果確定｜${combo} ハズレ`;
+            ? `結果確定｜${combo} 的中｜投資 ${totalStake.toLocaleString("ja-JP")}円｜払戻 ${Math.round(calcReturn).toLocaleString("ja-JP")}円｜収支 ${calcProfit>=0?"+":""}${Math.round(calcProfit).toLocaleString("ja-JP")}円${hitStake===200?"（イン逃げ2枚計算）":""}`
+            : `結果確定｜${combo} ハズレ｜投資 ${totalStake.toLocaleString("ja-JP")}円｜収支 -${totalStake.toLocaleString("ja-JP")}円`;
         }
       }
 
@@ -20973,23 +20997,37 @@ window.bhVenueBase=function(course,key="p1"){
       main=uniq(main).sort(sort).slice(0,8);
       window.__HUNTER_MAIN_AXIS=axis;
     }else{
-      // 非イン頭: 必須1点 + 軸買い15点 = 最大16点。
+      // 非イン頭: 必須買い目 + 軸買い。
       const req=requiredCombo?byCombo.get(requiredCombo):null;
       if(req)main.push(req);
 
-      const axisCandidates=pos.filter(x=>{
-        const c=cb(x);
-        if(c[0]!==head)return false;
-        if(requiredCombo&&x.combo===requiredCombo)return false;
-        // 必ず1Cまたは頭の直外艇を2/3着のどちらかに含める。
-        if(!axes.some(a=>c[1]===a||c[2]===a))return false;
-        // 低評価一致艇は2着から切る（必須買い目のみ例外）。
-        if(c[1]===secondCut)return false;
-        return true;
-      }).sort(sort);
-
-      main=uniq([...main,...axisCandidates]).slice(0,16);
-      window.__HUNTER_MAIN_AXIS=axes.join("・");
+      if(head===6){
+        // V400: 6頭は直外軸が無いので、6-1-○ / 6-○-1 を本線。
+        // 点数不足を補うため 1-6-○ / 1-○-6 も1枚で追加。
+        // 低評価一致艇は、必須6-4-2以外では2着から除外。
+        const cands=pos.filter(x=>{
+          const c=cb(x);
+          if(requiredCombo&&x.combo===requiredCombo)return false;
+          const base6=c[0]===6&&(c[1]===1||c[2]===1);
+          const fold1=c[0]===1&&(c[1]===6||c[2]===6);
+          if(!base6&&!fold1)return false;
+          if(c[1]===secondCut)return false;
+          return true;
+        }).sort(sort);
+        main=uniq([...main,...cands]).slice(0,16);
+        window.__HUNTER_MAIN_AXIS="1（6頭本線＋1頭折返し）";
+      }else{
+        const axisCandidates=pos.filter(x=>{
+          const c=cb(x);
+          if(c[0]!==head)return false;
+          if(requiredCombo&&x.combo===requiredCombo)return false;
+          if(!axes.some(a=>c[1]===a||c[2]===a))return false;
+          if(c[1]===secondCut)return false;
+          return true;
+        }).sort(sort);
+        main=uniq([...main,...axisCandidates]).slice(0,16);
+        window.__HUNTER_MAIN_AXIS=axes.join("・");
+      }
     }
 
     const cover=[],long=[];
@@ -20997,7 +21035,7 @@ window.bhVenueBase=function(course,key="p1"){
     window.__HUNTER_SECOND_CUT=secondCut;
     window.__HUNTER_REQUIRED_COMBO=requiredCombo;
     window.__HUNTER_BUY_MODE="MAIN_ONLY";
-    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:head===1?200:100,units:head===1?2:1,odds:x.odds,simPct:x.simPct,ev:x.ev}));
+    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:head===1?200:100,units:head===1?2:1,odds:x.odds,simPct:x.simPct,ev:x.ev,projectedReturn:(head===1?200:100)*x.odds}));
     const byPopularity=(a,b)=>a.odds-b.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo));
     main=[...main].sort(byPopularity);
     return {mode:"MAIN_ONLY",market,hunter,head,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
@@ -21048,14 +21086,16 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function ticketRows(arr,kind){
     if(!arr.length)return `<div class="habBuyEmpty">条件を満たす買い目なし</div>`;
-    return arr.map(x=>`
-      <div class="habBuyRow">
+    return arr.map(x=>{
+      const bt=(window.__HUNTER_BUY_TICKETS||[]).find(q=>q.combo===x.combo)||{};
+      const units=Number(bt.units)||1, stake=Number(bt.stake)||(units*100);
+      return `<div class="habBuyRow bhV401SimpleTicket">
         <div class="habBuyCombo">${comboHTML(x.combo)}</div>
-        <div class="habBuyPatchCell"><span class="habPickPatch ${kind}">${kind==="main"?"本線":kind==="mid"?"中穴":"万舟"}</span></div>
-        <div class="habBuyStat sim"><small>SIM発生率</small><b>${x.simPct.toFixed(1)}%</b></div>
+        <div class="habBuyStat units"><small>投資枚数</small><b>${units}枚</b></div>
         <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
-        <div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div>
-      </div>`).join("");
+        <div class="habBuyStat payout"><small>的中時払戻</small><b>¥${Math.round(stake*x.odds).toLocaleString("ja-JP")}</b></div>
+      </div>`;
+    }).join("");
   }
 
   function boxRows(q,n){
@@ -21077,7 +21117,7 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function renderBuyBlock(t){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}</b><em>${t.head===1?`3攻め ${Math.round(t.attackDiag.attackChance)}% / まくり ${Math.round(t.attackDiag.makuriSuccess)}% / 2枚投資`:`必須 ${t.requiredCombo||"—"} / 軸買い優先`}</em><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}</b><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -21338,7 +21378,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V399: IN escape axis fix = C3 attack-maker vs C4 benefit; head1 tickets use 2 units. Non-IN axis/required-ticket logic retained. -->
+<!-- V401: buy rows simplified to ticket / investment units / odds / payout. Explanatory buy text removed; calculation logic retained. -->
 </body>
 </html>
 
