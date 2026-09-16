@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V407</title>
+<title>BOAT HUNTER V409</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.407</div>
+  <div class="topVol">Vol.409</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20429,6 +20429,51 @@ window.bhVenueBase=function(course,key="p1"){
       if(verdict)verdict.textContent="未判定";
     }
   }
+  function normalizeResultNode(race){
+    if(!race)return null;
+    const candidates=[
+      race.result,race.results,race.race_result,race.raceResult,
+      race?.result_data,race?.resultData
+    ].filter(Boolean);
+    for(const x of candidates){
+      if(Array.isArray(x)){
+        const y=x[0];
+        if(y&&typeof y==="object")return y;
+      }else if(typeof x==="object")return x;
+    }
+    return null;
+  }
+  function trifectaFromAny(race,result){
+    const pools=[
+      result?.payouts?.trifecta,result?.payout?.trifecta,
+      race?.payouts?.trifecta,race?.payout?.trifecta,
+      result?.trifecta,race?.trifecta
+    ];
+    for(const p of pools){
+      const x=Array.isArray(p)?p[0]:p;
+      if(!x)continue;
+      const combination=String(x.combination||x.combo||x.result||"").replace(/\s/g,"").replace(/[=>]/g,"-");
+      const amount=Number(x.amount??x.payout??x.payoff??x.money);
+      if(/^[1-6]-[1-6]-[1-6]$/.test(combination)||Number.isFinite(amount))return {combination,amount};
+    }
+    return null;
+  }
+  function comboFromAny(race,result,tf){
+    const c1=normalizeComboFromResult(result||{});
+    if(/^[1-6]-[1-6]-[1-6]$/.test(c1))return c1;
+    const racerPools=[result?.racers,result?.boats,result?.entries,race?.racers,race?.boats];
+    for(const pool of racerPools){
+      if(!pool)continue;
+      const vals=Array.isArray(pool)?pool:Object.values(pool);
+      const rr=vals.map(x=>({
+        boat:Number(x?.entry_number??x?.boat_number??x?.boat??x?.waku??x?.number),
+        place:Number(x?.place_number??x?.place??x?.rank??x?.arrival)
+      })).filter(x=>x.boat>=1&&x.boat<=6&&x.place>=1&&x.place<=3).sort((a,b)=>a.place-b.place);
+      if(rr.length>=3)return rr.slice(0,3).map(x=>x.boat).join("-");
+    }
+    const c2=String(tf?.combination||"").replace(/\s/g,"").replace(/[=>]/g,"-");
+    return /^[1-6]-[1-6]-[1-6]$/.test(c2)?c2:"";
+  }
   async function checkCurrentRaceResult(){
     const btn=$("hrmCheckCurrent"),state=$("hrmCurrentState");
     const sel=currentSelection();
@@ -20445,18 +20490,27 @@ window.bhVenueBase=function(course,key="p1"){
         return r.json();
       });
       const race=findRaceInDaily(json,sel.venue,sel.race);
-      const result=race?.result;
-      if(!result){
+      if(!race){
         renderCurrentResult({state:"waiting"});
-        if(state)state.textContent="結果はまだ公開されていません";
+        if(state)state.textContent="レースデータを取得できませんでした";
         return;
       }
-
-      const combo=normalizeComboFromResult(result);
-      const technique=TECH[Number(result.technique_number)]||result.technique_number_source||"—";
-      const tf=Array.isArray(result?.payouts?.trifecta)?result.payouts.trifecta[0]:null;
+      const result=normalizeResultNode(race);
+      const tf=trifectaFromAny(race,result);
+      const combo=comboFromAny(race,result,tf);
       const payout=Number(tf?.amount);
       const odds=Number.isFinite(payout)?payout/100:null;
+      const technique=TECH[Number(result?.technique_number??result?.technique)]||result?.technique_number_source||result?.technique_name||"—";
+
+      // resultノードが無くても、確定3連単または着順が取れれば結果確定として扱う。
+      if(!combo){
+        renderCurrentResult({state:"waiting"});
+        const hasAnyResult=!!result||!!tf;
+        if(state)state.textContent=hasAnyResult
+          ?"結果データはありますが3連単着順の解析待ちです"
+          :"結果はまだ公開されていません";
+        return;
+      }
 
       const tickets=currentBuyTickets();
       let hit=null,hitTicket=null;
@@ -20628,8 +20682,8 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   // V403 全国確定結果3連単データ。収支リセットとは完全に別保存。
-  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_V404";
-  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_V404";
+  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_2026_V409";
+  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_2026_V409";
   function all120Combos(){
     const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)for(let k=1;k<=6;k++)if(i!==j&&i!==k&&j!==k)a.push(`${i}-${j}-${k}`);
     return a;
@@ -20697,13 +20751,46 @@ window.bhVenueBase=function(course,key="p1"){
     const worst=[...rows].sort((x,y)=>x.count-y.count||x.combo.localeCompare(y.combo)).slice(0,30);
     worstEl.innerHTML=worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
   }
+  function ymd2026(d){
+    const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+    return `${y}${m}${day}`;
+  }
+  async function ensure2026OutcomeCounts(){
+    if(window.__BH_2026_OUTCOME_LOADING)return;
+    window.__BH_2026_OUTCOME_LOADING=true;
+    try{
+      const counts=loadOutcome(),seen=loadOutcomeSeen();
+      const start=new Date(2026,0,1),now=new Date(),end=new Date(Math.min(now.getTime(),new Date(2026,11,31,23,59,59).getTime()));
+      let n=0;
+      for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+        const ymd=ymd2026(d);
+        try{
+          const r=await fetch(`https://boatraceopenapi.github.io/api/v1/2026/${ymd}.json`,{cache:"force-cache"});
+          if(!r.ok)continue;
+          const json=await r.json();
+          for(const [venueKey,venue] of Object.entries(json?.programs?.stadiums||{})){
+            for(const [raceKey,race] of Object.entries(venue?.races||{})){
+              const result=normalizeResultNode(race);
+              const tf=trifectaFromAny(race,result);
+              const combo=comboFromAny(race,result,tf);
+              if(!/^[1-6]-[1-6]-[1-6]$/.test(combo))continue;
+              const key=`${ymd}_${String(Number(venueKey)||venueKey).padStart(2,"0")}_${String(Number(raceKey)||raceKey)}`;
+              if(seen[key])continue;
+              seen[key]=1;counts[combo]=(Number(counts[combo])||0)+1;n++;
+            }
+          }
+          if(n&&n%250===0){saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst30();await new Promise(q=>setTimeout(q,0))}
+        }catch(e){console.warn("2026 outcome day",ymd,e)}
+      }
+      saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst30();
+    }finally{window.__BH_2026_OUTCOME_LOADING=false}
+  }
   async function openOutcomePanel(){
     const p=$("bhOutcomePanel"),btn=$("bhOutcomeToggle");if(!p)return;
     p.classList.toggle("hidden");if(p.classList.contains("hidden"))return;
-    if(btn)btn.textContent="集計中…";
-    try{await collectNationwideResults(todayKey())}catch(e){console.warn("nationwide outcome",e)}
     renderOutcomeWorst30();
     if(btn)btn.textContent="全国出目";
+    ensure2026OutcomeCounts();
   }
   function protectedReset(btn,kind){
     let timer=null,armed=false;
@@ -21555,7 +21642,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V407: authoritative IN-head flag forces every IN-main ticket to 2 units/200 yen through display and result accounting; cumulative manager stores per-race stake/return ledger for correction on recheck. -->
+<!-- V409: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
 </body>
 </html>
 
