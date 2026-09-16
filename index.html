@@ -14978,7 +14978,7 @@ input,
 </style>
 
 <style id="bh-v378-style">
-/* V388: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
+/* V389: 120通り比較と最終買い目は解析詳細の隠し領域から完全分離 */
 #hunter120Always{display:block!important;margin-top:12px!important;padding:0!important}
 #hunter120Always .habCard.sim{border:1px solid rgba(63,169,255,.55)!important;box-shadow:0 0 22px rgba(32,153,255,.10)}
 #hunterAnalysisBase.habCollapsed + #hunter120Always{display:block!important}
@@ -15050,7 +15050,7 @@ input,
 <style id="bh-v388-axis">
 .bhMainAxis{display:inline-block;margin-left:12px;padding:5px 10px;border:1px solid #59d7ff;border-radius:999px;color:#9beaff;font-style:normal;font-size:12px;font-weight:900;vertical-align:middle}
 @media(max-width:560px){.bhMainAxis{display:block;width:max-content;margin:8px 0 0;font-size:11px}}
-</style></head>
+</style><style id="bh-v389-c3diag">.bhC3Diag{margin:24px 0 18px;padding:15px;border:1px solid #286f91;border-radius:16px;background:#071b28}.bhC3Title{display:flex;justify-content:space-between}.bhC3Title b{font-size:17px;color:#b8efff}.bhC3Title span{padding:5px 10px;border-radius:999px;background:#173d50;font-weight:900}.bhC3Grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.bhC3Grid>div{padding:10px;border-radius:11px;background:#0d2634}.bhC3Grid small,.bhC3Grid em{display:block;color:#91afbd;font-size:10px;font-style:normal}.bhC3Grid strong{display:block;font-size:21px}.bhC3Flow{margin-top:10px;padding:10px;background:#10202a;color:#ffd58c;font-weight:900;text-align:center;border-radius:10px}@media(max-width:560px){.bhC3Grid{grid-template-columns:repeat(2,1fr)}}</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15060,7 +15060,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.388</div>
+  <div class="topVol">Vol.389</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20299,7 +20299,7 @@ window.bhVenueBase=function(course,key="p1"){
   const DAY_KEY="BH_RESULT_DAY_V361";
   const TOTAL_KEY="BH_RESULT_TOTAL_V361";
   const RESET_HOLD_MS=1800;
-  const RESULT_SNAPSHOT_KEY="BH_RESULT_SNAPSHOT_V388";
+  const RESULT_SNAPSHOT_KEY="BH_RESULT_SNAPSHOT_V389";
   const TECH={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
   const snapshotKey=sel=>`${sel.date}|${sel.venue}|${sel.race}`;
   function loadSnapshots(){try{return JSON.parse(localStorage.getItem(RESULT_SNAPSHOT_KEY)||"{}")}catch(e){return {}}}
@@ -20870,7 +20870,37 @@ window.bhVenueBase=function(course,key="p1"){
     }).sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev);
   }
 
+
+  function bhC3AttackDiagnosis(pre,simRows){
+    const B=n=>(pre||[]).find(x=>Number(x.boat)===n)||{}, b2=B(2),b3=B(3),b4=B(4),b5=B(5);
+    const N=(o,ks,d=0)=>{for(const k of ks){const v=Number(o?.[k]);if(Number.isFinite(v))return v}return d}, C=v=>Math.max(0,Math.min(100,v));
+    const ST=o=>N(o,["avgST","courseAvgST","stAvg","meanST"],.17);
+    const mak=N(b3,["makuriRate","courseMakuriRate","attackMakuri"],0), top3=N(b3,["course3Rate","thirdRate","top3Rate","courseTop3"],0), wins=N(b3,["courseWins","sameCourseWins","winCount"],0);
+    const gap=ST(b2)-ST(b3);
+    let wall=C(52-gap*420);
+    let attack=C(45+gap*520+Math.max(0,mak-10)*.7-(wall-50)*.35);
+    let skill=C(mak*2.1+Math.min(wins,4)*8+Math.max(0,15-ST(b3)*100)*2.2);
+    let success=C(attack*(100-wall)/100*(.38+skill/165));
+    const fail=C(attack-success), four=C(fail*.72+Math.max(0,(ST(b3)-ST(b4))*350)+14), five=C(fail*.48+four*.25+Math.max(0,(ST(b4)-ST(b5))*280));
+    let role="頭候補"; if(attack>=50&&skill<48)role="軸候補"; if(attack>=45&&skill<48&&top3>0&&top3<35)role="切り候補"; if(success<18&&attack<45)role="通常評価";
+    const d={wall,attackChance:attack,skill,makuriSuccess:success,fourBenefit:four,fiveBenefit:five,role3:role,c3Top3:top3};
+    window.__BH_C3_ATTACK_DIAG=d;
+    window.__BH_ATTACK_FOLLOWER=(attack>=50&&success<attack*.55)?(four>=five?4:5):0;
+    return d;
+  }
+  function renderC3AttackDiagnosis(d){
+    if(!d)return ""; const G=v=>v>=70?"S":v>=55?"A":v>=40?"B":v>=25?"C":"D";
+    return `<section class="bhC3Diag"><div class="bhC3Title"><b>3C 攻め連鎖診断</b><span>${d.role3}</span></div><div class="bhC3Grid">
+    <div><small>2号艇の壁</small><strong>${d.wall.toFixed(0)}%</strong><em>${d.wall>=65?"壁 強":d.wall>=48?"五分":"突破余地"}</em></div>
+    <div><small>3 攻め可能</small><strong>${d.attackChance.toFixed(0)}%</strong><em>${G(d.attackChance)}</em></div>
+    <div><small>3 本人まくり力</small><strong>${d.skill.toFixed(0)}</strong><em>${G(d.skill)}</em></div>
+    <div><small>3 まくり成功</small><strong>${d.makuriSuccess.toFixed(0)}%</strong><em>${G(d.makuriSuccess)}</em></div>
+    <div><small>4 展開利</small><strong>${d.fourBenefit.toFixed(0)}%</strong><em>${G(d.fourBenefit)}</em></div>
+    <div><small>5 展開利</small><strong>${d.fiveBenefit.toFixed(0)}%</strong><em>${G(d.fiveBenefit)}</em></div></div>
+    <div class="bhC3Flow">3攻め → ${d.wall<48?"2壁突破":"2壁警戒"} → 4展開 ${G(d.fourBenefit)} → 5連動 ${G(d.fiveBenefit)}</div></section>`;
+  }
   function selectTickets(rows){
+    const attackDiag=bhC3AttackDiagnosis(window.__HUNTER_PRE_V368||[],rows);
     const pos=rows.filter(x=>x.simPct>0), sort=(a,b)=>b.ev-a.ev||b.simPct-a.simPct, cb=x=>String(x.combo).split("-").map(Number), uniq=a=>[...new Map(a.map(x=>[x.combo,x])).values()];
     const hs=[1,2,3,4,5,6].map(n=>({n,p:pos.filter(x=>cb(x)[0]===n).reduce((z,x)=>z+x.simPct,0)})).sort((a,b)=>b.p-a.p), fb=hs.map(x=>x.n);
     const normRank=(v,fallback)=>Array.isArray(v)&&v.length?v.map(x=>Number(x?.boat??x?.n??x)).filter(n=>n>=1&&n<=6):fallback;
@@ -20885,7 +20915,7 @@ window.bhVenueBase=function(course,key="p1"){
     if(consensus){
       mode="CONSENSUS_MAIN_BOX";
 
-      /* V388 本命軸:
+      /* V389 本命軸:
          頭は世間/HUNTER一致1位。
          軸は「期待値の高い買い目」から逆算せず、世間評価3〜4位帯を優先。
          その中でHUNTER順位も近く、極端な評価ズレがない艇を1艇だけ選ぶ。
@@ -20929,12 +20959,12 @@ window.bhVenueBase=function(course,key="p1"){
       const ms=new Set(main.map(x=>x.combo));
       const q=mkbox(50,200).map(x=>({...x,adj:x.score-x.members.filter(y=>ms.has(y.combo)).length*70})).sort((a,b)=>b.adj-a.adj)[0];if(q)boxes=[q];all=uniq([...main,...(q?q.members.filter(x=>!ms.has(x.combo)):[])]);
     }else{
-      mode="SPLIT_2BOX_EXTRA3";let q=mkbox(30,150);const follower=Number(window.__HUNTER_ATTACK_FOLLOWER||window.__BH_ATTACK_FOLLOWER||0);q=q.map(x=>({...x,adj:x.score+(follower&&x.boats.includes(follower)?120:0)})).sort((a,b)=>b.adj-a.adj);
+      mode="SPLIT_2BOX_EXTRA3";let q=mkbox(30,150);const follower=Number(window.__HUNTER_ATTACK_FOLLOWER||window.__BH_ATTACK_FOLLOWER||0);q=q.map(x=>{let flow=0;if(x.boats.includes(4))flow+=attackDiag.fourBenefit*.8;if(x.boats.includes(5))flow+=attackDiag.fiveBenefit*.65;if(attackDiag.role3==="切り候補"&&x.boats.includes(3))flow-=55;return {...x,adj:x.score+(follower&&x.boats.includes(follower)?120:0)+flow}}).sort((a,b)=>b.adj-a.adj);
       const under1=pos.some(x=>cb(x)[0]===1&&x.odds>=25);if(under1){const x=q.find(v=>v.boats.includes(1)),y=q.find(v=>!x||v.boats.join()!=x.boats.join());boxes=[x,y].filter(Boolean);}else boxes=q.slice(0,2);
       const bt=uniq(boxes.flatMap(x=>x.members)),used=new Set(bt.map(x=>x.combo)),boats=new Set(boxes.flatMap(x=>x.boats));extra=pos.filter(x=>cb(x).every(n=>boats.has(n))&&!used.has(x.combo)).sort(sort).slice(0,3);all=[...bt,...extra];
     }
     window.__HUNTER_BUY_MODE=mode;window.__HUNTER_VALUE_BOXES=boxes;window.__HUNTER_BUY_EXTRA=extra;window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
-    return {mode,consensus,market,hunter,head,main,mid:[],long:[],boxes,extra,all};
+    return {mode,consensus,market,hunter,head,main,mid:[],long:[],boxes,extra,all,attackDiag};
   }
 
   function renderMarket(){
@@ -21043,7 +21073,7 @@ window.bhVenueBase=function(course,key="p1"){
     try{
       rows=sim5000(pre);tickets=selectTickets(rows);
     }catch(err){
-      console.error("HUNTER V388 render error",err);
+      console.error("HUNTER V389 render error",err);
       el.innerHTML=`<div class="habWait" style="color:#ff9b9b">SIM/買い目描画エラー：${String(err?.message||err)}</div>`;
       return;
     }
@@ -21065,6 +21095,7 @@ window.bhVenueBase=function(course,key="p1"){
         <div class="habUnifiedHeader"><span>順位</span><b>3連単</b><strong>SIM確率</strong><u>採用</u><em>オッズ</em><i>期待値</i></div>
         <div id="habUnifiedAllRows">${unifiedRows(rows,tickets,keepSortMode)}</div>
       </div>
+      ${renderC3AttackDiagnosis(tickets.attackDiag)}
       ${renderBuyBlock(tickets)}
     `;
 
@@ -21123,8 +21154,8 @@ window.bhVenueBase=function(course,key="p1"){
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
-  /* V388: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
-  window.__BH_V388_RUN_ALL=runAll;
+  /* V389: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
+  window.__BH_V389_RUN_ALL=runAll;
 })();
 </script>
 
@@ -21253,7 +21284,7 @@ window.bhVenueBase=function(course,key="p1"){
 */</script>
 
 <script id="bh-v378-marker">
-/* V388
+/* V389
 - 解析詳細の隠し領域は世間評価・HUNTER事前評価のみ。
 - 120通り比較と最終買い目は常時表示し、隠しボタンの影響を受けない。
 - 本線0・中穴0・万舟1〜2点だけの場合も2BOX判定へ進む。
@@ -21262,7 +21293,7 @@ window.bhVenueBase=function(course,key="p1"){
 */
 </script>
 <script id="bh-v380-force-two-box">
-window.__BH_V388_FORCE_2BOX__=true;
+window.__BH_V389_FORCE_2BOX__=true;
 </script>
 </body>
 </html>
