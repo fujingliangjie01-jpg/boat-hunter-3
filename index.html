@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V401</title>
+<title>BOAT HUNTER V402</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15078,6 +15078,19 @@ input,
  .bhV401SimpleTicket .units b,.bhV401SimpleTicket .payout b{font-size:15px!important}
 }
 </style>
+
+<style id="bh-v402-clarity-outcomes">
+.bhV401SimpleTicket.bhTwoUnits{outline:3px solid #ffd43b!important;box-shadow:0 0 18px rgba(255,212,59,.35)!important}
+.bhTwoUnitBadge{display:inline-block;margin-left:8px;padding:5px 9px;border-radius:999px;background:#ffd43b;color:#111;font-size:12px;font-weight:1000;vertical-align:middle}
+.bhTwoUnits .units{background:rgba(255,212,59,.16)!important;border:2px solid #ffd43b!important;border-radius:10px}
+.bhTwoUnits .units b{font-size:24px!important}
+.bhOutcomeSecret{margin-top:18px;text-align:right}
+.bhOutcomeToggle{opacity:.42;font-size:11px;padding:5px 9px;border-radius:8px}
+.bhOutcomePanel{margin-top:10px;padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:12px;text-align:left;background:#101114}
+.bhOutcomeTitle{display:flex;justify-content:space-between;align-items:end;margin-bottom:8px}.bhOutcomeTitle small{opacity:.6}
+.bhOutcomeRow{display:grid;grid-template-columns:28px 1fr 60px;gap:8px;padding:6px 3px;border-bottom:1px solid rgba(255,255,255,.07)}
+.bhOutcomeRow strong{text-align:right}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15088,7 +15101,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.401</div>
+  <div class="topVol">Vol.402</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20463,7 +20476,7 @@ window.bhVenueBase=function(course,key="p1"){
         }
       }
 
-      saveSnapshot(sel,{...resultView,statusText:state?.textContent||"結果確認済み"});
+      saveSnapshot(sel,{...resultView,statusText:state?.textContent||"結果確認済み",ticketStakeTotal:tickets.reduce((q,x)=>q+(Number(x.stake)||0),0),hitStake:Number(hitTicket?.stake)||0});
 
       /* 新買い目が接続された後は収支管理へ自動登録 */
       if(tickets.length && window.BH_RESULT_MANAGER?.record){
@@ -20477,7 +20490,8 @@ window.bhVenueBase=function(course,key="p1"){
           hit:!!hit,
           stake,
           returns,
-          raceKey
+          raceKey,
+          combo
         });
       }
     }catch(e){
@@ -20533,7 +20547,7 @@ window.bhVenueBase=function(course,key="p1"){
      1レース確定時に venueCode, hit, stake, returns を渡す。
      raceKey を渡せば同一レースの二重登録を防止。 */
   window.BH_RESULT_MANAGER={
-    record({venueCode,hit=false,stake=0,returns=0,raceKey=""}={}){
+    record({venueCode,hit=false,stake=0,returns=0,raceKey="",combo=""}={}){
       const code=String(venueCode||"").padStart(2,"0");
       if(!venueNames[code])return false;
       let d=ensureDay(),t=load(TOTAL_KEY);
@@ -20542,6 +20556,13 @@ window.bhVenueBase=function(course,key="p1"){
       if(key&&d.seen[key])return false;
       addTo(d,code,!!hit,Number(stake)||0,Number(returns)||0);
       addTo(t,code,!!hit,Number(stake)||0,Number(returns)||0);
+      // V402: confirmed trifecta occurrence counts are stored separately (all 120 combinations).
+      const actualCombo=String(combo||"");
+      if(/^[1-6]-[1-6]-[1-6]$/.test(actualCombo)){
+        d.comboCounts=d.comboCounts||{};t.comboCounts=t.comboCounts||{};
+        d.comboCounts[actualCombo]=(d.comboCounts[actualCombo]||0)+1;
+        t.comboCounts[actualCombo]=(t.comboCounts[actualCombo]||0)+1;
+      }
       if(key){d.seen[key]=1;t.seen[key]=1}
       save(DAY_KEY,d);save(TOTAL_KEY,t);render();
       return true;
@@ -20562,7 +20583,14 @@ window.bhVenueBase=function(course,key="p1"){
         <div class="profit ${(v.profit||0)>=0?"plus":"minus"}"><small>収支</small><b>${yen(v.profit)}</b></div>
         <div><small>的中率</small><b>${pct(v.hits,v.races)}</b></div>
         <div><small>投資</small><b>${yen(v.stake)}</b></div>
-        <div><small>払戻</small><b>${yen(v.returns)}</b></div>
+            <div class="bhOutcomeSecret">
+      <button id="bhOutcomeToggle" type="button" class="bhOutcomeToggle">出目データ</button>
+      <div id="bhOutcomePanel" class="bhOutcomePanel hidden">
+        <div class="bhOutcomeTitle"><b>3連単120通り 出目回数</b><small>累計確定結果 / ワースト30</small></div>
+        <div id="bhOutcomeWorst30"></div>
+      </div>
+    </div>
+<div><small>払戻</small><b>${yen(v.returns)}</b></div>
       </div>`).join("");
   }
   function setMoney(id,n){
@@ -20585,6 +20613,17 @@ window.bhVenueBase=function(course,key="p1"){
     if($("hrmBestVenue"))$("hrmBestVenue").textContent=best?`BEST ${venueNames[best.code]} ${yen(best.profit)}`:"BEST —";
   }
 
+  function all120Combos(){
+    const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)for(let k=1;k<=6;k++)if(i!==j&&i!==k&&j!==k)a.push(`${i}-${j}-${k}`);
+    return a;
+  }
+  function renderOutcomeWorst30(){
+    const el=$("bhOutcomeWorst30");if(!el)return;
+    const t=load(TOTAL_KEY),counts=t.comboCounts||{};
+    const worst=all120Combos().map(combo=>({combo,count:Number(counts[combo])||0}))
+      .sort((a,b)=>a.count-b.count||a.combo.localeCompare(b.combo)).slice(0,30);
+    el.innerHTML=worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
+  }
   function protectedReset(btn,kind){
     let timer=null,armed=false;
     const start=e=>{
@@ -20615,6 +20654,7 @@ window.bhVenueBase=function(course,key="p1"){
   document.addEventListener("DOMContentLoaded",()=>{
     $("hrmToggle")?.addEventListener("click",()=>$("hrmBody")?.classList.toggle("hidden"));
     $("hrmCheckCurrent")?.addEventListener("click",checkCurrentRaceResult);
+    $("bhOutcomeToggle")?.addEventListener("click",()=>{const p=$("bhOutcomePanel");p?.classList.toggle("hidden");if(p&&!p.classList.contains("hidden"))renderOutcomeWorst30();});
     if($("hrmResetDay"))protectedReset($("hrmResetDay"),"day");
     if($("hrmResetAll"))protectedReset($("hrmResetAll"),"all");
     render();
@@ -21089,8 +21129,8 @@ window.bhVenueBase=function(course,key="p1"){
     return arr.map(x=>{
       const bt=(window.__HUNTER_BUY_TICKETS||[]).find(q=>q.combo===x.combo)||{};
       const units=Number(bt.units)||1, stake=Number(bt.stake)||(units*100);
-      return `<div class="habBuyRow bhV401SimpleTicket">
-        <div class="habBuyCombo">${comboHTML(x.combo)}</div>
+      return `<div class="habBuyRow bhV401SimpleTicket ${units===2?"bhTwoUnits":""}">
+        <div class="habBuyCombo">${comboHTML(x.combo)}${units===2?`<span class="bhTwoUnitBadge">2枚投資</span>`:""}</div>
         <div class="habBuyStat units"><small>投資枚数</small><b>${units}枚</b></div>
         <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
         <div class="habBuyStat payout"><small>的中時払戻</small><b>¥${Math.round(stake*x.odds).toLocaleString("ja-JP")}</b></div>
@@ -21378,7 +21418,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V401: buy rows simplified to ticket / investment units / odds / payout. Explanatory buy text removed; calculation logic retained. -->
+<!-- V402: 2-unit tickets emphasized; result accounting retains per-ticket stake; confirmed trifecta counts stored across all 120 outcomes with hidden worst-30 panel. -->
 </body>
 </html>
 
