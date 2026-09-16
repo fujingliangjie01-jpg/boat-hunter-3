@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V405</title>
+<title>BOAT HUNTER V406</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.405</div>
+  <div class="topVol">Vol.406</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -21119,7 +21119,35 @@ window.bhVenueBase=function(course,key="p1"){
         const x=byCombo.get(`1-${axis}-${n}`),y=byCombo.get(`1-${n}-${axis}`);
         if(x)main.push(x);if(y&&!severe(n))main.push(y);
       }
-      main=uniq(main).sort(sort).slice(0,8);
+      // V406: イン逃げ本命は最終7点固定。
+      // 基本軸で不足する場合は、軸順位の次に良い艇を補助軸として2/3着へ配置。
+      // 補充候補は同条件ならオッズが高い方を優先する。
+      main=uniq(main).sort(sort);
+      if(main.length<7){
+        const used=new Set(main.map(x=>x.combo));
+        const backupAxes=axisRank.map(x=>x.n).filter(n=>n!==axis&&!(hardCut3&&n===3));
+        for(const backup of backupAxes){
+          const fill=usablePos.filter(x=>{
+            const c=cb(x);
+            if(c[0]!==1||used.has(x.combo))return false;
+            if(c[1]!==backup&&c[2]!==backup)return false;
+            return true;
+          }).sort((a,b)=>b.odds-a.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo)));
+          for(const x of fill){
+            main.push(x);used.add(x.combo);
+            if(main.length>=7)break;
+          }
+          if(main.length>=7)break;
+        }
+      }
+      // それでも不足時は、切り条件を破らない1頭買い目から高オッズ順に補完。
+      if(main.length<7){
+        const used=new Set(main.map(x=>x.combo));
+        const fill=usablePos.filter(x=>cb(x)[0]===1&&!used.has(x.combo))
+          .sort((a,b)=>b.odds-a.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo)));
+        for(const x of fill){main.push(x);if(main.length>=7)break;}
+      }
+      main=uniq(main).slice(0,7);
       window.__HUNTER_MAIN_AXIS=axis;
     }else{
       // 非イン頭: 必須買い目 + 軸買い。
@@ -21216,8 +21244,8 @@ window.bhVenueBase=function(course,key="p1"){
       const bt=(window.__HUNTER_BUY_TICKETS||[]).find(q=>q.combo===x.combo)||{};
       const units=Number(bt.units)||1, stake=Number(bt.stake)||(units*100);
       return `<div class="habBuyRow bhV401SimpleTicket ${units===2?"bhTwoUnits":""}">
-        <div class="habBuyCombo">${comboHTML(x.combo)}${units===2?`<span class="bhTwoUnitBadge">2枚投資</span>`:""}</div>
-        <div class="habBuyStat units"><small>投資枚数</small><b>${units}枚</b></div>
+        <div class="habBuyCombo">${comboHTML(x.combo)}${units===2?`<span class="bhTwoUnitBadge">イン逃げ 2枚投資</span>`:""}</div>
+        <div class="habBuyStat units"><small>${units===2?"イン逃げ投資":"投資枚数"}</small><b>${units}枚</b></div>
         <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
         <div class="habBuyStat payout"><small>的中時払戻</small><b>¥${Math.round(stake*x.odds).toLocaleString("ja-JP")}</b></div>
       </div>`;
@@ -21504,7 +21532,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V405: hard rule: C3 attack <=30% removes boat 3 from head/2nd/3rd and overrides wall-based third-only treatment. All V404 outcome auditing retained. -->
+<!-- V406: IN-head main buy fixed to 7 tickets; shortages are filled using next-best axis candidates in 2nd/3rd, preferring higher odds. IN tickets explicitly display 'イン逃げ 2枚投資'. V405 hard cuts retained. -->
 </body>
 </html>
 
