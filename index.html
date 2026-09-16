@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V409</title>
+<title>BOAT HUNTER V410</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.409</div>
+  <div class="topVol">Vol.410</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20682,8 +20682,8 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   // V403 全国確定結果3連単データ。収支リセットとは完全に別保存。
-  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_2026_V409";
-  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_2026_V409";
+  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_2026_V410";
+  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_2026_V410";
   function all120Combos(){
     const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)for(let k=1;k<=6;k++)if(i!==j&&i!==k&&j!==k)a.push(`${i}-${j}-${k}`);
     return a;
@@ -21166,11 +21166,11 @@ window.bhVenueBase=function(course,key="p1"){
 
     // V405 HARD CUT: 3C攻め率30%以下は3号艇を完全切り。
     // 頭候補・2着・3着の全てから除外。2C壁55%以上の「3着まで」よりこちらを優先。
-    const hardCut3=Number(d.attackChance)<=30;
-    if(hardCut3 && head===3){
+    const c3ThirdOnly=Number(d.attackChance)<=30;
+    if(c3ThirdOnly && head===3){
       head=[1,2,4,5,6].sort((a,b)=>(mp(a)+hp(a))-(mp(b)+hp(b))||a-b)[0];
     }
-    const usablePos=hardCut3?pos.filter(x=>!cb(x).includes(3)):pos;
+    const usablePos=c3ThirdOnly?pos.filter(x=>{const c=cb(x);return c[0]!==3&&c[1]!==3;}):pos;
 
     // V398: 本命頭が1以外なら「1C + 頭の直外艇」を軸に固定。
     // 6頭のみ直外が無いため、1Cを主軸として残す。
@@ -21191,7 +21191,7 @@ window.bhVenueBase=function(course,key="p1"){
 
     if(head===1){
       // イン逃げはV396の3コース攻め理論を維持。
-      const axisRank=[2,3,4,5,6].filter(n=>!(hardCut3&&n===3)).map(n=>{let f=0;
+      const axisRank=[2,3,4,5,6].filter(n=>!(c3ThirdOnly&&n===3)).map(n=>{let f=0;
         if(n===3){f+=d.makuriSuccess*.65+d.attackChance*.3;if(d.role3==="軸候補")f+=45;if(d.role3==="切り候補")f-=110;if(d.attackChance>=97&&d.makuriSuccess<=30)f-=220}
         if(n===2)f+=(100-d.attackChance)*.35+d.wall*.45;
         if(n===4)f+=d.fourBenefit*1.05;if(n===5)f+=d.fiveBenefit*.9;
@@ -21209,7 +21209,7 @@ window.bhVenueBase=function(course,key="p1"){
       // V399: イン逃げ時は「3が攻めを作る力」と「3自身のまくり成功」を分離。
       // 3攻め45%以上で壁を崩す構造なら、まくり成功が低くても3を軸候補から落とさない。
       // その攻めを受ける4展開利も比較し、3/4のどちらかを優先。5への飛び越しを防ぐ。
-      const c3CreatesRace=!hardCut3 && attackPct>=45 && (attackPct>=atk2 || d.wall<=40);
+      const c3CreatesRace=!c3ThirdOnly && attackPct>=45 && (attackPct>=atk2 || d.wall<=40);
       if(c3CreatesRace){
         const c3AxisScore=attackPct + Math.min(20,makuriPct*.25);
         const c4AxisScore=atk4 + Math.max(0,attackPct-45)*.35;
@@ -21221,7 +21221,7 @@ window.bhVenueBase=function(course,key="p1"){
         else axis=pool[0]?.n;
       }
       const severe=n=>(mp(n)>=5&&hp(n)>=5)||(n===3&&d.role3==="切り候補");
-      for(const n of [2,3,4,5,6].filter(n=>n!==axis&&!(hardCut3&&n===3))){
+      for(const n of [2,3,4,5,6].filter(n=>n!==axis&&!(c3ThirdOnly&&n===3))){
         const x=byCombo.get(`1-${axis}-${n}`),y=byCombo.get(`1-${n}-${axis}`);
         if(x)main.push(x);if(y&&!severe(n))main.push(y);
       }
@@ -21231,7 +21231,7 @@ window.bhVenueBase=function(course,key="p1"){
       main=uniq(main).sort(sort);
       if(main.length<7){
         const used=new Set(main.map(x=>x.combo));
-        const backupAxes=axisRank.map(x=>x.n).filter(n=>n!==axis&&!(hardCut3&&n===3));
+        const backupAxes=axisRank.map(x=>x.n).filter(n=>n!==axis&&!(c3ThirdOnly&&n===3));
         for(const backup of backupAxes){
           const fill=usablePos.filter(x=>{
             const c=cb(x);
@@ -21257,7 +21257,7 @@ window.bhVenueBase=function(course,key="p1"){
       window.__HUNTER_MAIN_AXIS=axis;
     }else{
       // 非イン頭: 必須買い目 + 軸買い。
-      const req=requiredCombo&&!hardCut3?byCombo.get(requiredCombo):null;
+      const req=requiredCombo?byCombo.get(requiredCombo):null;
       if(req)main.push(req);
 
       if(head===6){
@@ -21289,9 +21289,22 @@ window.bhVenueBase=function(course,key="p1"){
       }
     }
 
+    // V410: 非インは13点以下なら、頭固定で2026年実出目回数の多い未採用目から14点まで補充。
+    if(head!==1 && main.length<=13){
+      const counts=loadOutcome(),used=new Set(main.map(x=>x.combo));
+      const supplements=pos.filter(x=>{
+        const c=cb(x);
+        return c[0]===head && !used.has(x.combo) &&
+          c[1]!==secondCut &&
+          !(c3ThirdOnly && (c[0]===3||c[1]===3));
+      }).map(x=>({...x,outcomeCount:Number(counts[x.combo])||0}))
+        .sort((x,y)=>y.outcomeCount-x.outcomeCount||y.odds-x.odds||y.simPct-x.simPct||String(x.combo).localeCompare(String(y.combo)));
+      for(const x of supplements){main.push(x);used.add(x.combo);if(main.length>=14)break;}
+    }
+
     const cover=[],long=[];
     const all=uniq([...main]);
-    window.__HUNTER_HARD_CUT3=hardCut3;
+    window.__HUNTER_C3_THIRD_ONLY=c3ThirdOnly;
     window.__HUNTER_SECOND_CUT=secondCut;
     window.__HUNTER_REQUIRED_COMBO=requiredCombo;
     window.__HUNTER_BUY_MODE="MAIN_ONLY";
@@ -21302,7 +21315,7 @@ window.bhVenueBase=function(course,key="p1"){
     window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,units:buyUnits,stake:buyUnits*100,odds:x.odds,simPct:x.simPct,ev:x.ev,projectedReturn:(buyUnits*100)*x.odds}));
     const byPopularity=(a,b)=>a.odds-b.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo));
     main=[...main].sort(byPopularity);
-    return {mode:"MAIN_ONLY",market,hunter,head,hardCut3,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
+    return {mode:"MAIN_ONLY",market,hunter,head,c3ThirdOnly,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
   }
 
   function renderMarket(){
@@ -21381,7 +21394,7 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function renderBuyBlock(t){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}${t.hardCut3?` / 3号艇CUT`:""}</b><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}${t.c3ThirdOnly?` / 3号艇3着限定`:""}</b><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -21642,7 +21655,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V409: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
+<!-- V410: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
 </body>
 </html>
 
