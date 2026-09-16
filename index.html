@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V402</title>
+<title>BOAT HUNTER V403</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15101,7 +15101,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.402</div>
+  <div class="topVol">Vol.403</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20556,13 +20556,7 @@ window.bhVenueBase=function(course,key="p1"){
       if(key&&d.seen[key])return false;
       addTo(d,code,!!hit,Number(stake)||0,Number(returns)||0);
       addTo(t,code,!!hit,Number(stake)||0,Number(returns)||0);
-      // V402: confirmed trifecta occurrence counts are stored separately (all 120 combinations).
-      const actualCombo=String(combo||"");
-      if(/^[1-6]-[1-6]-[1-6]$/.test(actualCombo)){
-        d.comboCounts=d.comboCounts||{};t.comboCounts=t.comboCounts||{};
-        d.comboCounts[actualCombo]=(d.comboCounts[actualCombo]||0)+1;
-        t.comboCounts[actualCombo]=(t.comboCounts[actualCombo]||0)+1;
-      }
+
       if(key){d.seen[key]=1;t.seen[key]=1}
       save(DAY_KEY,d);save(TOTAL_KEY,t);render();
       return true;
@@ -20583,14 +20577,7 @@ window.bhVenueBase=function(course,key="p1"){
         <div class="profit ${(v.profit||0)>=0?"plus":"minus"}"><small>収支</small><b>${yen(v.profit)}</b></div>
         <div><small>的中率</small><b>${pct(v.hits,v.races)}</b></div>
         <div><small>投資</small><b>${yen(v.stake)}</b></div>
-            <div class="bhOutcomeSecret">
-      <button id="bhOutcomeToggle" type="button" class="bhOutcomeToggle">出目データ</button>
-      <div id="bhOutcomePanel" class="bhOutcomePanel hidden">
-        <div class="bhOutcomeTitle"><b>3連単120通り 出目回数</b><small>累計確定結果 / ワースト30</small></div>
-        <div id="bhOutcomeWorst30"></div>
-      </div>
-    </div>
-<div><small>払戻</small><b>${yen(v.returns)}</b></div>
+        <div><small>払戻</small><b>${yen(v.returns)}</b></div>
       </div>`).join("");
   }
   function setMoney(id,n){
@@ -20613,16 +20600,68 @@ window.bhVenueBase=function(course,key="p1"){
     if($("hrmBestVenue"))$("hrmBestVenue").textContent=best?`BEST ${venueNames[best.code]} ${yen(best.profit)}`:"BEST —";
   }
 
+  // V403 全国確定結果3連単データ。収支リセットとは完全に別保存。
+  const OUTCOME_KEY="BH_NATIONWIDE_TRIFECTA_COUNTS_V403";
+  const OUTCOME_SEEN_KEY="BH_NATIONWIDE_TRIFECTA_SEEN_V403";
   function all120Combos(){
     const a=[];for(let i=1;i<=6;i++)for(let j=1;j<=6;j++)for(let k=1;k<=6;k++)if(i!==j&&i!==k&&j!==k)a.push(`${i}-${j}-${k}`);
     return a;
   }
+  function loadOutcome(){
+    try{return JSON.parse(localStorage.getItem(OUTCOME_KEY)||"{}")}catch(e){return {}}
+  }
+  function saveOutcome(x){try{localStorage.setItem(OUTCOME_KEY,JSON.stringify(x))}catch(e){}}
+  function loadOutcomeSeen(){
+    try{return JSON.parse(localStorage.getItem(OUTCOME_SEEN_KEY)||"{}")}catch(e){return {}}
+  }
+  function saveOutcomeSeen(x){try{localStorage.setItem(OUTCOME_SEEN_KEY,JSON.stringify(x))}catch(e){}}
+  function extractResultCombo(result){
+    const racers=result?.racers||{};
+    const rr=Object.values(racers).map(x=>({boat:Number(x.entry_number),place:Number(x.place_number)}))
+      .filter(x=>x.boat>=1&&x.boat<=6&&x.place>=1&&x.place<=3).sort((x,y)=>x.place-y.place);
+    if(rr.length>=3)return rr.slice(0,3).map(x=>x.boat).join("-");
+    const tf=result?.payouts?.trifecta?.[0]?.combination;
+    const c=tf?String(tf).replace(/\s/g,"").replace(/[=>]/g,"-"):"";
+    return /^[1-6]-[1-6]-[1-6]$/.test(c)?c:"";
+  }
+  async function collectNationwideResults(date){
+    const ymd=String(date||todayKey()).replaceAll("-","");
+    const url=`https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`;
+    const json=await fetch(url,{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()});
+    const counts=loadOutcome(),seen=loadOutcomeSeen();
+    let added=0;
+    const stadiums=json?.programs?.stadiums||{};
+    for(const [venueKey,venue] of Object.entries(stadiums)){
+      const races=venue?.races||{};
+      for(const [raceKey,race] of Object.entries(races)){
+        const result=race?.result||race?.results||null;
+        if(!result)continue;
+        const combo=extractResultCombo(result);
+        if(!combo)continue;
+        const key=`${ymd}_${String(venueKey).padStart(2,"0")}_${Number(raceKey)||raceKey}`;
+        if(seen[key])continue;
+        seen[key]=1;counts[combo]=(Number(counts[combo])||0)+1;added++;
+      }
+    }
+    if(added){saveOutcome(counts);saveOutcomeSeen(seen)}
+    return added;
+  }
   function renderOutcomeWorst30(){
     const el=$("bhOutcomeWorst30");if(!el)return;
-    const t=load(TOTAL_KEY),counts=t.comboCounts||{};
+    const counts=loadOutcome();
+    const total=Object.values(counts).reduce((q,n)=>q+(Number(n)||0),0);
     const worst=all120Combos().map(combo=>({combo,count:Number(counts[combo])||0}))
       .sort((a,b)=>a.count-b.count||a.combo.localeCompare(b.combo)).slice(0,30);
-    el.innerHTML=worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
+    el.innerHTML=`<div class="bhOutcomeTotal">全国確定結果 累計 <b>${total.toLocaleString("ja-JP")}R</b></div>`+
+      worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
+  }
+  async function openOutcomePanel(){
+    const p=$("bhOutcomePanel"),btn=$("bhOutcomeToggle");if(!p)return;
+    p.classList.toggle("hidden");if(p.classList.contains("hidden"))return;
+    if(btn)btn.textContent="集計中…";
+    try{await collectNationwideResults(todayKey())}catch(e){console.warn("nationwide outcome",e)}
+    renderOutcomeWorst30();
+    if(btn)btn.textContent="全国出目";
   }
   function protectedReset(btn,kind){
     let timer=null,armed=false;
@@ -20654,7 +20693,7 @@ window.bhVenueBase=function(course,key="p1"){
   document.addEventListener("DOMContentLoaded",()=>{
     $("hrmToggle")?.addEventListener("click",()=>$("hrmBody")?.classList.toggle("hidden"));
     $("hrmCheckCurrent")?.addEventListener("click",checkCurrentRaceResult);
-    $("bhOutcomeToggle")?.addEventListener("click",()=>{const p=$("bhOutcomePanel");p?.classList.toggle("hidden");if(p&&!p.classList.contains("hidden"))renderOutcomeWorst30();});
+    $("bhOutcomeToggle")?.addEventListener("click",openOutcomePanel);
     if($("hrmResetDay"))protectedReset($("hrmResetDay"),"day");
     if($("hrmResetAll"))protectedReset($("hrmResetAll"),"all");
     render();
@@ -20748,6 +20787,13 @@ window.bhVenueBase=function(course,key="p1"){
       <small>誤操作防止：ボタンを長押ししてから確認コードを入力</small>
     </div>
   </div>
+    <div class="bhOutcomeSecret">
+      <button id="bhOutcomeToggle" type="button" class="bhOutcomeToggle">全国出目</button>
+      <div id="bhOutcomePanel" class="bhOutcomePanel hidden">
+        <div class="bhOutcomeTitle"><b>全国3連単120通り 出目回数</b><small>実レース確定結果 / ワースト30 / リセット対象外</small></div>
+        <div id="bhOutcomeWorst30"></div>
+      </div>
+    </div>
 </section>
 
 
@@ -21418,7 +21464,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V402: 2-unit tickets emphasized; result accounting retains per-ticket stake; confirmed trifecta counts stored across all 120 outcomes with hidden worst-30 panel. -->
+<!-- V403: nationwide actual trifecta outcomes stored independently and permanently; hidden bottom button shows worst 30. Performance reset never clears outcome DB. -->
 </body>
 </html>
 
