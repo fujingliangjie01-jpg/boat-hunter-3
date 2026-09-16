@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V410</title>
+<title>BOAT HUNTER V411</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.410</div>
+  <div class="topVol">Vol.411</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -20735,8 +20735,8 @@ window.bhVenueBase=function(course,key="p1"){
     const seenCount=Object.keys(seen).length;
     return {counts,seen,countSum,seenCount,ok:countSum===seenCount};
   }
-  function renderOutcomeWorst30(){
-    const allEl=$("bhOutcomeAll120"),worstEl=$("bhOutcomeWorst30"),auditEl=$("bhOutcomeAudit");
+  function renderOutcomeWorst50(){
+    const allEl=$("bhOutcomeAll120"),worstEl=$("bhOutcomeWorst50"),auditEl=$("bhOutcomeAudit");
     if(!allEl||!worstEl)return;
     const a=outcomeAudit();
     if(auditEl){
@@ -20748,7 +20748,7 @@ window.bhVenueBase=function(course,key="p1"){
     }
     const rows=all120Combos().map(combo=>({combo,count:Number(a.counts[combo])||0}));
     allEl.innerHTML=rows.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
-    const worst=[...rows].sort((x,y)=>x.count-y.count||x.combo.localeCompare(y.combo)).slice(0,30);
+    const worst=[...rows].sort((x,y)=>x.count-y.count||x.combo.localeCompare(y.combo)).slice(0,50);
     worstEl.innerHTML=worst.map((x,i)=>`<div class="bhOutcomeRow"><span>${i+1}</span><b>${x.combo}</b><strong>${x.count}回</strong></div>`).join("");
   }
   function ymd2026(d){
@@ -20779,16 +20779,16 @@ window.bhVenueBase=function(course,key="p1"){
               seen[key]=1;counts[combo]=(Number(counts[combo])||0)+1;n++;
             }
           }
-          if(n&&n%250===0){saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst30();await new Promise(q=>setTimeout(q,0))}
+          if(n&&n%250===0){saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst50();await new Promise(q=>setTimeout(q,0))}
         }catch(e){console.warn("2026 outcome day",ymd,e)}
       }
-      saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst30();
+      saveOutcome(counts);saveOutcomeSeen(seen);renderOutcomeWorst50();
     }finally{window.__BH_2026_OUTCOME_LOADING=false}
   }
   async function openOutcomePanel(){
     const p=$("bhOutcomePanel"),btn=$("bhOutcomeToggle");if(!p)return;
     p.classList.toggle("hidden");if(p.classList.contains("hidden"))return;
-    renderOutcomeWorst30();
+    renderOutcomeWorst50();
     if(btn)btn.textContent="全国出目";
     ensure2026OutcomeCounts();
   }
@@ -20926,8 +20926,8 @@ window.bhVenueBase=function(course,key="p1"){
           <div id="bhOutcomeAll120"></div>
         </details>
         <details class="bhOutcomeDetails">
-          <summary>ワースト30</summary>
-          <div id="bhOutcomeWorst30"></div>
+          <summary>ワースト50</summary>
+          <div id="bhOutcomeWorst50"></div>
         </details>
       </div>
     </div>
@@ -21172,6 +21172,14 @@ window.bhVenueBase=function(course,key="p1"){
     }
     const usablePos=c3ThirdOnly?pos.filter(x=>{const c=cb(x);return c[0]!==3&&c[1]!==3;}):pos;
 
+    // V411: 2026年実出目回数のワースト50は買い目から完全除外。
+    const outcomeCounts=loadOutcome();
+    const worst50Set=new Set(all120Combos()
+      .map(combo=>({combo,count:Number(outcomeCounts[combo])||0}))
+      .sort((a,b)=>a.count-b.count||a.combo.localeCompare(b.combo))
+      .slice(0,50).map(x=>x.combo));
+    const buyablePos=buyablePos.filter(x=>!worst50Set.has(x.combo));
+
     // V398: 本命頭が1以外なら「1C + 頭の直外艇」を軸に固定。
     // 6頭のみ直外が無いため、1Cを主軸として残す。
     const outside=head>=2&&head<=5?head+1:null;
@@ -21186,7 +21194,7 @@ window.bhVenueBase=function(course,key="p1"){
     // 頭別の必須買い目。これは軸条件・2着切りより優先する。
     const requiredMap={2:"2-4-6",3:"3-2-5",4:"4-6-2",5:"5-2-3",6:"6-4-2"};
     const requiredCombo=requiredMap[head]||null;
-    const byCombo=new Map(usablePos.map(x=>[x.combo,x]));
+    const byCombo=new Map(buyablePos.map(x=>[x.combo,x]));
     let main=[];
 
     if(head===1){
@@ -21233,7 +21241,7 @@ window.bhVenueBase=function(course,key="p1"){
         const used=new Set(main.map(x=>x.combo));
         const backupAxes=axisRank.map(x=>x.n).filter(n=>n!==axis&&!(c3ThirdOnly&&n===3));
         for(const backup of backupAxes){
-          const fill=usablePos.filter(x=>{
+          const fill=buyablePos.filter(x=>{
             const c=cb(x);
             if(c[0]!==1||used.has(x.combo))return false;
             if(c[1]!==backup&&c[2]!==backup)return false;
@@ -21249,7 +21257,7 @@ window.bhVenueBase=function(course,key="p1"){
       // それでも不足時は、切り条件を破らない1頭買い目から高オッズ順に補完。
       if(main.length<7){
         const used=new Set(main.map(x=>x.combo));
-        const fill=usablePos.filter(x=>cb(x)[0]===1&&!used.has(x.combo))
+        const fill=buyablePos.filter(x=>cb(x)[0]===1&&!used.has(x.combo))
           .sort((a,b)=>b.odds-a.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo)));
         for(const x of fill){main.push(x);if(main.length>=7)break;}
       }
@@ -21264,7 +21272,7 @@ window.bhVenueBase=function(course,key="p1"){
         // V400: 6頭は直外軸が無いので、6-1-○ / 6-○-1 を本線。
         // 点数不足を補うため 1-6-○ / 1-○-6 も1枚で追加。
         // 低評価一致艇は、必須6-4-2以外では2着から除外。
-        const cands=usablePos.filter(x=>{
+        const cands=buyablePos.filter(x=>{
           const c=cb(x);
           if(requiredCombo&&x.combo===requiredCombo)return false;
           const base6=c[0]===6&&(c[1]===1||c[2]===1);
@@ -21276,7 +21284,7 @@ window.bhVenueBase=function(course,key="p1"){
         main=uniq([...main,...cands]).slice(0,16);
         window.__HUNTER_MAIN_AXIS="1（6頭本線＋1頭折返し）";
       }else{
-        const axisCandidates=usablePos.filter(x=>{
+        const axisCandidates=buyablePos.filter(x=>{
           const c=cb(x);
           if(c[0]!==head)return false;
           if(requiredCombo&&x.combo===requiredCombo)return false;
@@ -21292,7 +21300,7 @@ window.bhVenueBase=function(course,key="p1"){
     // V410: 非インは13点以下なら、頭固定で2026年実出目回数の多い未採用目から14点まで補充。
     if(head!==1 && main.length<=13){
       const counts=loadOutcome(),used=new Set(main.map(x=>x.combo));
-      const supplements=pos.filter(x=>{
+      const supplements=buyablePos.filter(x=>{
         const c=cb(x);
         return c[0]===head && !used.has(x.combo) &&
           c[1]!==secondCut &&
@@ -21301,6 +21309,9 @@ window.bhVenueBase=function(course,key="p1"){
         .sort((x,y)=>y.outcomeCount-x.outcomeCount||y.odds-x.odds||y.simPct-x.simPct||String(x.combo).localeCompare(String(y.combo)));
       for(const x of supplements){main.push(x);used.add(x.combo);if(main.length>=14)break;}
     }
+
+    // 最終安全フィルター：必須買い目や補充経路からもワースト50を復活させない。
+    main=uniq(main).filter(x=>!worst50Set.has(x.combo));
 
     const cover=[],long=[];
     const all=uniq([...main]);
@@ -21655,7 +21666,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V410: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
+<!-- V411: 2026 actual-outcome worst50 excluded from all buy tickets; result hidden panel now shows worst50. Previous V410 rules retained. | V410: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
 </body>
 </html>
 
