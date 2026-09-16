@@ -20915,116 +20915,84 @@ window.bhVenueBase=function(course,key="p1"){
     const norm=(v,f)=>Array.isArray(v)&&v.length?v.map(x=>Number(x?.boat??x?.n??x)).filter(n=>n>=1&&n<=6):f;
     const market=norm(window.__HUNTER_MARKET_RANK||window.__BH_MARKET_RANK,fb),pr=Array.isArray(window.__HUNTER_PRE_V368)?[...window.__HUNTER_PRE_V368].sort((a,b)=>(b.finalDev??0)-(a.finalDev??0)).map(x=>Number(x.boat)):[];
     const hunter=norm(window.__HUNTER_PRE_RANK||window.__BH_HUNTER_RANK||pr,fb),mp=n=>market.indexOf(n)<0?99:market.indexOf(n)+1,hp=n=>hunter.indexOf(n)<0?99:hunter.indexOf(n)+1;
-    const head=market[0]===hunter[0]?market[0]:[1,2,3,4,5,6].sort((a,b)=>(mp(a)+hp(a))-(mp(b)+hp(b)))[0];
-    const axisRank=[1,2,3,4,5,6].filter(n=>n!==head).map(n=>{let f=0;if(n===3){f+=d.makuriSuccess*.65+d.attackChance*.3;if(d.role3==="軸候補")f+=45;if(d.role3==="切り候補")f-=110;if(d.attackChance>=97&&d.makuriSuccess<=30)f-=220}if(n===2)f+=(100-d.attackChance)*.35+d.wall*.45;
-      if(n===4)f+=d.fourBenefit*1.05;
-      if(n===5)f+=d.fiveBenefit*.9;
-      if(n===6)f+=Math.max(0,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12);const r=(7-mp(n))*16+(7-hp(n))*18,p=pos.filter(x=>{const c=cb(x);return c[0]===head&&(c[1]===n||c[2]===n)}).reduce((z,x)=>z+S(x),0);return {n,v:f+r+p}}).sort((a,b)=>b.v-a.v||a.n-b.n);
-    // V396 HARD LOCK: 同じ入力なら必ず同じ軸。
-    // 3攻め97%以上かつまくり成功31%以上なら、頭が3でない限り軸3を最優先。
-    // 30%以下なら3を軸から除外し、残りの固定スコア順位で決定。
-    const attackPct=Math.round(Number(d.attackChance)||0);
-    const makuriPct=Math.round(Number(d.makuriSuccess)||0);
+    const head=market[0]===hunter[0]?market[0]:[1,2,3,4,5,6].sort((a,b)=>(mp(a)+hp(a))-(mp(b)+hp(b))||a-b)[0];
 
-    // V396: 3攻めは絶対97%ではなく「他艇との相対比較」で判定。
-    // 比較対象は診断済みの2残り・4展開利・5展開利・6展開拾い。
-    const atk2=Math.round(Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35)));
-    const atk4=Math.round(Number(d.fourBenefit)||0);
-    const atk5=Math.round(Number(d.fiveBenefit)||0);
-    const atk6=Math.round(Math.max(0,Math.min(100,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12)));
-    const rivalAttackMax=Math.max(atk2,atk4,atk5,atk6);
-    const c3TopAttack=attackPct>rivalAttackMax;
-    const c3HighAttack=attackPct>=70 && c3TopAttack;
-    const c3CanRemain=makuriPct>=31;
+    // V398: 本命頭が1以外なら「1C + 頭の直外艇」を軸に固定。
+    // 6頭のみ直外が無いため、1Cを主軸として残す。
+    const outside=head>=2&&head<=5?head+1:null;
+    const axes=head===1?[]:[1,...(outside?[outside]:[])];
 
-    let axis;
-    // 70%以上かつ他艇最高、さらにまくり成功31%以上なら3軸を強く優先。
-    if(head!==3 && c3HighAttack && c3CanRemain){
-      axis=3;
-    }else{
-      // 3が攻め最上位でも成功30%以下なら「攻めるが残りにくい」として3軸降格。
-      const drop3=c3TopAttack && makuriPct<=30;
-      const pool=drop3?axisRank.filter(x=>x.n!==3):axisRank;
+    // 世間評価/HUNTER評価の双方で低い艇を1艇だけ2着切り。
+    // 両評価の順位合計→悪い方の順位→艇番で完全固定。
+    const secondCut=head===1?null:[1,2,3,4,5,6]
+      .filter(n=>n!==head)
+      .sort((a,b)=>(mp(b)+hp(b))-(mp(a)+hp(a))||Math.min(mp(b),hp(b))-Math.min(mp(a),hp(a))||b-a)[0];
 
-      // 70%未満でも他艇より明確に高い場合は通常軸候補として加点して比較。
-      if(head!==3 && c3TopAttack && c3CanRemain && attackPct-rivalAttackMax>=10){
-        const boosted=pool.map(x=>({n:x.n,v:x.v+(x.n===3?70:0)})).sort((a,b)=>b.v-a.v||a.n-b.n);
-        axis=boosted[0]?.n;
-      }else{
-        axis=pool[0]?.n;
-      }
-    }
-    const severe=n=>(mp(n)>=5&&hp(n)>=5)||(n===3&&d.role3==="切り候補");
+    // 頭別の必須買い目。これは軸条件・2着切りより優先する。
+    const requiredMap={2:"2-4-6",3:"3-2-5",4:"4-6-2",5:"5-2-3",6:"6-4-2"};
+    const requiredCombo=requiredMap[head]||null;
+    const byCombo=new Map(pos.map(x=>[x.combo,x]));
     let main=[];
 
-    /* V398 非イン本命専用16点
-       - 本命頭が1号艇以外なら、1Cと「頭の直外コース艇」を軸として重視。
-       - 世間評価/HUNTER評価の双方で低い評価が一致する1艇を2着だけから除外（3着は可）。
-       - 軸絡みの折り返しを最優先し、重複を除いた後は同じ頭固定候補を評価順で補完して16点。
-       - 実進入は現行データ上のcourseが取れればそれを使い、無ければ艇番順をフォールバック。 */
-    if(head!==1){
-      const pre=Array.isArray(window.__HUNTER_PRE_V368)?window.__HUNTER_PRE_V368:[];
-      const headRow=pre.find(x=>Number(x.boat)===head);
-      const headCourse=Number(headRow?.course)||head;
-      const outsideRow=pre.filter(x=>(Number(x.course)||Number(x.boat))>headCourse)
-        .sort((a,b)=>(Number(a.course)||Number(a.boat))-(Number(b.course)||Number(b.boat)))[0];
-      const outside=Number(outsideRow?.boat)||((head<6)?head+1:0);
-      const axes=[1,outside].filter((n,i,a)=>n>=1&&n<=6&&n!==head&&a.indexOf(n)===i);
-
-      // 「両評価で低い」が一致する艇。順位和を主基準、悪い側順位を次基準にして1艇だけ選ぶ。
-      const lowPool=[1,2,3,4,5,6].filter(n=>n!==head).map(n=>({n,m:mp(n),h:hp(n)}));
-      const agreedLow=lowPool.filter(x=>x.m>=4&&x.h>=4)
-        .sort((a,b)=>(b.m+b.h)-(a.m+a.h)||Math.max(b.m,b.h)-Math.max(a.m,a.h)||b.n-a.n);
-      const cutSecond=(agreedLow[0]||lowPool.sort((a,b)=>Math.min(b.m,b.h)-Math.min(a.m,a.h)||(b.m+b.h)-(a.m+a.h)||b.n-a.n)[0])?.n||0;
-
-      const headRows=pos.filter(x=>{const c=cb(x);return c[0]===head&&c[1]!==cutSecond;});
-      const axisRows=headRows.filter(x=>{const c=cb(x);return axes.includes(c[1])||axes.includes(c[2]);}).sort(sort);
-      const fillRows=headRows.filter(x=>!axisRows.some(y=>y.combo===x.combo)).sort(sort);
-      main=uniq([...axisRows,...fillRows]).slice(0,16);
-      axis=axes[0]||axis;
-      window.__HUNTER_MAIN_AXES=axes;
-      window.__HUNTER_SECOND_CUT=cutSecond;
-      window.__HUNTER_NONIN_16=true;
-    }else{
-      for(const n of [1,2,3,4,5,6].filter(n=>n!==head&&n!==axis)){
-        const x=pos.find(q=>q.combo===`${head}-${axis}-${n}`),y=pos.find(q=>q.combo===`${head}-${n}-${axis}`);
-        if(x)main.push(x);if(y&&!severe(n))main.push(y)
-      }
-      main=uniq(main).sort(sort).slice(0,8);if(main.length<8)main=main.slice(0,7);
-      window.__HUNTER_MAIN_AXES=[axis];window.__HUNTER_SECOND_CUT=0;window.__HUNTER_NONIN_16=false;
-    }
-    const used=new Set(main.map(x=>x.combo)),need=14-main.length;
-    const F=x=>{const c=cb(x);let f=S(x)+(7-mp(c[0]))*10+(7-hp(c[0]))*12;if(c.includes(4))f+=d.fourBenefit*.7;if(c.includes(5))f+=d.fiveBenefit*.55;if(c.includes(3)){f+=d.makuriSuccess*.35;if(d.role3==="切り候補")f-=70}return f};
-    // 2着は3着より厳格。世間/HUNTERとも下位の艇を点数合わせで2着にしない。
-    const secondOK=n=>!(mp(n)>=5&&hp(n)>=5)&&!(n===3&&d.attackChance>=97&&d.makuriSuccess<=30);
-    let cand=[];
     if(head===1){
-      // イン本命時: 3攻めが強く、4/5展開利も高ければ 3/4/5頭 × 1軸 を優先。
-      const attackHeads=[3,4,5].filter(n=>(n===3?d.attackChance>=55:(n===4?d.fourBenefit>=45:d.fiveBenefit>=45)));
-      cand=pos.filter(x=>{const c=cb(x);return !used.has(x.combo)&&x.odds>=40&&x.odds<100&&attackHeads.includes(c[0])&&(c[1]===1||c[2]===1)&&secondOK(c[1]);});
-      // 条件候補が少ない場合のみ、同じ40〜99.9倍帯の高評価候補へ拡張。
-      if(cand.length<need)cand=uniq([...cand,...pos.filter(x=>{const c=cb(x);return !used.has(x.combo)&&x.odds>=40&&x.odds<100&&secondOK(c[1]);})]);
+      // イン逃げはV396の3コース攻め理論を維持。
+      const axisRank=[2,3,4,5,6].map(n=>{let f=0;
+        if(n===3){f+=d.makuriSuccess*.65+d.attackChance*.3;if(d.role3==="軸候補")f+=45;if(d.role3==="切り候補")f-=110;if(d.attackChance>=97&&d.makuriSuccess<=30)f-=220}
+        if(n===2)f+=(100-d.attackChance)*.35+d.wall*.45;
+        if(n===4)f+=d.fourBenefit*1.05;if(n===5)f+=d.fiveBenefit*.9;
+        if(n===6)f+=Math.max(0,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12);
+        const r=(7-mp(n))*16+(7-hp(n))*18,p=pos.filter(x=>{const c=cb(x);return c[0]===1&&(c[1]===n||c[2]===n)}).reduce((z,x)=>z+S(x),0);
+        return {n,v:f+r+p};
+      }).sort((a,b)=>b.v-a.v||a.n-b.n);
+
+      const attackPct=Math.round(Number(d.attackChance)||0),makuriPct=Math.round(Number(d.makuriSuccess)||0);
+      const atk2=Math.round(Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35)));
+      const atk4=Math.round(Number(d.fourBenefit)||0),atk5=Math.round(Number(d.fiveBenefit)||0);
+      const atk6=Math.round(Math.max(0,Math.min(100,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12)));
+      const rivalAttackMax=Math.max(atk2,atk4,atk5,atk6),c3TopAttack=attackPct>rivalAttackMax,c3HighAttack=attackPct>=70&&c3TopAttack,c3CanRemain=makuriPct>=31;
+      let axis;
+      if(c3HighAttack&&c3CanRemain)axis=3;
+      else{
+        const drop3=c3TopAttack&&makuriPct<=30,pool=drop3?axisRank.filter(x=>x.n!==3):axisRank;
+        if(c3TopAttack&&c3CanRemain&&attackPct-rivalAttackMax>=10)axis=pool.map(x=>({n:x.n,v:x.v+(x.n===3?70:0)})).sort((a,b)=>b.v-a.v||a.n-b.n)[0]?.n;
+        else axis=pool[0]?.n;
+      }
+      const severe=n=>(mp(n)>=5&&hp(n)>=5)||(n===3&&d.role3==="切り候補");
+      for(const n of [2,3,4,5,6].filter(n=>n!==axis)){
+        const x=byCombo.get(`1-${axis}-${n}`),y=byCombo.get(`1-${n}-${axis}`);
+        if(x)main.push(x);if(y&&!severe(n))main.push(y);
+      }
+      main=uniq(main).sort(sort).slice(0,8);
+      window.__HUNTER_MAIN_AXIS=axis;
     }else{
-      const p1=pos.filter(x=>cb(x)[0]===1).reduce((z,x)=>z+x.simPct,0),p13=pos.filter(x=>cb(x).includes(1)).reduce((z,x)=>z+x.simPct,0),lose=d.attackChance>=55&&d.wall<50;
-      // V396: when main head is not 1, always re-check the inside escape.
-      // If 1C has >=30% market/escape support and pays 40-99.9x, treat it as a value candidate.
-      const inValue=mp(1)>=30;
-      const inEscape=pos.filter(x=>{const c=cb(x);return c[0]===1&&!used.has(x.combo)&&x.odds>=40&&x.odds<100&&secondOK(c[1]);}).sort((a,b)=>F(b)-F(a)||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo)));
-      if(inValue&&inEscape.length)cand=inEscape;
-      else if(!lose&&p1>=18)cand=pos.filter(x=>{const c=cb(x);return c[0]===1&&!used.has(x.combo)&&x.odds>=40&&x.odds<100&&secondOK(c[1]);});
-      else if(p13>=25)cand=pos.filter(x=>{const c=cb(x);return c[0]!==1&&(c[1]===1||c[2]===1)&&!used.has(x.combo)&&x.odds>=40&&x.odds<100&&secondOK(c[1]);});
-      else cand=pos.filter(x=>{const c=cb(x);return !c.includes(1)&&!used.has(x.combo)&&x.odds>=40&&x.odds<100&&secondOK(c[1]);});
+      // 非イン頭: 必須1点 + 軸買い15点 = 最大16点。
+      const req=requiredCombo?byCombo.get(requiredCombo):null;
+      if(req)main.push(req);
+
+      const axisCandidates=pos.filter(x=>{
+        const c=cb(x);
+        if(c[0]!==head)return false;
+        if(requiredCombo&&x.combo===requiredCombo)return false;
+        // 必ず1Cまたは頭の直外艇を2/3着のどちらかに含める。
+        if(!axes.some(a=>c[1]===a||c[2]===a))return false;
+        // 低評価一致艇は2着から切る（必須買い目のみ例外）。
+        if(c[1]===secondCut)return false;
+        return true;
+      }).sort(sort);
+
+      main=uniq([...main,...axisCandidates]).slice(0,16);
+      window.__HUNTER_MAIN_AXIS=axes.join("・");
     }
-    // 質優先: 根拠の薄い艇で無理に7点を埋めない。
-    // V397: 買い目は本命のみ。抑え・期待／中穴／万舟は生成しない。
-    const cover=[];
-    const long=[];
+
+    const cover=[],long=[];
     const all=uniq([...main]);
-    window.__HUNTER_MAIN_AXIS=axis;window.__HUNTER_BUY_MODE="MAIN_ONLY";window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
+    window.__HUNTER_SECOND_CUT=secondCut;
+    window.__HUNTER_REQUIRED_COMBO=requiredCombo;
+    window.__HUNTER_BUY_MODE="MAIN_ONLY";
+    window.__HUNTER_BUY_TICKETS=all.map(x=>({combo:x.combo,stake:100,odds:x.odds,simPct:x.simPct,ev:x.ev}));
     const byPopularity=(a,b)=>a.odds-b.odds||b.simPct-a.simPct||b.ev-a.ev||String(a.combo).localeCompare(String(b.combo));
     main=[...main].sort(byPopularity);
-    const allDisplay=[...main];
-    return {mode:"MAIN_ONLY",market,hunter,head,axis,main,cover,mid:[],long,all:allDisplay,attackDiag:d};
+    return {mode:"MAIN_ONLY",market,hunter,head,axis:head===1?window.__HUNTER_MAIN_AXIS:axes.join("・"),axes,secondCut,requiredCombo,main,cover,mid:[],long,all:[...main],attackDiag:d};
   }
 
   function renderMarket(){
@@ -21101,7 +21069,7 @@ window.bhVenueBase=function(course,key="p1"){
   }
   function renderBuyBlock(t){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
-    const axes=(window.__HUNTER_MAIN_AXES||[t.axis]).join("・");const cut=Number(window.__HUNTER_SECOND_CUT)||0;const sub=window.__HUNTER_NONIN_16?`軸 ${axes} / ${cut?cut+"号艇は2着切り":"2着切りなし"}`:`軸 ${axes}`;return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × ${sub}</b><em>3攻め ${Math.round(t.attackDiag.attackChance)}% / まくり ${Math.round(t.attackDiag.makuriSuccess)}%</em><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
+    return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy"><div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}</b><em>${t.head===1?`3攻め ${Math.round(t.attackDiag.attackChance)}% / まくり ${Math.round(t.attackDiag.makuriSuccess)}%`:`必須 ${t.requiredCombo||"—"} / 軸買い優先`}</em><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
   }
 
   function unifiedRows(rows,tickets,sortMode){
@@ -21362,6 +21330,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
+<!-- V398 NON-IN AXIS LOCK: required 1 + axis tickets, low-consensus boat cut from 2nd; head1 keeps C3 attack theory -->
 </body>
 </html>
 
@@ -21374,14 +21343,5 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 場・レース再取得 / AI再解析時のみSIM確率順へリセット。
 - 勝負掛け: bit2だけで次走勝負と断定しない。18位以内=次走勝負、19〜30位=次走要確認、31位以下=圏外。
 - 43位など明確な下位艇を「次走勝負」と誤表示しない。
-*/
-</script>
-
-<script id="bh-v398-marker">
-/* V398
-- 非イン本命時: 1C＋本命頭の直外コース艇を軸として折り返し候補を最優先。
-- 頭固定で本命16点。軸絡み重複後は同一頭の高評価候補で16点まで補完。
-- 世間評価/HUNTER評価の双方で低評価が一致する1艇を2着からのみ除外。3着は残す。
-- イン本命時はV397までの本命ロジックを維持。
 */
 </script>
