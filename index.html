@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V411</title>
+<title>BOAT HUNTER V413</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15109,7 +15109,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.411</div>
+  <div class="topVol">Vol.413</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -21178,7 +21178,14 @@ window.bhVenueBase=function(course,key="p1"){
       .map(combo=>({combo,count:Number(outcomeCounts[combo])||0}))
       .sort((a,b)=>a.count-b.count||a.combo.localeCompare(b.combo))
       .slice(0,50).map(x=>x.combo));
-    const buyablePos=buyablePos.filter(x=>!worst50Set.has(x.combo));
+    // V413: 本命頭6だけワースト50例外。
+    // 6-1-○ / 6-○-1 / 6-○-2 は残す。
+    const isHead6Worst50Exception=(combo)=>{
+      if(head!==6)return false;
+      const c=String(combo).split("-").map(Number);
+      return c.length===3 && c[0]===6 && (c[1]===1 || c[2]===1 || c[2]===2);
+    };
+    const buyablePos=usablePos.filter(x=>!worst50Set.has(x.combo)||isHead6Worst50Exception(x.combo));
 
     // V398: 本命頭が1以外なら「1C + 頭の直外艇」を軸に固定。
     // 6頭のみ直外が無いため、1Cを主軸として残す。
@@ -21297,21 +21304,72 @@ window.bhVenueBase=function(course,key="p1"){
       }
     }
 
-    // V410: 非インは13点以下なら、頭固定で2026年実出目回数の多い未採用目から14点まで補充。
-    if(head!==1 && main.length<=13){
-      const counts=loadOutcome(),used=new Set(main.map(x=>x.combo));
-      const supplements=buyablePos.filter(x=>{
+    // V412 非イン不足時:
+    // まず元の本命頭を固定し、ワースト50外の未採用出目を実出目回数順に補充。
+    // それでも「頭固定」で13点揃わなければ第2段階へ。
+    // 3コース攻め理論の最高評価が40%超 → その最高評価艇を頭、元本命頭を2着固定。
+    // 最高評価が40%以下 → 1号艇を頭、元本命頭を2着固定。
+    // 追加買い目もワースト50・3C三着限定等を破らない。
+    if(head!==1 && main.length<13){
+      const originalHead=head;
+      const used=new Set(main.map(x=>x.combo));
+
+      // 第1段階：元頭固定で13点まで埋める。
+      const sameHead=buyablePos.filter(x=>{
         const c=cb(x);
-        return c[0]===head && !used.has(x.combo) &&
+        return c[0]===originalHead && !used.has(x.combo) &&
           c[1]!==secondCut &&
           !(c3ThirdOnly && (c[0]===3||c[1]===3));
-      }).map(x=>({...x,outcomeCount:Number(counts[x.combo])||0}))
+      }).map(x=>({...x,outcomeCount:Number(outcomeCounts[x.combo])||0}))
         .sort((x,y)=>y.outcomeCount-x.outcomeCount||y.odds-x.odds||y.simPct-x.simPct||String(x.combo).localeCompare(String(y.combo)));
-      for(const x of supplements){main.push(x);used.add(x.combo);if(main.length>=14)break;}
+
+      for(const x of sameHead){
+        main.push(x);used.add(x.combo);
+        if(main.length>=13)break;
+      }
+
+      // 第2段階：頭固定だけで13点揃わない場合。
+      if(main.length<13){
+        // 既存3コース攻め理論の評価値を利用。
+        // attackDiag に艇別展開利があればその最大、無ければ3攻め率を3号艇評価として扱う。
+        const benefitMap={
+          2:Number(d?.benefit2??d?.boat2Benefit??0),
+          3:Number(d?.attackChance??0),
+          4:Number(d?.benefit4??d?.boat4Benefit??0),
+          5:Number(d?.benefit5??d?.boat5Benefit??0),
+          6:Number(d?.benefit6??d?.boat6Benefit??0)
+        };
+        const ranked=[2,3,4,5,6]
+          .filter(n=>n!==originalHead && !(c3ThirdOnly&&n===3))
+          .map(n=>({n,p:Number(benefitMap[n])||0}))
+          .sort((x,y)=>y.p-x.p||mp(x.n)-mp(y.n)||hp(x.n)-hp(y.n)||x.n-y.n);
+
+        const top=ranked[0]||{n:1,p:0};
+        const supplementHead=top.p>40?top.n:1;
+
+        const secondStage=buyablePos.filter(x=>{
+          const c=cb(x);
+          if(used.has(x.combo))return false;
+          if(c[0]!==supplementHead || c[1]!==originalHead)return false;
+          if(worst50Set.has(x.combo)&&!isHead6Worst50Exception(x.combo))return false;
+          if(c3ThirdOnly && (c[0]===3||c[1]===3))return false;
+          return true;
+        }).map(x=>({...x,outcomeCount:Number(outcomeCounts[x.combo])||0}))
+          .sort((x,y)=>y.outcomeCount-x.outcomeCount||y.odds-x.odds||y.simPct-x.simPct||String(x.combo).localeCompare(String(y.combo)));
+
+        for(const x of secondStage){
+          main.push(x);used.add(x.combo);
+          if(main.length>=13)break;
+        }
+
+        window.__HUNTER_NONIN_SUPPLEMENT_HEAD=supplementHead;
+        window.__HUNTER_NONIN_ORIGINAL_HEAD=originalHead;
+        window.__HUNTER_NONIN_ATTACK_TOP=top.p;
+      }
     }
 
     // 最終安全フィルター：必須買い目や補充経路からもワースト50を復活させない。
-    main=uniq(main).filter(x=>!worst50Set.has(x.combo));
+    main=uniq(main).filter(x=>!worst50Set.has(x.combo)||isHead6Worst50Exception(x.combo));
 
     const cover=[],long=[];
     const all=uniq([...main]);
@@ -21666,7 +21724,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 120通り比較は維持し、買い目パッチは本命のみ表示。
 */
 </script>
-<!-- V411: 2026 actual-outcome worst50 excluded from all buy tickets; result hidden panel now shows worst50. Previous V410 rules retained. | V410: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
+<!-- V412: Non-IN buy set targets 13 tickets. If same-head candidates cannot reach 13 after worst50 filtering, use highest 3-course-attack-theory boat as new head with original head fixed 2nd when >40%; otherwise use boat1 as head. Worst50 exclusion remains absolute. | V411: 2026 actual-outcome worst50 excluded from all buy tickets; result hidden panel now shows worst50. Previous V410 rules retained. | V410: V408 format retained exactly; existing outcome-count area silently fills with 2026-01-01 through current-date nationwide actual result counts. No extra import UI added. -->
 </body>
 </html>
 
