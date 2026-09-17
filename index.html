@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V420</title>
+<title>BOAT HUNTER V421</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15118,7 +15118,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.420</div>
+  <div class="topVol">Vol.421</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15647,6 +15647,10 @@ async function getRace(){
   window.syncEntryFromPreview?.();
   setTopTheme("normal");
   let rr=racers(currentRace);if(rr.length!==6)throw Error(`${S[Number($("stadium").value)]||"開催場"} ${$("race").value}R：6艇を取得できません`);
+  // V421: 解析エンジンへ6艇を即時共有。履歴/級別の完了を待たない。
+  window.__BH_CURRENT_RACE=currentRace;
+  window.__BH_CURRENT_RACERS=rr.slice();
+  window.currentRace=currentRace;
 
   /* Vol.270: 出走表は取得できた瞬間に6艇を先に描画。
      級別CSV・履歴・得点の追加通信が失敗/遅延してもカード自体は消さない。 */
@@ -15676,8 +15680,9 @@ async function getRace(){
   if($("get"))$("get").textContent="① 出走表取得済み";
   $("status").textContent=`✓ ${S[Number($("stadium").value)]} ${$("race").value}R / 過去20走を高速取得中…`;
   window.prefetchHunterPreview?.();
-  preloadHistory(rr);
-  loadMeetPointsV047(rr);
+  // V421 FAST PATH: まず出走表→AI解析を操作可能にし、重い履歴通信は後段へ。
+  setTimeout(()=>{try{preloadHistory(rr)}catch(e){}},700);
+  setTimeout(()=>{try{loadMeetPointsV047(rr)}catch(e){}},250);
   setTimeout(()=>{try{bhRenderCompare()}catch(e){}},60);
  }catch(e){
    console.error("出走表取得",e);
@@ -20996,30 +21001,21 @@ window.bhVenueBase=function(course,key="p1"){
     return clamp(50+10*((current-m)/d)*(reverse?-1:1),20,80);
   }
   function rr(){
-    // V420: currentRace/racers は既存本体と同じグローバル lexical を最優先。
-    // V419で window.currentRace を優先したため、実データが見えず6艇=0件になっていた。
+    try{
+      if(Array.isArray(window.__BH_CURRENT_RACERS)&&window.__BH_CURRENT_RACERS.length===6)
+        return window.__BH_CURRENT_RACERS;
+    }catch(e){}
     try{
       if(typeof racers==="function" && typeof currentRace!=="undefined"){
         const a=racers(currentRace)||[];
-        if(Array.isArray(a)&&a.length)return a;
+        if(Array.isArray(a)&&a.length===6)return a;
       }
     }catch(e){}
     try{
-      const cr=window.currentRace;
-      if(typeof window.racers==="function"){
-        const a=window.racers(cr)||[];
-        if(Array.isArray(a)&&a.length)return a;
-      }
+      const cr=window.__BH_CURRENT_RACE||window.currentRace;
       const obj=cr?.racers||cr?.program?.racers||{};
       const a=Array.isArray(obj)?obj:Object.values(obj||{});
-      if(a.length)return a;
-    }catch(e){}
-    // 最後に画面上の6艇カードから現在レース本体を再参照する。
-    try{
-      if(typeof currentRace!=="undefined"){
-        const obj=currentRace?.racers||currentRace?.program?.racers||{};
-        return Array.isArray(obj)?obj:Object.values(obj||{});
-      }
+      if(a.length===6)return a;
     }catch(e){}
     return [];
   }
@@ -21211,8 +21207,11 @@ window.bhVenueBase=function(course,key="p1"){
   }
 
   function sim5000(pre){
-    const odds=oddsRows();
-    if(!odds.length||pre.length!==6)return [];
+    let odds=oddsRows();
+    if(pre.length!==6)return [];
+    // V421: AI解析はオッズ通信待ちで止めない。未取得時も120通りを中立倍率で生成。
+    // オッズ到着後に自動再描画し、倍率/世間評価/期待値を実値へ差し替える。
+    if(!odds.length)odds=bhAll120Combos().map(combo=>({combo,a:combo.split("-").map(Number),odds:1,w:1}));
     const score=new Map(pre.map(x=>[Number(x.boat),Number(x.finalDev)||50]));
     const boats=[1,2,3,4,5,6];
 
@@ -21621,7 +21620,7 @@ window.bhVenueBase=function(course,key="p1"){
       return `<div class="habBuyRow bhV401SimpleTicket ${units===2?"bhTwoUnits":""}">
         <div class="habBuyCombo">${comboHTML(x.combo)}${units===2?`<span class="bhTwoUnitBadge">イン逃げ 2枚投資</span>`:""}</div>
         <div class="habBuyStat units"><small>${units===2?"イン逃げ投資":"投資枚数"}</small><b>${units}枚</b></div>
-        <div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div>
+        <div class="habBuyStat odds"><small>倍率</small><b>${window.__HUNTER_ODDS120?.odds?.length?x.odds.toFixed(1)+"倍":"取得中"}</b></div>
         <div class="habBuyStat payout"><small>的中時払戻</small><b>¥${Math.round(stake*x.odds).toLocaleString("ja-JP")}</b></div>
       </div>`;
     }).join("");
@@ -21669,9 +21668,7 @@ window.bhVenueBase=function(course,key="p1"){
 
   function renderSim(pre){
     const el=$("habSimBody");if(!el)return;
-    if(!window.__HUNTER_ODDS120?.odds?.length){
-      el.innerHTML=`<div class="habWait">120通りオッズ取得後に「SIM確率 × オッズ × 期待値」を表示</div>`;return;
-    }
+    const hasRealOdds=!!window.__HUNTER_ODDS120?.odds?.length;
     if(pre.length!==6){el.innerHTML=`<div class="habWait">事前評価完成後に5000回SIM開始</div>`;return}
     let rows,tickets;
     try{
@@ -21768,10 +21765,30 @@ window.bhVenueBase=function(course,key="p1"){
   window.BH_V368_RUN=runAll;
   document.addEventListener("DOMContentLoaded",runAll);
   const reset120=()=>{window.__BH_SIM120_SORT="sim"};
-  document.getElementById("aiAnalyze")?.addEventListener("click",()=>{reset120();setTimeout(runAll,350)});
+  document.getElementById("aiAnalyze")?.addEventListener("click",()=>{
+    reset120();
+    runAll(); // V421: 6艇取得済みなら即時描画
+    // オッズ自動取得が並行中なら、到着時に一度だけ再描画。
+    if(!window.__HUNTER_ODDS120?.odds?.length){
+      let n=0;
+      const w=setInterval(()=>{
+        n++;
+        if(window.__HUNTER_ODDS120?.odds?.length){clearInterval(w);runAll()}
+        else if(n>=40)clearInterval(w);
+      },150);
+    }
+  });
   document.getElementById("getOdds120")?.addEventListener("click",()=>setTimeout(runAll,850));
   document.getElementById("getPreview")?.addEventListener("click",()=>setTimeout(runAll,850));
-  document.getElementById("get")?.addEventListener("click",()=>{reset120();setTimeout(runAll,1200)});
+  document.getElementById("get")?.addEventListener("click",()=>{
+    reset120();
+    let n=0;
+    const w=setInterval(()=>{
+      n++;
+      if(Array.isArray(window.__BH_CURRENT_RACERS)&&window.__BH_CURRENT_RACERS.length===6){clearInterval(w);runAll()}
+      else if(n>=30)clearInterval(w);
+    },100);
+  });
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
     document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
   });
