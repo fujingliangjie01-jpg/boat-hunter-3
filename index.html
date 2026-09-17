@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V441</title>
+<title>BOAT HUNTER V443</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15148,7 +15148,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.441</div>
+  <div class="topVol">Vol.443</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15606,13 +15606,64 @@ function bhRenderFAfterCompact(rr,map){
 
     const hist=map instanceof Map ? (map.get(Number(r.number))?.rows||[]) : [];
     const fa=window.HUNTER_F?.after?.(hist,fc);
+
+    // Vol.443: Fカードにも「解析で実際に使う現在ST」を表示する。
+    // F地点判明=F後平均。F地点不明=直近5走と20走平均の差>=0.020なら直近5走を採用。
+    const stNum=v=>{
+      if(v==null||v==="")return null;
+      const x=Number(String(v).replace(/[^\\d+\\-.]/g,""));
+      return Number.isFinite(x)?x:null;
+    };
+    const ownST=x=>stNum(x?.st ?? x?.start_timing ?? x?.own_st ?? x?.self_st);
+    const validST=(hist||[]).map(ownST).filter(v=>v!=null&&v>=0);
+    const recent5=validST.slice(0,5);
+    const recent5Avg=recent5.length ? recent5.reduce((a,b)=>a+b,0)/recent5.length : null;
+
+    const normalCandidates=[
+      r?.average_start_timing,r?.avg_start_timing,r?.average_st,r?.avg_st,
+      r?.start_timing_average,r?.national_average_start_timing
+    ].map(stNum).filter(v=>v!=null&&v>=0);
+    const normalST=normalCandidates.length
+      ? normalCandidates[0]
+      : (validST.length ? validST.slice(0,20).reduce((a,b)=>a+b,0)/Math.min(20,validST.length) : null);
+
+    let currentST=normalST;
+    let source="20走平均";
+    let currentRank=null;
+    let adopted=false;
+
+    if(fa?.avgST!=null && !fa?.before20){
+      currentST=Number(fa.avgST);
+      currentRank=fa?.avgRank!=null?Number(fa.avgRank):null;
+      source="F後平均";
+      adopted=true;
+    }else if(recent5Avg!=null && recent5.length>=3){
+      const diff=normalST!=null ? Math.abs(recent5Avg-normalST) : 0;
+      if(normalST==null || diff>=0.020){
+        currentST=recent5Avg;
+        source="直近5走";
+        adopted=true;
+      }
+    }
+
+    const diffText=(normalST!=null&&currentST!=null)
+      ? `${currentST>=normalST?"+":""}${(currentST-normalST).toFixed(3)}`
+      : "—";
+    const titleText=fa?.before20
+      ? "F発生位置不明"
+      : (fa?.count ? `F後 ${fa.count}走` : "F直後");
+    const sourceText=adopted ? `${source}を解析採用` : "20走平均を解析採用";
+
     const box=document.createElement("div");
     box.className="fAfterCompact";
     box.innerHTML=`
-      <div class="fAfterTitle"><span>⚠ F後</span><b>${fa?.before20?"F発生20走以前":((fa?.count||0)+"走")}</b></div>
+      <div class="fAfterTitle"><span>⚠ F${fc} 現在ST</span><b>${titleText}</b></div>
       <div class="fAfterStats">
-        <div><small>平均ST</small><strong>${fa?.avgST!=null?fa.avgST.toFixed(3):"—"}</strong></div>
-        <div><small>ST順位</small><strong>${fa?.avgRank!=null?fa.avgRank.toFixed(2)+"位":"—"}</strong></div>
+        <div><small>通常ST</small><strong>${normalST!=null?normalST.toFixed(3):"—"}</strong></div>
+        <div><small>現在ST</small><strong>${currentST!=null?currentST.toFixed(3):"—"}</strong></div>
+      </div>
+      <div style="margin-top:5px;font-size:10px;font-weight:900;color:${adopted?"#ffd66b":"#91a6b8"}">
+        ${sourceText}${normalST!=null&&currentST!=null?` / 差 ${diffText}`:""}
       </div>`;
     card.appendChild(box);
   });
@@ -22402,3 +22453,5 @@ window.__BH_V396_FORCE_2BOX__=true;
 F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5走(最低3走)と20走平均の差>=0.020なら直近5走平均ST。
 採用STをHUNTER事前評価・3C攻め連鎖診断・壁/攻め率・5000回SIMへ統一。
 -->
+
+<!-- V443: Fカードに解析採用ST（F後平均 / F位置不明時の直近5走）を表示。Vol表示・title更新。 -->
