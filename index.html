@@ -21192,6 +21192,27 @@ window.bhVenueBase=function(course,key="p1"){
     };
   }
 
+  /* V442 F持ち現在ST:
+     F地点が20走内で判明 → F後平均STを最優先。
+     F地点不明 → 直近5走と20走平均の差が0.020以上なら直近5走平均を採用。
+     3C理論・壁率・攻め率・HUNTER事前評価・5000回SIMは同じ採用STを使う。 */
+  function currentSTFor(r,h,normalAvg){
+    const fc=window.HUNTER_F?.count?.(r)||0;
+    const normal=Number(normalAvg);
+    if(!fc)return {st:Number.isFinite(normal)?normal:null,source:"20走平均",fCount:0,diff:0};
+    const fa=window.HUNTER_F?.after?.(h,fc);
+    if(fa?.avgST!=null && !fa?.before20){
+      return {st:Number(fa.avgST),source:"F後平均",fCount:fc,diff:Number.isFinite(normal)?Math.abs(Number(fa.avgST)-normal):0,after:fa};
+    }
+    const recent5=(h||[]).map(x=>num(x?.st ?? x?.start_timing ?? x?.own_st ?? x?.self_st)).filter(x=>x!=null&&x>=0).slice(0,5);
+    const r5=recent5.length?mean(recent5):null;
+    const diff=(r5!=null&&Number.isFinite(normal))?Math.abs(r5-normal):0;
+    if(r5!=null && recent5.length>=3 && diff>=0.020){
+      return {st:r5,source:"直近5走",fCount:fc,diff,recentCount:recent5.length,after:fa};
+    }
+    return {st:Number.isFinite(normal)?normal:r5,source:"20走平均",fCount:fc,diff,recentCount:recent5.length,after:fa};
+  }
+
   /* 直前情報はAI解析済みデータを優先。
      未セットでも、画面に取得済みなら直前情報テーブルから拾う。 */
   function previewFromTable(boat){
@@ -21238,11 +21259,12 @@ window.bhVenueBase=function(course,key="p1"){
       const hist=histFor(r),fa=window.HUNTER_F?.after?.(hist,fc);
       const base=fc===1?-3:fc===2?-5:fc>=3?-8:0;
       let recovery=0;
-      if(fa?.avgST!=null){
-        if(fa.avgST<=0.12)recovery=5;
-        else if(fa.avgST<=0.15)recovery=2;
+      const hm=hMetrics(hist),cur=currentSTFor(r,hist,hm.avgST),recoveryST=cur.st;
+      if(recoveryST!=null){
+        if(recoveryST<=0.12)recovery=5;
+        else if(recoveryST<=0.15)recovery=2;
       }
-      return {count:fc,after:fa,base,recovery,net:base+recovery};
+      return {count:fc,after:fa,base,recovery,net:base+recovery,currentST:cur};
     }catch(e){return {count:0,after:null,base:0,recovery:0,net:0}}
   }
   function kachiContext(boat,avgST){
@@ -21260,13 +21282,16 @@ window.bhVenueBase=function(course,key="p1"){
     const racers6=rr();
     if(racers6.length!==6)return [];
     const raw=racers6.map(r=>{
-      const hm=hMetrics(histFor(r));
+      const hist=histFor(r);
+      const hm=hMetrics(hist);
+      const cur=currentSTFor(r,hist,hm.avgST);
       return {
         boat:Number(r.entry_number), name:r.name||"—",
         national:num(r.national_win_rate),
         local:(typeof bhLocalWin==="function"?bhLocalWin(r):num(r.local_win_rate)),
         course2:hm.course2, course3:hm.course3,
-        avgST:hm.avgST, avgRank:hm.avgRank,
+        avgST:cur.st, normalAvgST:hm.avgST, currentSTSource:cur.source, currentSTDiff:cur.diff, currentSTRecentCount:cur.recentCount||0,
+        avgRank:hm.avgRank,
         motor2:num(r.motor_top_2_percent), motor3:num(r.motor_top_3_percent)
       };
     });
@@ -21389,7 +21414,7 @@ window.bhVenueBase=function(course,key="p1"){
       document.getElementById("date")?.value||"",
       document.getElementById("stadium")?.value||"",
       document.getElementById("race")?.value||"",
-      ...pre.map(x=>`${x.boat}:${x.finalDev.toFixed(3)}:C${x.course}:D${x.v415?.entry?.distance||0}:F${x.v415?.f?.count||0}:K${x.v415?.kachi?.bonus||0}`),
+      ...pre.map(x=>`${x.boat}:${x.finalDev.toFixed(3)}:ST${Number(x.avgST??.17).toFixed(3)}:${x.currentSTSource||"20走平均"}:C${x.course}:D${x.v415?.entry?.distance||0}:F${x.v415?.f?.count||0}:K${x.v415?.kachi?.bonus||0}`),
       `hist:${histTotal}`
     ].join("|");
     for(let i=0;i<key.length;i++){seed^=key.charCodeAt(i);seed=Math.imul(seed,16777619)}
@@ -22372,3 +22397,8 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 43位など明確な下位艇を「次走勝負」と誤表示しない。
 */
 </script>
+
+<!-- V442 F CURRENT-ST PATCH
+F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5走(最低3走)と20走平均の差>=0.020なら直近5走平均ST。
+採用STをHUNTER事前評価・3C攻め連鎖診断・壁/攻め率・5000回SIMへ統一。
+-->
