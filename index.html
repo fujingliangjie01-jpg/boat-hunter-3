@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V423</title>
+<title>BOAT HUNTER V424</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15118,7 +15118,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.423</div>
+  <div class="topVol">Vol.424</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15651,6 +15651,8 @@ async function getRace(){
   window.__BH_CURRENT_RACE=currentRace;
   window.__BH_CURRENT_RACERS=rr.slice();
   window.currentRace=currentRace;
+  // V424: 6艇が揃った時点で評価土台を作る。過去20走は後から補正。
+  setTimeout(()=>{try{window.BH_V368_RUN?.()}catch(e){}},0);
 
   /* Vol.270: 出走表は取得できた瞬間に6艇を先に描画。
      級別CSV・履歴・得点の追加通信が失敗/遅延してもカード自体は消さない。 */
@@ -15788,7 +15790,7 @@ async function buildHistory(){
  const rr=racers(currentRace)||[];
  const start=$("date").value;
  const targets=new Map(rr.map(x=>[+x.number,{course:+x.entry_number,rows:[]}]));
- const MAX_DAYS=420,BATCH=28,CONCURRENCY=10;
+ const MAX_DAYS=420,BATCH=21,CONCURRENCY=6;
  const allDone=()=>[...targets.values()].every(o=>(o.rows?.length||0)>=20);
 
  // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
@@ -15851,8 +15853,13 @@ async function buildHistory(){
    try{updateMainHistory(rr,partial)}catch(e){}
    try{bhRenderFAfterCompact(rr,partial)}catch(e){}
    const got=[...targets.values()].map(o=>Math.min(20,o.rows.length));
-   $("status").innerHTML=
-     `過去20走を並列取得中… ${got.join("・")} / 20走<div class="progress"><i></i></div>`;
+   const histMsg=`過去20走を裏で取得中… ${got.join("・")} / 20走`;
+   if(document.getElementById("aiAnalyze")?.classList.contains("done")){
+     const ps=document.getElementById("previewState");
+     if(ps && !String(ps.textContent||"").includes("取得完了")) ps.textContent=histMsg;
+   }else{
+     $("status").innerHTML=`${histMsg}<div class="progress"><i></i></div>`;
+   }
    // 描画を一度ブラウザへ返して操作を固めない
    await new Promise(resolve=>setTimeout(resolve,0));
  }
@@ -21629,6 +21636,13 @@ window.bhVenueBase=function(course,key="p1"){
     // 最終安全フィルター：必須買い目や補充経路からもワースト50を復活させない。
     main=uniq(main).filter(x=>!worst50Set.has(x.combo)||isHead6Worst50Exception(x.combo));
 
+    // V424: フィルター競合で0点になった場合でも買い目表示を消さない。
+    // ワースト50禁止は維持し、現在の頭固定で採用可能な上位から最低限復旧。
+    if(!main.length){
+      const emergency=buyablePos.filter(x=>cb(x)[0]===head).sort(sort);
+      main=uniq(emergency).slice(0,head===1?7:13);
+    }
+
     const cover=[],long=[];
     const all=uniq([...main]);
     window.__HUNTER_C3_THIRD_ONLY=c3ThirdOnly;
@@ -21790,7 +21804,10 @@ window.bhVenueBase=function(course,key="p1"){
     });
     requestAnimationFrame(()=>window.scrollTo({top:keepWindowY,left:0,behavior:"auto"}));
     const jump=document.getElementById("jumpToHunterBuy");
-    if(jump)jump.disabled=!document.getElementById("hunterFinalBuyBlock");
+    if(jump){
+      jump.disabled=false;
+      jump.classList.add("ready");
+    }
 
     el.querySelectorAll(".habSortBtn").forEach(btn=>btn.addEventListener("click",()=>{
       const y=window.scrollY, sy=panel120?.scrollTop||0;
@@ -21843,8 +21860,26 @@ window.bhVenueBase=function(course,key="p1"){
   const reset120=()=>{window.__BH_SIM120_SORT="sim"};
   document.getElementById("aiAnalyze")?.addEventListener("click",()=>{
     reset120();
-    runAll(); // V421: 6艇取得済みなら即時描画
-    // オッズ自動取得が並行中なら、到着時に一度だけ再描画。
+    // V424: 本体aiAnalyzeが先に同期実行されるので、このlistenerでは即解析できる。
+    try{
+      if(typeof racers==="function" && typeof currentRace!=="undefined"){
+        const a=racers(currentRace)||[];
+        if(a.length===6){
+          window.__BH_CURRENT_RACE=currentRace;
+          window.__BH_CURRENT_RACERS=a.slice();
+        }
+      }
+    }catch(e){}
+    runAll();
+
+    // AI解析完了＝買い目へ移動可能。過去20走・オッズ完了は待たない。
+    const jump=document.getElementById("jumpToHunterBuy");
+    if(jump){
+      jump.disabled=false;
+      jump.classList.add("ready");
+    }
+
+    // オッズ到着時だけ実倍率/世間評価へ更新。
     if(!window.__HUNTER_ODDS120?.odds?.length){
       let n=0;
       const w=setInterval(()=>{
@@ -21866,7 +21901,12 @@ window.bhVenueBase=function(course,key="p1"){
     },100);
   });
   document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
-    document.getElementById("hunterFinalBuyBlock")?.scrollIntoView({behavior:"smooth",block:"start"});
+    let block=document.getElementById("hunterFinalBuyBlock");
+    if(!block){
+      runAll();
+      block=document.getElementById("hunterFinalBuyBlock");
+    }
+    (block||document.getElementById("habSimBody"))?.scrollIntoView({behavior:"smooth",block:"start"});
   });
   /* V396: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
   window.__BH_V396_RUN_ALL=runAll;
