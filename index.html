@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V444</title>
+<title>BOAT HUNTER V446</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15148,7 +15148,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.444</div>
+  <div class="topVol">Vol.446</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15646,25 +15646,16 @@ function bhRenderFAfterCompact(rr,map){
       }
     }
 
-    const diffText=(normalST!=null&&currentST!=null)
-      ? `${currentST>=normalST?"+":""}${(currentST-normalST).toFixed(3)}`
-      : "—";
-    const titleText=fa?.before20
-      ? "F発生位置不明"
-      : (fa?.count ? `F後 ${fa.count}走` : "F直後");
-    const sourceText=adopted ? `${source}を解析採用` : "20走平均を解析採用";
-
+    const sourceShort = source==="F後平均" ? "F後" : (source==="直近5走" ? "直近5走" : "通常");
     const box=document.createElement("div");
-    box.className="fAfterCompact";
+    box.className="fAfterCompact fAfterMini";
     box.innerHTML=`
-      <div class="fAfterTitle"><span>⚠ F${fc} 現在ST</span><b>${titleText}</b></div>
-      <div class="fAfterStats">
-        <div><small>通常ST</small><strong>${normalST!=null?normalST.toFixed(3):"—"}</strong></div>
-        <div><small>現在ST</small><strong>${currentST!=null?currentST.toFixed(3):"—"}</strong></div>
+      <div class="fAfterMiniLine">
+        <b>F${fc}</b>
+        <span>現在ST</span>
+        <strong>${currentST!=null?currentST.toFixed(3):"—"}</strong>
       </div>
-      <div style="margin-top:5px;font-size:10px;font-weight:900;color:${adopted?"#ffd66b":"#91a6b8"}">
-        ${sourceText}${normalST!=null&&currentST!=null?` / 差 ${diffText}`:""}
-      </div>`;
+      <div class="fAfterMiniSource">${sourceShort}採用</div>`;
     card.appendChild(box);
   });
 }
@@ -22434,6 +22425,109 @@ window.__BH_V396_FORCE_2BOX__=true;
 - 画面へ露出していた literal \n を実改行へ修正。
 */
 </script>
+
+<script>
+/* Vol.446 — F持ちの「現在ST」を6艇診断を含む全解析で共通利用 */
+(()=>{
+  const num=v=>{
+    if(v==null||v==="") return null;
+    const n=Number(String(v).replace(/[^0-9+.-]/g,""));
+    return Number.isFinite(n)?n:null;
+  };
+  const rowST=x=>num(x?.st ?? x?.start_timing ?? x?.own_st ?? x?.self_st);
+
+  function currentSTFor(r,hist=[]){
+    const fc=Number(r?.flying_count ?? r?.f_count ?? r?.F ?? r?.flying ?? 0)||0;
+    const vals=(hist||[]).map(rowST).filter(v=>v!=null&&v>=0);
+    const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+    const normalCandidates=[
+      r?.average_start_timing,r?.avg_start_timing,r?.average_st,r?.avg_st,
+      r?.start_timing_average,r?.national_average_start_timing
+    ].map(num).filter(v=>v!=null&&v>=0);
+    const normal=normalCandidates.length?normalCandidates[0]:avg(vals.slice(0,20));
+
+    if(fc<=0) return {st:normal,source:"通常",normal};
+
+    let fa=null;
+    try{ fa=window.HUNTER_F?.after?.(hist,fc)||null; }catch(_){}
+    if(fa?.avgST!=null && !fa?.before20){
+      return {st:Number(fa.avgST),source:"F後",normal};
+    }
+
+    const r5=avg(vals.slice(0,5));
+    if(r5!=null && vals.slice(0,5).length>=3 &&
+       (normal==null || Math.abs(r5-normal)>=0.020)){
+      return {st:r5,source:"直近5走",normal};
+    }
+    return {st:normal,source:"通常",normal};
+  }
+
+  window.BH_CURRENT_ST=currentSTFor;
+
+  function apply(){
+    const racers=Array.isArray(window.racers)?window.racers:
+                 Array.isArray(window.__BH_RACERS)?window.__BH_RACERS:null;
+    if(!racers?.length) return;
+
+    const map=window.courseHistMap || window.__BH_COURSE_HIST || window.histMap;
+    racers.forEach(r=>{
+      let hist=[];
+      try{
+        if(map instanceof Map) hist=map.get(Number(r.number))?.rows||[];
+        else if(map) hist=map[Number(r.number)]?.rows||map[r.number]||[];
+      }catch(_){}
+      const c=currentSTFor(r,hist);
+      if(c.st==null) return;
+
+      // Preserve originals, then expose one common adopted ST under common field names.
+      if(r.__bhOriginalAvgST==null)
+        r.__bhOriginalAvgST=num(r.average_start_timing ?? r.avg_start_timing ?? r.average_st ?? r.avg_st);
+      r.__bhCurrentST=c.st;
+      r.__bhCurrentSTSource=c.source;
+      r.current_st=c.st;
+      r.adopted_st=c.st;
+      r.average_start_timing=c.st;
+      r.avg_start_timing=c.st;
+      r.average_st=c.st;
+      r.avg_st=c.st;
+    });
+
+    // Recalculate six-boat ST order from the adopted current ST.
+    const ordered=racers
+      .filter(r=>num(r.__bhCurrentST)!=null)
+      .slice().sort((a,b)=>num(a.__bhCurrentST)-num(b.__bhCurrentST));
+    ordered.forEach((r,i)=>{
+      r.__bhCurrentSTRank=i+1;
+      r.current_st_rank=i+1;
+      r.average_start_rank=i+1;
+      r.avg_st_rank=i+1;
+      r.st_rank=i+1;
+    });
+  }
+
+  window.BH_APPLY_CURRENT_ST=apply;
+
+  // Run immediately and immediately before user-triggered analysis clicks.
+  apply();
+  document.addEventListener("click",e=>{
+    const b=e.target?.closest?.("button");
+    if(!b) return;
+    const s=(b.id+" "+b.className+" "+b.textContent).toLowerCase();
+    if(s.includes("ai")||s.includes("解析")||s.includes("診断")||s.includes("simulation")||s.includes("sim")){
+      apply();
+    }
+  },true);
+
+  // Re-apply when racer/history data arrives asynchronously.
+  let n=0;
+  const tm=setInterval(()=>{ apply(); if(++n>=40) clearInterval(tm); },250);
+})();
+</script>
+<style>
+/* Vol.446: 6艇比較内で現在ST採用が分かる場合の補助表示用 */
+.bhCurrentSTNote{font-size:8px!important;line-height:1!important;opacity:.72!important}
+</style>
+<!-- V446: F現在STを6艇診断・ST順位・壁率・3C攻め・展開・SIMの共通入力へ統一 -->
 </body>
 </html>
 
@@ -22457,3 +22551,47 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
 <!-- V443: Fカードに解析採用ST（F後平均 / F位置不明時の直近5走）を表示。Vol表示・title更新。 -->
 
 <!-- V444: V443のFカード用ST数値変換RegExpを修正。main script parse停止を解消。 -->
+
+<style>
+/* Vol.445 Fカード最小表示 */
+.fAfterCompact.fAfterMini{
+  margin:6px 0 0!important;
+  padding:6px 7px!important;
+  min-height:0!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+}
+.fAfterMiniLine{
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  white-space:nowrap!important;
+  line-height:1!important;
+}
+.fAfterMiniLine b{
+  font-size:12px!important;
+  flex:0 0 auto!important;
+}
+.fAfterMiniLine span{
+  font-size:8px!important;
+  opacity:.72!important;
+  flex:0 0 auto!important;
+}
+.fAfterMiniLine strong{
+  font-size:14px!important;
+  margin-left:auto!important;
+  letter-spacing:0!important;
+  flex:0 0 auto!important;
+}
+.fAfterMiniSource{
+  margin-top:4px!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  color:#ffd66b!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+</style>
+<!-- V445: Fカード表示を最小化。F番号・現在ST・採用元のみ。 -->
