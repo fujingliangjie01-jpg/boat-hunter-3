@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V433</title>
+<title>BOAT HUNTER V434</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15120,7 +15120,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.433</div>
+  <div class="topVol">Vol.434</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15703,11 +15703,23 @@ function allRaces(j){
  let out=[];
  for(const st of Object.values(sts)){
    for(const r of Object.values(st?.races||{})){
-     if(r.result?.racers)out.push(r);
+     const rr=r?.result?.racers||r?.racers||{};
+     const vals=Object.values(rr);
+     // 確定着順を1艇でも持つレースだけ履歴対象。
+     if(vals.some(x=>Number(x?.place_number||x?.place||0)>0))out.push(r);
    }
  }
  return out;
 }
+function historyResultRacers(r){
+ const a=Object.values(r?.result?.racers||{});
+ if(a.length)return a;
+ return Object.values(r?.racers||{}).filter(x=>Number(x?.place_number||x?.place||0)>0);
+}
+function historyPlace(x){return Number(x?.place_number??x?.place??0)||0}
+function historyCourse(x){return Number(x?.course_number??x?.course??x?.entry_number??0)||0}
+function historyST(x){return n(x?.start_timing??x?.st??x?.start_time)}
+function historyNumber(x){return Number(x?.number??x?.racer_number??x?.registration_number??0)||0}
 function dateMinus(s,days){
  const [y,m,d]=s.split("-").map(Number);
  const x=new Date(Date.UTC(y,m-1,d-days));
@@ -15776,20 +15788,28 @@ function consumeHistoryDay(j,d,targets){
  }
 
  for(const race of allRaces(j)){
-  const rs=Object.values(race.result?.racers||{});
-  const winner=rs.find(x=>+x.place_number===1);
+  const rs=historyResultRacers(race);
+  const winner=rs.find(x=>historyPlace(x)===1);
   if(!winner)continue;
-  const ranks=stRanks(rs);
+  // API表現差を吸収してST順位を作る。
+  const stVals=rs.map(x=>historyST(x)).filter(x=>x!=null).sort((a,b)=>a-b);
   for(const self of rs){
-   const obj=targets.get(+self.number);
+   const no=historyNumber(self);
+   const obj=targets.get(no);
    if(!obj)continue;
    if(obj.rows.length>=20)continue;
-   if(+self.course_number!==obj.course)continue;
+   const course=historyCourse(self);
+   if(course!==obj.course)continue; // 同コース20走は維持
+   const st=historyST(self);
+   const entry=Number(self?.entry_number??self?.boat_number??0)||0;
    obj.rows.push({
-    date:d,place:+self.place_number,entry:+self.entry_number,course:+self.course_number,
-    st:n(self.start_timing),stRank:ranks.get(+self.entry_number)||null,
-    winnerEntry:+winner.entry_number,winnerCourse:+winner.course_number,
-    tech:+race.result.technique_number,stadium:+race.stadium_number,race:+race.race_number
+    date:d,place:historyPlace(self),entry,course,
+    st,stRank:st==null?null:stVals.indexOf(st)+1,
+    winnerEntry:Number(winner?.entry_number??winner?.boat_number??0)||0,
+    winnerCourse:historyCourse(winner),
+    tech:Number(race?.result?.technique_number??race?.technique_number??0)||0,
+    stadium:Number(race?.stadium_number??race?.stadium?.number??0)||0,
+    race:Number(race?.race_number??0)||0
    });
   }
  }
@@ -15873,6 +15893,7 @@ async function buildHistory(){
  }
 
  for(const o of targets.values())o.rows=o.rows.slice(0,20);
+ window.__BH_HISTORY_COUNTS_V434=[...targets.values()].map(o=>o.rows.length);
 
  // 完成した艇だけ永続保存。同日・同選手・同コースなら次回は通信ゼロ。
  rr.forEach(r=>{
@@ -16224,7 +16245,7 @@ async function bhToggleRecent20(boatNo,number,btn){
 
   if(!historyCache){
     if(!historyLoading)historyLoading=buildHistory();
-    historyCache=await historyLoading;
+    try{historyCache=await historyLoading}catch(e){historyLoading=null}
   }
 
   const obj=historyCache?.get?.(+number);
