@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V447</title>
+<title>BOAT HUNTER V450</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15138,6 +15138,146 @@ input,
 .bh440BoatCard.hot{outline:1px solid rgba(255,255,255,.3)}
 @media(max-width:390px){.bh440Core strong{font-size:22px}.bh440BoatText strong{font-size:16px}.bh440BoatGrid{gap:3px}}
 </style>
+
+<style id="bhV448Core3">
+/* =========================================================
+   Vol.450 CORE3
+   残す: 選手カード / レース展望 / 6艇比較
+   レース選択・出走表取得は運用上必要なため残す
+   ========================================================= */
+
+/* 旧解析・直前・買い目・オッズ・進入・結果系は画面から完全撤去 */
+#getPreview,
+#aiAnalyze,
+#jumpToHunterBuy,
+#previewPanel,
+#aiPanel,
+#hunterAnalysisBase,
+#oddsPanel,
+#entryPanel,
+#resultPanel,
+#hunterResultManager,
+#incomePanel,
+#betPanel,
+#buyPanel,
+.hunterBuyPanel,
+.hunterBetPanel,
+.resultCheckPanel,
+.resultManagerPanel,
+.balancePanel,
+.quickActionRow.actionPair{
+  display:none!important;
+}
+
+/* 余計な解析用余白を残さない */
+#main .wrap{
+  display:flex!important;
+  flex-direction:column!important;
+}
+#main .head{order:1}
+#main .controls{order:2}
+#status{order:3}
+.racerListTitle{order:4}
+#cards{order:5}
+#racerDetailPanel{order:6}
+#outlookPanel{order:7}
+#comparePanel{order:8}
+
+/* レース展望は出走表取得後の中核表示として常設枠にする */
+#outlookPanel{
+  display:block!important;
+  margin-top:16px!important;
+}
+#outlookPanel.hide{
+  display:block!important;
+}
+
+/* 6艇比較は展望の直下 */
+#comparePanel{
+  margin-top:16px!important;
+}
+
+/* CORE3見出し */
+.racerListTitle:before{
+  content:"CORE 01";
+  display:block;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  color:#5f91ad;
+  margin-bottom:4px;
+}
+#outlookPanel .outlookHead:before{
+  content:"CORE 02";
+  display:block;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  color:#5f91ad;
+  margin-bottom:4px;
+}
+#comparePanel .compareToggle:before{
+  content:"CORE 03";
+  display:block;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  color:#5f91ad;
+  margin-bottom:4px;
+}
+
+/* 取得ボタンを唯一のメインアクションに */
+#get{
+  grid-column:1/-1!important;
+  margin-top:4px!important;
+}
+
+/* スマホで3ブロックを詰める */
+@media(max-width:600px){
+  #outlookPanel,#comparePanel{margin-top:12px!important}
+}
+</style>
+
+
+<style id="bhV449Public120">
+/* Vol.450: 120通り出目回数（世間評価）をCORE3へ復帰 */
+#hunter120Always{
+  display:block!important;
+  order:9!important;
+  margin-top:16px!important;
+}
+#hunter120Always.hide{display:block!important}
+#hunter120Always .panelHead:before,
+#hunter120Always h3:before{
+  content:"PUBLIC 120";
+  display:block;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  color:#5f91ad;
+  margin-bottom:4px;
+}
+@media(max-width:600px){
+  #hunter120Always{margin-top:12px!important}
+}
+</style>
+
+
+<style id="bhV450AbilityCss">
+/* Vol.450 能力診断：旧6艇診断をベースに、今回の展開要素を混ぜない純能力評価 */
+#abilityDiagV450{order:9;margin:14px 0;padding:14px;border-radius:18px;background:linear-gradient(180deg,#0b1d29,#07131c);border:1px solid rgba(92,190,239,.25);box-shadow:0 10px 24px rgba(0,0,0,.22)}
+.abilityHead{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:10px}.abilityHead small{display:block;color:#5e91ad;font-size:9px;font-weight:1000;letter-spacing:.18em}.abilityHead b{font-size:18px}.abilityHead span{font-size:10px;color:#7793a5}
+.abilityGrid{display:grid;gap:7px}.abilityRow{display:grid;grid-template-columns:38px minmax(72px,1.2fr) 54px 1fr;gap:7px;align-items:center;padding:8px;border-radius:13px;background:#0b1923;border:1px solid rgba(255,255,255,.07)}
+.abilityBoat{height:32px;border-radius:9px;display:grid;place-items:center;font-weight:1000;border:2px solid rgba(255,255,255,.55)}.abilityBoat.b1{background:#fff;color:#111}.abilityBoat.b2{background:#111;color:#fff}.abilityBoat.b3{background:#e32632;color:#fff}.abilityBoat.b4{background:#2277df;color:#fff}.abilityBoat.b5{background:#f4dc22;color:#111}.abilityBoat.b6{background:#24ad57;color:#fff}
+.abilityName{font-size:12px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.abilityScore{text-align:center}.abilityScore strong{display:block;font-size:19px}.abilityScore small{font-size:8px;color:#7893a5}
+.abilityBar{height:8px;background:#061018;border-radius:99px;overflow:hidden}.abilityBar i{display:block;height:100%;background:linear-gradient(90deg,#1b83c5,#65d2ff);border-radius:99px}
+.abilityReason{grid-column:2/-1;font-size:9px;color:#8da8b8;line-height:1.45}
+.abilityRank1{border-color:#ff5148;box-shadow:0 0 0 1px rgba(255,81,72,.18) inset}.abilityRank2{border-color:#e5c638}
+.abilityNote{margin-top:9px;font-size:9px;color:#6f8797;line-height:1.5}
+#hunter120Always{order:10!important}
+@media(max-width:600px){.abilityRow{grid-template-columns:34px minmax(62px,1fr) 48px 1fr;padding:7px;gap:6px}.abilityScore strong{font-size:17px}}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15148,7 +15288,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.447</div>
+  <div class="topVol">Vol.450</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15187,14 +15327,7 @@ input,
     </div>
 
     <button type="button" id="get">① 出走表取得</button>
-
-    <div class="quickActionRow actionPair">
-      <button type="button" id="getPreview" class="previewBtn quickMainAction" disabled>② 直前情報取得</button>
-      <button type="button" id="aiAnalyze" class="aiBtn quickMainAction" disabled>③ AI解析</button>
-    </div>
-    <button type="button" id="jumpToHunterBuy" class="jumpToHunterBuy" disabled>買い目まで行く ↓</button>
-
-    <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
+<div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
     <input id="voiceFallbackInput" class="voiceFallbackInput hide"
       type="text" inputmode="text" autocomplete="off" autocapitalize="off"
       placeholder="例：桐生 5レース">
@@ -15327,7 +15460,14 @@ input,
 
   
   
-  <section id="outlookPanel" class="outlookPanel hide">
+  
+<section id="abilityDiagV450">
+  <div class="abilityHead"><div><small>CORE 02</small><b>能力診断</b></div><span>旧6艇診断ベース</span></div>
+  <div id="abilityRowsV450" class="abilityGrid"><div class="compareWait">出走表取得後に表示</div></div>
+  <div class="abilityNote">能力のみを評価。風・潮位・場特性・チルト・今回の展開補正はここでは加えません。</div>
+</section>
+
+<section id="outlookPanel" class="outlookPanel hide">
     <div class="outlookHead">
       <div>
         <div class="outlookEyebrow">RACE OUTLOOK</div>
@@ -22525,6 +22665,138 @@ window.__BH_V396_FORCE_2BOX__=true;
 .bhCurrentSTNote{font-size:8px!important;line-height:1!important;opacity:.72!important}
 </style>
 <!-- V446: F現在STを6艇診断・ST順位・壁率・3C攻め・展開・SIMの共通入力へ統一 -->
+
+<script id="bhV448Core3Boot">
+/* Vol.450: CORE3 UI boot */
+(function(){
+  function core3(){
+    const outlook=document.getElementById("outlookPanel");
+    const compare=document.getElementById("comparePanel");
+    const detail=document.getElementById("racerDetailPanel");
+    const cards=document.getElementById("cards");
+    if(outlook) outlook.classList.remove("hide");
+    /* requested order: racer cards -> outlook -> comparison */
+    if(cards && outlook && cards.parentNode){
+      const anchor=detail || cards;
+      anchor.insertAdjacentElement("afterend",outlook);
+      outlook.insertAdjacentElement("afterend",compare);
+    }
+  }
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",core3,{once:true});
+  }else{
+    core3();
+  }
+})();
+</script>
+
+
+<script id="bhV449Public120Boot">
+(function(){
+  function restore120(){
+    const p=document.getElementById("hunter120Always");
+    const c=document.getElementById("comparePanel");
+    if(!p) return;
+    p.classList.remove("hide");
+    p.style.display="block";
+    if(c && c.parentNode) c.insertAdjacentElement("afterend",p);
+  }
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",restore120,{once:true});
+  }else restore120();
+  setTimeout(restore120,300);
+})();
+</script>
+
+
+<script id="bhV450AbilityJs">
+(function(){
+ const N=v=>{const n=Number(String(v??"").replace(/[^\d.\-]/g,""));return Number.isFinite(n)?n:null};
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const val=(r,keys)=>{for(const k of keys){const n=N(r?.[k]);if(n!=null)return n}return null};
+
+ function motorPoint(m2,m3){
+   if(m2!=null&&m3!=null){
+     if(m2>=58&&m3>=70)return 8;
+     if(m2>=50&&m3>=60)return 5;
+     if(m2>=38&&m3>=48)return 3;
+     if(m2<=20&&m3<=23)return -6;
+     if(m2<=29&&m3<=32)return -3;
+   } return 0;
+ }
+ function stPoint(st,rank){
+   let p=0;
+   if(st!=null){ if(st<=.11)p+=5; else if(st<=.15)p+=2; else if(st<=.18)p-=3; else p-=6; }
+   if(rank!=null){ if(rank<=2.5)p+=2; else if(rank<=3.1)p+=0; else if(rank<=4)p-=2; else p-=4; }
+   return p;
+ }
+ function clsPoint(c){c=String(c||"").toUpperCase();return c==="A1"?4:c==="A2"?2:c==="B1"?0:-2}
+ function render(){
+   const box=document.getElementById("abilityRowsV450"); if(!box)return;
+   let rr=[]; try{rr=racers(currentRace)||[]}catch(_){}
+   if(!rr.length){box.innerHTML='<div class="compareWait">出走表取得後に表示</div>';return}
+
+   const rows=rr.map(r=>{
+     const boat=Number(r.entry_number);
+     const h=(historyCache instanceof Map?historyCache.get(Number(r.number))?.rows:[])||[];
+     let m={};try{m=histMetrics(h)||{}}catch(_){}
+     /* V446 current-ST hook is respected when available */
+     let ast=N(m.avgST), ark=N(m.avgRank);
+     try{
+       if(typeof window.bhGetEffectiveSTV446==="function"){
+         const e=window.bhGetEffectiveSTV446(r,h);
+         if(N(e?.avgST)!=null)ast=N(e.avgST);
+         if(N(e?.avgRank)!=null)ark=N(e.avgRank);
+       }
+     }catch(_){}
+     const n=h.length||0, rate=fn=>n?h.filter(fn).length/n*100:null;
+     const cwin=rate(x=>Number(x.place)===1);
+     const ctop3=rate(x=>[1,2,3].includes(Number(x.place)));
+     const nat=val(r,["national_win_rate","national_rate","national"]);
+     const loc=val(r,["local_win_rate","local_rate","local"]);
+     const m2=val(r,["motor_top_2_percent","motor2"]),m3=val(r,["motor_top_3_percent","motor3"]);
+     /* 0-100 能力指数。旧6艇比較の主要指標を中心に構成 */
+     let score=50;
+     if(cwin!=null) score+=(cwin-16.7)*.42;
+     if(ctop3!=null)score+=(ctop3-50)*.18;
+     if(nat!=null) score+=(nat-5.0)*3.0;
+     if(loc!=null) score+=(loc-5.0)*1.6;
+     score+=stPoint(ast,ark);
+     score+=motorPoint(m2,m3);
+     score+=clsPoint(r.class||r.grade||r.racer_class);
+     score=clamp(score,0,100);
+     const reasons=[];
+     if(cwin!=null)reasons.push(`今C1着 ${cwin.toFixed(1)}%`);
+     if(ctop3!=null)reasons.push(`今C3連 ${ctop3.toFixed(1)}%`);
+     if(ast!=null)reasons.push(`ST ${ast.toFixed(3)}`);
+     if(ark!=null)reasons.push(`ST順 ${ark.toFixed(2)}`);
+     if(m2!=null)reasons.push(`M2 ${m2.toFixed(1)}%`);
+     return {boat,name:r.name||"—",score,reasons};
+   }).sort((a,b)=>b.score-a.score);
+   rows.forEach((x,i)=>x.rank=i+1);
+   window.__BH_ABILITY_V450=rows;
+   box.innerHTML=rows.map(x=>`<div class="abilityRow ${x.rank===1?"abilityRank1":x.rank===2?"abilityRank2":""}">
+     <span class="abilityBoat b${x.boat}">${x.boat}</span><span class="abilityName">${x.name}</span>
+     <span class="abilityScore"><strong>${x.score.toFixed(1)}</strong><small>能力 ${x.rank}位</small></span>
+     <span class="abilityBar"><i style="width:${x.score.toFixed(1)}%"></i></span>
+     <span class="abilityReason">${x.reasons.join(" / ")}</span></div>`).join("");
+ }
+ function place(){
+   const p=document.getElementById("abilityDiagV450"), c=document.getElementById("comparePanel"), o=document.getElementById("outlookPanel");
+   if(p&&c&&c.parentNode)c.insertAdjacentElement("afterend",p);
+   if(p&&o&&p.parentNode)p.insertAdjacentElement("afterend",o);
+ }
+ function run(){place();render()}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",run,{once:true});else run();
+ document.addEventListener("change",e=>{if(e.target?.matches?.("#date,#stadium,#race"))setTimeout(render,80)});
+ document.addEventListener("click",e=>{if(e.target?.closest?.("#get,#btnProgram,#getProgram,#programBtn")){setTimeout(render,250);setTimeout(render,900)}});
+ const old=window.bhRenderCompare;
+ if(typeof old==="function")window.bhRenderCompare=function(){const z=old.apply(this,arguments);setTimeout(render,0);return z};
+ window.bhRenderAbilityV450=render;
+ setTimeout(run,500);
+})();
+</script>
+
 </body>
 </html>
 
