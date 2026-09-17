@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V421</title>
+<title>BOAT HUNTER V423</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15118,7 +15118,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.421</div>
+  <div class="topVol">Vol.423</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15681,7 +15681,7 @@ async function getRace(){
   $("status").textContent=`✓ ${S[Number($("stadium").value)]} ${$("race").value}R / 過去20走を高速取得中…`;
   window.prefetchHunterPreview?.();
   // V421 FAST PATH: まず出走表→AI解析を操作可能にし、重い履歴通信は後段へ。
-  setTimeout(()=>{try{preloadHistory(rr)}catch(e){}},700);
+  setTimeout(()=>{try{preloadHistory(rr)}catch(e){}},80);
   setTimeout(()=>{try{loadMeetPointsV047(rr)}catch(e){}},250);
   setTimeout(()=>{try{bhRenderCompare()}catch(e){}},60);
  }catch(e){
@@ -15786,46 +15786,92 @@ function consumeHistoryDay(j,d,targets){
 }
 async function buildHistory(){
  const rr=racers(currentRace)||[];
- const targets=new Map(rr.map(x=>[+x.number,{
-   course:+x.entry_number,
-   rows:[]
- }]));
  const start=$("date").value;
- const BATCH=14,MAX_DAYS=420;
-
- /* V200:
-    V198で壊れた履歴JSONの読み方を、実績のある dayJson + consumeHistoryDay に戻す。
-    軽量化は「20走が揃ったら停止」だけを行い、データ形式は変更しない。 */
+ const targets=new Map(rr.map(x=>[+x.number,{course:+x.entry_number,rows:[]}]));
+ const MAX_DAYS=420,BATCH=28,CONCURRENCY=10;
  const allDone=()=>[...targets.values()].every(o=>(o.rows?.length||0)>=20);
 
+ // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
+ const CACHE_KEY="BH_HISTORY20_V423";
+ let persistent={};
+ try{persistent=JSON.parse(localStorage.getItem(CACHE_KEY)||"{}")}catch(e){persistent={}}
+ const cacheKey=(r)=>`${start}|${Number(r.number)}|C${Number(r.entry_number)}`;
+
+ rr.forEach(r=>{
+   const c=persistent[cacheKey(r)];
+   if(c&&Array.isArray(c.rows)&&c.rows.length){
+     const o=targets.get(+r.number);
+     o.rows=c.rows.slice(0,20);
+   }
+ });
+
+ if(allDone()){
+   $("status").textContent="✓ 過去20走 キャッシュ読込完了";
+   return new Map([...targets].map(([k,v])=>[k,{...v,rows:v.rows.slice(0,20)}]));
+ }
+
  window.__BH_HISTORY_BATCH_CACHE=window.__BH_HISTORY_BATCH_CACHE||new Map();
+
+ async function fetchMany(dates){
+   const out=new Array(dates.length);
+   let cursor=0;
+   async function worker(){
+     while(true){
+       const i=cursor++;
+       if(i>=dates.length)return;
+       const d=dates[i];
+       if(window.__BH_HISTORY_BATCH_CACHE.has(d)){
+         out[i]=window.__BH_HISTORY_BATCH_CACHE.get(d);
+         continue;
+       }
+       const j=await dayJson(d);
+       window.__BH_HISTORY_BATCH_CACHE.set(d,j);
+       out[i]=j;
+     }
+   }
+   await Promise.all(Array.from({length:Math.min(CONCURRENCY,dates.length)},worker));
+   return out;
+ }
 
  for(let from=1;from<=MAX_DAYS && !allDone();from+=BATCH){
    const dates=Array.from(
      {length:Math.min(BATCH,MAX_DAYS-from+1)},
      (_,i)=>dateMinus(start,from+i)
    );
+   const jsons=await fetchMany(dates);
 
-   const jsons=await Promise.all(dates.map(async d=>{
-     if(window.__BH_HISTORY_BATCH_CACHE.has(d))
-       return window.__BH_HISTORY_BATCH_CACHE.get(d);
-     const j=await dayJson(d);
-     window.__BH_HISTORY_BATCH_CACHE.set(d,j);
-     return j;
-   }));
-
-   /* 新しい日付 → 古い日付の順を維持 */
+   // 新しい日付→古い日付の順を維持。既に20走ある艇はconsume側で即スキップ。
    for(let i=0;i<dates.length;i++){
      consumeHistoryDay(jsons[i],dates[i],targets);
      if(allDone())break;
    }
 
+   // バッチごとに画面へ途中反映。20走全部を待たない。
+   const partial=new Map([...targets].map(([k,v])=>[k,{...v,rows:v.rows.slice(0,20)}]));
+   try{updateMainHistory(rr,partial)}catch(e){}
+   try{bhRenderFAfterCompact(rr,partial)}catch(e){}
    const got=[...targets.values()].map(o=>Math.min(20,o.rows.length));
    $("status").innerHTML=
-     `選手データ取得中… ${got.join("・")} / 20走<div class="progress"><i></i></div>`;
+     `過去20走を並列取得中… ${got.join("・")} / 20走<div class="progress"><i></i></div>`;
+   // 描画を一度ブラウザへ返して操作を固めない
+   await new Promise(resolve=>setTimeout(resolve,0));
  }
 
  for(const o of targets.values())o.rows=o.rows.slice(0,20);
+
+ // 完成した艇だけ永続保存。同日・同選手・同コースなら次回は通信ゼロ。
+ rr.forEach(r=>{
+   const o=targets.get(+r.number);
+   if((o?.rows?.length||0)>=20)
+     persistent[cacheKey(r)]={rows:o.rows.slice(0,20),savedAt:Date.now()};
+ });
+ try{
+   // 肥大化防止：新しいものを最大180件保持
+   const entries=Object.entries(persistent)
+     .sort((a,b)=>(b[1]?.savedAt||0)-(a[1]?.savedAt||0)).slice(0,180);
+   localStorage.setItem(CACHE_KEY,JSON.stringify(Object.fromEntries(entries)));
+ }catch(e){}
+
  return new Map([...targets].map(([k,v])=>[k,v]));
 }
 function histMetrics(h){
@@ -20594,6 +20640,7 @@ window.bhVenueBase=function(course,key="p1"){
           : 0;
         const raceKey=`${sel.race}R`;
         window.BH_RESULT_MANAGER.record({
+          date:sel.date,
           venueCode:sel.venue,
           hit:!!hit,
           stake,
@@ -20654,38 +20701,67 @@ window.bhVenueBase=function(course,key="p1"){
   /* 新買い目ロジックから呼ぶ公開API。
      1レース確定時に venueCode, hit, stake, returns を渡す。
      raceKey を渡せば同一レースの二重登録を防止。 */
-  window.BH_RESULT_MANAGER={
-    record({venueCode,hit=false,stake=0,returns=0,raceKey="",combo=""}={}){
-      const code=String(venueCode||"").padStart(2,"0");
-      if(!venueNames[code])return false;
-      let d=ensureDay(),t=load(TOTAL_KEY);
-      d.seen=d.seen||{};t.seen=t.seen||{};
-      const key=raceKey?`${todayKey()}_${code}_${raceKey}`:"";
-      const ns=Number(stake)||0,nr=Number(returns)||0,nh=!!hit;
-      if(key&&d.seen[key]){
-        // V407: 同一レース再確認時、旧100円計算などが残っていれば差分訂正する。
-        const oldD=typeof d.seen[key]==="object"?d.seen[key]:null;
-        const oldT=typeof t.seen[key]==="object"?t.seen[key]:oldD;
-        if(oldD){
-          const undo=(st,old)=>{
-            st.races=Math.max(0,(st.races||0)-1);st.hits=Math.max(0,(st.hits||0)-(old.hit?1:0));
-            st.stake=(st.stake||0)-(Number(old.stake)||0);st.returns=(st.returns||0)-(Number(old.returns)||0);st.profit=st.returns-st.stake;
-            const v=venueObj(st,code);v.races=Math.max(0,v.races-1);v.hits=Math.max(0,v.hits-(old.hit?1:0));v.stake-=Number(old.stake)||0;v.returns-=Number(old.returns)||0;v.profit=v.returns-v.stake;
-          };
-          undo(d,oldD);if(oldT)undo(t,oldT);
-        }else return false;
-      }
-      addTo(d,code,nh,ns,nr);
-      addTo(t,code,nh,ns,nr);
+  // V422: 累計は加算式ではなく、レース別台帳から毎回再集計する。
+  // 同じレースを何度確認しても1件だけ。投資枚数変更も上書きで正しく訂正。
+  const LEDGER_KEY="BH_RESULT_LEDGER_V422";
+  const loadLedger=()=>{try{return JSON.parse(localStorage.getItem(LEDGER_KEY)||"{}")}catch(e){return {}}};
+  const saveLedger=x=>{try{localStorage.setItem(LEDGER_KEY,JSON.stringify(x))}catch(e){}};
+  function aggregateLedger(ledger,day=""){
+    const st=empty();
+    for(const [key,x] of Object.entries(ledger||{})){
+      if(day && String(x.date)!==String(day))continue;
+      const code=String(x.venueCode||"").padStart(2,"0");
+      if(!venueNames[code])continue;
+      addTo(st,code,!!x.hit,Number(x.stake)||0,Number(x.returns)||0);
+    }
+    return st;
+  }
+  function rebuildFromLedger(){
+    const ledger=loadLedger(),td=todayKey();
+    const total=aggregateLedger(ledger);
+    const day={...aggregateLedger(ledger,td),date:td};
+    save(DAY_KEY,day);save(TOTAL_KEY,total);
+    return {day,total};
+  }
 
-      if(key){d.seen[key]={hit:nh,stake:ns,returns:nr};t.seen[key]={hit:nh,stake:ns,returns:nr}}
-      save(DAY_KEY,d);save(TOTAL_KEY,t);render();
+  window.BH_RESULT_MANAGER={
+    record({date="",venueCode,hit=false,stake=0,returns=0,raceKey="",combo=""}={}){
+      const code=String(venueCode||"").padStart(2,"0");
+      if(!venueNames[code]||!raceKey)return false;
+      const recordDate=String(date||todayKey());
+      const key=`${recordDate}_${code}_${raceKey}`;
+      const ledger=loadLedger();
+      ledger[key]={
+        date:recordDate,venueCode:code,raceKey:String(raceKey),
+        hit:!!hit,stake:Number(stake)||0,returns:Number(returns)||0,
+        combo:String(combo||""),updatedAt:Date.now()
+      };
+      saveLedger(ledger);
+      rebuildFromLedger();
+      render();
       return true;
     },
     render,
     getDay:()=>ensureDay(),
     getTotal:()=>load(TOTAL_KEY)
   };
+
+  function migrateV361ToLedgerOnce(){
+    const flag="BH_RESULT_LEDGER_V422_MIGRATED";
+    if(localStorage.getItem(flag)==="1")return;
+    const ledger=loadLedger();
+    const old=load(TOTAL_KEY);
+    for(const [key,x] of Object.entries(old?.seen||{})){
+      if(!x||typeof x!=="object")continue;
+      const m=String(key).match(/^(\d{4}-\d{2}-\d{2})_(\d{2})_(\d+R)$/);
+      if(!m)continue;
+      ledger[key]={date:m[1],venueCode:m[2],raceKey:m[3],hit:!!x.hit,stake:Number(x.stake)||0,returns:Number(x.returns)||0,combo:"",updatedAt:0};
+    }
+    saveLedger(ledger);
+    localStorage.setItem(flag,"1");
+    rebuildFromLedger();
+  }
+  migrateV361ToLedgerOnce();
 
   function rowsHtml(st,totalMode=false){
     const arr=Object.entries(st.venues||{}).map(([code,v])=>({code,...v}))
