@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V434</title>
+<title>BOAT HUNTER V435</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15120,7 +15120,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.434</div>
+  <div class="topVol">Vol.435</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15699,7 +15699,7 @@ async function getRace(){
 }
 
 function allRaces(j){
- const sts=j?.programs?.stadiums||j?.stadiums||{};
+ const sts=j?.programs?.stadiums||j?.results?.stadiums||j?.stadiums||{};
  let out=[];
  for(const st of Object.values(sts)){
    for(const r of Object.values(st?.races||{})){
@@ -15728,21 +15728,24 @@ function dateMinus(s,days){
 async function dayJson(date){
  const ymd=String(date).replaceAll("-","");
  const y=ymd.slice(0,4);
- const urls=[
+ // V435: 履歴には「結果」が必要。
+ // 2026+ は統合 api/v1、2025 は results/v3/v2 を使う。
+ const urls=Number(y)>=2026?[
    `https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
-   `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json`,
-   `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json`
+   `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
+   `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`
+ ]:[
+   `https://boatraceopenapi.github.io/results/v3/${y}/${ymd}.json`,
+   `https://boatraceopenapi.github.io/results/v2/${y}/${ymd}.json`
  ];
  for(const u of urls){
-   for(const cacheMode of ["force-cache","no-store"]){
-     try{
-       const x=await fetch(u,{cache:cacheMode});
-       if(x.ok){
-         const j=await x.json();
-         if(j)return j;
-       }
-     }catch(e){}
-   }
+   try{
+     const x=await fetch(u,{cache:"force-cache"});
+     if(x.ok){
+       const j=await x.json();
+       if(j)return j;
+     }
+   }catch(e){}
  }
  return null;
 }
@@ -15766,7 +15769,7 @@ function consumeHistoryDay(j,d,targets){
 
  /* Vol.215
     は420日を連続確認する。現行APIだけでなく、2025年以前はlegacy programs APIも確認する。 */
- const sts=j?.programs?.stadiums||j?.stadiums||{};
+ const sts=j?.programs?.stadiums||j?.results?.stadiums||j?.stadiums||{};
  for(const st of Object.values(sts)){
   for(const race of Object.values(st?.races||{})){
    for(const pr of Object.values(race?.racers||{})){
@@ -15822,7 +15825,7 @@ async function buildHistory(){
  const allDone=()=>[...targets.values()].every(o=>(o.rows?.length||0)>=20);
 
  // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
- const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V433";
+ const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V435";
  let persistent={};
  try{persistent=JSON.parse(localStorage.getItem(CACHE_KEY)||"{}")}catch(e){persistent={}}
  const cacheKey=(r)=>`${start}|${Number(r.number)}|C${Number(r.entry_number)}`;
@@ -15885,7 +15888,7 @@ async function buildHistory(){
    try{bhRenderFAfterCompact(rr,partial)}catch(e){}
    const got=[...targets.values()].map(o=>Math.min(20,o.rows.length));
    const hd=window.__BH_HISTORY_DIAG_V433||{ok:0,ng:0};
-   const histMsg=`同コース過去20走… ${got.join("・")} /20（通信OK ${hd.ok}・NG ${hd.ng}）`;
+   const histMsg=`同コース過去20走（結果API）… ${got.join("・")} /20（OK ${hd.ok}・NG ${hd.ng}）`;
    const ps=document.getElementById("previewState");
    if(ps && !String(ps.textContent||"").includes("取得完了")) ps.textContent=histMsg;
    // 描画を一度ブラウザへ返して操作を固めない
@@ -15949,7 +15952,7 @@ async function legacyDay(date){
  try{const r=await fetch(endpoint,{cache:"force-cache"});return r.ok?await r.json():null}catch(e){return null}
 }
 function scanProgramRacers(j,cb){
- const sts=j?.programs?.stadiums||j?.stadiums||{};
+ const sts=j?.programs?.stadiums||j?.results?.stadiums||j?.stadiums||{};
  for(const st of Object.values(sts)){
   const races=st?.races||{};
   for(const race of Object.values(races)){
@@ -19541,7 +19544,7 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
  function dateStr(){return String($('date')?.value||new Date(Date.now()+32400000).toISOString().slice(0,10));}
  function api(){const y=dateStr().replaceAll('-','');return `https://boatraceopenapi.github.io/api/v1/${y.slice(0,4)}/${y}.json`;}
  function getRace(j,venue,rn){
-   const sts=j?.programs?.stadiums||j?.stadiums||{};
+   const sts=j?.programs?.stadiums||j?.results?.stadiums||j?.stadiums||{};
    const st=sts?.[String(venue)]||sts?.[String(Number(venue)).padStart(2,'0')];
    const rs=st?.races||{};
    return rs?.[String(rn)]||rs?.[String(Number(rn)).padStart(2,'0')]||null;
