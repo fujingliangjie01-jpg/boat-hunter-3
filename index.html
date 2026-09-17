@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V427</title>
+<title>BOAT HUNTER V428</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -7245,6 +7245,8 @@ body.theme-ladies .venueTimeLegend span{
 <link rel="shortcut icon" href="images/boat-hunter-icon.png?v=223">
 <link rel="apple-touch-icon" sizes="180x180" href="images/boat-hunter-icon.png?v=223">
 <link rel="apple-touch-icon-precomposed" href="images/boat-hunter-icon.png?v=223">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BOAT HUNTER">
 <meta name="application-name" content="BOAT HUNTER">
 
@@ -15118,7 +15120,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.427</div>
+  <div class="topVol">Vol.428</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -21950,101 +21952,86 @@ window.bhVenueBase=function(course,key="p1"){
 })();
 </script>
 
-<script id="bh-v427-standalone-recovery">
+<script id="bh-v428-ios-app-pipeline">
 (()=>{
-  const isStandalone=()=>window.matchMedia?.("(display-mode: standalone)")?.matches===true ||
-    window.navigator.standalone===true;
-
-  function currentSix(){
-    let a=[];
+  const six=()=>{
     try{
-      if(typeof racers==="function" && typeof currentRace!=="undefined" && currentRace){
-        a=racers(currentRace)||[];
+      if(Array.isArray(window.__BH_CURRENT_RACERS)&&window.__BH_CURRENT_RACERS.length===6)return window.__BH_CURRENT_RACERS;
+      if(typeof racers==="function"&&typeof currentRace!=="undefined"){
+        const a=racers(currentRace)||[];if(a.length===6)return a;
       }
     }catch(e){}
-    if(a.length!==6 && Array.isArray(window.__BH_CURRENT_RACERS))a=window.__BH_CURRENT_RACERS;
-    return Array.isArray(a)?a:[];
-  }
-
-  function syncRace(){
-    const a=currentSix();
-    if(a.length!==6)return false;
+    return [];
+  };
+  const sync=()=>{
+    const a=six(); if(a.length!==6)return false;
+    window.__BH_CURRENT_RACERS=a.slice();
     try{
-      window.__BH_CURRENT_RACERS=a.slice();
-      if(typeof currentRace!=="undefined" && currentRace){
+      if(typeof currentRace!=="undefined"&&currentRace){
         window.__BH_CURRENT_RACE=currentRace;
         window.__HUNTER_RACE=currentRace;
         window.currentRace=currentRace;
       }
     }catch(e){}
     return true;
-  }
-
-  function clearRaceAnalysis(){
-    // 永続の結果・2026実出目・履歴キャッシュは消さない。
-    // PWAで残留しやすい「現在レース解析」だけ初期化。
-    [
-      "__HUNTER_PRE_V368","__HUNTER_SIM_V373","__HUNTER_BUY_TICKETS",
-      "__HUNTER_LAST_HEAD","__HUNTER_CURRENT_HEAD","__HUNTER_BUY_HEAD",
-      "__HUNTER_MAIN_AXIS","__HUNTER_SECOND_CUT","__HUNTER_REQUIRED_COMBO"
-    ].forEach(k=>{try{delete window[k]}catch(e){window[k]=null}});
-    const sim=document.getElementById("habSimBody");
-    if(sim)sim.innerHTML='<div class="habWait">AI解析後に5000回SIM・買い目を表示</div>';
-    const jump=document.getElementById("jumpToHunterBuy");
-    if(jump){jump.disabled=true;jump.classList.remove("ready")}
-  }
-
-  function forceAnalysis(){
-    if(!syncRace())return false;
-    // Safari/PWAでlistener実行順や描画タイミングがずれても現在6艇から再構築。
-    try{window.BH_V368_RUN?.()}catch(e){console.error("V427 standalone analysis",e);return false}
-    const jump=document.getElementById("jumpToHunterBuy");
-    if(jump){jump.disabled=false;jump.classList.add("ready")}
-    return !!document.getElementById("hunterFinalBuyBlock");
-  }
-
-  function bind(){
-    const get=document.getElementById("get");
-    const ai=document.getElementById("aiAnalyze");
-    const jump=document.getElementById("jumpToHunterBuy");
-
-    // レース取得開始時に、前レースの買い目だけを確実に破棄。
-    get?.addEventListener("click",()=>clearRaceAnalysis(),{capture:true});
-
-    // 本体aiAnalyze完了後に2段階で強制再描画。
-    // 過去20走/オッズは待たない。
-    ai?.addEventListener("click",()=>{
-      setTimeout(forceAnalysis,0);
-      setTimeout(()=>{
-        if(!document.getElementById("hunterFinalBuyBlock"))forceAnalysis();
-      },120);
-    });
-
-    jump?.addEventListener("click",()=>{
-      if(!document.getElementById("hunterFinalBuyBlock"))forceAnalysis();
-    },{capture:true});
-
-    // ホーム画面復帰時にJS状態とDOMがずれた場合だけ復旧。
-    document.addEventListener("visibilitychange",()=>{
-      if(document.visibilityState==="visible" && isStandalone() && currentSix().length===6){
-        syncRace();
-        if(document.getElementById("aiAnalyze")?.classList.contains("done")){
-          setTimeout(forceAnalysis,50);
+  };
+  const clearCurrent=()=>{
+    ["__HUNTER_PRE_V368","__HUNTER_SIM_V373","__HUNTER_BUY_TICKETS",
+     "__HUNTER_LAST_HEAD","__HUNTER_CURRENT_HEAD","__HUNTER_BUY_HEAD",
+     "__HUNTER_MAIN_AXIS","__HUNTER_SECOND_CUT","__HUNTER_REQUIRED_COMBO"]
+      .forEach(k=>{try{delete window[k]}catch(e){window[k]=null}});
+    const el=document.getElementById("habSimBody");
+    if(el)el.innerHTML='<div class="habWait">AI解析後に5000回SIM・買い目を表示</div>';
+    const j=document.getElementById("jumpToHunterBuy");
+    if(j){j.disabled=true;j.classList.remove("ready")}
+  };
+  const run=()=>{
+    if(!sync())return false;
+    try{window.BH_V368_RUN?.()}catch(e){console.error("V428 pipeline",e);return false}
+    const ok=!!document.getElementById("hunterFinalBuyBlock");
+    const j=document.getElementById("jumpToHunterBuy");
+    if(j){j.disabled=!ok;j.classList.toggle("ready",ok)}
+    return ok;
+  };
+  const runUntilBuy=()=>{
+    // iOS Home Screen can delay DOM/listener execution. Retry only local computation,
+    // never wait for history or odds.
+    let n=0;
+    const tick=()=>{
+      n++;
+      if(run())return;
+      if(n>=8){
+        const el=document.getElementById("habSimBody");
+        if(el&&!document.getElementById("hunterFinalBuyBlock")){
+          const count=six().length;
+          el.innerHTML=`<div class="habWait" style="color:#ffb0b0">買い目再構築待ち：現在${count}艇 / AI解析をもう一度押してください</div>`;
         }
+        return;
       }
+      setTimeout(tick,120);
+    };
+    tick();
+  };
+  const bind=()=>{
+    document.getElementById("get")?.addEventListener("click",clearCurrent,{capture:true});
+    document.getElementById("aiAnalyze")?.addEventListener("click",()=>{
+      // Core aiAnalyze is synchronous; queue after it, then retry until buy DOM exists.
+      setTimeout(runUntilBuy,0);
     });
-
-    window.addEventListener("pageshow",e=>{
-      if(isStandalone() && e.persisted && currentSix().length===6){
-        syncRace();
-        if(document.getElementById("aiAnalyze")?.classList.contains("done"))setTimeout(forceAnalysis,50);
-      }
+    document.getElementById("jumpToHunterBuy")?.addEventListener("click",()=>{
+      if(!document.getElementById("hunterFinalBuyBlock"))runUntilBuy();
+    },{capture:true});
+    document.addEventListener("visibilitychange",()=>{
+      if(document.visibilityState==="visible"&&six().length===6&&document.getElementById("aiAnalyze")?.classList.contains("done"))
+        setTimeout(runUntilBuy,50);
     });
-  }
-
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});
-  else bind();
-  window.BH_V427_FORCE_ANALYSIS=forceAnalysis;
+    window.addEventListener("pageshow",()=>{
+      if(six().length===6&&document.getElementById("aiAnalyze")?.classList.contains("done"))
+        setTimeout(runUntilBuy,50);
+    });
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});else bind();
+  window.BH_V428_RUN_BUY=runUntilBuy;
 })();
 </script>
 
