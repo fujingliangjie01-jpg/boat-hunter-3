@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V450</title>
+<title>BOAT HUNTER V451</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15141,7 +15141,7 @@ input,
 
 <style id="bhV448Core3">
 /* =========================================================
-   Vol.450 CORE3
+   Vol.451 CORE3
    残す: 選手カード / レース展望 / 6艇比較
    レース選択・出走表取得は運用上必要なため残す
    ========================================================= */
@@ -15240,7 +15240,7 @@ input,
 
 
 <style id="bhV449Public120">
-/* Vol.450: 120通り出目回数（世間評価）をCORE3へ復帰 */
+/* Vol.451: 120通り出目回数（世間評価）をCORE3へ復帰 */
 #hunter120Always{
   display:block!important;
   order:9!important;
@@ -15264,7 +15264,7 @@ input,
 
 
 <style id="bhV450AbilityCss">
-/* Vol.450 能力診断：旧6艇診断をベースに、今回の展開要素を混ぜない純能力評価 */
+/* Vol.451 能力診断：旧6艇診断をベースに、今回の展開要素を混ぜない純能力評価 */
 #abilityDiagV450{order:9;margin:14px 0;padding:14px;border-radius:18px;background:linear-gradient(180deg,#0b1d29,#07131c);border:1px solid rgba(92,190,239,.25);box-shadow:0 10px 24px rgba(0,0,0,.22)}
 .abilityHead{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:10px}.abilityHead small{display:block;color:#5e91ad;font-size:9px;font-weight:1000;letter-spacing:.18em}.abilityHead b{font-size:18px}.abilityHead span{font-size:10px;color:#7793a5}
 .abilityGrid{display:grid;gap:7px}.abilityRow{display:grid;grid-template-columns:38px minmax(72px,1.2fr) 54px 1fr;gap:7px;align-items:center;padding:8px;border-radius:13px;background:#0b1923;border:1px solid rgba(255,255,255,.07)}
@@ -15278,6 +15278,24 @@ input,
 @media(max-width:600px){.abilityRow{grid-template-columns:34px minmax(62px,1fr) 48px 1fr;padding:7px;gap:6px}.abilityScore strong{font-size:17px}}
 </style>
 
+
+<style id="bhV451OrderCss">
+/* V451 正式順：選手カード → 6艇診断 → レース展望 → 全国120通り出目回数 */
+#cards{order:1!important}
+#racerDetailPanel{order:2!important}
+#comparePanel{order:3!important}
+#abilityDiagV450{order:4!important}
+#outlookPanel{order:5!important}
+#bhOutcomeDockV451{order:6!important;margin:14px 0 28px}
+#hunter120Always{display:none!important}
+#bhOutcomeDockV451 .bhOutcomeSecret{margin:0!important;text-align:left!important}
+#bhOutcomeDockV451 .bhOutcomeToggle{display:none!important}
+#bhOutcomeDockV451 .bhOutcomePanel{display:block!important;margin:0!important;padding:14px!important;border-radius:18px!important;background:#0c151d!important}
+#bhOutcomeDockV451 .bhOutcomePanel.hidden{display:block!important}
+#bhOutcomeDockV451 .bhOutcomeTitle b:before{content:"CORE 04  ";font-size:9px;letter-spacing:.16em;color:#5e91ad}
+#bhOutcomeDockV451 #bhOutcomeAll120{max-height:560px}
+</style>
+
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15288,7 +15306,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.450</div>
+  <div class="topVol">Vol.451</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22667,7 +22685,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 <!-- V446: F現在STを6艇診断・ST順位・壁率・3C攻め・展開・SIMの共通入力へ統一 -->
 
 <script id="bhV448Core3Boot">
-/* Vol.450: CORE3 UI boot */
+/* Vol.451: CORE3 UI boot */
 (function(){
   function core3(){
     const outlook=document.getElementById("outlookPanel");
@@ -22794,6 +22812,46 @@ window.__BH_V396_FORCE_2BOX__=true;
  if(typeof old==="function")window.bhRenderCompare=function(){const z=old.apply(this,arguments);setTimeout(render,0);return z};
  window.bhRenderAbilityV450=render;
  setTimeout(run,500);
+})();
+</script>
+
+
+<script id="bhV451OrderJs">
+(function(){
+ function fix(){
+   const main=document.querySelector("main")||document.querySelector(".wrap")||document.body;
+   const cards=document.getElementById("cards");
+   const detail=document.getElementById("racerDetailPanel");
+   const compare=document.getElementById("comparePanel");
+   const ability=document.getElementById("abilityDiagV450");
+   const outlook=document.getElementById("outlookPanel");
+   let dock=document.getElementById("bhOutcomeDockV451");
+   if(!dock){dock=document.createElement("div");dock.id="bhOutcomeDockV451";}
+   const secret=document.querySelector(".bhOutcomeSecret");
+   if(secret && secret.parentNode!==dock)dock.appendChild(secret);
+
+   /* DOM自体も指定順へ並べる */
+   let anchor=cards;
+   for(const el of [detail,compare,ability,outlook,dock]){
+     if(el&&anchor&&anchor.parentNode){anchor.insertAdjacentElement("afterend",el);anchor=el}
+   }
+
+   /* 全国120通り実出目は常時表示 */
+   const p=document.getElementById("bhOutcomePanel");
+   if(p)p.classList.remove("hidden");
+   const btn=document.getElementById("bhOutcomeToggle");
+   if(btn && !window.__BH_V451_OUTCOME_STARTED){
+     window.__BH_V451_OUTCOME_STARTED=true;
+     /* 既存の集計・描画処理をそのまま起動 */
+     setTimeout(()=>btn.click(),80);
+     setTimeout(()=>{
+       const q=document.getElementById("bhOutcomePanel");
+       if(q)q.classList.remove("hidden");
+     },180);
+   }
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",fix,{once:true});else fix();
+ setTimeout(fix,400);
 })();
 </script>
 
