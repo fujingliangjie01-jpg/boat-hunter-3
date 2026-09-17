@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V435</title>
+<title>BOAT HUNTER V440</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15110,6 +15110,34 @@ input,
 .bhOutcomeDetails summary{cursor:pointer;font-weight:900;padding:8px 2px}
 #bhOutcomeAll120{max-height:520px;overflow:auto;padding-right:3px}
 </style>
+<style id="bh-v439-c3-visibility">
+#habC3AttackBody{display:grid!important;gap:10px!important}
+#habC3AttackBody>div{border-radius:12px}
+#habC3AttackBody b,#habC3AttackBody strong{font-weight:900}
+#habC3AttackBody .habAttackGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+#habC3AttackBody .habAttackCard{min-height:74px!important;padding:10px!important}
+#habC3AttackBody .habAttackCard b{font-size:22px!important}
+</style>
+<style id="bh-v440-c3-layout">
+.bh440C3{padding:12px!important}
+.bh440CoreTitle,.bh440EvalTitle{font-size:11px;font-weight:900;letter-spacing:.06em;opacity:.72;margin:4px 0 7px}
+.bh440Core{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.bh440Core>div{padding:10px 6px;border:1px solid rgba(255,255,255,.16);border-radius:12px;text-align:center;background:rgba(255,255,255,.055)}
+.bh440Core small{display:block;font-size:11px;font-weight:900}.bh440Core strong{display:block;font-size:25px;line-height:1.05;margin:5px 0 3px}
+.bh440Core em{display:inline-grid;place-items:center;min-width:27px;height:22px;border-radius:7px;font-style:normal;font-weight:1000;background:rgba(255,255,255,.13)}
+.bh440Core span{display:block;font-size:9px;opacity:.7;margin-top:5px}
+.bh440FlowArrow{text-align:center;font-weight:1000;font-size:12px;margin:10px 0}
+.bh440BoatGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.bh440BoatCard{min-width:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;overflow:hidden;text-align:center;background:rgba(255,255,255,.045)}
+.bh440BoatNo{font-size:15px;font-weight:1000;padding:5px 2px;background:rgba(255,255,255,.12)}
+.bh440BoatText{padding:7px 2px}.bh440BoatText small{display:block;font-size:8px;white-space:nowrap}.bh440BoatText strong{display:block;font-size:18px;line-height:1.1;margin:4px 0}
+.bh440BoatText em{display:inline-block;font-style:normal;font-weight:1000;font-size:11px;padding:2px 5px;border-radius:6px;background:rgba(255,255,255,.12)}
+.bh440BoatText span{display:block;font-size:7px;opacity:.65;margin-top:4px;white-space:nowrap}
+.bh440BoatCard.b1 .bh440BoatNo{background:#fff;color:#111}.bh440BoatCard.b2 .bh440BoatNo{background:#111;color:#fff}
+.bh440BoatCard.b4 .bh440BoatNo{background:#174ca8;color:#fff}.bh440BoatCard.b5 .bh440BoatNo{background:#f0cf24;color:#111}.bh440BoatCard.b6 .bh440BoatNo{background:#16834d;color:#fff}
+.bh440BoatCard.hot{outline:1px solid rgba(255,255,255,.3)}
+@media(max-width:390px){.bh440Core strong{font-size:22px}.bh440BoatText strong{font-size:16px}.bh440BoatGrid{gap:3px}}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15120,7 +15148,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.435</div>
+  <div class="topVol">Vol.440</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -17453,6 +17481,7 @@ $('top').classList.remove('hide');
       water:outlookNum(row[12]),
       capturedAt:new Date()
     };
+    window.__BH_WEATHER_CURRENT=weatherCache;
     return weatherCache;
   }
 
@@ -17508,7 +17537,7 @@ $('top').classList.remove('hide');
         sub=`向かい風。<b>ダッシュ勢のまくり・まくり差し</b>を強めに警戒。`;
       }else if(rel==="tail"){
         headline=`<span class="windAlert">1コース逃げ率 DOWN</span>`;
-        sub=`追い風。<b>スロー勢の差し残り</b>を重視。`;
+        sub=`追い風。<b>2コースの差し＋2残り</b>を重視。`;
       }else if(rel==="cross"){
         headline=`<span class="windAlert">横風 3m以上</span>`;
         sub=`横風。<b>スリットの艇間差・1Mの流れ</b>を強めに警戒。`;
@@ -21278,7 +21307,16 @@ window.bhVenueBase=function(course,key="p1"){
       // 深い起こしは全速化しづらいので、100mを最大に弱い減点として事前評価へも通す。
       const deepScore=ctx.deep?-(ctx.deep*0.35):0;
       x.v415={...ctx,deepScore};
-      x.finalDev=rawFinal+ctx.f.net+ctx.kachi.bonus+deepScore;
+      let windScore=0;
+      const w=window.__BH_WEATHER_CURRENT||null,ws=Number(w?.wind)||0;
+      let wt="unknown";try{wt=bhWindInfo(w?.direction)?.type||"unknown"}catch(e){}
+      if(ws>=3){
+        if(c===1)windScore-=4;
+        if(wt==="tail"&&c===2)windScore+=4;
+        if(wt==="head"&&c>=3)windScore+=Math.min(4,1+(ws-3)*0.6);
+      }
+      x.v439Wind={speed:ws,type:wt,score:windScore};
+      x.finalDev=rawFinal+ctx.f.net+ctx.kachi.bonus+deepScore+windScore;
       x.venueStep="STAY"; // 場平均補正は±1段階ルール確定後に接続
     });
     return rows.sort((a,b)=>b.finalDev-a.finalDev);
@@ -21442,16 +21480,31 @@ window.bhVenueBase=function(course,key="p1"){
     return d;
   }
   function renderC3AttackDiagnosis(d){
-    if(!d)return ""; const G=v=>v>=70?"S":v>=55?"A":v>=40?"B":v>=25?"C":"D";
-    return `<section class="bhC3Diag"><div class="bhC3Title"><b>3C 攻め連鎖診断</b><span>${d.role3}</span></div><div class="bhC3Grid">
-    <div><small>実2C ${d.actual?.c2||2}号艇の壁</small><strong>${d.wall.toFixed(0)}%</strong><em>${d.wall>=65?"壁 強":d.wall>=48?"五分":"突破余地"}</em></div>
-    <div><small>実3C ${d.actual?.c3||3} 攻め可能</small><strong>${d.attackChance.toFixed(0)}%</strong><em>${G(d.attackChance)}</em></div>
-    <div><small>3 本人まくり力</small><strong>${d.skill.toFixed(0)}</strong><em>${G(d.skill)}</em></div>
-    <div><small>3 まくり成功</small><strong>${d.makuriSuccess.toFixed(0)}%</strong><em>${G(d.makuriSuccess)}</em></div>
-    <div><small>実4C ${d.actual?.c4||4} 展開利</small><strong>${d.fourBenefit.toFixed(0)}%</strong><em>${G(d.fourBenefit)}</em></div>
-    <div><small>実5C ${d.actual?.c5||5} 展開利</small><strong>${d.fiveBenefit.toFixed(0)}%</strong><em>${G(d.fiveBenefit)}</em></div><div><small>2 残り評価</small><strong>${Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35)).toFixed(0)}%</strong><em>${G(Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35)))}</em></div>
-    <div><small>実6C ${d.actual?.c6||6} 展開拾い</small><strong>${Number(d.sixBenefit||0).toFixed(0)}%</strong><em>${G(Number(d.sixBenefit||0))}</em></div></div>
-    <div class="bhC3Flow">3攻め → ${d.wall<48?"2壁突破":"2壁警戒"} → 4展開 ${G(d.fourBenefit)} → 5連動 ${G(d.fiveBenefit)}</div></section>`;
+    if(!d)return "";
+    const G=v=>v>=70?"S":v>=55?"A":v>=40?"B":v>=25?"C":"D";
+    const remain2=Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35));
+    // 1残りは「2壁」と「3攻め」を中心に、3が自力で抜き切るほど下げる。
+    const remain1=Math.max(0,Math.min(100,58+d.wall*.18-d.attackChance*.28-d.makuriSuccess*.18));
+    const card=(boat,label,val,sub,cls="")=>`<div class="bh440BoatCard b${boat} ${cls}"><div class="bh440BoatNo">${boat}</div><div class="bh440BoatText"><small>${label}</small><strong>${Number(val).toFixed(0)}%</strong><em>${G(Number(val))}</em><span>${sub}</span></div></div>`;
+    return `<section class="bhC3Diag bh440C3">
+      <div class="bhC3Title"><b>3C 攻め連鎖診断</b><span>${d.role3}</span></div>
+      <div class="bh440CoreTitle">まず見る3項目</div>
+      <div class="bh440Core">
+        <div class="wall"><small>2C 壁</small><strong>${d.wall.toFixed(0)}%</strong><em>${G(d.wall)}</em><span>${d.wall>=65?"壁 強":d.wall>=48?"壁 五分以上":"突破余地"}</span></div>
+        <div class="attack"><small>3C 攻め</small><strong>${d.attackChance.toFixed(0)}%</strong><em>${G(d.attackChance)}</em><span>仕掛ける力</span></div>
+        <div class="skill"><small>3C 自力まくり</small><strong>${d.makuriSuccess.toFixed(0)}%</strong><em>${G(d.makuriSuccess)}</em><span>攻め切る力</span></div>
+      </div>
+      <div class="bh440FlowArrow">3Cが動いた後 ↓</div>
+      <div class="bh440EvalTitle">1・2・4・5・6号艇　展開評価</div>
+      <div class="bh440BoatGrid">
+        ${card(1,"1C 残り",remain1,"イン残り")}
+        ${card(2,"2C 残り",remain2,"壁＋差し残り")}
+        ${card(d.actual?.c4||4,"4C 展開利",d.fourBenefit,"3の直外","hot")}
+        ${card(d.actual?.c5||5,"5C 展開利",d.fiveBenefit,"4の後ろ")}
+        ${card(d.actual?.c6||6,"6C 展開拾い",Number(d.sixBenefit||0),"外から拾う")}
+      </div>
+      <div class="bhC3Flow">2壁 ${G(d.wall)} → 3攻め ${G(d.attackChance)} → 自力まくり ${G(d.makuriSuccess)} → 4展開 ${G(d.fourBenefit)} → 5展開 ${G(d.fiveBenefit)} → 6拾い ${G(Number(d.sixBenefit||0))}</div>
+    </section>`;
   }
   function selectTickets(rows){
     const d=bhC3AttackDiagnosis(window.__HUNTER_PRE_V368||[],rows),pos=rows.filter(x=>x.simPct>0),cb=x=>String(x.combo).split("-").map(Number),uniq=a=>[...new Map(a.map(x=>[x.combo,x])).values()];
@@ -21488,7 +21541,7 @@ window.bhVenueBase=function(course,key="p1"){
       return c.length===3 && c[0]===6 && (c[1]===1 || c[2]===1 || c[2]===2);
     };
     const buyablePos=usablePos.filter(x=>!worst50Set.has(x.combo)||isHead6Worst50Exception(x.combo));
-    const __diag={version:"V430",head,simRows:rows.length,pos:pos.length,usablePos:usablePos.length,buyablePos:buyablePos.length,
+    const __diag={version:"V437",head,simRows:rows.length,pos:pos.length,usablePos:usablePos.length,buyablePos:buyablePos.length,
       worst50:worst50Set.size,c3ThirdOnly,axisCandidates:0,mainBeforeFinal:0,mainAfterFinal:0,emergencyCandidates:0,finalMain:0,
       outcomeTotal,head1Buyable:buyablePos.filter(x=>cb(x)[0]===1).length};
     window.__BH_BUY_DIAG_V430=__diag;
@@ -21512,18 +21565,45 @@ window.bhVenueBase=function(course,key="p1"){
 
     if(head===1){
       // イン逃げはV396の3コース攻め理論を維持。
-      const axisRank=[2,3,4,5,6].filter(n=>!(c3ThirdOnly&&n===3)).map(n=>{let f=0;
-        if(n===3){f+=d.makuriSuccess*.65+d.attackChance*.3;if(d.role3==="軸候補")f+=45;if(d.role3==="切り候補")f-=110;if(d.attackChance>=97&&d.makuriSuccess<=30)f-=220}
-        if(n===2)f+=(100-d.attackChance)*.35+d.wall*.45;
-        if(n===4)f+=d.fourBenefit*1.05;if(n===5)f+=d.fiveBenefit*.9;
-        if(n===6)f+=Math.max(0,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12);
-        const r=(7-mp(n))*16+(7-hp(n))*18,p=pos.filter(x=>{const c=cb(x);return c[0]===1&&(c[1]===n||c[2]===n)}).reduce((z,x)=>z+S(x),0);
-        return {n,v:f+r+p};
+      // V437 軸選定の順番を固定:
+      // ①世間評価 → ②HUNTER評価で信頼性確認 → ③最後に3Cからの展開を最重要判定。
+      // 単純なHUNTER点の加算勝負にはしない。
+      const axisRank=[2,3,4,5,6].filter(n=>!(c3ThirdOnly&&n===3)).map(n=>{
+        const marketRank=mp(n),hunterRank=hp(n);
+        // ① 世間評価を入口にする
+        const marketBase=(7-marketRank)*20;
+        // ② HUNTERは「信頼性」の確認。世間との一致/近さを重視し、単独高評価で支配させない。
+        const reliability=Math.max(0,30-Math.abs(marketRank-hunterRank)*7)+(7-hunterRank)*5;
+        // SIMは補助材料に限定
+        const simSupport=pos.filter(x=>{const c=cb(x);return c[0]===1&&(c[1]===n||c[2]===n)})
+          .reduce((z,x)=>z+S(x),0)*0.20;
+        // ③ 最終展開。ここが最終決定で最も強い。
+        let development=0;
+        if(n===2)development+=(100-d.attackChance)*.35+d.wall*.45;
+        if(n===3){
+          development+=d.makuriSuccess*.65+d.attackChance*.30;
+          if(d.role3==="軸候補")development+=35;
+          if(d.role3==="切り候補")development-=110;
+          if(d.attackChance>=97&&d.makuriSuccess<=30)development-=220;
+        }
+        if(n===4)development+=d.fourBenefit*1.35;
+        if(n===5)development+=d.fiveBenefit*1.10;
+        if(n===6)development+=Math.max(0,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12);
+        const chaos4=(n===4&&(Number(d.attackChance)||0)>=45&&(Number(d.makuriSuccess)||0)<25&&(Number(d.fourBenefit)||0)>=35);
+        if(chaos4)development+=120; // 最終展開で4軸を明確に昇格
+        return {n,v:marketBase+reliability+simSupport+development,
+          marketBase,reliability,development,chaos4};
       }).sort((a,b)=>b.v-a.v||a.n-b.n);
+      window.__BH_AXIS_FLOW_V437=axisRank.map(x=>({...x}));
 
       const attackPct=Math.round(Number(d.attackChance)||0),makuriPct=Math.round(Number(d.makuriSuccess)||0);
       const atk2=Math.round(Math.max(0,Math.min(100,d.wall*.55+(100-d.attackChance)*.35)));
       const atk4=Math.round(Number(d.fourBenefit)||0),atk5=Math.round(Number(d.fiveBenefit)||0);
+      // V436 展開ゴチャつき軸:
+      // 3Cが攻めB相当(45%以上)、3自身は突き抜けにくい(まくり成功25%未満)、
+      // 4C展開利B相当(35%以上)なら4を独立した展開軸として扱う。
+      // HUNTER順位は発動条件に使わない。
+      const c4ChaosAxis=attackPct>=45 && makuriPct<25 && atk4>=35;
       const atk6=Math.round(Math.max(0,Math.min(100,d.fiveBenefit*.55+d.fourBenefit*.20-d.wall*.12)));
       const rivalAttackMax=Math.max(atk2,atk4,atk5,atk6),c3TopAttack=attackPct>rivalAttackMax,c3HighAttack=attackPct>=70&&c3TopAttack,c3CanRemain=makuriPct>=31;
       let axis;
@@ -21596,6 +21676,24 @@ window.bhVenueBase=function(course,key="p1"){
       }
       main=uniq(main).slice(0,7);
 
+      // V436: 4展開軸が発動したら、7点内に必ず1-4-○ / 1-○-4 を残す。
+      // 世間/HUNTER順位が低くても、それだけを理由に4を落とさない。
+      if(c4ChaosAxis && !main.some(x=>{const c=cb(x);return c[0]===1&&(c[1]===4||c[2]===4)})){
+        const used=new Set(main.map(x=>x.combo));
+        const c4Candidates=buyablePos.filter(x=>{
+          const c=cb(x);return c[0]===1&&(c[1]===4||c[2]===4)&&!used.has(x.combo);
+        }).sort((a,b)=>b.simPct-a.simPct||b.ev-a.ev||b.odds-a.odds);
+        if(c4Candidates.length){
+          let replaceAt=main.map((x,i)=>({x,i,c:cb(x)}))
+            .filter(q=>q.c[1]!==2) // 壁2の本線は極力維持
+            .sort((a,b)=>a.x.simPct-b.x.simPct||a.x.ev-b.x.ev)[0]?.i;
+          if(replaceAt==null)replaceAt=main.map((x,i)=>({x,i}))
+            .sort((a,b)=>a.x.simPct-b.x.simPct||a.x.ev-b.x.ev)[0]?.i;
+          if(replaceAt!=null)main[replaceAt]=c4Candidates[0];
+          main=uniq(main).slice(0,7);
+        }
+      }
+
       // V426 最終7点チェック:
       // 3攻め>30%で3号艇2着候補が残っているのに、展開拾いの弱い6号艇を
       // オッズだけで2着採用している場合は3号艇2着へ入替える。
@@ -21614,7 +21712,7 @@ window.bhVenueBase=function(course,key="p1"){
       }
       __diag.axisCandidates=buyablePos.filter(x=>{const c=cb(x);return c[0]===1&&(c[1]===axis||c[2]===axis)}).length;
       __diag.mainBeforeFinal=main.length;
-      window.__HUNTER_MAIN_AXIS=axis;
+      window.__HUNTER_MAIN_AXIS=c4ChaosAxis&&axis!==4?`${axis}・4（展開）`:axis;
     }else{
       // 非イン頭: 必須買い目 + 軸買い。
       const req=requiredCombo?byCombo.get(requiredCombo):null;
@@ -21821,7 +21919,7 @@ window.bhVenueBase=function(course,key="p1"){
     const row=x=>`<div class="habBuyRow"><div class="habBuyCombo">${comboHTML(x.combo)}</div><div class="habBuyStat sim"><small>SIM</small><b>${x.simPct.toFixed(1)}%</b></div><div class="habBuyStat odds"><small>倍率</small><b>${x.odds.toFixed(1)}倍</b></div><div class="habBuyStat ev"><small>期待値</small><b>${x.ev.toFixed(2)}</b></div></div>`;
     const inBanner=t.head===1?`<div class="bhInEscapeBanner"><strong>イン逃げ！</strong> 2枚投資推奨！</div>`:"";
     const dg=window.__BH_BUY_DIAG_V430||{};
-    const diag=t.main.length===0?`<div style="margin:10px 0;padding:10px;border:1px solid #ffb02e;border-radius:10px;background:#251b05;color:#ffe2a0;font-size:12px;line-height:1.65"><b>V430 買い目診断</b><br>SIM:${dg.simRows??"-"} / pos:${dg.pos??"-"} / usable:${dg.usablePos??"-"} / buyable:${dg.buyablePos??"-"} / 1頭候補:${dg.head1Buyable??"-"}<br>軸候補:${dg.axisCandidates??"-"} / 最終前:${dg.mainBeforeFinal??"-"} / 最終後:${dg.mainAfterFinal??"-"} / emergency:${dg.emergencyCandidates??"-"} / final:${dg.finalMain??"-"}<br>worst50:${dg.worst50??"-"} / 2026件数:${dg.outcomeTotal??"-"} / 3着限定:${dg.c3ThirdOnly?"ON":"OFF"}</div>`:"";
+    const diag=t.main.length===0?`<div style="margin:10px 0;padding:10px;border:1px solid #ffb02e;border-radius:10px;background:#251b05;color:#ffe2a0;font-size:12px;line-height:1.65"><b>V437 買い目診断</b><br>SIM:${dg.simRows??"-"} / pos:${dg.pos??"-"} / usable:${dg.usablePos??"-"} / buyable:${dg.buyablePos??"-"} / 1頭候補:${dg.head1Buyable??"-"}<br>軸候補:${dg.axisCandidates??"-"} / 最終前:${dg.mainBeforeFinal??"-"} / 最終後:${dg.mainAfterFinal??"-"} / emergency:${dg.emergencyCandidates??"-"} / final:${dg.finalMain??"-"}<br>worst50:${dg.worst50??"-"} / 2026件数:${dg.outcomeTotal??"-"} / 3着限定:${dg.c3ThirdOnly?"ON":"OFF"}</div>`:"";
     return `<section id="hunterFinalBuyBlock" class="habBuyBlock bhV396Buy">${inBanner}${diag}<div class="bhV396Summary"><small>MAIN BUY</small><b>頭 ${t.head} × 軸 ${t.axis}${t.head!==1&&t.secondCut?` / ${t.secondCut}号艇は2着切り`:""}${t.c3ThirdOnly?` / 3号艇3着限定`:""}</b><strong>本命 ${t.main.length}点</strong></div><div class="bhV396Group main"><div class="bhV396Label"><b>本命</b><span>${t.main.length}点</span></div>${t.main.map(row).join("")}</div></section>`;
   }
 
