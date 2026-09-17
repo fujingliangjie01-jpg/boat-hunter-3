@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V431</title>
+<title>BOAT HUNTER V433</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15120,7 +15120,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.431</div>
+  <div class="topVol">Vol.433</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15722,13 +15722,15 @@ async function dayJson(date){
    `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json`
  ];
  for(const u of urls){
-   try{
-     const x=await fetch(u,{cache:"force-cache"});
-     if(x.ok){
-       const j=await x.json();
-       if(j)return j;
-     }
-   }catch(e){}
+   for(const cacheMode of ["force-cache","no-store"]){
+     try{
+       const x=await fetch(u,{cache:cacheMode});
+       if(x.ok){
+         const j=await x.json();
+         if(j)return j;
+       }
+     }catch(e){}
+   }
  }
  return null;
 }
@@ -15796,11 +15798,11 @@ async function buildHistory(){
  const rr=racers(currentRace)||[];
  const start=$("date").value;
  const targets=new Map(rr.map(x=>[+x.number,{course:+x.entry_number,rows:[]}]));
- const MAX_DAYS=420,BATCH=21,CONCURRENCY=6;
+ const MAX_DAYS=560,BATCH=28,CONCURRENCY=4;
  const allDone=()=>[...targets.values()].every(o=>(o.rows?.length||0)>=20);
 
  // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
- const CACHE_KEY="BH_HISTORY20_V423";
+ const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V433";
  let persistent={};
  try{persistent=JSON.parse(localStorage.getItem(CACHE_KEY)||"{}")}catch(e){persistent={}}
  const cacheKey=(r)=>`${start}|${Number(r.number)}|C${Number(r.entry_number)}`;
@@ -15833,8 +15835,11 @@ async function buildHistory(){
          continue;
        }
        const j=await dayJson(d);
-       window.__BH_HISTORY_BATCH_CACHE.set(d,j);
+       // 失敗(null)はキャッシュしない。次回/次解析で再試行できるようにする。
+       if(j)window.__BH_HISTORY_BATCH_CACHE.set(d,j);
        out[i]=j;
+       window.__BH_HISTORY_DIAG_V433=window.__BH_HISTORY_DIAG_V433||{ok:0,ng:0};
+       if(j)window.__BH_HISTORY_DIAG_V433.ok++;else window.__BH_HISTORY_DIAG_V433.ng++;
      }
    }
    await Promise.all(Array.from({length:Math.min(CONCURRENCY,dates.length)},worker));
@@ -15859,7 +15864,8 @@ async function buildHistory(){
    try{updateMainHistory(rr,partial)}catch(e){}
    try{bhRenderFAfterCompact(rr,partial)}catch(e){}
    const got=[...targets.values()].map(o=>Math.min(20,o.rows.length));
-   const histMsg=`過去20走を裏で取得中… ${got.join("・")} / 20走`;
+   const hd=window.__BH_HISTORY_DIAG_V433||{ok:0,ng:0};
+   const histMsg=`同コース過去20走… ${got.join("・")} /20（通信OK ${hd.ok}・NG ${hd.ng}）`;
    const ps=document.getElementById("previewState");
    if(ps && !String(ps.textContent||"").includes("取得完了")) ps.textContent=histMsg;
    // 描画を一度ブラウザへ返して操作を固めない
@@ -15986,7 +15992,8 @@ async function preloadHistory(rr){
     }
   }catch(e){}
  }catch(e){
-  $("status").textContent="出走表取得済み / 過去20走の取得に失敗";
+  historyLoading=null;
+  $("status").textContent="出走表取得済み / 同コース過去20走の取得に失敗（再試行可）";
  }
 }
 
