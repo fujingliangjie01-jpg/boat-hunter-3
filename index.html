@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V486</title>
+<title>BOAT HUNTER V488</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.486</div>
+  <div class="topVol">Vol.488</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15219,15 +15219,22 @@ input,
 <style id="bhV486DetailFST">
 #racerDetailBody .detailTop{position:relative!important}
 #racerDetailBody .detailFST486{
- position:absolute!important;right:18px!important;top:86px!important;
- width:145px!important;min-height:74px!important;padding:10px 8px!important;
+ position:absolute!important;right:18px!important;top:12px!important;
+ width:145px!important;min-height:70px!important;padding:9px 8px!important;
  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
  border:2px solid #9b4de3!important;border-radius:14px!important;
  background:linear-gradient(180deg,#0b2533,#071a25)!important;
  box-shadow:0 0 12px rgba(155,77,227,.12)!important;
+ z-index:2!important;
 }
 #racerDetailBody .detailFST486 span{font-size:10px!important;font-weight:900!important;color:#b966f0!important}
 #racerDetailBody .detailFST486 b{margin-top:4px!important;font-size:24px!important;line-height:1!important;color:#fff!important}
+
+#racerDetailBody .detailTop{padding-top:0!important}
+#racerDetailBody .detailMetrics{clear:both!important;margin-top:18px!important}
+@media(max-width:520px){
+ #racerDetailBody .detailFST486{right:10px!important;top:10px!important;width:132px!important;min-height:66px!important}
+}
 </style>
 <section id="racerDetailPanel" class="racerDetailPanel hide">
     <div class="racerDetailHead">
@@ -17548,24 +17555,64 @@ $('top').classList.remove('hide');
       次にAI解析を押すまでその値を固定する。
     */
     const row=await outlookFetchCsvRow("sui");
-    if(!row){
-      weatherCache=null;
+    if(row){
       weatherKey=codeKey();
-      return null;
+      weatherCache={
+        observed:String(row[6]||""),
+        wind:outlookNum(row[7]),
+        direction:String(row[8]||"").trim(),
+        wave:outlookNum(row[9]),
+        weather:String(row[10]||"").trim(),
+        temp:outlookNum(row[11]),
+        water:outlookNum(row[12]),
+        capturedAt:new Date(),
+        source:"csv"
+      };
+      window.__BH_WEATHER_CURRENT=weatherCache;
+      return weatherCache;
     }
+
+    // Vol.488: CSVが無い場合はBOAT RACE公式「直前情報」の水面気象情報を直接読む。
+    try{
+      const d=String($("date").value||today()).replaceAll("-","");
+      const j=String($("stadium").value).padStart(2,"0");
+      const r=String($("race").value||1);
+      const target=`https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=${d}&jcd=${j}&rno=${r}`;
+      const html=await fetchTextCors(target);
+      const doc=new DOMParser().parseFromString(html,"text/html");
+      const norm=v=>String(v||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim();
+      const txt=norm(doc.body?.innerText||doc.body?.textContent||"");
+      const section=txt.includes("水面気象情報")?txt.slice(txt.indexOf("水面気象情報"),txt.indexOf("水面気象情報")+900):txt;
+
+      const pick=(label,unit)=>{
+        const a=new RegExp(label+"\\s*([+-]?[0-9]+(?:\\.[0-9]+)?)\\s*"+unit,"i").exec(section);
+        if(a)return Number(a[1]);
+        const b=new RegExp(label+"[^0-9+-]{0,40}([+-]?[0-9]+(?:\\.[0-9]+)?)","i").exec(section);
+        return b?Number(b[1]):null;
+      };
+      const wind=pick("風速","m(?:/s)?");
+      const wave=pick("波高","cm");
+      const temp=pick("気温","℃");
+      const water=pick("水温","℃");
+
+      let direction="";
+      const attrs=[...doc.querySelectorAll("img,[title],[alt]")].map(x=>norm((x.getAttribute("alt")||"")+" "+(x.getAttribute("title")||""))).join(" ");
+      const dirs=["北東","南東","南西","北西","北","東","南","西","向かい風","追い風","横風"];
+      direction=dirs.find(x=>attrs.includes(x))||"";
+
+      if(wind!=null){
+        weatherKey=codeKey();
+        weatherCache={observed:"公式直前情報",wind,direction,wave,weather:"",temp,water,capturedAt:new Date(),source:"official-beforeinfo"};
+        window.__BH_WEATHER_CURRENT=weatherCache;
+        window.__BH_WIND_SPEED=wind;
+        window.__BH_WIND_DIR=direction;
+        return weatherCache;
+      }
+    }catch(e){console.warn("V488 official weather",e)}
+
+    weatherCache=null;
     weatherKey=codeKey();
-    weatherCache={
-      observed:String(row[6]||""),
-      wind:outlookNum(row[7]),
-      direction:String(row[8]||"").trim(),
-      wave:outlookNum(row[9]),
-      weather:String(row[10]||"").trim(),
-      temp:outlookNum(row[11]),
-      water:outlookNum(row[12]),
-      capturedAt:new Date()
-    };
-    window.__BH_WEATHER_CURRENT=weatherCache;
-    return weatherCache;
+    return null;
   }
 
   /* V187: 公式風向コード(1=北,2=北東...8=北西)を場ごとの水面方向へ変換 */
@@ -17606,7 +17653,7 @@ $('top').classList.remove('hide');
 
   function windRelation(dir){ return bhWindInfo(dir).type; }
   function windHtml(w){
-    if(!w)return `<span class="muted">風データ取得不可</span>`;
+    if(!w)return `<span class="muted">公式水面気象 未発表</span>`;
 
     const speed=outlookNum(w.wind)||0;
     const windInfo=bhWindInfo(w.direction);
@@ -22866,7 +22913,6 @@ window.__BH_V396_FORCE_2BOX__=true;
      if(typeof window.BH_LOAD_PREVIEW==='function') await window.BH_LOAD_PREVIEW();
      if(typeof window.buildRaceOutlook==='function') await window.buildRaceOutlook();
      try{window.BH_RENDER_RACE_FLOW?.()}catch(e){}
-     $('previewPanel')?.scrollIntoView({behavior:'smooth',block:'start'});
      b.textContent='展望解析 再実行';
    }catch(e){console.error('outlook run',e);b.textContent='展望解析';}
    finally{b.disabled=false;b.classList.remove('running')}
