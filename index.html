@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V463</title>
+<title>BOAT HUNTER V464</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.463</div>
+  <div class="topVol">Vol.464</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22738,12 +22738,12 @@ window.__BH_V396_FORCE_2BOX__=true;
 <!-- Vol.460: レース展望を各艇の決まり手起点へ変更。場特性・風・潮位・チルト・F現在STを統合。 -->
 
 
-<style id="bhV463PreviewFix">
+<style id="bhV464PreviewFix">
 #previewPanel,#previewPanel.hide{display:block!important;order:7!important;margin:6px 0 9px!important}
 #outlookPanel,#outlookPanel.hide{order:8!important}
 #bhPreviewGet463{order:7!important;width:100%!important;min-height:42px!important;margin:2px 0 5px!important;border:1px solid #65bff0!important;border-radius:12px!important;background:linear-gradient(180deg,#173d55,#0a2636)!important;color:#fff!important;font-size:15px!important;font-weight:950!important}
 </style>
-<script id="bhV463PreviewFixJS">
+<script id="bhV464PreviewFixJS">
 (()=>{
  const $=id=>document.getElementById(id);
  function cls(a,k,i,st=false){
@@ -22784,8 +22784,55 @@ window.__BH_V396_FORCE_2BOX__=true;
  function install(){
    const cmp=$("comparePanel"),p=$("previewPanel");if(!cmp||!p||$("bhPreviewGet463"))return;
    cmp.after(p);p.classList.remove("hide");
-   const b=document.createElement("button");b.id="bhPreviewGet463";b.type="button";b.textContent="直前情報取得";p.before(b);b.onclick=load;
+   const b=document.createElement("button");b.id="bhPreviewGet463";b.type="button";b.textContent="直前情報取得";p.before(b);window.BH_LOAD_PREVIEW=load;b.onclick=load;
  }
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",install):install();
+})();
+</script>
+
+
+<style id="bhV464OutlookControl">
+#bhOutlookRun464{grid-column:1/-1!important;width:100%!important;min-height:54px!important;margin-top:8px!important;border:1.5px solid #ffb34a!important;border-radius:15px!important;background:linear-gradient(180deg,#f28a19,#d96a05)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;box-shadow:0 8px 20px rgba(221,105,5,.24)!important}
+#bhOutlookRun464.running{opacity:.72!important}
+#previewPanel{margin-top:12px!important;padding:12px!important;border-radius:18px!important;background:linear-gradient(180deg,#0d1e2b,#07131d)!important;border:1px solid rgba(104,190,240,.18)!important}
+#bhRaceFactors464{margin-top:12px!important;padding-top:11px!important;border-top:1px solid rgba(255,255,255,.10)!important}
+#bhRaceFactors464 .factorTitle{font-size:11px!important;font-weight:950!important;letter-spacing:.12em!important;color:#8eb4ca!important;margin-bottom:8px!important}
+#bhRaceFactors464 .outlookGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
+#bhRaceFactors464 .outlookCard{min-height:0!important;padding:9px!important;border-radius:12px!important}
+#bhRaceFactors464 .outlookThumb{display:none!important}
+#bhRaceFactors464 .outlookCardTitle{font-size:10px!important}
+#bhRaceFactors464 .outlookText{font-size:11px!important;line-height:1.45!important}
+@media(max-width:620px){#bhRaceFactors464 .outlookGrid{grid-template-columns:1fr!important}}
+</style>
+<script id="bhV464OutlookControlJS">
+(()=>{
+ const $=id=>document.getElementById(id);
+ async function run(){
+   const b=$('bhOutlookRun464'); if(!b||b.disabled)return;
+   b.disabled=true;b.classList.add('running');b.textContent='展望解析中…';
+   try{
+     $('previewPanel')?.classList.remove('hide');
+     if(typeof window.BH_LOAD_PREVIEW==='function') await window.BH_LOAD_PREVIEW();
+     if(typeof window.buildRaceOutlook==='function') await window.buildRaceOutlook();
+     try{window.BH_RENDER_RACE_FLOW?.()}catch(e){}
+     $('previewPanel')?.scrollIntoView({behavior:'smooth',block:'start'});
+     b.textContent='展望解析 再実行';
+   }catch(e){console.error('outlook run',e);b.textContent='展望解析';}
+   finally{b.disabled=false;b.classList.remove('running')}
+ }
+ function install(){
+   const get=$('get'); if(get&&!$('bhOutlookRun464')){
+     const b=document.createElement('button');b.id='bhOutlookRun464';b.type='button';b.textContent='展望解析';b.onclick=run;get.insertAdjacentElement('afterend',b);
+   }
+   const cmp=$('comparePanel'),pre=$('previewPanel'); if(cmp&&pre){cmp.insertAdjacentElement('afterend',pre);pre.classList.remove('hide')}
+   if(pre&&!$('bhRaceFactors464')){
+     const f=document.createElement('div');f.id='bhRaceFactors464';f.innerHTML='<div class="factorTitle">RACE CONDITIONS / 風・潮位・場特性</div><div class="outlookGrid"></div>';
+     pre.appendChild(f);
+     const grid=f.querySelector('.outlookGrid');
+     ['venueOutlook','windOutlook','tideOutlook'].forEach(id=>{const card=$(id)?.closest('.outlookCard');if(card)grid.appendChild(card)});
+   }
+ }
+ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',install,{once:true}):install();
+ setTimeout(install,400);
 })();
 </script>
