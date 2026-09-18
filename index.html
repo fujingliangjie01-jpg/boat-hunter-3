@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V464</title>
+<title>BOAT HUNTER V465</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.464</div>
+  <div class="topVol">Vol.465</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22649,7 +22649,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </style>
 <script id="bhV460RaceFlowBoot">
 (function(){
- const N=v=>{const n=Number(String(v??'').replace(/[^0-9+.-]/g,''));return Number.isFinite(n)?n:null};
+ const N=v=>{if(v==null||String(v).trim()==='')return null;const t=String(v).replace(/[^0-9+.-]/g,'');if(!t||t==='.'||t==='-'||t==='+')return null;const n=Number(t);return Number.isFinite(n)?n:null};
  const C=v=>Math.max(0,Math.min(100,v));
  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
  function rr(){try{return racers(currentRace)||[]}catch(_){return []}}
@@ -22657,10 +22657,11 @@ window.__BH_V396_FORCE_2BOX__=true;
  function rate(h,fn){return h.length?h.filter(fn).length/h.length*100:0}
  function preview(boat){const p=window.__HUNTER_PREVIEW;return Array.isArray(p)?p.find(x=>Number(x.boat??x.entry_number)===boat)||{}:{}}
  function currentST(r,h){try{return window.BH_CURRENT_ST?.(r,h)?.st ?? N(r.__bhCurrentST ?? r.average_start_timing)}catch(_){return N(r.__bhCurrentST ?? r.average_start_timing)}}
- function courseTech(boat,h){
-   const win=t=>rate(h,x=>Number(x.place)===1&&Number(x.tech)===t);
-   if(boat===1)return [{name:'逃げ',v:win(1)}];
-   if(boat===2)return [{name:'差し',v:win(2)},{name:'まくり',v:win(3)}];
+ function courseTech(course,h){
+   const valid=(h||[]).filter(x=>Number.isFinite(Number(x.place)));
+   const win=t=>valid.length?rate(valid,x=>Number(x.place)===1&&Number(x.tech)===t):null;
+   if(course===1)return [{name:'逃げ',v:win(1)}];
+   if(course===2)return [{name:'差し',v:win(2)},{name:'まくり',v:win(3)}];
    return [{name:'差し',v:win(2)},{name:'まくり',v:win(3)},{name:'まくり差し',v:win(4)}];
  }
  function windBias(name){
@@ -22689,16 +22690,18 @@ window.__BH_V396_FORCE_2BOX__=true;
    const sts=racersNow.map(r=>currentST(r,hist(r))).filter(Number.isFinite),meanST=avg(sts)??.17;
    return racersNow.map(r=>{
      const boat=Number(r.entry_number),h=hist(r),st=currentST(r,h),pv=preview(boat),tilt=N(pv.tilt??pv.tilt_adjustment)??0,fc=Number(r.flying_count??r.f_count??r.F??0)||0;
-     const techs=courseTech(boat,h).map(x=>{
-       let score=x.v*1.25+35;
-       if(st!=null)score+=(meanST-st)*260;
+     const course=Number(pv.course??pv.entry_course??boat)||boat;
+     const techs=courseTech(course,h).map(x=>{
+       const hasTech=Number.isFinite(x.v);
+       let score=hasTech ? x.v*1.25+28 : 22;
+       if(st!=null&&meanST!=null)score+=(meanST-st)*180;
        score+=windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
        if(tilt>=1.5&&/まくり/.test(x.name))score+=10+(tilt-1.5)*4;
        else if(tilt>=.5&&/まくり/.test(x.name))score+=3;
        // Fは一律減点しない。BH_CURRENT_STで推定した現在STを採用し、そのST差だけで展開へ反映。
        return {...x,score:C(score)};
      }).sort((a,b)=>b.score-a.score);
-     return {boat,r,h,st,tilt,fc,best:techs[0],techs};
+     return {boat,course,r,h,st,tilt,fc,best:techs[0],techs,dataCount:h.length};
    });
  }
  function wall2(rows){
@@ -22712,18 +22715,21 @@ window.__BH_V396_FORCE_2BOX__=true;
    const rows=calc(),panel=document.getElementById('outlookPanel');if(!rows||!panel)return;
    let box=document.getElementById('bhRaceFlowV460');
    if(!box){box=document.createElement('section');box.id='bhRaceFlowV460';box.className='bhRaceFlow';const grid=panel.querySelector('.outlookGrid');panel.insertBefore(box,grid||null)}
-   const one=rows[0],wall=wall2(rows),outside=rows.slice(1).sort((a,b)=>b.best.score-a.best.score)[0];
-   const oneScore=one.best.score;
-   let main='展開拮抗';
-   if(oneScore>=58){
-     if(outside&&outside.best.score>=58)main=`イン逃げ ＋ ${outside.boat}${outside.best.name}`;
+   const one=rows.find(x=>x.course===1)||rows[0],wall=wall2(rows);
+   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5).sort((a,b)=>b.best.score-a.best.score)[0];
+   const oneScore=one?.best?.score??0;
+   let main='展開材料不足';
+   if(one&&one.dataCount>=5&&oneScore>=55){
+     if(outside&&outside.best.score>=62)main=`イン逃げ ＋ ${outside.boat}${outside.best.name}`;
      else if(wall>=58)main='イン逃げ ＋ 2壁';
      else main='イン逃げ中心';
-   }else if(outside){
+   }else if(outside&&outside.best.score>=62){
      main=`${outside.boat}${outside.best.name} ＋ ${outside.boat<6?outside.boat+1:1}展開`;
+   }else if(rows.some(x=>x.dataCount>=5)){
+     main='展開拮抗';
    }
    const moves=rows.map(x=>{
-     const meta=[];if(x.fc>0)meta.push(`F${x.fc} 現在ST`);if(x.tilt>=1.5)meta.push(`チルト+${x.tilt.toFixed(1)}`);if(!meta.length&&x.st!=null)meta.push(`ST ${x.st.toFixed(3)}`);
+     const meta=[];if(x.fc>0)meta.push(`F${x.fc} 現在ST`);if(x.tilt>=1.5)meta.push(`チルト+${x.tilt.toFixed(1)}`);if(!meta.length&&x.st!=null)meta.push(`ST ${x.st.toFixed(3)}`);if(!meta.length)meta.push('ST —');
      return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${x.best.score.toFixed(0)}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
    }).join('');
    box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各艇の決まり手 × 現在ST × 場特性 × 風 × 潮位 × チルトを統合</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
@@ -22738,12 +22744,12 @@ window.__BH_V396_FORCE_2BOX__=true;
 <!-- Vol.460: レース展望を各艇の決まり手起点へ変更。場特性・風・潮位・チルト・F現在STを統合。 -->
 
 
-<style id="bhV464PreviewFix">
+<style id="bhV465PreviewFix">
 #previewPanel,#previewPanel.hide{display:block!important;order:7!important;margin:6px 0 9px!important}
 #outlookPanel,#outlookPanel.hide{order:8!important}
 #bhPreviewGet463{order:7!important;width:100%!important;min-height:42px!important;margin:2px 0 5px!important;border:1px solid #65bff0!important;border-radius:12px!important;background:linear-gradient(180deg,#173d55,#0a2636)!important;color:#fff!important;font-size:15px!important;font-weight:950!important}
 </style>
-<script id="bhV464PreviewFixJS">
+<script id="bhV465PreviewFixJS">
 (()=>{
  const $=id=>document.getElementById(id);
  function cls(a,k,i,st=false){
@@ -22791,24 +22797,24 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 
-<style id="bhV464OutlookControl">
-#bhOutlookRun464{grid-column:1/-1!important;width:100%!important;min-height:54px!important;margin-top:8px!important;border:1.5px solid #ffb34a!important;border-radius:15px!important;background:linear-gradient(180deg,#f28a19,#d96a05)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;box-shadow:0 8px 20px rgba(221,105,5,.24)!important}
-#bhOutlookRun464.running{opacity:.72!important}
+<style id="bhV465OutlookControl">
+#bhOutlookRun465{grid-column:1/-1!important;width:100%!important;min-height:54px!important;margin-top:8px!important;border:1.5px solid #ffb34a!important;border-radius:15px!important;background:linear-gradient(180deg,#f28a19,#d96a05)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;box-shadow:0 8px 20px rgba(221,105,5,.24)!important}
+#bhOutlookRun465.running{opacity:.72!important}
 #previewPanel{margin-top:12px!important;padding:12px!important;border-radius:18px!important;background:linear-gradient(180deg,#0d1e2b,#07131d)!important;border:1px solid rgba(104,190,240,.18)!important}
-#bhRaceFactors464{margin-top:12px!important;padding-top:11px!important;border-top:1px solid rgba(255,255,255,.10)!important}
-#bhRaceFactors464 .factorTitle{font-size:11px!important;font-weight:950!important;letter-spacing:.12em!important;color:#8eb4ca!important;margin-bottom:8px!important}
-#bhRaceFactors464 .outlookGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
-#bhRaceFactors464 .outlookCard{min-height:0!important;padding:9px!important;border-radius:12px!important}
-#bhRaceFactors464 .outlookThumb{display:none!important}
-#bhRaceFactors464 .outlookCardTitle{font-size:10px!important}
-#bhRaceFactors464 .outlookText{font-size:11px!important;line-height:1.45!important}
-@media(max-width:620px){#bhRaceFactors464 .outlookGrid{grid-template-columns:1fr!important}}
+#bhRaceFactors465{margin-top:12px!important;padding-top:11px!important;border-top:1px solid rgba(255,255,255,.10)!important}
+#bhRaceFactors465 .factorTitle{font-size:11px!important;font-weight:950!important;letter-spacing:.12em!important;color:#8eb4ca!important;margin-bottom:8px!important}
+#bhRaceFactors465 .outlookGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
+#bhRaceFactors465 .outlookCard{min-height:0!important;padding:9px!important;border-radius:12px!important}
+#bhRaceFactors465 .outlookThumb{display:none!important}
+#bhRaceFactors465 .outlookCardTitle{font-size:10px!important}
+#bhRaceFactors465 .outlookText{font-size:11px!important;line-height:1.45!important}
+@media(max-width:620px){#bhRaceFactors465 .outlookGrid{grid-template-columns:1fr!important}}
 </style>
-<script id="bhV464OutlookControlJS">
+<script id="bhV465OutlookControlJS">
 (()=>{
  const $=id=>document.getElementById(id);
  async function run(){
-   const b=$('bhOutlookRun464'); if(!b||b.disabled)return;
+   const b=$('bhOutlookRun465'); if(!b||b.disabled)return;
    b.disabled=true;b.classList.add('running');b.textContent='展望解析中…';
    try{
      $('previewPanel')?.classList.remove('hide');
@@ -22821,18 +22827,30 @@ window.__BH_V396_FORCE_2BOX__=true;
    finally{b.disabled=false;b.classList.remove('running')}
  }
  function install(){
-   const get=$('get'); if(get&&!$('bhOutlookRun464')){
-     const b=document.createElement('button');b.id='bhOutlookRun464';b.type='button';b.textContent='展望解析';b.onclick=run;get.insertAdjacentElement('afterend',b);
+   const get=$('get'); if(get&&!$('bhOutlookRun465')){
+     const b=document.createElement('button');b.id='bhOutlookRun465';b.type='button';b.textContent='展望解析';b.onclick=run;get.insertAdjacentElement('afterend',b);
    }
    const cmp=$('comparePanel'),pre=$('previewPanel'); if(cmp&&pre){cmp.insertAdjacentElement('afterend',pre);pre.classList.remove('hide')}
-   if(pre&&!$('bhRaceFactors464')){
-     const f=document.createElement('div');f.id='bhRaceFactors464';f.innerHTML='<div class="factorTitle">RACE CONDITIONS / 風・潮位・場特性</div><div class="outlookGrid"></div>';
-     pre.appendChild(f);
+   const outlook=$('outlookPanel');
+   if(outlook&&!$('bhRaceFactors465')){
+     const f=document.createElement('div');f.id='bhRaceFactors465';f.innerHTML='<div class="factorTitle">RACE CONDITIONS / 場特性・風・潮位</div><div class="outlookGrid"></div>';
+     const flow=$('bhRaceFlowV460'); if(flow) flow.insertAdjacentElement('afterend',f); else outlook.appendChild(f);
      const grid=f.querySelector('.outlookGrid');
      ['venueOutlook','windOutlook','tideOutlook'].forEach(id=>{const card=$(id)?.closest('.outlookCard');if(card)grid.appendChild(card)});
    }
  }
  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',install,{once:true}):install();
  setTimeout(install,400);
+})();
+</script>
+
+<script id="bhV465OutlookGuard">
+(()=>{
+ const clean=()=>{
+   const p=window.__HUNTER_PREVIEW;
+   if(Array.isArray(p))p.forEach(x=>{if(x&&x.st===0&&(x.rawST==null||String(x.rawST).trim()===''))x.st=null});
+   try{window.BH_RENDER_RACE_FLOW?.()}catch(_){}
+ };
+ document.addEventListener('click',e=>{if(e.target.closest('#bhOutlookRun465,#get'))setTimeout(clean,900)},true);
 })();
 </script>
