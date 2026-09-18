@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V464</title>
+<title>BOAT HUNTER V466</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15138,10 +15138,10 @@ input,
 .bh440BoatCard.hot{outline:1px solid rgba(255,255,255,.3)}
 @media(max-width:390px){.bh440Core strong{font-size:22px}.bh440BoatText strong{font-size:16px}.bh440BoatGrid{gap:3px}}
 </style>
-\n<style id="bhV464Rebuild">\n/* Vol.464 REBUILD — stable race controls + compact six racer cards */\n#main .wrap{display:flex!important;flex-direction:column!important;padding:8px 8px 18px!important}\n#main .head{order:1!important}\n#main .controls{order:2!important}\n#status{order:3!important}\n#cards{order:4!important}\n#racerDetailPanel{order:5!important}\n#comparePanel{order:6!important}\n#outlookPanel{order:7!important}\n#bhOutcomeDockV464{order:8!important}\n\n/* unused old UI */\n#previewPanel,#aiPanel,#hunterAnalysisBase,#hunter120Always,#oddsPanel,#entryPanel,\n#getPreview,#aiAnalyze,#jumpToHunterBuy,.hunterActions,.quickActionRow.actionPair{display:none!important}\n\n/* race selector: two wide balanced columns */\n.controls.racePanel{\n display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;\n gap:6px!important;padding:8px!important;margin:6px 0 7px!important;border-radius:16px!important;\n}\n.controls.racePanel:before{grid-column:1/-1!important;margin:0 0 1px!important;font-size:8px!important}\n.controls.racePanel:after{display:none!important}\n.selectCard{min-width:0!important;width:100%!important;padding:7px 8px!important;border-radius:13px!important}\n.selectEyebrow{font-size:8px!important}.selectLabel{font-size:10px!important;margin:1px 0!important}\n.selectCard select{height:38px!important;min-height:38px!important;font-size:20px!important;font-weight:1000!important;padding:0 22px 0 0!important}\n.venueTimeLegend{display:none!important}\n.voicePick{width:100%!important;min-height:34px!important;height:34px!important;margin-top:4px!important;font-size:14px!important;border-radius:10px!important}\n.raceStep{gap:5px!important;margin-top:4px!important}\n.raceStepBtn{height:34px!important;min-height:34px!important;font-size:25px!important;border-radius:10px!important}\n#get{grid-column:1/-1!important;width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:0 8px!important;border-radius:12px!important;background:linear-gradient(180deg,#ff9f0a,#ff7900)!important;border:2px solid #fff!important;color:#fff!important;font-size:20px!important;font-weight:1000!important;line-height:1!important}\n.voiceStatus,#voiceFallbackInput{grid-column:1/-1!important}.voiceStatus{display:none!important}\n#status{margin:4px 2px 5px!important;font-size:11px!important}\n\n/* player cards: always six across, compact */\n#cards.cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important;width:100%!important;margin:0 0 8px!important}\n#cards .compactRacerCard{min-width:0!important;width:100%!important;padding:0 0 4px!important;border-radius:10px!important;overflow:hidden!important}\n#cards .compactPhotoWrap.racerPhotoButton{height:82px!important;width:100%!important}\n#cards .compactPhotoWrap .racerPhoto{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 18%!important;transform:scale(1.08)!important}\n#cards .compactBoatNo{width:21px!important;height:21px!important;font-size:12px!important}\n#cards .compactClass{font-size:8px!important;margin-top:2px!important;font-weight:1000!important}\n#cards .compactName{font-size:8px!important;line-height:1.05!important;margin-top:1px!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding:0 1px!important}\n#cards .compactWinLabel{font-size:6px!important;margin-top:3px!important}\n#cards .compactWin{font-size:13px!important;line-height:1.05!important;font-weight:1000!important}\n#cards .compactDetailBtn{display:none!important}\n#cards .fAfterCompact.fAfterMini{margin:3px 2px 0!important;padding:3px 2px!important;border-radius:6px!important;max-width:calc(100% - 4px)!important;overflow:hidden!important}\n#cards .fAfterMiniLine{gap:2px!important;justify-content:center!important}\n#cards .fAfterMiniLine b{font-size:8px!important}#cards .fAfterMiniLine span{font-size:6px!important}\n#cards .fAfterMiniValue{font-size:11px!important;margin:2px 0 1px!important;white-space:nowrap!important}\n#cards .fAfterMiniSource{font-size:5.5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}\n\n/* six-boat diagnosis */\n#comparePanel.comparePanel{display:block!important;margin:5px 0 8px!important}\n#comparePanel .compareToggle{min-height:40px!important;padding:5px 8px!important}\n#comparePanel .compareToggle b{font-size:19px!important}\n#comparePanel .compareToggle small{font-size:7px!important}\n#comparePanel .compareBody{padding:4px!important}\n\n/* outlook below diagnosis */\n#outlookPanel,#outlookPanel.hide{display:block!important;margin:5px 0 8px!important}\n\n/* actual 120-combination outcome counter at very bottom */\n#bhOutcomeDockV464{display:block!important;margin:5px 0 18px!important}\n#bhOutcomeDockV464 .bhOutcomeSecret{display:block!important;margin:0!important;text-align:left!important}\n#bhOutcomeDockV464 .bhOutcomeToggle{display:none!important}\n#bhOutcomeDockV464 .bhOutcomePanel,#bhOutcomeDockV464 .bhOutcomePanel.hidden{display:block!important;margin:0!important}\n#bhOutcomeDockV464 #bhOutcomeAll120{max-height:560px!important;overflow:auto!important}\n\n@media(max-width:430px){\n #main .wrap{padding:5px!important}\n .controls.racePanel{gap:5px!important;padding:6px!important}\n .selectCard{padding:6px!important}.selectCard select{font-size:18px!important}\n #get{height:38px!important;min-height:38px!important;font-size:19px!important}\n #cards.cards{gap:3px!important}\n #cards .compactPhotoWrap.racerPhotoButton{height:72px!important}\n #cards .compactName{font-size:7px!important}\n #cards .compactWin{font-size:11px!important}\n}\n</style>\n
+\n<style id="bhV464Rebuild">\n/* Vol.465 REBUILD — stable race controls + compact six racer cards */\n#main .wrap{display:flex!important;flex-direction:column!important;padding:8px 8px 18px!important}\n#main .head{order:1!important}\n#main .controls{order:2!important}\n#status{order:3!important}\n#cards{order:4!important}\n#racerDetailPanel{order:5!important}\n#comparePanel{order:6!important}\n#outlookPanel{order:7!important}\n#bhOutcomeDockV464{order:8!important}\n\n/* unused old UI */\n#previewPanel,#aiPanel,#hunterAnalysisBase,#hunter120Always,#oddsPanel,#entryPanel,\n#getPreview,#aiAnalyze,#jumpToHunterBuy,.hunterActions,.quickActionRow.actionPair{display:none!important}\n\n/* race selector: two wide balanced columns */\n.controls.racePanel{\n display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;\n gap:6px!important;padding:8px!important;margin:6px 0 7px!important;border-radius:16px!important;\n}\n.controls.racePanel:before{grid-column:1/-1!important;margin:0 0 1px!important;font-size:8px!important}\n.controls.racePanel:after{display:none!important}\n.selectCard{min-width:0!important;width:100%!important;padding:7px 8px!important;border-radius:13px!important}\n.selectEyebrow{font-size:8px!important}.selectLabel{font-size:10px!important;margin:1px 0!important}\n.selectCard select{height:38px!important;min-height:38px!important;font-size:20px!important;font-weight:1000!important;padding:0 22px 0 0!important}\n.venueTimeLegend{display:none!important}\n.voicePick{width:100%!important;min-height:34px!important;height:34px!important;margin-top:4px!important;font-size:14px!important;border-radius:10px!important}\n.raceStep{gap:5px!important;margin-top:4px!important}\n.raceStepBtn{height:34px!important;min-height:34px!important;font-size:25px!important;border-radius:10px!important}\n#get{grid-column:1/-1!important;width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:0 8px!important;border-radius:12px!important;background:linear-gradient(180deg,#ff9f0a,#ff7900)!important;border:2px solid #fff!important;color:#fff!important;font-size:20px!important;font-weight:1000!important;line-height:1!important}\n.voiceStatus,#voiceFallbackInput{grid-column:1/-1!important}.voiceStatus{display:none!important}\n#status{margin:4px 2px 5px!important;font-size:11px!important}\n\n/* player cards: always six across, compact */\n#cards.cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important;width:100%!important;margin:0 0 8px!important}\n#cards .compactRacerCard{min-width:0!important;width:100%!important;padding:0 0 4px!important;border-radius:10px!important;overflow:hidden!important}\n#cards .compactPhotoWrap.racerPhotoButton{height:82px!important;width:100%!important}\n#cards .compactPhotoWrap .racerPhoto{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 18%!important;transform:scale(1.08)!important}\n#cards .compactBoatNo{width:21px!important;height:21px!important;font-size:12px!important}\n#cards .compactClass{font-size:8px!important;margin-top:2px!important;font-weight:1000!important}\n#cards .compactName{font-size:8px!important;line-height:1.05!important;margin-top:1px!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding:0 1px!important}\n#cards .compactWinLabel{font-size:6px!important;margin-top:3px!important}\n#cards .compactWin{font-size:13px!important;line-height:1.05!important;font-weight:1000!important}\n#cards .compactDetailBtn{display:none!important}\n#cards .fAfterCompact.fAfterMini{margin:3px 2px 0!important;padding:3px 2px!important;border-radius:6px!important;max-width:calc(100% - 4px)!important;overflow:hidden!important}\n#cards .fAfterMiniLine{gap:2px!important;justify-content:center!important}\n#cards .fAfterMiniLine b{font-size:8px!important}#cards .fAfterMiniLine span{font-size:6px!important}\n#cards .fAfterMiniValue{font-size:11px!important;margin:2px 0 1px!important;white-space:nowrap!important}\n#cards .fAfterMiniSource{font-size:5.5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}\n\n/* six-boat diagnosis */\n#comparePanel.comparePanel{display:block!important;margin:5px 0 8px!important}\n#comparePanel .compareToggle{min-height:40px!important;padding:5px 8px!important}\n#comparePanel .compareToggle b{font-size:19px!important}\n#comparePanel .compareToggle small{font-size:7px!important}\n#comparePanel .compareBody{padding:4px!important}\n\n/* outlook below diagnosis */\n#outlookPanel,#outlookPanel.hide{display:block!important;margin:5px 0 8px!important}\n\n/* actual 120-combination outcome counter at very bottom */\n#bhOutcomeDockV464{display:block!important;margin:5px 0 18px!important}\n#bhOutcomeDockV464 .bhOutcomeSecret{display:block!important;margin:0!important;text-align:left!important}\n#bhOutcomeDockV464 .bhOutcomeToggle{display:none!important}\n#bhOutcomeDockV464 .bhOutcomePanel,#bhOutcomeDockV464 .bhOutcomePanel.hidden{display:block!important;margin:0!important}\n#bhOutcomeDockV464 #bhOutcomeAll120{max-height:560px!important;overflow:auto!important}\n\n@media(max-width:430px){\n #main .wrap{padding:5px!important}\n .controls.racePanel{gap:5px!important;padding:6px!important}\n .selectCard{padding:6px!important}.selectCard select{font-size:18px!important}\n #get{height:38px!important;min-height:38px!important;font-size:19px!important}\n #cards.cards{gap:3px!important}\n #cards .compactPhotoWrap.racerPhotoButton{height:72px!important}\n #cards .compactName{font-size:7px!important}\n #cards .compactWin{font-size:11px!important}\n}\n</style>\n
 
 <style id="bhV464EntryCss">
-/* Vol.464: 6艇診断直下の折りたたみ進入設定。設定値はレース別に保持 */
+/* Vol.465: 6艇診断直下の折りたたみ進入設定。設定値はレース別に保持 */
 #entryDockV464{order:7!important;margin:3px 0 7px!important}
 #entryToggleV464{width:100%!important;height:32px!important;min-height:32px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid rgba(86,181,235,.28)!important;background:linear-gradient(180deg,#102838,#091923)!important;color:#b9d9ea!important;font-size:12px!important;font-weight:900!important;letter-spacing:.04em!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
 #entryToggleV464 .entryArrow{font-size:15px!important;transition:transform .18s ease}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.464</div>
+  <div class="topVol">Vol.466</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15468,7 +15468,7 @@ function today(){return new Date(Date.now()+32400000).toISOString().slice(0,10)}
 function url(d){
   const ds=String(d||today());
   const s=ds.replaceAll("-","");
-  // Vol.464: 当日は公式に用意された today.json を最優先。
+  // Vol.465: 当日は公式に用意された today.json を最優先。
   // 日付ファイル生成のタイミング差で開催場が0件になる事故を避ける。
   if(ds===today()) return "https://boatraceopenapi.github.io/api/v1/today.json";
   return `https://boatraceopenapi.github.io/api/v1/${s.slice(0,4)}/${s}.json`;
@@ -15488,7 +15488,7 @@ async function bhFetchDayV464(d){
       const j=await r.json();
       if(j?.programs?.stadiums && Object.keys(j.programs.stadiums).length) return j;
       throw new Error("stadiums empty");
-    }catch(e){last=e;console.warn("Vol.464 API fallback",u,e);}
+    }catch(e){last=e;console.warn("Vol.465 API fallback",u,e);}
   }
   throw last||new Error("API取得失敗");
 }
@@ -17999,7 +17999,7 @@ $('top').classList.remove('hide');
   function apiUrl(){
     const d=dateValue()||today();
     const ymd=d.replaceAll("-","");
-    // Vol.464: 開催場一覧も当日は today.json に統一する。
+    // Vol.465: 開催場一覧も当日は today.json に統一する。
     if(d===today()) return "https://boatraceopenapi.github.io/api/v1/today.json";
     return `https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`;
   }
@@ -22593,7 +22593,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 <style id="bhV464TechToggleStyle">
-/* Vol.464 決まり手・攻守比較：通常非表示＋開閉状態保持 */
+/* Vol.465 決まり手・攻守比較：通常非表示＋開閉状態保持 */
 #comparePanel .bhTechToggleRow th{padding:5px 4px!important;background:transparent!important;border:0!important}
 #comparePanel .bhTechToggleBtn{
   width:100%!important;min-height:30px!important;padding:4px 10px!important;
@@ -22641,7 +22641,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 <style id="bhV464NoPreEval">
-/* Vol.464: ハンター事前評価を廃止 */
+/* Vol.465: ハンター事前評価を廃止 */
 #hunterPreEval,#hunterPreEvaluation,.hunterPreEval,.hunterPreEvaluation,[data-panel="hunter-pre-eval"]{display:none!important}
 </style>
 <script id="bhV464NoPreEvalJs">
@@ -22662,7 +22662,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 <style id="bhV464DevelopmentStyle">
-/* Vol.464 展開診断：直前情報＋環境＋決まり手を統合 */
+/* Vol.465 展開診断：直前情報＋環境＋決まり手を統合 */
 #previewPanel{display:block!important;margin:8px 0!important;padding:8px!important}
 #previewPanel.hide{display:block!important}
 #previewPanel .previewHead{margin-bottom:4px!important}
@@ -22820,7 +22820,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 
 
 
-<!-- Vol.464: 直前情報自動復旧 + イン場平均比較 + 当地勝率を6艇診断へ統合 -->
+<!-- Vol.465: 直前情報自動復旧 + イン場平均比較 + 当地勝率を6艇診断へ統合 -->
 <style id="bhV464PreviewFixStyle">
 #previewPanel,#previewPanel.hide{display:block!important;visibility:visible!important;opacity:1!important;order:7!important;margin:7px 0 8px!important}
 #previewPanel .previewBody,#previewPanel table{visibility:visible!important}
@@ -22879,7 +22879,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 <script id="bhV464AbilityPatch">
 (function(){
- // 既存のVol.464評価描画後に、当地勝率と1C場平均との差を使って相対スコアを再計算して評価表示を上書きする。
+ // 既存のVol.465評価描画後に、当地勝率と1C場平均との差を使って相対スコアを再計算して評価表示を上書きする。
  const N=v=>{const n=Number(String(v??'').replace(/[^0-9+.-]/g,''));return Number.isFinite(n)?n:null};
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  function run(){
@@ -22911,7 +22911,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 
-<!-- Vol.464: v1 preview direct binding fix -->
+<!-- Vol.465: v1 preview direct binding fix -->
 <style id="bhV464PreviewDirectStyle">
 #previewPanel,#previewPanel.hide{display:block!important;visibility:visible!important;opacity:1!important}
 </style>
@@ -22976,6 +22976,128 @@ window.__BH_V396_FORCE_2BOX__=true;
  document.addEventListener('change',e=>{if(e.target.matches('#stadium,#race'))setTimeout(loadPreviewV464,250)},true);
  $('getPreview')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();loadPreviewV464()},true);
  window.loadPreviewV464=loadPreviewV464;
+})();
+</script>
+
+<!-- Vol.465: 出走表・直前情報の取得入口を再構築。日付v1を主系、today/旧APIをフォールバック。 -->
+<script id="bhV465ProgramPreviewRebuild">
+(function(){
+ const $=id=>document.getElementById(id);
+ const jstDate=()=>{const d=new Date(Date.now()+9*3600000);return d.toISOString().slice(0,10)};
+ const ds=()=>String($('date')?.value||jstDate());
+ const ymd=()=>ds().replaceAll('-','');
+ const getJSON=async u=>{const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
+ function stadiums(j){return j?.programs?.stadiums||j?.stadiums||j?.previews?.stadiums||{} }
+ function stadium(j,code){const ss=stadiums(j),n=Number(code);return ss[String(n)]||ss[String(code)]||ss[String(n).padStart(2,'0')]||Object.values(ss).find(x=>Number(x?.stadium_number??x?.number)===n)||null}
+ function race(j,code,rno){const st=stadium(j,code),rs=st?.races||{};const n=Number(rno);return rs[String(n)]||rs[String(rno)]||Object.values(rs).find(x=>Number(x?.race_number??x?.number)===n)||null}
+ function six(r){return Object.values(r?.racers||{}).filter(Boolean).sort((a,b)=>Number(a.entry_number)-Number(b.entry_number))}
+ async function fetchProgramDay(){
+   const d=ds(), y=ymd(), yr=y.slice(0,4), urls=[
+    `https://boatraceopenapi.github.io/api/v1/${yr}/${y}.json`,
+    ...(d===jstDate()?['https://boatraceopenapi.github.io/api/v1/today.json']:[]),
+    `https://boatraceopenapi.github.io/programs/v3/${yr}/${y}.json`,
+    ...(d===jstDate()?['https://boatraceopenapi.github.io/programs/v3/today.json']:[]),
+    `https://boatraceopenapi.github.io/programs/v2/${yr}/${y}.json`
+   ];
+   let last; for(const u of urls){try{const j=await getJSON(u);if(Object.keys(stadiums(j)).length)return j}catch(e){last=e}}
+   throw last||Error('出走表API取得失敗');
+ }
+ window.bhFetchDayV465=fetchProgramDay;
+ function venueCodes(j){return Object.entries(stadiums(j)).filter(([k,v])=>Object.values(v?.races||{}).some(r=>six(r).length===6)).map(([k,v])=>Number(v?.stadium_number??k)).filter(n=>n>=1&&n<=24).sort((a,b)=>a-b)}
+ async function loadVenues(){
+   const sel=$('stadium'); if(!sel)return; sel.disabled=true; sel.innerHTML='<option>開催場取得中…</option>';
+   try{const j=await fetchProgramDay(), codes=venueCodes(j);if(!codes.length)throw Error('開催場0件');const prev=Number(sel.dataset.lastValue||sel.value||0);sel.innerHTML=codes.map(n=>`<option value="${n}">${typeof venueTimeIcon==='function'?venueTimeIcon(n):''} ${S?.[n]||n}</option>`).join('');sel.value=String(codes.includes(prev)?prev:codes[0]);sel.dataset.lastValue=sel.value;try{setupVenueSelectDisplay?.();decorateVenueOptions?.('closed')}catch(e){};$('status').textContent=`開催 ${codes.length}場 / 出走表準備完了`}
+   catch(e){console.error('V465 venues',e);$('status').textContent='開催場取得失敗：通信後に再読み込みしてください';sel.innerHTML='<option value="">取得失敗</option>'}
+   finally{sel.disabled=false}
+ }
+ window.loadTodayVenues=loadVenues;
+ async function acquireRace(){
+   window.resetHunterPreflight?.(); $('status').textContent='出走表取得中…'; $('cards').innerHTML='';
+   try{const j=await fetchProgramDay(), r=race(j,$('stadium').value,$('race').value), rr=six(r);if(rr.length!==6)throw Error('選手データ '+rr.length+'/6艇');currentRace=r;window.currentRace=r;window.__BH_CURRENT_RACE=r;window.__BH_CURRENT_RACERS=rr.slice();$('cards').innerHTML=rr.map(card).join('');decorateRanks?.(rr);window.decorateHunterSG?.();try{bhRenderCompare?.();bhNormalizeMainLayout?.()}catch(e){};$('get')?.classList.add('done');if($('get'))$('get').textContent='① 出走表取得済み';if($('getPreview'))$('getPreview').disabled=false;$('status').textContent=`✓ ${S?.[Number($('stadium').value)]||''} ${$('race').value}R / 6艇取得完了`;setTimeout(()=>loadPreview(),150);setTimeout(()=>loadPreview(),2200);setTimeout(()=>{try{preloadHistory?.(rr)}catch(e){}},50);return r}
+   catch(e){console.error('V465 program',e);$('status').textContent='出走表取得失敗：'+e.message;return null}
+ }
+ function n(v){if(v===null||v===undefined||v==='')return null;const x=Number(String(v).replace(/[^0-9+.-]/g,''));return Number.isFinite(x)?x:null}
+ async function fetchPreviewRace(){
+   const d=ds(),y=ymd(),yr=y.slice(0,4),code=$('stadium').value,rno=$('race').value;
+   // 主系: v1。直前情報は選択レースの preview を読む。
+   for(const u of [`https://boatraceopenapi.github.io/api/v1/${yr}/${y}.json`,...(d===jstDate()?['https://boatraceopenapi.github.io/api/v1/today.json']:[])]){try{const j=await getJSON(u),r=race(j,code,rno);if(r?.preview?.racers&&Object.keys(r.preview.racers).length)return r}catch(e){}}
+   // 旧preview APIは保険。v1側の更新待ち/一時欠損時のみ使用。
+   for(const u of [`https://boatraceopenapi.github.io/previews/v3/${yr}/${y}.json`,...(d===jstDate()?['https://boatraceopenapi.github.io/previews/v3/today.json']:[]),`https://boatraceopenapi.github.io/previews/v2/${yr}/${y}.json`]){try{const j=await getJSON(u),r=race(j,code,rno);if(r)return {preview:r.preview||r}}catch(e){}}
+   return null;
+ }
+ function previewRows(r){const pr=r?.preview||{}, racers=pr?.racers||{};return Array.from({length:6},(_,i)=>{const b=i+1,x=racers[String(b)]||Object.values(racers).find(z=>Number(z?.entry_number??z?.boat_number)===b)||{};return {boat:b,course:n(x.course_number??x.course),st:n(x.start_timing??x.st),lap:n(x.lap_time),turn:n(x.turn_time),straight:n(x.straight_time),exhibition:n(x.exhibition_time??x.exhibition),tilt:n(x.tilt_adjustment??x.tilt),parts:'—'}})}
+ function rankClass(rows,key,v){if(!Number.isFinite(v))return '';let a=[...new Set(rows.map(x=>x[key]).filter(Number.isFinite))].sort((a,b)=>a-b);if(v===a[0])return'hl1';if(a.length>1&&v===a[1])return'hl2';if(a.length>2&&v===a.at(-1))return'hlLast';return''}
+ function renderPreview(rows){const body=$('previewBody');if(!body)return;body.innerHTML=rows.map(x=>`<tr><td class="boatCol b${x.boat}">${x.boat}</td><td class="${rankClass(rows,'st',x.st)}">${x.st==null?'—':(x.st<0?'F'+Math.abs(x.st).toFixed(2):x.st.toFixed(2))}</td><td>${x.lap==null?'—':x.lap.toFixed(2)}</td><td>${x.turn==null?'—':x.turn.toFixed(2)}</td><td>${x.straight==null?'—':x.straight.toFixed(2)}</td><td class="majorMetric ${rankClass(rows,'exhibition',x.exhibition)}">${x.exhibition==null?'—':x.exhibition.toFixed(2)}</td><td>${x.tilt==null?'—':x.tilt.toFixed(1)}</td><td class="partsCol">${x.parts}</td></tr>`).join('')}
+ async function loadPreview(){
+   const p=$('previewPanel');if(p)p.classList.remove('hide');if($('previewState'))$('previewState').textContent='直前情報を取得中…';
+   try{const r=await fetchPreviewRace();if(!r)throw Error('直前情報なし');const rows=previewRows(r);const count=rows.filter(x=>x.course!=null||x.st!=null||x.exhibition!=null||x.tilt!=null).length;if(!count)throw Error('直前情報はまだ未公開');window.__HUNTER_PREVIEW=rows;renderPreview(rows);const order=rows.filter(x=>x.course).sort((a,b)=>a.course-b.course);if(order.length===6){window.__HUNTER_ENTRY=order.map(x=>({boat:x.boat,course:x.course}));try{syncEntryFromPreview?.(true)}catch(e){}}if($('previewState'))$('previewState').textContent=`取得完了：直前情報 ${count}/6艇`;if($('previewStamp'))$('previewStamp').textContent='取得 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});return rows}
+   catch(e){console.warn('V465 preview',e);if($('previewState'))$('previewState').textContent=e.message;return null}
+ }
+ window.loadPreviewV465=loadPreview;
+ function bind(){if($('get'))$('get').onclick=acquireRace;if($('getPreview'))$('getPreview').onclick=loadPreview;$('stadium')?.addEventListener('change',e=>{e.currentTarget.dataset.lastValue=e.currentTarget.value});setTimeout(loadVenues,50)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();
+</script>
+
+
+<!-- Vol.466 HARD FIX: v1 schema exact binding / capture-event isolation -->
+<style id="bhV466HardFixStyle">
+#previewPanel,#previewPanel.hide{display:block!important;visibility:visible!important;opacity:1!important}
+#cards{visibility:visible!important;opacity:1!important}
+</style>
+<script id="bhV466HardFix">
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const VEN={1:'桐生',2:'戸田',3:'江戸川',4:'平和島',5:'多摩川',6:'浜名湖',7:'蒲郡',8:'常滑',9:'津',10:'三国',11:'びわこ',12:'住之江',13:'尼崎',14:'鳴門',15:'丸亀',16:'児島',17:'宮島',18:'徳山',19:'下関',20:'若松',21:'芦屋',22:'福岡',23:'唐津',24:'大村'};
+const jst=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const date=()=>String($('date')?.value||jst());
+const ymd=()=>date().replace(/-/g,'');
+const url=()=>`https://boatraceopenapi.github.io/api/v1/${ymd().slice(0,4)}/${ymd()}.json`;
+let dayCache=null, dayKey='';
+async function day(force=false){
+ const k=ymd(); if(!force&&dayCache&&dayKey===k)return dayCache;
+ const urls=[url()]; if(date()===jst())urls.push('https://boatraceopenapi.github.io/api/v1/today.json');
+ let err=null;
+ for(const u of urls){try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);const j=await r.json();if(j?.programs?.stadiums){dayCache=j;dayKey=k;return j}}catch(e){err=e}}
+ throw err||Error('v1 APIデータなし');
+}
+function stMap(j){return j?.programs?.stadiums||{}}
+function st(j,code){const m=stMap(j),n=Number(code);return m[String(n)]||Object.values(m).find(v=>Number(v?.stadium_number)===n)||null}
+function rc(j,code,rno){const x=st(j,code),m=x?.races||{},n=Number(rno);return m[String(n)]||Object.values(m).find(v=>Number(v?.race_number)===n)||null}
+function racers(r){const m=r?.racers||{};return (Array.isArray(m)?m:Object.values(m)).filter(Boolean).sort((a,b)=>Number(a.entry_number)-Number(b.entry_number))}
+function pvRacers(r){const m=r?.preview?.racers||{};return Array.isArray(m)?m:Object.values(m)}
+function num(v){if(v===null||v===undefined||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null}
+async function venues(){
+ const sel=$('stadium'); if(!sel)return;
+ try{const j=await day(true);const old=Number(sel.value);const codes=Object.entries(stMap(j)).map(([k,v])=>({n:Number(v?.stadium_number??k),v})).filter(x=>x.n>=1&&x.n<=24&&Object.values(x.v?.races||{}).some(r=>racers(r).length===6)).map(x=>x.n).sort((a,b)=>a-b);if(!codes.length)throw Error('開催場0件');sel.innerHTML=codes.map(n=>`<option value="${n}">${VEN[n]}</option>`).join('');sel.value=String(codes.includes(old)?old:codes[0]);sel.disabled=false;$('status').textContent=`開催 ${codes.length}場 / v1取得完了`;}catch(e){sel.disabled=false;sel.innerHTML='<option value="">取得失敗</option>';$('status').textContent='開催場取得失敗：'+e.message;}
+}
+function renderCards(rr){
+ const el=$('cards');if(!el)return;
+ if(typeof card==='function'){el.innerHTML=rr.map(card).join('');try{decorateRanks?.(rr)}catch(e){};return}
+ el.innerHTML=rr.map(r=>`<article class="card b${r.entry_number} compactRacerCard"><div class="compactBoatNo">${r.entry_number}</div><div class="compactClass">${r.rank_number??'—'}</div><div class="compactName">${r.name??'—'}</div><div class="compactWinLabel">全国勝率</div><div class="compactWin">${num(r.national_win_rate)?.toFixed(2)??'—'}</div></article>`).join('');
+}
+function previewRows(r){const a=pvRacers(r);return Array.from({length:6},(_,i)=>{const b=i+1,x=a.find(z=>Number(z?.entry_number)===b)||{};return {boat:b,course:num(x.course_number),st:num(x.start_timing),lap:null,turn:null,straight:null,exhibition:num(x.exhibition_time),tilt:num(x.tilt_adjustment),parts:'—'}})}
+function renderPreview(r){
+ const p=$('previewPanel');p?.classList.remove('hide');const rows=previewRows(r);window.__HUNTER_PREVIEW=rows;
+ const body=$('previewBody');if(body){const vals=k=>[...new Set(rows.map(x=>x[k]).filter(Number.isFinite))].sort((a,b)=>a-b);const cl=(k,v)=>{if(!Number.isFinite(v))return'';const a=vals(k);return v===a[0]?'hl1':(a.length>1&&v===a[1]?'hl2':(a.length>2&&v===a.at(-1)?'hlLast':''))};body.innerHTML=rows.map(x=>`<tr><td class="boatCol b${x.boat}">${x.boat}</td><td class="${cl('st',x.st)}">${x.st==null?'—':(x.st<0?'F'+Math.abs(x.st).toFixed(2):x.st.toFixed(2))}</td><td>—</td><td>—</td><td>—</td><td class="majorMetric ${cl('exhibition',x.exhibition)}">${x.exhibition==null?'—':x.exhibition.toFixed(2)}</td><td>${x.tilt==null?'—':x.tilt.toFixed(1)}</td><td>—</td></tr>`).join('')}
+ const cnt=rows.filter(x=>x.course!=null||x.st!=null||x.exhibition!=null||x.tilt!=null).length;
+ if($('previewState'))$('previewState').textContent=cnt?`取得完了：直前情報 ${cnt}/6艇`:'直前情報はまだ公開されていません';
+ if($('previewStamp'))$('previewStamp').textContent='取得 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+ const order=rows.filter(x=>x.course).sort((a,b)=>a.course-b.course);if(order.length===6){window.__HUNTER_ENTRY=order.map(x=>({boat:x.boat,course:x.course}));try{syncEntryFromPreview?.(true)}catch(e){}}
+ return cnt;
+}
+async function acquire(){
+ const get=$('get'); if(get)get.disabled=true; $('status').textContent='出走表取得中…'; if($('cards'))$('cards').innerHTML='';
+ try{const j=await day(true),r=rc(j,$('stadium').value,$('race').value);if(!r)throw Error('選択レースなし');const rr=racers(r);if(rr.length!==6)throw Error(`6艇不足 ${rr.length}/6`);window.currentRace=r;window.__BH_CURRENT_RACE=r;window.__BH_CURRENT_RACERS=rr;renderCards(rr);try{bhRenderCompare?.();bhNormalizeMainLayout?.();preloadHistory?.(rr)}catch(e){};$('status').textContent=`✓ ${VEN[Number($('stadium').value)]||''} ${$('race').value}R / 6艇取得完了`;if(get){get.textContent='① 出走表取得済み';get.classList.add('done')}renderPreview(r);setTimeout(async()=>{try{const j2=await day(true),r2=rc(j2,$('stadium').value,$('race').value);if(r2){window.currentRace=r2;window.__BH_CURRENT_RACE=r2;renderPreview(r2)}}catch(e){}},2500);}
+ catch(e){console.error('V466 acquire',e);$('status').textContent='出走表取得失敗：'+e.message;}
+ finally{if(get)get.disabled=false}
+}
+async function previewOnly(){try{const j=await day(true),r=rc(j,$('stadium').value,$('race').value);if(!r)throw Error('選択レースなし');window.currentRace=r;window.__BH_CURRENT_RACE=r;renderPreview(r)}catch(e){if($('previewState'))$('previewState').textContent='直前情報取得失敗：'+e.message}}
+// Capture phase isolates the current acquisition path from legacy click handlers.
+document.addEventListener('click',e=>{if(e.target.closest('#get')){e.preventDefault();e.stopImmediatePropagation();acquire();return}if(e.target.closest('#getPreview')){e.preventDefault();e.stopImmediatePropagation();previewOnly()}},true);
+window.loadTodayVenues=venues;window.bhAcquireV466=acquire;window.loadPreviewV466=previewOnly;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(venues,0),{once:true});else setTimeout(venues,0);
 })();
 </script>
 </body>
@@ -23080,7 +23202,7 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
 
 
 <style id="bhV464DiagGradeStyle">
-/* Vol.464: 6艇診断 総合評価 + F持ち現在ST紫表示 */
+/* Vol.465: 6艇診断 総合評価 + F持ち現在ST紫表示 */
 #comparePanel .diagGradeRow td{padding:6px 2px!important;text-align:center!important}
 #comparePanel .diagGrade{
  display:inline-flex!important;align-items:center!important;justify-content:center!important;
@@ -23176,4 +23298,4 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
  document.addEventListener('click',e=>{if(e.target.closest('#get'))setTimeout(()=>{enhance();try{window.bhRenderCompare?.()}catch(_){ }},500)},true);
 })();
 </script>
-<!-- Vol.464: 6艇内相対評価。A/Dは各1艇、突出時はAの代わりにS。SとAは同時表示しない。F持ちは現在STを紫表示。 -->
+<!-- Vol.465: 6艇内相対評価。A/Dは各1艇、突出時はAの代わりにS。SとAは同時表示しない。F持ちは現在STを紫表示。 -->
