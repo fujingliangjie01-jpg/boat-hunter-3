@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V462</title>
+<title>BOAT HUNTER V463</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.462</div>
+  <div class="topVol">Vol.463</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22738,249 +22738,54 @@ window.__BH_V396_FORCE_2BOX__=true;
 <!-- Vol.460: レース展望を各艇の決まり手起点へ変更。場特性・風・潮位・チルト・F現在STを統合。 -->
 
 
-
-<!-- Vol.462: 直前情報取得を再構築 -->
-<style id="bhV462Preview">
-#bhPreviewGet462{width:100%;min-height:48px;margin:7px 0;border:2px solid #fff;border-radius:14px;background:linear-gradient(180deg,#ff9f0a,#ff7900);color:#fff;font-size:18px;font-weight:1000}
-#previewPanel,#previewPanel.hide{display:block!important;visibility:visible!important;opacity:1!important;margin:7px 0 9px!important}
-#previewPanel .previewTable th,#previewPanel .previewTable td{padding:6px 4px!important}
+<style id="bhV463PreviewFix">
+#previewPanel,#previewPanel.hide{display:block!important;order:7!important;margin:6px 0 9px!important}
+#outlookPanel,#outlookPanel.hide{order:8!important}
+#bhPreviewGet463{order:7!important;width:100%!important;min-height:42px!important;margin:2px 0 5px!important;border:1px solid #65bff0!important;border-radius:12px!important;background:linear-gradient(180deg,#173d55,#0a2636)!important;color:#fff!important;font-size:15px!important;font-weight:950!important}
 </style>
-<script id="bhV462PreviewScript">
+<script id="bhV463PreviewFixJS">
 (()=>{
- const $=id=>document.getElementById(id), num=v=>{if(v==null||v==='')return null;let n=Number(String(v).replace(/[^0-9+.-]/g,''));return Number.isFinite(n)?n:null};
- function install(){if($('bhPreviewGet462'))return;let panel=$('previewPanel');if(!panel)return;let b=document.createElement('button');b.id='bhPreviewGet462';b.textContent='② 直前情報取得';panel.before(b);b.onclick=load;panel.classList.remove('hide')}
- function ymd(){return String($('date')?.value||new Date().toISOString().slice(0,10)).replaceAll('-','')}
- function raceFrom(j){let st=j?.programs?.stadiums||{},sv=Number($('stadium')?.value||0),rv=Number($('race')?.value||0);let v=st[String(sv)]||Object.values(st).find(x=>Number(x?.stadium_number)===sv);let rs=v?.races||{};return rs[String(rv)]||Object.values(rs).find(x=>Number(x?.race_number)===rv)||null}
- async function fresh(){let d=ymd(), urls=[`https://boatraceopenapi.github.io/api/v1/${d.slice(0,4)}/${d}.json`];let now=new Date(),t=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;if(d===t)urls.unshift('https://boatraceopenapi.github.io/api/v1/today.json');for(let u of [...new Set(urls)])try{let r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;let x=raceFrom(await r.json());if(x)return x}catch(e){}return null}
- function rows(r){let pr=r?.preview?.racers||{};return Array.from({length:6},(_,i)=>{let b=i+1,x=pr[String(b)]||Object.values(pr).find(z=>Number(z?.entry_number)===b)||{};return {boat:b,course:num(x.course_number),st:num(x.start_timing),ex:num(x.exhibition_time),tilt:num(x.tilt_adjustment),parts:x.parts_replacement||x.parts||'—'}})}
- function rank(a,k,v){let z=[...new Set(a.map(x=>x[k]).filter(Number.isFinite))].sort((x,y)=>x-y);if(!Number.isFinite(v))return'';return v===z[0]?'hl1':z.length>1&&v===z[1]?'hl2':z.length>2&&v===z.at(-1)?'hlLast':''}
- function draw(a){let body=$('previewBody');if(!body)return;body.innerHTML=a.map(x=>`<tr><td class="boatCol b${x.boat}">${x.boat}</td><td class="${rank(a,'st',x.st)}">${x.st==null?'—':x.st<0?'F'+Math.abs(x.st).toFixed(2):x.st.toFixed(2)}</td><td>—</td><td>—</td><td>—</td><td class="majorMetric ${rank(a,'ex',x.ex)}">${x.ex==null?'—':x.ex.toFixed(2)}</td><td>${x.tilt==null?'—':x.tilt.toFixed(1)}</td><td class="partsCol">${x.parts}</td></tr>`).join('')}
- async function load(){install();let b=$('bhPreviewGet462'),state=$('previewState');b.disabled=true;b.textContent='直前情報取得中…';if(state)state.textContent='直前情報を取得中…';let r=await fresh();if(!r){b.disabled=false;b.textContent='② 直前情報取得';if(state)state.textContent='直前情報データ取得失敗';return}let a=rows(r);window.__HUNTER_PREVIEW=a;window.__BH_CURRENT_RACE=r;draw(a);let ent=a.filter(x=>x.course).sort((x,y)=>x.course-y.course);if(ent.length===6)window.__HUNTER_ENTRY=ent.map(x=>({boat:x.boat,course:x.course}));if(state)state.textContent=a.some(x=>x.st!=null||x.ex!=null||x.tilt!=null)?'取得完了':'直前情報はまだ公開されていません';if($('previewStamp'))$('previewStamp').textContent='取得 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});b.disabled=false;b.textContent='② 直前情報 再取得';try{let e=await window.prefetchHunterPreview?.(true);if(Array.isArray(e)&&e.length===6){window.__HUNTER_PREVIEW=e; if(typeof render==='function')render(e)}}catch(e){}}
- window.loadPreviewV462=load;document.readyState==='loading'?document.addEventListener('DOMContentLoaded',install):install();
-})();
-</script>
-
-</body>
-</html>
-
-
-<style id="bh-vol281-hide-date-input">#date{display:none!important}</style>
-
-<script id="bh-v371-marker">
-/* V371
-- 120通り比較: SIM確率順 / 人気順 / 期待値順の選択状態を再描画後も保持。
-- 場・レース再取得 / AI再解析時のみSIM確率順へリセット。
-- 勝負掛け: bit2だけで次走勝負と断定しない。18位以内=次走勝負、19〜30位=次走要確認、31位以下=圏外。
-- 43位など明確な下位艇を「次走勝負」と誤表示しない。
-*/
-</script>
-
-<!-- V442 F CURRENT-ST PATCH
-F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5走(最低3走)と20走平均の差>=0.020なら直近5走平均ST。
-採用STをHUNTER事前評価・3C攻め連鎖診断・壁/攻め率・5000回SIMへ統一。
--->
-
-<!-- V443: Fカードに解析採用ST（F後平均 / F位置不明時の直近5走）を表示。Vol表示・title更新。 -->
-
-<!-- V444: V443のFカード用ST数値変換RegExpを修正。main script parse停止を解消。 -->
-
-<style>
-/* Vol.445 Fカード最小表示 */
-.fAfterCompact.fAfterMini{
-  margin:6px 0 0!important;
-  padding:6px 7px!important;
-  min-height:0!important;
-  border-radius:10px!important;
-  overflow:hidden!important;
-}
-.fAfterMiniLine{
-  display:flex!important;
-  align-items:center!important;
-  gap:4px!important;
-  white-space:nowrap!important;
-  line-height:1!important;
-}
-.fAfterMiniLine b{
-  font-size:12px!important;
-  flex:0 0 auto!important;
-}
-.fAfterMiniLine span{
-  font-size:8px!important;
-  opacity:.72!important;
-  flex:0 0 auto!important;
-}
-.fAfterMiniLine strong{
-  font-size:14px!important;
-  margin-left:auto!important;
-  letter-spacing:0!important;
-  flex:0 0 auto!important;
-}
-.fAfterMiniSource{
-  margin-top:4px!important;
-  font-size:8px!important;
-  line-height:1!important;
-  font-weight:900!important;
-  color:#ffd66b!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-</style>
-<!-- V445: Fカード表示を最小化。F番号・現在ST・採用元のみ。 -->
-
-<style>
-/* Vol.447: 狭い選手カードでも現在ST数値を必ず見せる */
-.fAfterCompact.fAfterMini{
-  padding:5px 6px!important;
-  text-align:center!important;
-}
-.fAfterMiniLine{
-  justify-content:center!important;
-  gap:5px!important;
-}
-.fAfterMiniLine b{font-size:11px!important}
-.fAfterMiniLine span{font-size:8px!important}
-.fAfterMiniValue{
-  display:block!important;
-  width:100%!important;
-  margin:3px 0 2px!important;
-  font-size:17px!important;
-  line-height:1!important;
-  font-weight:1000!important;
-  color:#fff!important;
-  white-space:nowrap!important;
-  overflow:visible!important;
-  letter-spacing:-.02em!important;
-}
-.fAfterMiniSource{
-  margin-top:2px!important;
-  font-size:8px!important;
-  text-align:center!important;
-}
-</style>
-<!-- V447: F現在STを独立行表示にして横クリップを解消 -->
-
-
-<style id="bhV460DiagGradeStyle">
-/* Vol.461: 1C場平均基準 + 6艇相対評価 + F持ち現在ST */
-#comparePanel .diagGradeRow td{padding:6px 2px!important;text-align:center!important}
-#comparePanel .diagGrade{
- display:inline-flex!important;align-items:center!important;justify-content:center!important;
- width:34px!important;height:34px!important;border-radius:9px!important;
- font-size:22px!important;line-height:1!important;font-weight:1000!important;
- border:2px solid rgba(255,255,255,.7)!important;box-shadow:0 2px 7px rgba(0,0,0,.25)!important;
-}
-#comparePanel .diagGradeS{background:#d4af37!important;color:#111!important;border-color:#fff0a5!important}
-#comparePanel .diagGradeA{background:#ff3b30!important;color:#fff!important}
-#comparePanel .diagGradeB{background:#ffd60a!important;color:#111!important}
-#comparePanel .diagGradeC{background:#2f80ed!important;color:#fff!important}
-#comparePanel .diagGradeD{background:#59636d!important;color:#fff!important}
-#comparePanel .diagScore{display:block!important;margin-top:2px!important;font-size:7px!important;opacity:.72!important}
-#comparePanel td.fCurrentSTCell{
- background:repeating-linear-gradient(135deg,#6b2a8f 0,#6b2a8f 7px,#7d35a5 7px,#7d35a5 14px)!important;
- color:#fff!important;border-color:#c58be3!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)!important;
-}
-#comparePanel td.fCurrentSTCell strong{color:#fff!important;font-size:16px!important}
-#comparePanel .fStTag{display:block!important;margin-top:2px!important;font-size:6.5px!important;font-weight:1000!important;color:#f4d9ff!important;white-space:nowrap!important}
-</style>
-<script id="bhV460DiagGradeBoot">
-(function(){
- const N=v=>{const n=Number(String(v??'').replace(/[^0-9+.-]/g,''));return Number.isFinite(n)?n:null};
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- function clsPoints(r){
-   const c=String(r?.class ?? r?.racer_class ?? r?.grade ?? '').toUpperCase();
-   return c.includes('A1')?5:c.includes('A2')?3:c.includes('B1')?1:0;
+ const $=id=>document.getElementById(id);
+ function cls(a,k,i,st=false){
+   const v=a[i]?.[k]; if(v==null)return"";
+   if(st&&v<0)return"hlF";
+   const z=[...new Set(a.map(x=>x?.[k]).filter(x=>x!=null&&(!st||x>=0)).map(Number))].sort((x,y)=>x-y);
+   if(v===z[0])return"hl1"; if(z.length>1&&v===z[1])return"hl2"; if(z.length>2&&v===z[z.length-1])return"hlLast"; return"";
  }
- function venue1Avg(){
+ const f=v=>v==null?"—":Number(v).toFixed(2);
+ function draw(a){
+   const b=$("previewBody"); if(!b)return;
+   b.innerHTML=a.map((x,i)=>`<tr>
+    <td class="boatCol b${x.boat}">${x.boat}</td>
+    <td class="${cls(a,"st",i,true)}">${x.st==null?"—":x.st<0?"F"+Math.abs(x.st).toFixed(2):x.st.toFixed(2)}</td>
+    <td class="majorMetric ${cls(a,"lap",i)}">${f(x.lap)}</td>
+    <td class="${cls(a,"turn",i)}">${f(x.turn)}</td>
+    <td class="${cls(a,"straight",i)}">${f(x.straight)}</td>
+    <td class="majorMetric ${cls(a,"exhibition",i)}">${f(x.exhibition)}</td>
+    <td>${x.tilt==null?"—":Number(x.tilt).toFixed(1)}</td>
+    <td class="partsCol">${x.parts||"—"}</td>
+   </tr>`).join("");
+ }
+ async function load(){
+   const b=$("bhPreviewGet463"),st=$("previewState");
+   b.disabled=true;b.textContent="直前情報取得中…";if(st)st.textContent="ST・展示・一周系・チルト・部品を取得中…";
    try{
-     const j=String(Number(document.getElementById('stadium')?.value||1)).padStart(2,'0');
-     const v=N(window.VENUE_BASE_202606_08?.[j]?.['1']?.p1);
-     return Number.isFinite(v)?v:null;
-   }catch(_){return null}
+     const a=await window.prefetchHunterPreview?.(true);
+     if(!Array.isArray(a)||a.length!==6)throw 0;
+     window.__HUNTER_PREVIEW=a;draw(a);
+     const core=a.filter(x=>x.st!=null||x.exhibition!=null||x.tilt!=null).length;
+     const org=a.filter(x=>x.lap!=null||x.turn!=null||x.straight!=null).length;
+     if(st)st.textContent=`取得完了：基本 ${core}/6艇・一周系 ${org}/6艇`;
+     if($("previewStamp"))$("previewStamp").textContent="取得 "+new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
+     b.textContent="直前情報 再取得";
+   }catch(e){if(st)st.textContent="直前情報はまだ公開されていません";b.textContent="直前情報取得"}
+   finally{b.disabled=false}
  }
- function relativeGrades(scored){
-   const sorted=[...scored].sort((a,b)=>b.score-a.score || a.boat-b.boat);
-   const out=new Map();
-   if(!sorted.length)return out;
-   // 1Cだけは「場の1C平均以上」がA/S候補の必須条件。
-   // 1号艇だから相対1位→自動A、を禁止する。
-   const canHigh=x=>x.boat!==1 || (Number.isFinite(x.venue1Diff)&&x.venue1Diff>=0);
-   const high=sorted.filter(canHigh);
-   const top=high[0]||null, second=high[1]||null;
-   if(top){
-     const topGap=second ? top.score-second.score : 0;
-     const isS=!!second && top.score>=65 && topGap>=10;
-     out.set(top.boat,isS?'S':'A');
-   }
-   // 最下位Dは1艇限定。
-   const bottom=sorted[sorted.length-1];
-   if(bottom && !out.has(bottom.boat))out.set(bottom.boat,'D');
-   // 残りはスコア順位でB/C。1Cが場平均未満ならA/Sには上げない。
-   const rest=sorted.filter(x=>!out.has(x.boat));
-   rest.forEach((x,i)=>out.set(x.boat,i<Math.ceil(rest.length/2)?'B':'C'));
-   return out;
+ function install(){
+   const cmp=$("comparePanel"),p=$("previewPanel");if(!cmp||!p||$("bhPreviewGet463"))return;
+   cmp.after(p);p.classList.remove("hide");
+   const b=document.createElement("button");b.id="bhPreviewGet463";b.type="button";b.textContent="直前情報取得";p.before(b);b.onclick=load;
  }
- function abilityScore(x,r){
-   let win=Number.isFinite(x.courseWin)?clamp(x.courseWin,0,100):0;
-   let venue1Diff=null;
-   if(x.boat===1){
-     const va=venue1Avg();
-     if(Number.isFinite(va)){
-       venue1Diff=win-va;
-       // 1C勝率は生値ではなく「場平均との差」を50点中心に変換。
-       // 場平均=50点、+20pt=100点、-20pt=0点。
-       win=clamp(50+venue1Diff*2.5,0,100);
-     }
-   }
-   const top3=Number.isFinite(x.courseTop3)?clamp(x.courseTop3,0,100):0;
-   const st=Number.isFinite(x.avgST)?clamp((0.23-x.avgST)/0.15*100,0,100):35;
-   const sr=Number.isFinite(x.avgRank)?clamp((6.5-x.avgRank)/5.5*100,0,100):35;
-   const m2=Number.isFinite(x.motor2)?clamp(x.motor2/60*100,0,100):45;
-   const m3=Number.isFinite(x.motor3)?clamp(x.motor3/75*100,0,100):45;
-   const score=clamp(win*.34+top3*.20+st*.18+sr*.08+m2*.075+m3*.075+clsPoints(r),0,100);
-   return {score,venue1Diff};
- }
- function enhance(){
-   if(typeof window.bhRenderCompare!=='function'||window.bhRenderCompare.__v456)return;
-   const base=window.bhRenderCompare;
-   function wrapped(){
-     try{window.BH_APPLY_CURRENT_ST?.()}catch(_){ }
-     base.apply(this,arguments);
-     const tbody=document.getElementById('compareRows'); if(!tbody)return;
-     let rr=[]; try{rr=racers(currentRace)||[]}catch(_){ }
-     if(!rr.length)return;
-     const rows=rr.map(r=>{
-       const boat=Number(r.entry_number);
-       const h=(historyCache instanceof Map ? historyCache.get(Number(r.number))?.rows : [])||[];
-       const m=histMetrics(h),n=h.length||0,rate=fn=>n?h.filter(fn).length/n*100:null;
-       const adopted=N(r.__bhCurrentST ?? r.current_st ?? r.average_start_timing ?? m.avgST);
-       return {r,boat,courseWin:rate(x=>Number(x.place)===1),courseTop3:rate(x=>[1,2,3].includes(Number(x.place))),avgST:adopted,avgRank:N(r.__bhCurrentSTRank ?? r.current_st_rank ?? m.avgRank),motor2:N(r.motor_top_2_percent),motor3:N(r.motor_top_3_percent)};
-     });
-     const head=tbody.querySelector('.compareBoatHeader');
-     if(head){
-       const tr=document.createElement('tr');tr.className='diagGradeRow';
-       const scored=rows.map(x=>{const a=abilityScore(x,x.r);return {...x,score:a.score,venue1Diff:a.venue1Diff}});
-       const grades=relativeGrades(scored);
-       tr.innerHTML='<th>総合評価</th>'+scored.map(x=>{const g=grades.get(x.boat)||'C';return `<td><span class="diagGrade diagGrade${g}">${g}</span><small class="diagScore">${x.score.toFixed(0)}点</small></td>`}).join('');
-       head.insertAdjacentElement('afterend',tr);
-     }
-     const stRow=[...tbody.querySelectorAll('tr')].find(tr=>tr.querySelector('th')?.textContent.trim()==='平均ST');
-     if(stRow){
-       const cells=[...stRow.querySelectorAll('td')];
-       rows.forEach((x,i)=>{
-         const fc=Number(x.r?.flying_count ?? x.r?.f_count ?? x.r?.F ?? x.r?.flying ?? 0)||0;
-         if(!cells[i]||fc<=0)return;
-         const source=String(x.r.__bhCurrentSTSource||'現在');
-         cells[i].classList.add('fCurrentSTCell');
-         cells[i].innerHTML=`<strong>${Number.isFinite(x.avgST)?x.avgST.toFixed(3):'—'}</strong><span class="fStTag">F${fc} 現在ST・${source}採用</span>`;
-       });
-     }
-   }
-   wrapped.__v456=true; window.bhRenderCompare=wrapped;
-   try{wrapped()}catch(_){ }
- }
- let n=0;const t=setInterval(()=>{enhance();try{window.bhRenderCompare?.()}catch(_){ }if(++n>30)clearInterval(t)},200);
- document.addEventListener('click',e=>{if(e.target.closest('#get'))setTimeout(()=>{enhance();try{window.bhRenderCompare?.()}catch(_){ }},500)},true);
+ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",install):install();
 })();
 </script>
-<!-- Vol.460: 6艇内相対評価。A/Dは各1艇、突出時はAの代わりにS。SとAは同時表示しない。F持ちは現在STを紫表示。 -->
