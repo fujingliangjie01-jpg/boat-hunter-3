@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V460</title>
+<title>BOAT HUNTER V462</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.460</div>
+  <div class="topVol">Vol.462</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22737,6 +22737,29 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 <!-- Vol.460: レース展望を各艇の決まり手起点へ変更。場特性・風・潮位・チルト・F現在STを統合。 -->
 
+
+
+<!-- Vol.462: 直前情報取得を再構築 -->
+<style id="bhV462Preview">
+#bhPreviewGet462{width:100%;min-height:48px;margin:7px 0;border:2px solid #fff;border-radius:14px;background:linear-gradient(180deg,#ff9f0a,#ff7900);color:#fff;font-size:18px;font-weight:1000}
+#previewPanel,#previewPanel.hide{display:block!important;visibility:visible!important;opacity:1!important;margin:7px 0 9px!important}
+#previewPanel .previewTable th,#previewPanel .previewTable td{padding:6px 4px!important}
+</style>
+<script id="bhV462PreviewScript">
+(()=>{
+ const $=id=>document.getElementById(id), num=v=>{if(v==null||v==='')return null;let n=Number(String(v).replace(/[^0-9+.-]/g,''));return Number.isFinite(n)?n:null};
+ function install(){if($('bhPreviewGet462'))return;let panel=$('previewPanel');if(!panel)return;let b=document.createElement('button');b.id='bhPreviewGet462';b.textContent='② 直前情報取得';panel.before(b);b.onclick=load;panel.classList.remove('hide')}
+ function ymd(){return String($('date')?.value||new Date().toISOString().slice(0,10)).replaceAll('-','')}
+ function raceFrom(j){let st=j?.programs?.stadiums||{},sv=Number($('stadium')?.value||0),rv=Number($('race')?.value||0);let v=st[String(sv)]||Object.values(st).find(x=>Number(x?.stadium_number)===sv);let rs=v?.races||{};return rs[String(rv)]||Object.values(rs).find(x=>Number(x?.race_number)===rv)||null}
+ async function fresh(){let d=ymd(), urls=[`https://boatraceopenapi.github.io/api/v1/${d.slice(0,4)}/${d}.json`];let now=new Date(),t=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;if(d===t)urls.unshift('https://boatraceopenapi.github.io/api/v1/today.json');for(let u of [...new Set(urls)])try{let r=await fetch(u,{cache:'no-store'});if(!r.ok)continue;let x=raceFrom(await r.json());if(x)return x}catch(e){}return null}
+ function rows(r){let pr=r?.preview?.racers||{};return Array.from({length:6},(_,i)=>{let b=i+1,x=pr[String(b)]||Object.values(pr).find(z=>Number(z?.entry_number)===b)||{};return {boat:b,course:num(x.course_number),st:num(x.start_timing),ex:num(x.exhibition_time),tilt:num(x.tilt_adjustment),parts:x.parts_replacement||x.parts||'—'}})}
+ function rank(a,k,v){let z=[...new Set(a.map(x=>x[k]).filter(Number.isFinite))].sort((x,y)=>x-y);if(!Number.isFinite(v))return'';return v===z[0]?'hl1':z.length>1&&v===z[1]?'hl2':z.length>2&&v===z.at(-1)?'hlLast':''}
+ function draw(a){let body=$('previewBody');if(!body)return;body.innerHTML=a.map(x=>`<tr><td class="boatCol b${x.boat}">${x.boat}</td><td class="${rank(a,'st',x.st)}">${x.st==null?'—':x.st<0?'F'+Math.abs(x.st).toFixed(2):x.st.toFixed(2)}</td><td>—</td><td>—</td><td>—</td><td class="majorMetric ${rank(a,'ex',x.ex)}">${x.ex==null?'—':x.ex.toFixed(2)}</td><td>${x.tilt==null?'—':x.tilt.toFixed(1)}</td><td class="partsCol">${x.parts}</td></tr>`).join('')}
+ async function load(){install();let b=$('bhPreviewGet462'),state=$('previewState');b.disabled=true;b.textContent='直前情報取得中…';if(state)state.textContent='直前情報を取得中…';let r=await fresh();if(!r){b.disabled=false;b.textContent='② 直前情報取得';if(state)state.textContent='直前情報データ取得失敗';return}let a=rows(r);window.__HUNTER_PREVIEW=a;window.__BH_CURRENT_RACE=r;draw(a);let ent=a.filter(x=>x.course).sort((x,y)=>x.course-y.course);if(ent.length===6)window.__HUNTER_ENTRY=ent.map(x=>({boat:x.boat,course:x.course}));if(state)state.textContent=a.some(x=>x.st!=null||x.ex!=null||x.tilt!=null)?'取得完了':'直前情報はまだ公開されていません';if($('previewStamp'))$('previewStamp').textContent='取得 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});b.disabled=false;b.textContent='② 直前情報 再取得';try{let e=await window.prefetchHunterPreview?.(true);if(Array.isArray(e)&&e.length===6){window.__HUNTER_PREVIEW=e; if(typeof render==='function')render(e)}}catch(e){}}
+ window.loadPreviewV462=load;document.readyState==='loading'?document.addEventListener('DOMContentLoaded',install):install();
+})();
+</script>
+
 </body>
 </html>
 
@@ -22839,7 +22862,7 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
 
 
 <style id="bhV460DiagGradeStyle">
-/* Vol.460: 6艇診断 総合評価 + F持ち現在ST紫表示 */
+/* Vol.461: 1C場平均基準 + 6艇相対評価 + F持ち現在ST */
 #comparePanel .diagGradeRow td{padding:6px 2px!important;text-align:center!important}
 #comparePanel .diagGrade{
  display:inline-flex!important;align-items:center!important;justify-content:center!important;
@@ -22868,29 +22891,54 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
    const c=String(r?.class ?? r?.racer_class ?? r?.grade ?? '').toUpperCase();
    return c.includes('A1')?5:c.includes('A2')?3:c.includes('B1')?1:0;
  }
+ function venue1Avg(){
+   try{
+     const j=String(Number(document.getElementById('stadium')?.value||1)).padStart(2,'0');
+     const v=N(window.VENUE_BASE_202606_08?.[j]?.['1']?.p1);
+     return Number.isFinite(v)?v:null;
+   }catch(_){return null}
+ }
  function relativeGrades(scored){
    const sorted=[...scored].sort((a,b)=>b.score-a.score || a.boat-b.boat);
    const out=new Map();
    if(!sorted.length)return out;
-   // 6艇内の相対評価。最上位はA、明確に抜けた時だけS（S時はAを出さない）。最下位Dは1艇限定。
-   const top=sorted[0], second=sorted[1];
-   const topGap=second ? top.score-second.score : 0;
-   const isS=sorted.length>1 && top.score>=65 && topGap>=10;
-   out.set(top.boat,isS?'S':'A');
-   if(sorted.length>1)out.set(sorted[sorted.length-1].boat,'D');
-   const mids=sorted.slice(1,-1);
-   // 中間艇は順位ベースでB/Cに分ける。同点は元スコア→艇番で固定し、再解析で揺れない。
-   mids.forEach((x,i)=>out.set(x.boat,i<Math.ceil(mids.length/2)?'B':'C'));
+   // 1Cだけは「場の1C平均以上」がA/S候補の必須条件。
+   // 1号艇だから相対1位→自動A、を禁止する。
+   const canHigh=x=>x.boat!==1 || (Number.isFinite(x.venue1Diff)&&x.venue1Diff>=0);
+   const high=sorted.filter(canHigh);
+   const top=high[0]||null, second=high[1]||null;
+   if(top){
+     const topGap=second ? top.score-second.score : 0;
+     const isS=!!second && top.score>=65 && topGap>=10;
+     out.set(top.boat,isS?'S':'A');
+   }
+   // 最下位Dは1艇限定。
+   const bottom=sorted[sorted.length-1];
+   if(bottom && !out.has(bottom.boat))out.set(bottom.boat,'D');
+   // 残りはスコア順位でB/C。1Cが場平均未満ならA/Sには上げない。
+   const rest=sorted.filter(x=>!out.has(x.boat));
+   rest.forEach((x,i)=>out.set(x.boat,i<Math.ceil(rest.length/2)?'B':'C'));
    return out;
  }
  function abilityScore(x,r){
-   const win=Number.isFinite(x.courseWin)?clamp(x.courseWin,0,100):0;
+   let win=Number.isFinite(x.courseWin)?clamp(x.courseWin,0,100):0;
+   let venue1Diff=null;
+   if(x.boat===1){
+     const va=venue1Avg();
+     if(Number.isFinite(va)){
+       venue1Diff=win-va;
+       // 1C勝率は生値ではなく「場平均との差」を50点中心に変換。
+       // 場平均=50点、+20pt=100点、-20pt=0点。
+       win=clamp(50+venue1Diff*2.5,0,100);
+     }
+   }
    const top3=Number.isFinite(x.courseTop3)?clamp(x.courseTop3,0,100):0;
    const st=Number.isFinite(x.avgST)?clamp((0.23-x.avgST)/0.15*100,0,100):35;
    const sr=Number.isFinite(x.avgRank)?clamp((6.5-x.avgRank)/5.5*100,0,100):35;
    const m2=Number.isFinite(x.motor2)?clamp(x.motor2/60*100,0,100):45;
    const m3=Number.isFinite(x.motor3)?clamp(x.motor3/75*100,0,100):45;
-   return clamp(win*.34+top3*.20+st*.18+sr*.08+m2*.075+m3*.075+clsPoints(r),0,100);
+   const score=clamp(win*.34+top3*.20+st*.18+sr*.08+m2*.075+m3*.075+clsPoints(r),0,100);
+   return {score,venue1Diff};
  }
  function enhance(){
    if(typeof window.bhRenderCompare!=='function'||window.bhRenderCompare.__v456)return;
@@ -22911,7 +22959,7 @@ F持ち: F後平均が判明すればF後平均ST。F地点不明時は直近5�
      const head=tbody.querySelector('.compareBoatHeader');
      if(head){
        const tr=document.createElement('tr');tr.className='diagGradeRow';
-       const scored=rows.map(x=>({...x,score:abilityScore(x,x.r)}));
+       const scored=rows.map(x=>{const a=abilityScore(x,x.r);return {...x,score:a.score,venue1Diff:a.venue1Diff}});
        const grades=relativeGrades(scored);
        tr.innerHTML='<th>総合評価</th>'+scored.map(x=>{const g=grades.get(x.boat)||'C';return `<td><span class="diagGrade diagGrade${g}">${g}</span><small class="diagScore">${x.score.toFixed(0)}点</small></td>`}).join('');
        head.insertAdjacentElement('afterend',tr);
