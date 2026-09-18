@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER Vol.500</title>
+<title>BOAT HUNTER Vol.501</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,select{font:inherit}.top{width:100%;aspect-ratio:3/2;background:#000 url("images/top_normal.webp?v=500") center/100% 100% no-repeat;position:relative}
+button,select{font:inherit}.top{width:100%;aspect-ratio:3/2;background:#000 url("images/top_normal.webp?v=501") center/100% 100% no-repeat;position:relative}
 .topVol{position:absolute;right:7px;top:7px;font-size:9px;opacity:.48;background:#0006;padding:2px 5px;border-radius:5px}
 .wrap{max-width:900px;margin:auto;padding:10px 14px 24px}.head{display:flex;align-items:center;justify-content:space-between}.head h2{margin:4px 0 8px;font-size:20px}
 .racePanel{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;background:linear-gradient(145deg,#142330,#061018);border:1px solid #78bee529;border-radius:20px}
@@ -23,9 +23,30 @@ select{width:100%;height:42px;background:transparent;color:#fff;border:0;font-si
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}.stat{background:#07131def;color:#fff;border-radius:9px;padding:6px 3px;text-align:center;border:1px solid #ffffff18}.k{font-size:9px;color:#9ab0bf}.v{font-size:14px;font-weight:1000;margin-top:2px}
 @media(max-width:520px){.wrap{padding:8px 10px 20px}.racePanel{gap:7px;padding:10px}.stats{grid-template-columns:repeat(2,1fr)}.name{font-size:20px}}
 </style>
+
+<style>
+/* Vol.501: V459系の出走表レイアウト */
+.cards{gap:14px}
+.card{position:relative;overflow:hidden;padding:11px 14px;border-radius:20px;border:1px solid #ffffff38;box-shadow:0 8px 20px #0005}
+.card:not(.open) .stats{display:none}
+.topline{min-height:54px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.topline:after{content:"＋";margin-left:auto;width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;background:#051018b8;border:1.5px solid #ffffffaa;color:#fff;font-size:22px}
+.card.open .topline:after{content:"−"}
+.card.b1{background:linear-gradient(135deg,#fff,#d9dfe4);color:#111}
+.card.b2{background:linear-gradient(135deg,#090a0c,#292e34);color:#fff}
+.card.b3{background:linear-gradient(135deg,#b8101d,#d61d29,#6b0b13);color:#fff}
+.card.b4{background:linear-gradient(135deg,#0b4e9e,#166dce,#082e60);color:#fff}
+.card.b5{background:linear-gradient(135deg,#fff07d,#e9ca16,#a78100);color:#111}
+.card.b6{background:linear-gradient(135deg,#087334,#159c49,#063e21);color:#fff}
+.card .stats{grid-template-columns:repeat(4,1fr);border-top:1px solid #ffffff2b;padding-top:9px}
+.card .stat{min-height:61px;display:flex;flex-direction:column;justify-content:center}
+.card .k{font-size:10px}.card .v{font-size:17px}
+@media(max-width:520px){.card .stats{grid-template-columns:repeat(3,1fr)}}
+</style>
+
 </head>
 <body>
-<header class="top"><span class="topVol">Vol.500</span></header>
+<header class="top"><span class="topVol">Vol.501</span></header>
 <main class="wrap">
  <div class="head"><h2>BOAT HUNTER</h2></div>
  <section class="racePanel">
@@ -87,6 +108,7 @@ function renderProgram(){
    <div class="stat"><div class="k">モーター2連対</div><div class="v">${val(x.motor_top_2_percent,"%")}</div></div>
    <div class="stat"><div class="k">F</div><div class="v">${val(x.flying_count)}</div></div>
   </div>`;
+  el.querySelector(".topline").onclick=()=>el.classList.toggle("open");
   cards.appendChild(el);
  });
  statusEl.textContent=`${VENUES[+s]} ${r}R：6艇取得完了`;
