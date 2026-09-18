@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V465</title>
+<title>BOAT HUNTER V466</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.465</div>
+  <div class="topVol">Vol.466</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22656,7 +22656,20 @@ window.__BH_V396_FORCE_2BOX__=true;
  function hist(r){try{return (historyCache instanceof Map?historyCache.get(Number(r.number))?.rows:[])||[]}catch(_){return []}}
  function rate(h,fn){return h.length?h.filter(fn).length/h.length*100:0}
  function preview(boat){const p=window.__HUNTER_PREVIEW;return Array.isArray(p)?p.find(x=>Number(x.boat??x.entry_number)===boat)||{}:{}}
- function currentST(r,h){try{return window.BH_CURRENT_ST?.(r,h)?.st ?? N(r.__bhCurrentST ?? r.average_start_timing)}catch(_){return N(r.__bhCurrentST ?? r.average_start_timing)}}
+ function currentST(r,h){
+   let v=null;try{v=window.BH_CURRENT_ST?.(r,h)?.st ?? N(r.__bhCurrentST ?? r.average_start_timing)}catch(_){v=N(r.__bhCurrentST ?? r.average_start_timing)}
+   v=N(v);
+   /* 0.000系は欠損値の誤変換。実展示STが明示されていない限り展望評価へ入れない */
+   if(v!=null&&v>=0&&v<0.03){
+     const pv=window.__HUNTER_PREVIEW;
+     const b=Number(r.entry_number);
+     const q=Array.isArray(pv)?pv.find(x=>Number(x.boat??x.entry_number)===b):null;
+     const real=N(q?.st??q?.exhibition_st);
+     if(real==null||real<0.03)return null;
+     return real;
+   }
+   return v;
+ }
  function courseTech(course,h){
    const valid=(h||[]).filter(x=>Number.isFinite(Number(x.place)));
    const win=t=>valid.length?rate(valid,x=>Number(x.place)===1&&Number(x.tech)===t):null;
@@ -22701,6 +22714,7 @@ window.__BH_V396_FORCE_2BOX__=true;
        // Fは一律減点しない。BH_CURRENT_STで推定した現在STを採用し、そのST差だけで展開へ反映。
        return {...x,score:C(score)};
      }).sort((a,b)=>b.score-a.score);
+     if(st==null&&techs[0]&&techs[0].score>49)techs[0].score=49;
      return {boat,course,r,h,st,tilt,fc,best:techs[0],techs,dataCount:h.length};
    });
  }
@@ -22716,7 +22730,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    let box=document.getElementById('bhRaceFlowV460');
    if(!box){box=document.createElement('section');box.id='bhRaceFlowV460';box.className='bhRaceFlow';const grid=panel.querySelector('.outlookGrid');panel.insertBefore(box,grid||null)}
    const one=rows.find(x=>x.course===1)||rows[0],wall=wall2(rows);
-   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5).sort((a,b)=>b.best.score-a.best.score)[0];
+   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5&&x.st!=null).sort((a,b)=>b.best.score-a.best.score)[0];
    const oneScore=one?.best?.score??0;
    let main='展開材料不足';
    if(one&&one.dataCount>=5&&oneScore>=55){
@@ -22744,12 +22758,12 @@ window.__BH_V396_FORCE_2BOX__=true;
 <!-- Vol.460: レース展望を各艇の決まり手起点へ変更。場特性・風・潮位・チルト・F現在STを統合。 -->
 
 
-<style id="bhV465PreviewFix">
+<style id="bhV466PreviewFix">
 #previewPanel,#previewPanel.hide{display:block!important;order:7!important;margin:6px 0 9px!important}
 #outlookPanel,#outlookPanel.hide{order:8!important}
 #bhPreviewGet463{order:7!important;width:100%!important;min-height:42px!important;margin:2px 0 5px!important;border:1px solid #65bff0!important;border-radius:12px!important;background:linear-gradient(180deg,#173d55,#0a2636)!important;color:#fff!important;font-size:15px!important;font-weight:950!important}
 </style>
-<script id="bhV465PreviewFixJS">
+<script id="bhV466PreviewFixJS">
 (()=>{
  const $=id=>document.getElementById(id);
  function cls(a,k,i,st=false){
@@ -22797,7 +22811,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 </script>
 
 
-<style id="bhV465OutlookControl">
+<style id="bhV466OutlookControl">
 #bhOutlookRun465{grid-column:1/-1!important;width:100%!important;min-height:54px!important;margin-top:8px!important;border:1.5px solid #ffb34a!important;border-radius:15px!important;background:linear-gradient(180deg,#f28a19,#d96a05)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;box-shadow:0 8px 20px rgba(221,105,5,.24)!important}
 #bhOutlookRun465.running{opacity:.72!important}
 #previewPanel{margin-top:12px!important;padding:12px!important;border-radius:18px!important;background:linear-gradient(180deg,#0d1e2b,#07131d)!important;border:1px solid rgba(104,190,240,.18)!important}
@@ -22805,12 +22819,12 @@ window.__BH_V396_FORCE_2BOX__=true;
 #bhRaceFactors465 .factorTitle{font-size:11px!important;font-weight:950!important;letter-spacing:.12em!important;color:#8eb4ca!important;margin-bottom:8px!important}
 #bhRaceFactors465 .outlookGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
 #bhRaceFactors465 .outlookCard{min-height:0!important;padding:9px!important;border-radius:12px!important}
-#bhRaceFactors465 .outlookThumb{display:none!important}
+#bhRaceFactors466 .outlookThumb{display:block!important}
 #bhRaceFactors465 .outlookCardTitle{font-size:10px!important}
 #bhRaceFactors465 .outlookText{font-size:11px!important;line-height:1.45!important}
 @media(max-width:620px){#bhRaceFactors465 .outlookGrid{grid-template-columns:1fr!important}}
 </style>
-<script id="bhV465OutlookControlJS">
+<script id="bhV466OutlookControlJS">
 (()=>{
  const $=id=>document.getElementById(id);
  async function run(){
@@ -22844,7 +22858,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
-<script id="bhV465OutlookGuard">
+<script id="bhV466OutlookGuard">
 (()=>{
  const clean=()=>{
    const p=window.__HUNTER_PREVIEW;
@@ -22854,3 +22868,11 @@ window.__BH_V396_FORCE_2BOX__=true;
  document.addEventListener('click',e=>{if(e.target.closest('#bhOutlookRun465,#get'))setTimeout(clean,900)},true);
 })();
 </script>
+
+<style id="bhV466ConditionImages">
+#bhRaceFactors466 .outlookGrid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+#bhRaceFactors466 .outlookCard{display:block!important;min-height:116px!important;padding:12px!important;overflow:hidden!important}
+#bhRaceFactors466 .outlookThumb{display:block!important;float:left!important;width:118px!important;height:86px!important;margin:0 12px 8px 0!important;border-radius:12px!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+#bhRaceFactors466 .outlookText{font-size:13px!important;line-height:1.5!important}
+@media(max-width:430px){#bhRaceFactors466 .outlookThumb{width:102px!important;height:76px!important}}
+</style>
