@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V490</title>
+<title>BOAT HUNTER V491</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15168,7 +15168,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.490</div>
+  <div class="topVol">Vol.491</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15219,22 +15219,36 @@ input,
 <style id="bhV486DetailFST">
 #racerDetailBody .detailTop{position:relative!important}
 #racerDetailBody .detailFST486{
- position:absolute!important;right:18px!important;top:104px!important;
- width:132px!important;min-height:58px!important;padding:7px 8px!important;
+ position:absolute!important;right:18px!important;top:92px!important;
+ width:122px!important;min-height:54px!important;padding:6px 7px!important;
  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
  border:2px solid #9b4de3!important;border-radius:12px!important;
  background:linear-gradient(180deg,#0b2533,#071a25)!important;
- box-shadow:0 0 10px rgba(155,77,227,.10)!important;
+ box-shadow:0 0 8px rgba(155,77,227,.10)!important;
  z-index:2!important;
 }
 #racerDetailBody .detailFST486 span{font-size:9px!important;font-weight:900!important;color:#b966f0!important}
 #racerDetailBody .detailFST486 b{margin-top:3px!important;font-size:21px!important;line-height:1!important;color:#fff!important}
 
 #racerDetailBody .detailTop{padding-top:0!important}
-#racerDetailBody .detailMetrics{clear:both!important;margin-top:28px!important}
+#racerDetailBody .detailMetrics{clear:both!important;margin-top:8px!important}
 @media(max-width:520px){
- #racerDetailBody .detailFST486{right:10px!important;top:104px!important;width:124px!important;min-height:56px!important}
+ #racerDetailBody .detailFST486{right:10px!important;top:92px!important;width:116px!important;min-height:52px!important}
 }
+
+/* Vol.491 racer-card patch collision guard */
+#cards .card{position:relative!important;overflow:visible!important}
+#cards .card .fBadge,
+#cards .card .fCompactBadge{
+ left:6px!important;right:auto!important;bottom:6px!important;top:auto!important;
+ max-width:calc(100% - 12px)!important;z-index:6!important;
+}
+#cards .card .fAfterCompact,
+#cards .card .fAfterMini{
+ left:6px!important;right:6px!important;bottom:-34px!important;top:auto!important;
+ width:auto!important;max-width:none!important;z-index:5!important;
+}
+#cards{padding-bottom:38px!important}
 </style>
 <section id="racerDetailPanel" class="racerDetailPanel hide">
     <div class="racerDetailHead">
