@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V502</title>
+<title>BOAT HUNTER V503</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15196,6 +15196,18 @@ input,
 .previewHead>div:first-child{margin-right:auto!important}
 .previewFetchBtn{height:34px!important;padding:0 12px!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.72)!important;background:linear-gradient(180deg,#1687cf,#075b91)!important;color:#fff!important;font-weight:900!important;font-size:12px!important}
 
+</style><style id="bhV503TopAI">
+.aiAnalyzeTop503{
+ width:100%!important;min-height:42px!important;margin-top:6px!important;
+ border-radius:10px!important;border:1.5px solid rgba(255,255,255,.65)!important;
+ background:linear-gradient(180deg,#173044,#0c1d29)!important;
+ color:#7890a2!important;font-size:15px!important;font-weight:900!important;
+}
+.aiAnalyzeTop503:not(:disabled){
+ background:linear-gradient(180deg,#1687cf,#075b91)!important;color:#fff!important;
+ box-shadow:0 0 12px rgba(21,147,220,.25)!important;
+}
+.aiAnalyzeTop503.running{background:linear-gradient(180deg,#0b5d8f,#073c5d)!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15206,7 +15218,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.502</div>
+  <div class="topVol">Vol.503</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15245,6 +15257,9 @@ input,
     </div>
 
     <button type="button" id="get">① 出走表取得</button>
+<button id="aiAnalyzeTop503" type="button" class="aiAnalyzeTop503" disabled>
+  <span>②</span> AI解析
+</button>
 <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
     <input id="voiceFallbackInput" class="voiceFallbackInput hide"
       type="text" inputmode="text" autocomplete="off" autocapitalize="off"
@@ -15332,7 +15347,7 @@ input,
 <section id="previewPanel" class="previewPanel hide">
     <div class="previewHead">
       <div><div class="previewEyebrow">JUST BEFORE DATA</div><h3>直前情報</h3></div>
-      <button id="getPreview" type="button" class="previewFetchBtn">直前情報取得</button><div id="previewStamp" class="previewStamp">—</div>
+      <div id="previewStamp" class="previewStamp">—</div>
     </div>
     <div id="previewState" class="previewState">直前情報取得を押してください</div>
     <div class="previewScroll">
@@ -23745,5 +23760,51 @@ window.__BH_V396_FORCE_2BOX__=true;
    });
  }
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bind):bind();
+})();
+</script><script id="bhV503TopAIJS">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function sync(){
+   const top=$("aiAnalyzeTop503"), get=$("get");
+   if(!top)return;
+   /* 出走表取得済みになったらAI解析を解放 */
+   const ready=!!window.__HUNTER_RACE_DATA || !!window.__BH_RACE_DATA ||
+     (document.querySelectorAll("#cards .card").length>=6) ||
+     (get && /取得済|取得完了/.test(get.textContent||""));
+   top.disabled=!ready;
+ }
+ async function runPreview(){
+   if(typeof loadPreview==="function") return await loadPreview();
+   if(typeof fetchPreview==="function") return await fetchPreview();
+   if(typeof prefetchHunterPreview==="function") return await prefetchHunterPreview(true);
+ }
+ async function run(){
+   const b=$("aiAnalyzeTop503"); if(!b||b.disabled)return;
+   b.disabled=true;b.classList.add("running");b.innerHTML="<span>②</span> 解析中…";
+   try{
+     await runPreview();
+     await Promise.allSettled([
+       (typeof getSui==="function"?getSui():Promise.resolve(null)),
+       (typeof getTide==="function"?getTide():Promise.resolve(null))
+     ]);
+     if(typeof renderCompare==="function") renderCompare();
+     else if(typeof renderComparePanel==="function") renderComparePanel();
+     const old=$("aiAnalyze");
+     if(old && old!==b && !old.disabled) old.click();
+     window.buildRaceOutlook?.();
+   }catch(e){
+     console.error("AI解析",e);
+   }finally{
+     b.classList.remove("running");b.innerHTML="<span>②</span> AI解析";sync();
+   }
+ }
+ function bind(){
+   const b=$("aiAnalyzeTop503");if(!b||b.dataset.bound)return;
+   b.dataset.bound="1";b.addEventListener("click",run);
+   $("get")?.addEventListener("click",()=>setTimeout(sync,300));
+   sync();
+   setTimeout(sync,1000);
+ }
+ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bind,{once:true}):bind();
 })();
 </script>
