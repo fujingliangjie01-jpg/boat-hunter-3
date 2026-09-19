@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V528</title>
+<title>BOAT HUNTER V529</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15360,6 +15360,9 @@ input,
 #bhLearnBet527 .sub{font-size:9px;color:#91a9b8;margin-top:5px}
 </style><style id="bhV528ActionStateCSS">
 .bhActionDone528{background:#777!important;border-color:#888!important;color:#ddd!important;box-shadow:none!important;filter:saturate(.15)!important;opacity:.72!important}
+</style><style id="bhV529FSourceCSS">
+.compactPhotoWrap{position:relative!important}
+.compactPhotoWrap>.compactFPhotoBadge{position:absolute!important;top:5px!important;right:5px!important;left:auto!important;bottom:auto!important;min-width:0!important;width:auto!important;height:19px!important;padding:0 5px!important;margin:0!important;font-size:10px!important;line-height:17px!important;border-width:1px!important;border-radius:5px!important;transform:none!important;z-index:8!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15370,7 +15373,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.528</div>
+  <div class="topVol">Vol.529</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15816,6 +15819,7 @@ async function patchCurrentClassesFromRaceCards(rr){
 
 function card(r){
  const b=+r.entry_number;
+ const fc=Math.max(0,Math.min(3,Number(r?.flying_count??r?.f_count??r?.flying_number??r?.flying??r?.current_flying_count??r?.start_accident_flying_count??0)||0));
  return `<article class="card b${b} compactRacerCard" data-boat="${b}" data-number="${r.number}">
    <button type="button" class="compactPhotoWrap racerPhotoButton"
      onclick="bhToggleRacerFromPhoto(${b},${Number(r.number||0)})"
@@ -15825,6 +15829,7 @@ function card(r){
        alt="${r.name||"選手"}" loading="lazy"
        onerror="this.style.display='none'">
      <div class="compactBoatNo">${b}</div>
+     ${fc?`<span class="fBadge f${fc} compactFPhotoBadge">F${fc}</span>`:""}
    </button>
    <div class="compactClass">${grade(r)}</div>
    <div class="compactName" title="${r.name||""}">${r.name||"—"}</div>
@@ -18555,13 +18560,7 @@ $('top').classList.remove('hide');
       if(!racer)return;
       const fc=window.HUNTER_F?.count(racer)||0;
 
-      /* 選手名横 F1/F2/F3 */
-      if(fc){
-        const head=card.querySelector(".row,.topline,.nameLine,.racerName")||card;
-        if(head && !head.querySelector(".fBadge")){
-          head.insertAdjacentHTML("beforeend",window.HUNTER_F.badge(fc));
-        }
-      }
+      /* V529: Fパッチは選手カード生成時に写真右上へ直接生成 */
 
       /* F後平均ST / F後平均ST順位
          既存history cacheを複数候補から参照 */
@@ -19932,12 +19931,16 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
 </style>
 <script id="bh221-next-race-script">
 (()=>{
- const V=221;
+ const V=529;
  const VENUES={1:'桐生',2:'戸田',3:'江戸川',4:'平和島',5:'多摩川',6:'浜名湖',7:'蒲郡',8:'常滑',9:'津',10:'三国',11:'びわこ',12:'住之江',13:'尼崎',14:'鳴門',15:'丸亀',16:'児島',17:'宮島',18:'徳山',19:'下関',20:'若松',21:'芦屋',22:'福岡',23:'唐津',24:'大村'};
  let cache=null,cacheAt=0,timer=0;
  const $=id=>document.getElementById(id);
  function dateStr(){return String($('date')?.value||new Date(Date.now()+32400000).toISOString().slice(0,10));}
- function api(){const y=dateStr().replaceAll('-','');return `https://boatraceopenapi.github.io/api/v1/${y.slice(0,4)}/${y}.json`;}
+ function apis(){const y=dateStr().replaceAll('-',''),yr=y.slice(0,4);return [
+ `https://boatraceopenapi.github.io/api/v1/${yr}/${y}.json`,
+ `https://boatraceopenapi.github.io/programs/v3/${yr}/${y}.json`,
+ `https://boatraceopenapi.github.io/programs/v2/${yr}/${y}.json`
+];}
  function getRace(j,venue,rn){
    const sts=j?.programs?.stadiums||j?.results?.stadiums||j?.stadiums||{};
    const st=sts?.[String(venue)]||sts?.[String(Number(venue)).padStart(2,'0')];
@@ -19948,9 +19951,13 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
    try{return typeof raceTheme==='function'?raceTheme(r):'normal'}catch(e){return 'normal'}
  }
  function raceTime(r){
-   const raw=r?.closed_at||r?.close_at||r?.deadline_at||r?.start_at||'';
-   const t=Date.parse(String(raw));
-   return Number.isFinite(t)?t:null;
+   const raw=r?.closed_at??r?.close_at??r?.deadline_at??r?.start_at??r?.deadline??r?.time??r?.race_time??'';
+   const str=String(raw).trim(); if(!str)return null;
+   const parsed=Date.parse(str); if(Number.isFinite(parsed))return parsed;
+   const m=str.match(/(\d{1,2}):(\d{2})/);
+   if(!m)return null;
+   const d=dateStr().split('-').map(Number);
+   return new Date(d[0],d[1]-1,d[2],Number(m[1]),Number(m[2]),0,0).getTime();
  }
  function hhmm(t){
    const d=new Date(t);
@@ -19975,7 +19982,7 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
    const apply=()=>{
      rs.value=String(Number(x.race));
      try{rs.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
-
+   };
    setTimeout(apply,180);setTimeout(apply,700);
  }
  function btn(x,cls=''){
@@ -19999,9 +20006,13 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
  async function load(force=false){
    try{
      if(!force&&cache&&Date.now()-cacheAt<30000){render(cache);return;}
-     const r=await fetch(api(),{cache:'no-store'});if(!r.ok)throw Error(String(r.status));
-     cache=await r.json();cacheAt=Date.now();render(cache);
-   }catch(e){const n=$('bh221NextRaces');if(n)n.textContent='—';}
+     let data=null,last=null;
+     for(const u of apis()){
+       try{const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(String(r.status));data=await r.json();if(data?.programs?.stadiums||data?.stadiums)break}catch(e){last=e;data=null}
+     }
+     if(!data)throw last||Error('NEXT data');
+     cache=data;cacheAt=Date.now();render(cache);
+   }catch(e){const n=$('bh221NextRaces');if(n)n.textContent='取得失敗';}
  }
  function start(){clearInterval(timer);load(true);timer=setInterval(()=>load(true),30000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
