@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V522</title>
+<title>BOAT HUNTER V526</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15326,6 +15326,32 @@ input,
 #bhLearningDock520 button,#bhLearningDock520 label{display:block!important;padding:11px 6px;border:1px solid #4b718a;border-radius:9px;background:#123047;color:#fff;font-weight:900;font-size:12px;text-align:center}
 #bhLearningDock520 input{display:none}
 #bhLearningDock520 .bhLStatus{margin-top:7px;font-size:10px;color:#9fb7c7;text-align:right}
+</style><style id="bhV523ResultLearnButtonCSS">
+#bhResultLearn523{width:100%;margin-top:8px;padding:12px;border:2px solid #ffbf2f;border-radius:9px;background:#5b3b00;color:#fff;font-weight:900;font-size:14px;display:block!important}
+#bhResultLearn523.done{background:#0d5b36;border-color:#39d98a}
+#bhResultLearnStatus523{font-size:11px;color:#b9cbd7;margin-top:5px;text-align:center}
+</style><style id="bhV524FBadgePhotoCorner">
+/* F1/F2/F3: photo top-right only. Never cover name/rate area. */
+.player-photo,.racer-photo,.photo-wrap,.photoWrap,.playerPhoto,.racerPhoto{position:relative!important}
+.f-badge,.fBadge,.f-patch,.fPatch,[class*="f-badge"],[class*="fBadge"]{
+ position:absolute!important;top:6px!important;right:6px!important;left:auto!important;bottom:auto!important;
+ width:auto!important;min-width:32px!important;height:auto!important;min-height:0!important;
+ padding:3px 7px!important;margin:0!important;border-radius:7px!important;
+ font-size:13px!important;line-height:1.15!important;font-weight:900!important;
+ transform:none!important;z-index:8!important;box-shadow:0 2px 5px rgba(0,0,0,.45)!important;
+}
+</style><style id="bhV525ResultLearnCSS">
+#bhResultLearnFixed525{margin:10px 0!important;padding:12px!important;border:2px solid #ffb82e!important;border-radius:10px!important;background:#3a2900!important;display:block!important;visibility:visible!important;opacity:1!important}
+#bhResultLearnFixed525 button{width:100%!important;display:block!important;padding:13px 8px!important;background:#8b5d00!important;color:#fff!important;border:1px solid #ffd46a!important;border-radius:8px!important;font-size:15px!important;font-weight:900!important}
+#bhResultLearnFixed525 button.done{background:#075d38!important;border-color:#43e09b!important}
+#bhResultLearnFixed525 .st{font-size:11px;color:#d7e4ec;text-align:center;margin-top:6px}
+</style><style id="bhV526ResultStatsCSS">
+#bhResultStats526{margin:10px 0;padding:10px;background:#091722;border:1px solid #31566e;border-radius:10px;color:#fff}
+#bhResultStats526 .ttl{font-weight:900;color:#f2cc4b;margin-bottom:7px}
+#bhResultStats526 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#bhResultStats526 .cell{background:#102737;border-radius:7px;padding:7px 3px;text-align:center;font-size:10px}
+#bhResultStats526 .cell b{display:block;font-size:15px;color:#fff;margin-top:2px}
+#bhResultStats526 .note{font-size:9px;color:#91a9b8;margin-top:6px;text-align:right}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15336,7 +15362,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.522</div>
+  <div class="topVol">Vol.526</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24584,5 +24610,143 @@ window.__BH_V396_FORCE_2BOX__=true;
  else document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{subtree:true,childList:true,characterData:true}),{once:true});
  window.BH_RESULT_LEARNING_V522={saveResult,resultFromDOM,updateCount};
  setTimeout(updateCount,1000);
+})();
+</script>
+<script id="bhV523ManualResultLearning">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function mount(){
+   let b=$("bhResultLearn523");
+   if(b)return b;
+   const host=$("bhLearningDock521")||$("bhLearningDock520")||$("bhBetLearn517")||$("resultPanel")||document.body;
+   const box=document.createElement("div");box.id="bhResultLearnBox523";
+   box.innerHTML=`<button type="button" id="bhResultLearn523">この結果を学習する</button><div id="bhResultLearnStatus523">結果確認後に押してください</div>`;
+   host.appendChild(box);
+   b=$("bhResultLearn523");
+   b.addEventListener("click",()=>{
+     const ok=window.BH_RESULT_LEARNING_V522?.saveResult?.();
+     const st=$("bhResultLearnStatus523");
+     if(ok){b.textContent="学習済み ✓";b.classList.add("done");st.textContent="このレースの予測と実結果を保存しました";
+       window.BH_RANK_TREND_V521?.save?.();
+     }else{b.textContent="この結果を学習する";b.classList.remove("done");st.textContent="確定結果を取得できません。先に結果確認してください";}
+   });
+   return b;
+ }
+ function reset(){
+   const b=mount(),st=$("bhResultLearnStatus523");if(!b)return;
+   b.textContent="この結果を学習する";b.classList.remove("done");if(st)st.textContent="結果確認後に押してください";
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
+ [700,1800,3500,6000].forEach(ms=>setTimeout(mount,ms));
+ $("race")?.addEventListener("change",reset);$("stadium")?.addEventListener("change",reset);$("date")?.addEventListener("change",reset);
+ window.BH_RESULT_BUTTON_V523={mount,reset};
+})();
+</script>
+<script id="bhV524FBadgeMove">
+(()=>{
+ const isF=e=>/^(F[123])$/.test((e.textContent||"").trim());
+ function fix(){
+   document.querySelectorAll(".f-badge,.fBadge,.f-patch,.fPatch,[class*='f-badge'],[class*='fBadge']").forEach(b=>{
+     if(!isF(b))return;
+     const card=b.closest(".player-card,.racer-card,.boat-card,.playerCard,.racerCard,[class*='player-card'],[class*='racer-card']");
+     if(!card)return;
+     const photo=card.querySelector(".player-photo,.racer-photo,.photo-wrap,.photoWrap,.playerPhoto,.racerPhoto,[class*='photo']");
+     if(photo && b.parentElement!==photo){
+       photo.style.position="relative";
+       photo.appendChild(b);
+     }
+     Object.assign(b.style,{position:"absolute",top:"6px",right:"6px",left:"auto",bottom:"auto",width:"auto",minWidth:"32px",height:"auto",padding:"3px 7px",margin:"0",borderRadius:"7px",fontSize:"13px",lineHeight:"1.15",transform:"none",zIndex:"8"});
+   });
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",fix,{once:true});else fix();
+ [300,900,1800,3500].forEach(ms=>setTimeout(fix,ms));
+ window.BH_F_BADGE_V524={fix};
+})();
+</script>
+<script id="bhV525ResultLearnFixed">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function resultHost(){
+   return $("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
+          document.querySelector("[id*='result'][class*='panel'],[class*='result'][class*='panel']");
+ }
+ function mount(){
+   const host=resultHost();if(!host)return false;
+   let box=$("bhResultLearnFixed525");
+   if(!box){box=document.createElement("div");box.id="bhResultLearnFixed525"}
+   // Always put it at the bottom INSIDE the result-confirmation panel.
+   if(box.parentElement!==host)host.appendChild(box);
+   box.innerHTML=`<button type="button" id="bhResultLearnButton525">この結果を学習する</button><div class="st" id="bhResultLearnStatus525">結果確認後に押してください</div>`;
+   const b=$("bhResultLearnButton525"),st=$("bhResultLearnStatus525");
+   b.onclick=()=>{
+     const ok=window.BH_RESULT_LEARNING_V522?.saveResult?.();
+     if(ok){
+       window.BH_RANK_TREND_V521?.save?.();
+       b.textContent="学習済み ✓";b.classList.add("done");st.textContent="予測・順位比較・実結果を保存しました";
+     }else{
+       b.textContent="この結果を学習する";b.classList.remove("done");st.textContent="確定結果がありません。先に結果確認してください";
+     }
+   };
+   return true;
+ }
+ function retry(){[0,250,700,1400,2500].forEach(ms=>setTimeout(mount,ms))}
+ document.addEventListener("click",e=>{
+   const b=e.target?.closest?.("button,[role='button']");
+   if(b&&/結果|確認|確定/.test(b.textContent||""))retry();
+ },true);
+ const mo=new MutationObserver(()=>{clearTimeout(window.__bh525);window.__bh525=setTimeout(mount,200)});
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{mount();mo.observe(document.body,{subtree:true,childList:true})},{once:true});
+ else {mount();mo.observe(document.body,{subtree:true,childList:true})}
+ [800,1800,3500,6000].forEach(ms=>setTimeout(mount,ms));
+ window.BH_RESULT_BUTTON_V525={mount,retry};
+})();
+</script>
+<script id="bhV526SeparateResultStats">
+(()=>{
+ const KEY="BH_RESULT_STATS_V526",$=id=>document.getElementById(id);
+ const blank=()=>({races:0,headHit:0,axisHit:0,cutHit:0,betHit:0,returnYen:0,stakeYen:0,keys:{}});
+ const read=()=>{try{return Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(_){return blank()}};
+ const write=x=>localStorage.setItem(KEY,JSON.stringify(x));
+ const raceKey=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
+ function learnedRace(){
+   try{return (JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]")||[]).find(x=>x.key===raceKey())||null}catch(_){return null}
+ }
+ function candidates(r){
+   const p=r?.prediction||{};
+   const nums=x=>(x||[]).map(v=>+(v.boat??v)).filter(n=>n>=1&&n<=6);
+   return {head:nums(p.headCandidates),axis:nums(p.axisCandidates),cuts:nums(p.cutCandidates)};
+ }
+ function register(){
+   const r=learnedRace(),order=r?.result?.order;if(!order||order.length!==3)return false;
+   const st=read(),k=raceKey();if(st.keys[k]){render();return "duplicate"}
+   const c=candidates(r),winner=+order[0],top3=order.map(Number);
+   const headHit=c.head.includes(winner);
+   const axisHit=c.axis.length?c.axis.some(n=>top3.slice(1).includes(n)):false;
+   const cutHit=c.cuts.length?c.cuts.every(n=>!top3.includes(n)):false;
+   st.races++;if(headHit)st.headHit++;if(axisHit)st.axisHit++;if(cutHit)st.cutHit++;
+   // Bet hit/return are only counted when an actual saved bet/result payout exists; never invent them.
+   const betHit=!!r?.betResult?.hit,ret=Number(r?.betResult?.returnYen)||0,stake=Number(r?.betResult?.stakeYen)||0;
+   if(betHit)st.betHit++;st.returnYen+=ret;st.stakeYen+=stake;
+   st.keys[k]={savedAt:Date.now(),headHit,axisHit,cutHit,betHit,combo:r.result.combo||order.join("-")};
+   write(st);render();return true;
+ }
+ function pct(a,n){return n?`${(a/n*100).toFixed(1)}%`:"—"}
+ function render(){
+   const st=read();let box=$("bhResultStats526");
+   const host=$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||document.body;
+   if(!box){box=document.createElement("section");box.id="bhResultStats526"}if(box.parentElement!==host)host.appendChild(box);
+   box.innerHTML=`<div class="ttl">結果確認 累積</div><div class="grid">
+   <div class="cell">集計R<b>${st.races}</b></div><div class="cell">頭的中<b>${pct(st.headHit,st.races)}</b></div><div class="cell">軸的中<b>${pct(st.axisHit,st.races)}</b></div>
+   <div class="cell">切り的中<b>${pct(st.cutHit,st.races)}</b></div><div class="cell">買い目的中<b>${pct(st.betHit,st.races)}</b></div><div class="cell">収支<b>${st.returnYen-st.stakeYen>=0?"+":""}${st.returnYen-st.stakeYen}円</b></div>
+   </div><div class="note">結果確認の累積とAI学習データは別保存</div>`;
+ }
+ // Hook the explicit learning button only to register result stats AFTER result has been saved.
+ document.addEventListener("click",e=>{
+   const b=e.target?.closest?.("#bhResultLearnButton525");
+   if(!b)return;setTimeout(()=>{const x=register();const st=$("bhResultLearnStatus525");if(x==="duplicate"&&st)st.textContent="学習済み・累積は登録済みです";},120);
+ },true);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
+ [800,1800,3500].forEach(ms=>setTimeout(render,ms));
+ window.BH_RESULT_STATS_V526={read,register,render};
 })();
 </script>
