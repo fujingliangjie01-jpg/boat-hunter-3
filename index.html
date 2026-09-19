@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V527</title>
+<title>BOAT HUNTER V528</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15358,6 +15358,8 @@ input,
 #bhLearnBet527 .line{font-size:11px;line-height:1.55;margin:3px 0}
 #bhLearnBet527 .bets{margin-top:7px;padding:8px;background:#102838;border-radius:8px;font-weight:900;font-size:13px;line-height:1.55}
 #bhLearnBet527 .sub{font-size:9px;color:#91a9b8;margin-top:5px}
+</style><style id="bhV528ActionStateCSS">
+.bhActionDone528{background:#777!important;border-color:#888!important;color:#ddd!important;box-shadow:none!important;filter:saturate(.15)!important;opacity:.72!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15368,7 +15370,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.527</div>
+  <div class="topVol">Vol.528</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24825,5 +24827,45 @@ window.__BH_V396_FORCE_2BOX__=true;
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[4500,6500,8500].forEach(ms=>setTimeout(render,ms)));
  document.addEventListener("click",e=>{if(e.target?.closest?.("#bhResultLearnButton525"))setTimeout(render,500)},true);
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
+})();
+</script>
+<script id="bhV528CoreFixes">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const raceBtn=()=>$("getProgram")||$("getRace")||$("fetchProgram")||[...document.querySelectorAll("button")].find(b=>/出走表.*取得/.test(b.textContent||""));
+ const aiBtn=()=>$("aiAnalyzeTop503")||[...document.querySelectorAll("button")].find(b=>/AI解析/.test(b.textContent||""));
+ function setDone(b,on){if(b)b.classList.toggle("bhActionDone528",!!on)}
+ function reset(){setDone(raceBtn(),false);setDone(aiBtn(),false)}
+ function bindButtons(){
+   const r=raceBtn(),a=aiBtn();
+   if(r&&!r.dataset.bh528){r.dataset.bh528=1;r.addEventListener("click",()=>setTimeout(()=>setDone(r,true),500))}
+   if(a&&!a.dataset.bh528){a.dataset.bh528=1;a.addEventListener("click",()=>setTimeout(()=>setDone(a,true),700))}
+   ["stadium","race","date"].forEach(id=>{const e=$(id);if(e&&!e.dataset.bh528){e.dataset.bh528=1;e.addEventListener("change",reset)}})
+ }
+ function fixFAtSourceRender(){
+   // Run immediately after card render; detect the real F text regardless of legacy class.
+   const cards=[...document.querySelectorAll(".player-card,.racer-card,.boat-card,.playerCard,.racerCard,[class*='player-card'],[class*='racer-card']")];
+   for(const card of cards){
+     const badge=[...card.querySelectorAll("span,div,b,strong")].find(e=>/^F[123]$/.test((e.textContent||"").trim())&&e.children.length===0);
+     if(!badge)continue;
+     const img=card.querySelector("img");if(!img)continue;
+     const photo=img.parentElement;photo.style.position="relative";
+     if(badge.parentElement!==photo)photo.appendChild(badge);
+     Object.assign(badge.style,{position:"absolute",top:"4px",right:"4px",left:"auto",bottom:"auto",width:"auto",minWidth:"26px",height:"auto",padding:"2px 5px",margin:"0",fontSize:"11px",lineHeight:"1.15",borderRadius:"6px",transform:"none",zIndex:"20"});
+   }
+ }
+ function fixPreview(){
+   const rows=[...document.querySelectorAll("#previewPanel tr,#beforeInfo tr,#justBeforeData tr,[id*='preview'] tr")];
+   const has=rows.some(r=>/[0-9]/.test(r.innerText||"")&&/(展示|一周|回り|直線|チルト)/.test(r.innerText||""));
+   if(!has)return;
+   [...document.querySelectorAll("#previewPanel *,#beforeInfo *,#justBeforeData *,[id*='preview'] *")].forEach(e=>{
+     if(/直前情報はまだ公開されていません/.test(e.textContent||"")&&e.children.length===0)e.style.display="none";
+   });
+ }
+ function fixAll(){bindButtons();fixFAtSourceRender();fixPreview()}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",fixAll,{once:true});else fixAll();
+ const mo=new MutationObserver(()=>{clearTimeout(window.__bh528);window.__bh528=setTimeout(fixAll,80)});
+ if(document.body)mo.observe(document.body,{subtree:true,childList:true});
+ window.BH_CORE_FIX_V528={fixAll,reset};
 })();
 </script>
