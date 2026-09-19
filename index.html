@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V531</title>
+<title>BOAT HUNTER V532</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15364,6 +15364,11 @@ input,
 #bhEscapeBet530 .meta{font-size:12px;line-height:1.6;margin-bottom:7px}
 #bhEscapeBet530 .bets{font-size:14px;font-weight:900;line-height:1.7;padding:9px;background:#102c3c;border-radius:8px}
 #bhEscapeBet530 .note{font-size:10px;color:#9db2bd;margin-top:6px}
+</style><style id="bhV532BetResultCSS">
+#bhEscapeBet530 .meta,#bhEscapeBet530 .note{display:none!important}
+#bhEscapeBet530 .title{font-size:18px!important}
+#bhEscapeBet530 .bh532Technique{font-size:22px;font-weight:900;text-align:center;margin:8px 0;color:#ffd43b}
+#bhEscapeBet530 .bets{font-size:19px!important;line-height:1.75!important;text-align:center!important;padding:12px!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15374,7 +15379,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.531</div>
+  <div class="topVol">Vol.532</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24860,13 +24865,64 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(!p.escape){
      box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div><div class="note">イン逃げ以外の買い目は現在生成しません。</div>`;return;
    }
-   box.innerHTML=`<div class="title">HUNTER買い目｜イン逃げ</div>
-   <div class="meta">頭：<b>1</b>　2着本線：<b>${p.main2.join("・")}</b>${p.cover.length?`　2着抑え：<b>${p.cover.join("・")}</b>`:""}　切り：<b>${p.cut.join("・")||"なし"}</b></div>
-   <div class="bets">${p.bets.join(" / ")}</div>
-   <div class="note">イン逃げ時：軸上位＋評価上昇艇を2着本線、評価を落とした艇は2着抑え、低評価艇は3着まで／切り。</div>`;
+   box.innerHTML=`<div class="title">HUNTER買い目</div>
+   <div class="bh532Technique">決まり手予測：逃げ</div>
+   <div class="bets">${p.bets.join(" / ")}</div>`;
  }
  window.BH_ESCAPE_BET_V531={make,render};
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[4800,7000,9000].forEach(ms=>setTimeout(render,ms)));
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
+})();
+</script>
+<script id="bhV532ResultConfirmFix">
+(()=>{
+ const STATS="BH_RESULT_STATS_V526";
+ function visibleResult(){
+   const root=document.querySelector("#resultPanel,#resultArea,#raceResult,#selectedRaceResult")||
+     [...document.querySelectorAll("section,div")].find(e=>/選択中レース結果/.test(e.textContent||""));
+   const txt=root?.innerText||"";
+   const m=txt.match(/確定着順\s*([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
+          ||txt.match(/\b([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])\b/);
+   if(!m)return null;
+   const tech=(txt.match(/決まり手\s*(逃げ|差し|まくり差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+   const pay=Number(((txt.match(/3連単払戻\s*¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+   return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
+ }
+ function currentBet(){
+   const p=window.BH_ESCAPE_BET_V531?.make?.()||window.BH_ESCAPE_BET_V530?.make?.();
+   return p?.bets||[];
+ }
+ function key(){
+   const d=document.getElementById("date")?.value||new Date(Date.now()+32400000).toISOString().slice(0,10);
+   const v=document.getElementById("stadium")?.value||"";
+   const r=document.getElementById("race")?.value||"";
+   return `${d}_${String(v).padStart(2,"0")}_${r}`;
+ }
+ function save(){
+   const res=visibleResult();if(!res)return false;
+   let st;try{st=JSON.parse(localStorage.getItem(STATS)||"{}")}catch(_){st={}}
+   st={races:+st.races||0,headHit:+st.headHit||0,axisHit:+st.axisHit||0,cutHit:+st.cutHit||0,betHit:+st.betHit||0,returnYen:+st.returnYen||0,stakeYen:+st.stakeYen||0,keys:st.keys||{}};
+   const k=key();if(st.keys[k])return true;
+   const combo=res.order.join("-"),bets=currentBet();
+   st.races++; st.headHit+=res.order[0]===1?1:0;
+   if(bets.length){
+     st.stakeYen+=bets.length*100;
+     if(bets.includes(combo)){st.betHit++;st.returnYen+=res.payout}
+   }
+   st.keys[k]={order:res.order,technique:res.technique,payout:res.payout,bets};
+   localStorage.setItem(STATS,JSON.stringify(st));
+   // Also hand the actual result to learning, but do not require it for confirmation.
+   try{window.BH_RESULT_LEARNING_V522?.saveResult?.()}catch(_){}
+   return true;
+ }
+ function bind(){
+   const btn=[...document.querySelectorAll("button")].find(b=>/結果を確認/.test(b.textContent||""));
+   if(btn&&!btn.dataset.bh532){btn.dataset.bh532=1;btn.addEventListener("click",()=>setTimeout(save,900))}
+   const learn=document.getElementById("bhResultLearnButton525");
+   if(learn&&!learn.dataset.bh532){learn.dataset.bh532=1;learn.addEventListener("click",()=>{if(save()){learn.textContent="学習済み ✓";const n=learn.nextElementSibling;if(n)n.textContent="確定結果を保存しました"}})}
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});else bind();
+ new MutationObserver(()=>{clearTimeout(window.__bh532);window.__bh532=setTimeout(bind,80)}).observe(document.body,{childList:true,subtree:true});
+ window.BH_RESULT_CONFIRM_V532={visibleResult,save};
 })();
 </script>
