@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V539</title>
+<title>BOAT HUNTER V541</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15376,6 +15376,13 @@ input,
 </style><style id="bhV537NavCSS">
 .bhNav537{width:100%;margin:9px 0;padding:12px 14px;border-radius:10px;border:1px solid #28aee8;background:#0d6fa8;color:#fff;font-weight:900;font-size:15px}
 #bhTop537{margin-top:10px;background:#263d4b;border-color:#526b79}
+</style><style id="bhV540FSTCompareCSS">
+#bhFSTCompare540{display:flex;align-items:center;gap:10px;margin-left:auto}
+#bhFSTCompare540 .fstBox{min-width:126px;border:2px solid #8f3dd8;border-radius:12px;padding:7px 12px;text-align:center;background:#102231}
+#bhFSTCompare540 .fstLabel{font-size:11px;font-weight:800;color:#c76cff;line-height:1.1}
+#bhFSTCompare540 .fstValue{font-size:23px;font-weight:900;color:#fff;line-height:1.25}
+#bhFSTCompare540 .fstArrow{font-size:24px;font-weight:900;color:#fff}
+@media(max-width:560px){#bhFSTCompare540{gap:6px}#bhFSTCompare540 .fstBox{min-width:96px;padding:6px 8px}#bhFSTCompare540 .fstValue{font-size:20px}}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15386,7 +15393,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.539</div>
+  <div class="topVol">Vol.541</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25079,5 +25086,50 @@ window.__BH_V396_FORCE_2BOX__=true;
  document.addEventListener("click",e=>{
    if(e.target?.closest?.("#aiAnalyzeTop503"))setTimeout(place,7500);
  },true);
+})();
+</script>
+<script id="bhV540FSTCompare">
+(()=>{
+ function num(v){const n=Number(v);return Number.isFinite(n)&&n>0&&n<1?n:null}
+ function currentBoat(){
+   const detail=document.querySelector("#racerDetail,[id*='racerDetail'],.racer-detail,.player-detail");
+   const m=(detail?.innerText||"").match(/(?:^|\s)([1-6])(?:号艇|\s)/);
+   return +(m?.[1]||window.__BH_SELECTED_BOAT||0);
+ }
+ function normalST(boat){
+   const pools=[
+     window.__BH_DIAG_ROWS, window.__BH_RACE_FLOW_ROWS,
+     window.BH_RANK_TREND_V521?.current?.()
+   ];
+   for(const p of pools){
+     if(!Array.isArray(p))continue;
+     const r=p.find(x=>+x.boat===+boat); if(!r)continue;
+     for(const k of ["normalST","avgST","averageST","baseST","st"]){const n=num(r[k]);if(n)return n}
+   }
+   return null;
+ }
+ function mount(){
+   const detail=[...document.querySelectorAll("section,div")].find(e=>/選手詳細/.test(e.innerText||"")&&/F後ST/.test(e.innerText||""));
+   if(!detail)return;
+   const fEl=[...detail.querySelectorAll("*")].find(e=>/F後ST/.test(e.textContent||"") && /^\s*F後ST\s*[\d.]+\s*$/.test((e.parentElement?.innerText||"").replace(/\n/g," ")));
+   const fBox=fEl?.parentElement || [...detail.querySelectorAll("div")].find(e=>/F後ST\s*\n?\s*0\.\d{3}/.test(e.innerText||""));
+   if(!fBox)return;
+   const boat=currentBoat();
+   const normal=normalST(boat);
+   const fm=(fBox.innerText||"").match(/F後ST[\s\S]*?(0\.\d{3})/);
+   if(!fm)return;
+   let wrap=document.getElementById("bhFSTCompare540");
+   if(!wrap){wrap=document.createElement("div");wrap.id="bhFSTCompare540";fBox.parentNode.insertBefore(wrap,fBox)}
+   fBox.classList.add("fstBox");
+   let nbox=wrap.querySelector(".bhNormalST540");if(!nbox){nbox=document.createElement("div");nbox.className="fstBox bhNormalST540"}
+   nbox.innerHTML=`<div class="fstLabel">Fなし平均ST</div><div class="fstValue">${normal?normal.toFixed(3):"---"}</div>`;
+   let arrow=wrap.querySelector(".fstArrow");if(!arrow){arrow=document.createElement("div");arrow.className="fstArrow";arrow.textContent="→"}
+   /* 左：Fなし平均ST → 右：F後ST */
+   wrap.appendChild(nbox);
+   wrap.appendChild(arrow);
+   wrap.appendChild(fBox);
+ }
+ document.addEventListener("click",()=>setTimeout(mount,120));
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,1000),{once:true});else setTimeout(mount,1000);
 })();
 </script>
