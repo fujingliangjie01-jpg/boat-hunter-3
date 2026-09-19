@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V535</title>
+<title>BOAT HUNTER V537</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15373,6 +15373,9 @@ input,
 #bhHeadSingles535{margin:8px 0 2px;padding:10px;background:#102c3c;border-radius:8px}
 #bhHeadSingles535 .h{font-size:12px;color:#9eddf5;font-weight:800;margin-bottom:6px}
 #bhHeadSingles535 .x{font-size:18px;font-weight:900;line-height:1.55}
+</style><style id="bhV537NavCSS">
+.bhNav537{width:100%;margin:9px 0;padding:12px 14px;border-radius:10px;border:1px solid #28aee8;background:#0d6fa8;color:#fff;font-weight:900;font-size:15px}
+#bhTop537{margin-top:10px;background:#263d4b;border-color:#526b79}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15383,7 +15386,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.535</div>
+  <div class="topVol">Vol.537</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24912,14 +24915,19 @@ window.__BH_V396_FORCE_2BOX__=true;
 (()=>{
  const STATS="BH_RESULT_STATS_V526";
  function visibleResult(){
-   const root=document.querySelector("#resultPanel,#resultArea,#raceResult,#selectedRaceResult")||
-     [...document.querySelectorAll("section,div")].find(e=>/選択中レース結果/.test(e.textContent||""));
-   const txt=root?.innerText||"";
-   const m=txt.match(/確定着順\s*([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
-          ||txt.match(/\b([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])\b/);
+   const roots=[
+     document.querySelector("#resultPanel"),
+     document.querySelector("#resultArea"),
+     document.querySelector("#raceResult"),
+     document.querySelector("#selectedRaceResult"),
+     ...[...document.querySelectorAll("section")].filter(e=>/選択中レース結果|CURRENT RACE RESULT|確定着順/.test(e.innerText||""))
+   ].filter(Boolean);
+   const txt=(roots.map(e=>e.innerText||"").join("\n") || document.body.innerText || "");
+   const m=txt.match(/確定着順[\s\S]{0,80}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
+          ||txt.match(/選択中レース結果[\s\S]{0,160}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
    if(!m)return null;
-   const tech=(txt.match(/決まり手\s*(逃げ|差し|まくり差し|まくり|抜き|恵まれ)/)||[])[1]||"";
-   const pay=Number(((txt.match(/3連単払戻\s*¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+   const tech=(txt.match(/決まり手[\s\S]{0,30}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+   const pay=Number(((txt.match(/3連単払戻[\s\S]{0,30}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
    return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
  }
  function currentBet(){
@@ -24946,7 +24954,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    st.keys[k]={order:res.order,technique:res.technique,payout:res.payout,bets,headSingles:(window.BH_DEEP_LEARNING_V535?.headSingles?.()||[])};
    localStorage.setItem(STATS,JSON.stringify(st));
    // Also hand the actual result to learning, but do not require it for confirmation.
-   try{window.BH_RESULT_LEARNING_V522?.saveResult?.()}catch(_){}
+   setTimeout(()=>{try{window.BH_RESULT_LEARNING_V522?.saveResult?.()}catch(_){ }},0);
    return true;
  }
  function bind(){
@@ -24988,6 +24996,32 @@ window.__BH_V396_FORCE_2BOX__=true;
  function bind(){render();const l=$("bhResultLearnButton525");if(l&&!l.dataset.bh535){l.dataset.bh535=1;l.addEventListener("click",()=>setTimeout(save,80))}const c=[...document.querySelectorAll("button")].find(b=>/結果を確認/.test(b.textContent||""));if(c&&!c.dataset.bh535){c.dataset.bh535=1;c.addEventListener("click",()=>setTimeout(save,1100))}}
  window.BH_DEEP_LEARNING_V535={headSingles,snapshot,derive,save,read};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(bind,1300),{once:true});else setTimeout(bind,1300);
- new MutationObserver(()=>{clearTimeout(window.__bh535);window.__bh535=setTimeout(bind,120)}).observe(document.body,{childList:true,subtree:true});
+ // V536: 結果表示中のDOM更新には追従しない。AI解析後/結果確認後だけ明示更新する。
+ document.addEventListener("click",e=>{
+   if(e.target?.closest?.("#aiAnalyzeTop503"))setTimeout(bind,7000);
+   if(e.target?.closest?.("button") && /結果を確認/.test(e.target.closest("button").textContent||""))setTimeout(()=>{save();},1400);
+ },true);
+})();
+</script>
+<script id="bhV537NavButtons">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function bet(){return $("bhEscapeBet530")}
+ function mount(){
+   const ai=$("aiAnalyzeTop503")||[...document.querySelectorAll("button")].find(b=>/AI解析/.test(b.textContent||""));
+   if(ai&&!$("bhGoBet537")){
+     const b=document.createElement("button");b.id="bhGoBet537";b.type="button";b.className="bhNav537";b.textContent="買い目に行く";
+     b.onclick=()=>bet()?.scrollIntoView({behavior:"smooth",block:"start"});
+     ai.insertAdjacentElement("afterend",b);
+   }
+   const box=bet();
+   if(box&&!$("bhTop537")){
+     const b=document.createElement("button");b.id="bhTop537";b.type="button";b.className="bhNav537";b.textContent="一番上に戻る";
+     b.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+     box.insertAdjacentElement("afterend",b);
+   }
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,500),{once:true});else setTimeout(mount,500);
+ document.addEventListener("click",e=>{if(e.target?.closest?.("#aiAnalyzeTop503"))setTimeout(mount,7500)},true);
 })();
 </script>
