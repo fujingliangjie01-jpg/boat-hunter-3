@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V520</title>
+<title>BOAT HUNTER V522</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15336,7 +15336,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.520</div>
+  <div class="topVol">Vol.522</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24476,7 +24476,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  document.addEventListener("click",e=>{const t=e.target?.closest?.("button");if(t&&/結果|確認|確定/.test(t.textContent||""))[800,1800,3000].forEach(ms=>setTimeout(()=>{attachActual();refresh()},ms))},true);
  [0,1200,3000].forEach(ms=>setTimeout(refresh,ms));
 })();
-</script><script id="bhV520PersistentLearningDock">
+</script><script type="text/plain" id="bhV520PersistentLearningDock_OLD">
 (()=>{
  const DB="BH_LEARNING_RACES_V516", $=id=>document.getElementById(id);
  const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
@@ -24517,5 +24517,72 @@ window.__BH_V396_FORCE_2BOX__=true;
  // Survive later render/replacement work.
  [500,1500,3000,6000].forEach(ms=>setTimeout(ensure,ms));
  document.addEventListener("click",()=>setTimeout(ensure,500),true);
+})();
+</script>
+<script id="bhV521RankTrendLearning">
+(()=>{
+ const DB="BH_LEARNING_RACES_V516",$=id=>document.getElementById(id);
+ const read=()=>{try{let x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
+ const write=x=>{localStorage.setItem(DB,JSON.stringify(x));window.__BH_LEARNING_DB_V516=x};
+ const key=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
+ const rank=rows=>[...rows].sort((a,b)=>(+b.score||0)-(+a.score||0)||a.boat-b.boat).reduce((o,x,i)=>(o[x.boat]=i+1,o),{});
+ function current(){
+  const m=window.__BH_MARKET_COMPARE510?.market,a=window.__BH_DIAG_ROWS||[],f=window.__BH_RACE_FLOW_ROWS||[];
+  if(!m||a.length!==6||f.length!==6)return null;const ar=rank(a),fr=rank(f);
+  return [1,2,3,4,5,6].map(b=>({boat:b,head:m.rank[b-1],axis:m.axisRank[b-1],ability:ar[b],flow:fr[b],abilityMove:m.rank[b-1]-ar[b],flowMove:m.rank[b-1]-fr[b]}));
+ }
+ function save(){const q=current();if(!q)return false;const d=read(),i=d.findIndex(x=>x.key===key());if(i<0)return false;d[i].rankComparison={savedAt:Date.now(),boats:q};write(d);return true}
+ function stats(){const o={};for(const r of read().filter(x=>x.result?.order?.length===3&&x.rankComparison?.boats?.length===6))for(const x of r.rankComparison.boats){const k=`H${x.head}|X${x.axis}|A${x.ability}|F${x.flow}`,z=o[k]||(o[k]={n:0,p1:0,p2:0,p3:0,out:0});z.n++;const p=r.result.order.indexOf(x.boat);p===0?z.p1++:p===1?z.p2++:p===2?z.p3++:z.out++}return o}
+ function exportData(){const races=read(),blob=new Blob([JSON.stringify({format:"BOAT_HUNTER_LEARNING",version:521,exportedAt:new Date().toISOString(),rankTrendStats:stats(),races},null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="BOAT_HUNTER_LEARNING_RANK_TREND.json";document.body.appendChild(a);a.click();a.remove()}
+ window.BH_RANK_TREND_V521={current,save,stats,exportData};
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>[3500,5500,7500].forEach(ms=>setTimeout(save,ms)));
+})();
+</script>
+<script id="bhV522ResultLearningFix">
+(()=>{
+ const DB="BH_LEARNING_RACES_V516",$=id=>document.getElementById(id);
+ const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
+ const write=x=>{localStorage.setItem(DB,JSON.stringify(x));window.__BH_LEARNING_DB_V516=x};
+ const key=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
+ function resultFromDOM(){
+   const selectors=["#resultPanel","#resultArea","#raceResult","#selectedRaceResult","[id*='result']",".resultPanel",".race-result"];
+   const txt=selectors.flatMap(q=>[...document.querySelectorAll(q)]).map(e=>e.innerText||"").join(" ");
+   const patterns=[
+    /(?:3連単|確定|結果)[^1-6]{0,40}([1-6])\s*[-－–→]\s*([1-6])\s*[-－–→]\s*([1-6])/,
+    /\b([1-6])\s*[-－–→]\s*([1-6])\s*[-－–→]\s*([1-6])\b/
+   ];
+   let m;for(const p of patterns){m=txt.match(p);if(m)break}if(!m)return null;
+   const order=[+m[1],+m[2],+m[3]];if(new Set(order).size!==3)return null;
+   const km=txt.match(/決まり手\s*[:：]?\s*(逃げ|差し|まくり差し|まくり|抜き|恵まれ)/);
+   return {order,combo:order.join("-"),technique:km?.[1]||null,confirmedAt:Date.now()};
+ }
+ function ensureRace(d){
+   let i=d.findIndex(x=>x.key===key());
+   if(i>=0)return i;
+   const x={key:key(),date:$("date")?.value||"",stadium:String($("stadium")?.value||"").padStart(2,"0"),race:+($("race")?.value||0)||null,savedAt:Date.now()};
+   d.push(x);return d.length-1;
+ }
+ function saveResult(){
+   const r=resultFromDOM();if(!r)return false;
+   const d=read(),i=ensureRace(d);d[i].result=r;
+   const p=d[i].prediction?.mainFlow;
+   if(p)d[i].learningOutcome={predicted:`${p.boat}号艇 ${p.technique}`,actualTechnique:r.technique,winner:r.order[0],second:r.order[1],third:r.order[2],mainFlowWinner:+p.boat===r.order[0],techniqueMatched:r.technique?String(p.technique).includes(r.technique):null};
+   write(d);updateCount();return true;
+ }
+ function updateCount(){
+   const d=read(),n=d.filter(x=>x.result?.order?.length===3).length;
+   document.querySelectorAll(".bhLStatus,.st521,.bhLStatus520").forEach(e=>e.textContent=`保存 ${d.length}R ／ 結果確定 ${n}R`);
+ }
+ function trySave(){[250,700,1400,2500,4000].forEach(ms=>setTimeout(saveResult,ms))}
+ document.addEventListener("click",e=>{
+   const b=e.target?.closest?.("button,[role='button']");
+   if(b&&/結果|確認|確定|取得/.test(b.textContent||""))trySave();
+ },true);
+ // Result panels may update asynchronously after the click.
+ const mo=new MutationObserver(()=>{clearTimeout(window.__bhRes522T);window.__bhRes522T=setTimeout(saveResult,350)});
+ if(document.body)mo.observe(document.body,{subtree:true,childList:true,characterData:true});
+ else document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{subtree:true,childList:true,characterData:true}),{once:true});
+ window.BH_RESULT_LEARNING_V522={saveResult,resultFromDOM,updateCount};
+ setTimeout(updateCount,1000);
 })();
 </script>
