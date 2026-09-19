@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V497</title>
+<title>BOAT HUNTER V498</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -1237,7 +1237,7 @@ body.theme-sg .raceStepBtn{background:linear-gradient(180deg,#7a5511,#4e3306)!im
 
 #cards{order:10!important}
 #previewActions{order:20!important}
-#previewPanel{order:21!important}
+
 #aiPanel{order:22!important}
 #entryPanel{order:30!important}
 #outlookPanel{order:40!important}
@@ -9788,10 +9788,7 @@ body:not(.theme-ladies):not(.theme-sg){
 }
 
 /* 6艇比較は詳細のさらに下 */
-#comparePanel{
-  margin-top:0!important;
-  order:initial!important;
-}
+
 .compareBody{display:block!important}
 .compareScroll{overflow:visible!important}
 .compareMatrix{
@@ -15138,7 +15135,7 @@ input,
 .bh440BoatCard.hot{outline:1px solid rgba(255,255,255,.3)}
 @media(max-width:390px){.bh440Core strong{font-size:22px}.bh440BoatText strong{font-size:16px}.bh440BoatGrid{gap:3px}}
 </style>
-\n<style id="bhV460Rebuild">\n/* Vol.460 REBUILD — stable race controls + compact six racer cards */\n#main .wrap{display:flex!important;flex-direction:column!important;padding:8px 8px 18px!important}\n#main .head{order:1!important}\n#main .controls{order:2!important}\n#status{order:3!important}\n#cards{order:4!important}\n#racerDetailPanel{order:5!important}\n#comparePanel{order:6!important}\n#outlookPanel{order:7!important}\n#bhOutcomeDockV460{order:8!important}\n\n/* unused old UI */\n#previewPanel,#aiPanel,#hunterAnalysisBase,#hunter120Always,#oddsPanel,#entryPanel,\n#getPreview,#aiAnalyze,#jumpToHunterBuy,.hunterActions,.quickActionRow.actionPair{display:none!important}\n\n/* race selector: two wide balanced columns */\n.controls.racePanel{\n display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;\n gap:6px!important;padding:8px!important;margin:6px 0 7px!important;border-radius:16px!important;\n}\n.controls.racePanel:before{grid-column:1/-1!important;margin:0 0 1px!important;font-size:8px!important}\n.controls.racePanel:after{display:none!important}\n.selectCard{min-width:0!important;width:100%!important;padding:7px 8px!important;border-radius:13px!important}\n.selectEyebrow{font-size:8px!important}.selectLabel{font-size:10px!important;margin:1px 0!important}\n.selectCard select{height:38px!important;min-height:38px!important;font-size:20px!important;font-weight:1000!important;padding:0 22px 0 0!important}\n.venueTimeLegend{display:none!important}\n.voicePick{width:100%!important;min-height:34px!important;height:34px!important;margin-top:4px!important;font-size:14px!important;border-radius:10px!important}\n.raceStep{gap:5px!important;margin-top:4px!important}\n.raceStepBtn{height:34px!important;min-height:34px!important;font-size:25px!important;border-radius:10px!important}\n#get{grid-column:1/-1!important;width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:0 8px!important;border-radius:12px!important;background:linear-gradient(180deg,#ff9f0a,#ff7900)!important;border:2px solid #fff!important;color:#fff!important;font-size:20px!important;font-weight:1000!important;line-height:1!important}\n.voiceStatus,#voiceFallbackInput{grid-column:1/-1!important}.voiceStatus{display:none!important}\n#status{margin:4px 2px 5px!important;font-size:11px!important}\n\n/* player cards: always six across, compact */\n#cards.cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important;width:100%!important;margin:0 0 8px!important}\n#cards .compactRacerCard{min-width:0!important;width:100%!important;padding:0 0 4px!important;border-radius:10px!important;overflow:hidden!important}\n#cards .compactPhotoWrap.racerPhotoButton{height:82px!important;width:100%!important}\n#cards .compactPhotoWrap .racerPhoto{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 18%!important;transform:scale(1.08)!important}\n#cards .compactBoatNo{width:21px!important;height:21px!important;font-size:12px!important}\n#cards .compactClass{font-size:8px!important;margin-top:2px!important;font-weight:1000!important}\n#cards .compactName{font-size:8px!important;line-height:1.05!important;margin-top:1px!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding:0 1px!important}\n#cards .compactWinLabel{font-size:6px!important;margin-top:3px!important}\n#cards .compactWin{font-size:13px!important;line-height:1.05!important;font-weight:1000!important}\n#cards .compactDetailBtn{display:none!important}\n#cards .fAfterCompact.fAfterMini{margin:3px 2px 0!important;padding:3px 2px!important;border-radius:6px!important;max-width:calc(100% - 4px)!important;overflow:hidden!important}\n#cards .fAfterMiniLine{gap:2px!important;justify-content:center!important}\n#cards .fAfterMiniLine b{font-size:8px!important}#cards .fAfterMiniLine span{font-size:6px!important}\n#cards .fAfterMiniValue{font-size:11px!important;margin:2px 0 1px!important;white-space:nowrap!important}\n\n\n/* six-boat diagnosis */\n#comparePanel.comparePanel{display:block!important;margin:5px 0 8px!important}\n#comparePanel .compareToggle{min-height:40px!important;padding:5px 8px!important}\n#comparePanel .compareToggle b{font-size:19px!important}\n#comparePanel .compareToggle small{font-size:7px!important}\n#comparePanel .compareBody{padding:4px!important}\n\n/* outlook below diagnosis */\n#outlookPanel,#outlookPanel.hide{display:block!important;margin:5px 0 8px!important}\n\n/* actual 120-combination outcome counter at very bottom */\n#bhOutcomeDockV460{display:block!important;margin:5px 0 18px!important}\n#bhOutcomeDockV460 .bhOutcomeSecret{display:block!important;margin:0!important;text-align:left!important}\n#bhOutcomeDockV460 .bhOutcomeToggle{display:none!important}\n#bhOutcomeDockV460 .bhOutcomePanel,#bhOutcomeDockV460 .bhOutcomePanel.hidden{display:block!important;margin:0!important}\n#bhOutcomeDockV460 #bhOutcomeAll120{max-height:560px!important;overflow:auto!important}\n\n@media(max-width:430px){\n #main .wrap{padding:5px!important}\n .controls.racePanel{gap:5px!important;padding:6px!important}\n .selectCard{padding:6px!important}.selectCard select{font-size:18px!important}\n #get{height:38px!important;min-height:38px!important;font-size:19px!important}\n #cards.cards{gap:3px!important}\n #cards .compactPhotoWrap.racerPhotoButton{height:72px!important}\n #cards .compactName{font-size:7px!important}\n #cards .compactWin{font-size:11px!important}\n}\n</style>\n
+\n<style id="bhV460Rebuild">\n/* Vol.460 REBUILD — stable race controls + compact six racer cards */\n#main .wrap{display:flex!important;flex-direction:column!important;padding:8px 8px 18px!important}\n#main .head{order:1!important}\n#main .controls{order:2!important}\n#status{order:3!important}\n#cards{order:4!important}\n#racerDetailPanel{order:5!important}\n\n#outlookPanel{order:7!important}\n#bhOutcomeDockV460{order:8!important}\n\n/* unused old UI */\n#previewPanel,#aiPanel,#hunterAnalysisBase,#hunter120Always,#oddsPanel,#entryPanel,\n#getPreview,#aiAnalyze,#jumpToHunterBuy,.hunterActions,.quickActionRow.actionPair{display:none!important}\n\n/* race selector: two wide balanced columns */\n.controls.racePanel{\n display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;\n gap:6px!important;padding:8px!important;margin:6px 0 7px!important;border-radius:16px!important;\n}\n.controls.racePanel:before{grid-column:1/-1!important;margin:0 0 1px!important;font-size:8px!important}\n.controls.racePanel:after{display:none!important}\n.selectCard{min-width:0!important;width:100%!important;padding:7px 8px!important;border-radius:13px!important}\n.selectEyebrow{font-size:8px!important}.selectLabel{font-size:10px!important;margin:1px 0!important}\n.selectCard select{height:38px!important;min-height:38px!important;font-size:20px!important;font-weight:1000!important;padding:0 22px 0 0!important}\n.venueTimeLegend{display:none!important}\n.voicePick{width:100%!important;min-height:34px!important;height:34px!important;margin-top:4px!important;font-size:14px!important;border-radius:10px!important}\n.raceStep{gap:5px!important;margin-top:4px!important}\n.raceStepBtn{height:34px!important;min-height:34px!important;font-size:25px!important;border-radius:10px!important}\n#get{grid-column:1/-1!important;width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:0 8px!important;border-radius:12px!important;background:linear-gradient(180deg,#ff9f0a,#ff7900)!important;border:2px solid #fff!important;color:#fff!important;font-size:20px!important;font-weight:1000!important;line-height:1!important}\n.voiceStatus,#voiceFallbackInput{grid-column:1/-1!important}.voiceStatus{display:none!important}\n#status{margin:4px 2px 5px!important;font-size:11px!important}\n\n/* player cards: always six across, compact */\n#cards.cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important;width:100%!important;margin:0 0 8px!important}\n#cards .compactRacerCard{min-width:0!important;width:100%!important;padding:0 0 4px!important;border-radius:10px!important;overflow:hidden!important}\n#cards .compactPhotoWrap.racerPhotoButton{height:82px!important;width:100%!important}\n#cards .compactPhotoWrap .racerPhoto{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 18%!important;transform:scale(1.08)!important}\n#cards .compactBoatNo{width:21px!important;height:21px!important;font-size:12px!important}\n#cards .compactClass{font-size:8px!important;margin-top:2px!important;font-weight:1000!important}\n#cards .compactName{font-size:8px!important;line-height:1.05!important;margin-top:1px!important;font-weight:1000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding:0 1px!important}\n#cards .compactWinLabel{font-size:6px!important;margin-top:3px!important}\n#cards .compactWin{font-size:13px!important;line-height:1.05!important;font-weight:1000!important}\n#cards .compactDetailBtn{display:none!important}\n#cards .fAfterCompact.fAfterMini{margin:3px 2px 0!important;padding:3px 2px!important;border-radius:6px!important;max-width:calc(100% - 4px)!important;overflow:hidden!important}\n#cards .fAfterMiniLine{gap:2px!important;justify-content:center!important}\n#cards .fAfterMiniLine b{font-size:8px!important}#cards .fAfterMiniLine span{font-size:6px!important}\n#cards .fAfterMiniValue{font-size:11px!important;margin:2px 0 1px!important;white-space:nowrap!important}\n\n\n/* six-boat diagnosis */\n#comparePanel.comparePanel{display:block!important;margin:5px 0 8px!important}\n#comparePanel .compareToggle{min-height:40px!important;padding:5px 8px!important}\n#comparePanel .compareToggle b{font-size:19px!important}\n#comparePanel .compareToggle small{font-size:7px!important}\n#comparePanel .compareBody{padding:4px!important}\n\n/* outlook below diagnosis */\n#outlookPanel,#outlookPanel.hide{display:block!important;margin:5px 0 8px!important}\n\n/* actual 120-combination outcome counter at very bottom */\n#bhOutcomeDockV460{display:block!important;margin:5px 0 18px!important}\n#bhOutcomeDockV460 .bhOutcomeSecret{display:block!important;margin:0!important;text-align:left!important}\n#bhOutcomeDockV460 .bhOutcomeToggle{display:none!important}\n#bhOutcomeDockV460 .bhOutcomePanel,#bhOutcomeDockV460 .bhOutcomePanel.hidden{display:block!important;margin:0!important}\n#bhOutcomeDockV460 #bhOutcomeAll120{max-height:560px!important;overflow:auto!important}\n\n@media(max-width:430px){\n #main .wrap{padding:5px!important}\n .controls.racePanel{gap:5px!important;padding:6px!important}\n .selectCard{padding:6px!important}.selectCard select{font-size:18px!important}\n #get{height:38px!important;min-height:38px!important;font-size:19px!important}\n #cards.cards{gap:3px!important}\n #cards .compactPhotoWrap.racerPhotoButton{height:72px!important}\n #cards .compactName{font-size:7px!important}\n #cards .compactWin{font-size:11px!important}\n}\n</style>\n
 
 <style id="bhV460EntryCss">
 /* Vol.460: 6艇診断直下の折りたたみ進入設定。設定値はレース別に保持 */
@@ -15189,7 +15186,16 @@ input,
 #cards .card .fAfterCompact,
 #cards .card .fAfterMini{display:none!important}
 </style>
-</head>
+<style id="bhV498PreviewRestore">
+#previewPanel{margin-top:10px!important}
+.previewHead{display:flex!important;align-items:center!important;gap:8px!important}
+.previewHead>div:first-child{margin-right:auto!important}
+.previewFetchBtn{height:34px!important;padding:0 12px!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.72)!important;background:linear-gradient(180deg,#1687cf,#075b91)!important;color:#fff!important;font-weight:900!important;font-size:12px!important}
+.bhWeatherTide498{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:7px 10px 5px}
+.bhWeatherTide498>div{min-width:0;padding:7px 9px;border:1px solid rgba(72,180,235,.24);border-radius:9px;background:rgba(5,29,43,.72)}
+.bhWeatherTide498 span{display:block;font-size:9px;font-weight:900;color:#78c9f1;letter-spacing:.08em}
+.bhWeatherTide498 b{display:block;margin-top:2px;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15199,7 +15205,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.497</div>
+  <div class="topVol">Vol.498</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15325,10 +15331,14 @@ input,
 <section id="previewPanel" class="previewPanel hide">
     <div class="previewHead">
       <div><div class="previewEyebrow">JUST BEFORE DATA</div><h3>直前情報</h3></div>
-      <div id="previewStamp" class="previewStamp">—</div>
+      <button id="getPreview" type="button" class="previewFetchBtn">直前情報取得</button><div id="previewStamp" class="previewStamp">—</div>
     </div>
     <div id="previewState" class="previewState">直前情報取得を押してください</div>
-    <div class="previewScroll">
+    <div id="bhWeatherTide498" class="bhWeatherTide498">
+  <div><span>風</span><b id="bhWind498">取得待ち</b></div>
+  <div><span>潮位</span><b id="bhTide498">取得待ち</b></div>
+</div>
+<div class="previewScroll">
       <table class="previewTable">
         <thead>
           <tr>
@@ -22942,7 +22952,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 <style id="bhV484OutlookControl">
 #bhOutlookRun465{grid-column:1/-1!important;width:100%!important;min-height:54px!important;margin-top:8px!important;border:1.5px solid #ffb34a!important;border-radius:15px!important;background:linear-gradient(180deg,#f28a19,#d96a05)!important;color:#fff!important;font-size:17px!important;font-weight:1000!important;box-shadow:0 8px 20px rgba(221,105,5,.24)!important}
 #bhOutlookRun465.running{opacity:.72!important}
-#previewPanel{margin-top:12px!important;padding:12px!important;border-radius:18px!important;background:linear-gradient(180deg,#0d1e2b,#07131d)!important;border:1px solid rgba(104,190,240,.18)!important}
+
 #bhRaceFactors465{margin-top:12px!important;padding-top:11px!important;border-top:1px solid rgba(255,255,255,.10)!important}
 #bhRaceFactors465 .factorTitle{font-size:11px!important;font-weight:950!important;letter-spacing:.12em!important;color:#8eb4ca!important;margin-bottom:8px!important}
 #bhRaceFactors465 .outlookGrid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
@@ -23709,5 +23719,38 @@ window.__BH_V396_FORCE_2BOX__=true;
  const run=()=>setTimeout(clean,500);
  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',run):run();
  document.addEventListener('click',e=>{if(e.target.closest('#get,#bhOutlookRun478'))run()},true);
+})();
+</script>
+<script id="bhV498PreviewRestoreJS">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const fmt=n=>Number.isFinite(Number(n))?Number(n).toFixed(1):"—";
+ async function refreshConditions(){
+   const w=await getSui().catch(()=>null);
+   if(w){
+     const info=bhWindInfo(w.directionDeg??w.direction);
+     $("bhWind498").textContent=`${info.label} ${fmt(w.wind)}m/s${w.gust!=null?`（瞬間 ${fmt(w.gust)}）`:""}`;
+   }else $("bhWind498").textContent="風データ取得不可";
+   const t=await getTide().catch(()=>null);
+   if(t){
+     const level=t.level??t.height??t.value;
+     const phase=t.phaseLabel||t.phase||t.state||"潮位取得済み";
+     $("bhTide498").textContent=`${phase}${level!=null?` ${level}`:""}`;
+   }else $("bhTide498").textContent="潮位データ取得不可";
+ }
+ function bind(){
+   const b=$("getPreview"); if(!b||b.dataset.bound498)return;
+   b.dataset.bound498="1";
+   b.addEventListener("click",async()=>{
+     b.disabled=true;b.textContent="取得中…";
+     try{
+       if(typeof loadPreview==="function") await loadPreview();
+       else if(typeof fetchPreview==="function") await fetchPreview();
+       else if(typeof prefetchHunterPreview==="function") await prefetchHunterPreview(true);
+       await refreshConditions();
+     }finally{b.disabled=false;b.textContent="直前情報取得"}
+   });
+ }
+ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bind):bind();
 })();
 </script>
