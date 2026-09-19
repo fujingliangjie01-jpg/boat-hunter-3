@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V512</title>
+<title>BOAT HUNTER V513</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15272,6 +15272,15 @@ input,
 #bhRankCompare510 table{min-width:700px!important}
 #bhRankCompare510 td,#bhRankCompare510 th{padding:6px 3px!important}
 #bhRankCompare510 .changeCell{background:#092219!important}
+</style><style id="bhV513CompareCompact">
+#bhRankCompare510 table{min-width:680px!important}
+#bhRankCompare510 .boat{font-size:20px!important;font-weight:1000!important}
+#bhRankCompare510 .b1{background:#fff!important;color:#111!important}
+#bhRankCompare510 .b2{background:#111!important;color:#fff!important}
+#bhRankCompare510 .b3{background:#d9232e!important;color:#fff!important}
+#bhRankCompare510 .b4{background:#0868d7!important;color:#fff!important}
+#bhRankCompare510 .b5{background:#f2d51d!important;color:#111!important}
+#bhRankCompare510 .b6{background:#079344!important;color:#fff!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15282,7 +15291,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.512</div>
+  <div class="topVol">Vol.513</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24009,8 +24018,11 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(!z)return null;
    const hp=h.map(v=>v/z*100),ap=a.map(v=>v/z*100);
    const order=[0,1,2,3,4,5].sort((i,j)=>hp[j]-hp[i]||i-j);
-   const rank=Array(6);order.forEach((i,n)=>rank[i]=n+1);
-   return {head:hp,axis:ap,rank};
+   const axisOrder=[0,1,2,3,4,5].sort((i,j)=>ap[j]-ap[i]||i-j);
+   const rank=Array(6),axisRank=Array(6);
+   order.forEach((i,n)=>rank[i]=n+1);
+   axisOrder.forEach((i,n)=>axisRank[i]=n+1);
+   return {head:hp,axis:ap,rank,axisRank};
  }
  function relativeGrade(rows){
    const z=rows.filter(x=>num(x.score)!=null).slice().sort((a,b)=>b.score-a.score||a.boat-b.boat),g={};
@@ -24079,7 +24091,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  function ensure(){
    let p=$("bhRankCompare510");if(p)return p;
    p=document.createElement("section");p.id="bhRankCompare510";
-   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間評価を基準にした変化）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="2">艇番</th><th colspan="3">世間評価（オッズ基準）</th><th colspan="3">6艇評価（能力評価）</th><th colspan="3">レース展望評価（展開予測）</th><th colspan="2">世間からの変化</th></tr><tr><th>順位</th><th>頭支持率</th><th>軸支持率</th><th>順位</th><th>スコア</th><th>評価</th><th>順位</th><th>スコア</th><th>評価</th><th>6艇評価</th><th>展望評価</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
+   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間評価を基準にした変化）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="2">艇番</th><th colspan="4">世間評価（オッズ基準）</th><th colspan="2">6艇評価（能力評価）</th><th colspan="2">レース展望評価（展開予測）</th><th colspan="2">世間からの変化</th></tr><tr><th>頭順位</th><th>頭支持率</th><th>軸順位</th><th>軸支持率</th><th>順位</th><th>評価</th><th>順位</th><th>評価</th><th>6艇評価</th><th>展望評価</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
    const outlook=$("outlookPanel");
    if(outlook)outlook.insertAdjacentElement("afterend",p); else document.body.appendChild(p);
    return p;
@@ -24089,7 +24101,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    const {ability,flow}=sourceRows(),ar=ranks(ability),fr=ranks(flow);
    $("rc510Body").innerHTML=[1,2,3,4,5,6].map(b=>{
      const A=pick(ability,b),F=pick(flow,b),as=score(A),fs=score(F);
-     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="rank r${ar[b]||0}">${ar[b]||"—"}${ar[b]?"位":""}</td><td>${as==null?"—":as.toFixed(0)}</td><td class="grade g${grade(A)}">${grade(A)}</td><td class="rank r${fr[b]||0}">${fr[b]||"—"}${fr[b]?"位":""}</td><td>${fs==null?"—":fs.toFixed(0)}</td><td class="grade g${grade(F)}">${grade(F)}</td><td class="changeCell">${arrow(m.rank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.rank[b-1],fr[b])}</td></tr>`;
+     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]}">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="rank r${ar[b]||0}">${ar[b]||"—"}${ar[b]?"位":""}</td><td class="grade g${grade(A)}">${grade(A)}</td><td class="rank r${fr[b]||0}">${fr[b]||"—"}${fr[b]?"位":""}</td><td class="grade g${grade(F)}">${grade(F)}</td><td class="changeCell">${arrow(m.rank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.rank[b-1],fr[b])}</td></tr>`;
    }).join("");
    $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間順位との差";
    window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr};
