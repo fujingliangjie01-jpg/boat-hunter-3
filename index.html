@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V507</title>
+<title>BOAT HUNTER V509</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15234,6 +15234,19 @@ input,
   font-weight:1000!important;
   transform:none!important;
 }
+</style><style id="bhV509MarketOddsStyle">
+#bhMarketOdds509{margin:10px 0 12px;padding:10px;border:1px solid #31506b;border-radius:14px;background:linear-gradient(180deg,#0d1e2b,#091620);color:#fff}
+#bhMarketOdds509 .mo509Toggle{width:100%;border:1px solid #4b7190;border-radius:11px;background:#132b3d;color:#eaf7ff;padding:10px 12px;font-weight:900;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+#bhMarketOdds509 .mo509Body{padding-top:9px}.mo509Hide{display:none!important}
+#bhMarketOdds509 .mo509Cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#bhMarketOdds509 .mo509Col{border:1px solid #29465c;border-radius:11px;background:#0b1924;padding:8px}
+#bhMarketOdds509 h4{margin:0 0 6px;font-size:13px;color:#9fdcff}
+#bhMarketOdds509 .mo509Row{display:flex;justify-content:space-between;align-items:center;padding:5px 3px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+#bhMarketOdds509 .mo509Row:last-child{border-bottom:0}
+#bhMarketOdds509 .mo509Boat{font-weight:900}.mo509Pct{font-size:16px;font-weight:1000}
+#bhMarketOdds509 .mo509State{font-size:11px;color:#8fa8b9;margin:7px 2px 0}
+#bhMarketOdds509 .mo509Odds{max-height:260px;overflow:auto;margin-top:8px;border-top:1px solid #29465c;padding-top:6px}
+#bhMarketOdds509 .mo509OddRow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:3px 4px;font-size:11px}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15244,7 +15257,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.507</div>
+  <div class="topVol">Vol.509</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18743,9 +18756,9 @@ function renderOdds(odds){
     const state=document.getElementById("oddsState");
     const stamp=document.getElementById("oddsStamp");
     const toggle=document.getElementById("oddsToggle");
-    if(!btn||!state)return;
+    if(!state)return;
 
-    btn.disabled=true;
+    if(btn)btn.disabled=true;
     state.textContent="3連単120通りを取得中…";
     try{
       const r=await fetch(od3Url(),{cache:"no-store"});
@@ -18784,7 +18797,7 @@ function renderOdds(odds){
         ?"オッズ未公開 / まだ記録されていません"
         :"オッズ表示処理エラー";
     }finally{
-      btn.disabled=false;
+      if(btn)btn.disabled=false;
     }
   }
 
@@ -23869,5 +23882,159 @@ window.__BH_V396_FORCE_2BOX__=true;
  }
  window.BH_RENDER_CONDITIONS_V506=render;
  document.getElementById("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(render,250));
+})();
+</script><script id="bhV508PreviewFlowOnly">
+(()=>{
+ const N=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+ function previewRows(){
+   const a=window.__HUNTER_PREVIEW;
+   return Array.isArray(a)&&a.length===6?a:null;
+ }
+ function val(x,...keys){
+   for(const k of keys){const n=N(x?.[k]);if(n!=null)return n}
+   return null;
+ }
+ function rankAsc(rows,keyfn){
+   return rows.map((x,i)=>({i,v:keyfn(x)})).filter(x=>x.v!=null)
+     .sort((a,b)=>a.v-b.v||a.i-b.i);
+ }
+ function apply(){
+   const p=previewRows();
+   const rows=window.__BH_RACE_FLOW_ROWS||window.__HUNTER_RACE_FLOW||window.__bhRaceFlowRows;
+   if(!p||!Array.isArray(rows)||rows.length!==6)return false;
+
+   /* 展示ST: 0.15秒差 ≒ 1艇身 */
+   const sts=p.map(x=>val(x,"st","exhibition_st","tenji_st"));
+   const validST=sts.filter(v=>v!=null);
+   const bestST=validST.length?Math.min(...validST):null;
+
+   /* 展示タイム: 150m計測 → 実走135m換算 = ×0.9 */
+   const exs=p.map(x=>val(x,"exhibition","exhibition_time","tenji","tenji_time"));
+   const validEx=exs.filter(v=>v!=null);
+   const bestEx=validEx.length?Math.min(...validEx):null;
+
+   /* 一周タイム: 1Cトップは通常。2〜6Cトップのみ明確なプラス */
+   const laps=p.map(x=>val(x,"lap","lap_time","isshu","one_lap"));
+   const lapRank=rankAsc(p,(x,i)=>laps[i]);
+   const lapTop=lapRank.length?lapRank[0].i:-1;
+
+   rows.forEach((r,i)=>{
+     if(r.__v508base==null)r.__v508base=N(r.score??r.best?.score)??0;
+     let d=0,reasons=[];
+
+     if(bestST!=null&&sts[i]!=null){
+       const ahead=(sts[i]-bestST)/0.15; // slower than best => positive deficit
+       const bonus=clamp(4-ahead*4,-4,4);
+       d+=bonus;
+       reasons.push(`展示ST ${sts[i].toFixed(2)} (${ahead.toFixed(2)}艇身差)`);
+     }
+
+     if(bestEx!=null&&exs[i]!=null){
+       const diff135=(exs[i]-bestEx)*0.9;
+       const boatLen=diff135/0.15;
+       const bonus=clamp(3-boatLen*3,-3,3);
+       d+=bonus;
+       reasons.push(`展示150m→135m ${diff135.toFixed(3)}秒差`);
+     }
+
+     if(i===lapTop && laps[i]!=null){
+       if(i===0){
+         reasons.push("一周トップ(1C通常評価)");
+       }else{
+         const lapBonus=i>=3?4:3;
+         d+=lapBonus;
+         reasons.push(`一周トップ(${i+1}C +${lapBonus})`);
+       }
+     }
+
+     r.previewFlowDelta=d;
+     r.previewFlowReasons=reasons;
+     r.score=clamp(r.__v508base+d,0,100);
+     if(r.best)r.best.score=r.score;
+   });
+
+   try{window.BH_V475_REFRESH?.()}catch(_){}
+   return true;
+ }
+ window.BH_APPLY_PREVIEW_FLOW_V508=apply;
+
+ /* AI解析で直前情報取得後、展開評価だけ再計算 */
+ document.getElementById("aiAnalyzeTop503")?.addEventListener("click",()=>{
+   setTimeout(apply,900); setTimeout(apply,1800);
+ });
+})();
+</script><script id="bhV509MarketOdds">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const key=()=>`BH_ODDS509_${$("date")?.value||""}_${$("stadium")?.value||""}_${$("race")?.value||""}`;
+ const valid=s=>s&&Array.isArray(s.odds)&&s.odds.length===120;
+ const save=s=>{try{localStorage.setItem(key(),JSON.stringify(s))}catch(_){}};
+ const load=()=>{try{const s=JSON.parse(localStorage.getItem(key())||"null");return valid(s)?s:null}catch(_){return null}};
+
+ function calc(snap){
+   const head=Array(6).fill(0),axis=Array(6).fill(0);
+   let z=0;
+   for(const x of snap.odds){
+     const o=Number(x.odds); if(!(o>0))continue;
+     const a=String(x.combo||"").split("-").map(Number);
+     if(a.length!==3||a.some(n=>n<1||n>6))continue;
+     const w=1/o; z+=w;
+     head[a[0]-1]+=w;
+     axis[a[1]-1]+=w; axis[a[2]-1]+=w;
+   }
+   if(!(z>0))return null;
+   return {
+     head:head.map((v,i)=>({boat:i+1,pct:v/z*100})).sort((a,b)=>b.pct-a.pct||a.boat-b.boat),
+     axis:axis.map((v,i)=>({boat:i+1,pct:v/z*100})).sort((a,b)=>b.pct-a.pct||a.boat-b.boat)
+   };
+ }
+ function ensurePanel(){
+   let p=$("bhMarketOdds509"); if(p)return p;
+   p=document.createElement("section");p.id="bhMarketOdds509";
+   p.innerHTML=`<button type="button" class="mo509Toggle" aria-expanded="false"><span>オッズ・世間評価</span><strong>表示 ＋</strong></button>
+   <div class="mo509Body mo509Hide"><div class="mo509Cols"><div class="mo509Col"><h4>頭候補（オッズのみ）</h4><div id="mo509Head"></div></div><div class="mo509Col"><h4>軸候補（2・3着支持）</h4><div id="mo509Axis"></div></div></div><div class="mo509State" id="mo509State">AI解析で120通り取得</div><div class="mo509Odds" id="mo509Odds"></div></div>`;
+   const outlook=$("outlookPanel");
+   if(outlook)outlook.insertAdjacentElement("afterend",p);
+   else document.body.appendChild(p);
+   const b=p.querySelector(".mo509Toggle"),body=p.querySelector(".mo509Body"),st=b.querySelector("strong");
+   b.addEventListener("click",()=>{const open=body.classList.toggle("mo509Hide")===false;b.setAttribute("aria-expanded",String(open));st.textContent=open?"閉じる −":"表示 ＋"});
+   return p;
+ }
+ function render(snap,source){
+   ensurePanel();
+   const c=calc(snap); if(!c)return;
+   const row=x=>`<div class="mo509Row"><span class="mo509Boat">${x.boat}号艇</span><strong class="mo509Pct">${x.pct.toFixed(1)}%</strong></div>`;
+   $("mo509Head").innerHTML=c.head.map(row).join("");
+   $("mo509Axis").innerHTML=c.axis.map(row).join("");
+   $("mo509State").textContent=`120/120通り保持済み${source==="cache"?"（保持データ）":"（AI解析時取得）"} / 評価材料はオッズのみ`;
+   $("mo509Odds").innerHTML=[...snap.odds].filter(x=>Number(x.odds)>0).sort((a,b)=>a.odds-b.odds).map((x,i)=>`<div class="mo509OddRow"><span>${i+1}人気</span><b>${x.combo}</b><strong>${Number(x.odds).toFixed(1)}倍</strong></div>`).join("");
+   window.__BH_MARKET_ODDS_EVAL509=c;
+ }
+ async function run(){
+   ensurePanel();
+   const cached=load();
+   if(cached){
+     window.__HUNTER_ODDS120=cached;
+     render(cached,"cache");
+     return cached;
+   }
+   $("mo509State").textContent="AI解析：3連単120通り取得中…";
+   try{
+     await window.getOdds120?.();
+     const snap=window.__HUNTER_ODDS120;
+     if(!valid(snap))throw new Error("120 incomplete");
+     save(snap);render(snap,"live");return snap;
+   }catch(e){
+     $("mo509State").textContent="オッズ未公開 / 120通りを取得できませんでした";
+     return null;
+   }
+ }
+ function restore(){ensurePanel();const x=load();if(x){window.__HUNTER_ODDS120=x;render(x,"cache")}}
+ window.BH_GET_MARKET_ODDS509=run;
+ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",restore,{once:true}):restore();
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(run,0));
+ ["stadium","race","date"].forEach(id=>$(id)?.addEventListener("change",()=>setTimeout(restore,0)));
 })();
 </script>
