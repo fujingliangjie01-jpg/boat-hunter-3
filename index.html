@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V493</title>
+<title>BOAT HUNTER V495</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15158,6 +15158,42 @@ input,
 #entryPanel .entryMode button{min-height:30px!important;font-size:9px!important}
 #outlookPanel{order:8!important}#bhOutcomeDockV460,#bhOutcomeDockV460{order:9!important}
 </style>
+
+<style id="bhV494FPhotoBadge">
+/* F1/F2/F3: racer photo upper-right only */
+#cards .card .photo,
+#cards .card .racerPhoto,
+#cards .card .photoWrap,
+#cards .card .racerPhotoWrap{position:relative!important}
+
+#cards .card .fBadge,
+#cards .card .fCompactBadge{
+ position:absolute!important;
+ top:5px!important;
+ right:5px!important;
+ bottom:auto!important;
+ left:auto!important;
+ min-width:28px!important;
+ height:22px!important;
+ padding:0 6px!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ border-radius:7px!important;
+ background:linear-gradient(180deg,#9b4de3,#67259c)!important;
+ color:#fff!important;
+ font-size:12px!important;
+ font-weight:900!important;
+ line-height:1!important;
+ z-index:20!important;
+ box-shadow:0 1px 5px rgba(0,0,0,.35)!important;
+ transform:none!important;
+}
+
+/* obsolete lower current-ST panel stays removed */
+#cards .card .fAfterCompact,
+#cards .card .fAfterMini{display:none!important}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15168,7 +15204,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.493</div>
+  <div class="topVol">Vol.495</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16358,7 +16394,7 @@ async function bhSelectRacerDetail(boatNo,number){
   panel.dataset.boat=String(boatNo);
   panel.dataset.number=String(number);
 
-  requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"nearest"}));
+
 }
 async function bhToggleRecent20(boatNo,number,btn){
   const box=document.getElementById("recent20Full"+boatNo);
@@ -19759,8 +19795,7 @@ body.theme-ladies .bh221RaceTicker{color:#8f2457}
    const apply=()=>{
      rs.value=String(Number(x.race));
      try{rs.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
-     try{document.querySelector('.racePanel')?.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
-   };
+
    setTimeout(apply,180);setTimeout(apply,700);
  }
  function btn(x,cls=''){
@@ -22287,7 +22322,7 @@ window.bhVenueBase=function(course,key="p1"){
       runAll();
       block=document.getElementById("hunterFinalBuyBlock");
     }
-    (block||document.getElementById("habSimBody"))?.scrollIntoView({behavior:"smooth",block:"start"});
+
   });
   /* V396: 120通り操作中の強制再描画を廃止。取得/解析ボタン時だけ更新する */
   window.__BH_V396_RUN_ALL=runAll;
@@ -22922,38 +22957,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 #bhRaceFactors465 .outlookText{font-size:11px!important;line-height:1.45!important}
 @media(max-width:620px){#bhRaceFactors465 .outlookGrid{grid-template-columns:1fr!important}}
 </style>
-<script id="bhV484OutlookControlJS">
-(()=>{
- const $=id=>document.getElementById(id);
- async function run(){
-   const b=$('bhOutlookRun465'); if(!b||b.disabled)return;
-   b.disabled=true;b.classList.add('running');b.textContent='展望解析中…';
-   try{
-     $('previewPanel')?.classList.remove('hide');
-     if(typeof window.BH_LOAD_PREVIEW==='function') await window.BH_LOAD_PREVIEW();
-     if(typeof window.buildRaceOutlook==='function') await window.buildRaceOutlook();
-     try{window.BH_RENDER_RACE_FLOW?.()}catch(e){}
-     b.textContent='展望解析 再実行';
-   }catch(e){console.error('outlook run',e);b.textContent='展望解析';}
-   finally{b.disabled=false;b.classList.remove('running')}
- }
- function install(){
-   const get=$('get'); if(get&&!$('bhOutlookRun465')){
-     const b=document.createElement('button');b.id='bhOutlookRun465';b.type='button';b.textContent='展望解析';b.onclick=run;get.insertAdjacentElement('afterend',b);
-   }
-   const cmp=$('comparePanel'),pre=$('previewPanel'); if(cmp&&pre){cmp.insertAdjacentElement('afterend',pre);pre.classList.remove('hide')}
-   const outlook=$('outlookPanel');
-   if(outlook&&!$('bhRaceFactors465')){
-     const f=document.createElement('div');f.id='bhRaceFactors465';f.innerHTML='<div class="factorTitle">RACE CONDITIONS / 場特性・風・潮位</div><div class="outlookGrid"></div>';
-     const flow=$('bhRaceFlowV460'); if(flow) flow.insertAdjacentElement('afterend',f); else outlook.appendChild(f);
-     const grid=f.querySelector('.outlookGrid');
-     ['venueOutlook','windOutlook','tideOutlook'].forEach(id=>{const card=$(id)?.closest('.outlookCard');if(card)grid.appendChild(card)});
-   }
- }
- document.readyState==='loading'?document.addEventListener('DOMContentLoaded',install,{once:true}):install();
- setTimeout(install,400);
-})();
-</script>
+
 
 <script id="bhV484OutlookGuard">
 (()=>{
