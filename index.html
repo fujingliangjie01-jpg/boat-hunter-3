@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V509</title>
+<title>BOAT HUNTER V510</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15234,19 +15234,17 @@ input,
   font-weight:1000!important;
   transform:none!important;
 }
-</style><style id="bhV509MarketOddsStyle">
-#bhMarketOdds509{margin:10px 0 12px;padding:10px;border:1px solid #31506b;border-radius:14px;background:linear-gradient(180deg,#0d1e2b,#091620);color:#fff}
-#bhMarketOdds509 .mo509Toggle{width:100%;border:1px solid #4b7190;border-radius:11px;background:#132b3d;color:#eaf7ff;padding:10px 12px;font-weight:900;font-size:14px;display:flex;justify-content:space-between;align-items:center}
-#bhMarketOdds509 .mo509Body{padding-top:9px}.mo509Hide{display:none!important}
-#bhMarketOdds509 .mo509Cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-#bhMarketOdds509 .mo509Col{border:1px solid #29465c;border-radius:11px;background:#0b1924;padding:8px}
-#bhMarketOdds509 h4{margin:0 0 6px;font-size:13px;color:#9fdcff}
-#bhMarketOdds509 .mo509Row{display:flex;justify-content:space-between;align-items:center;padding:5px 3px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
-#bhMarketOdds509 .mo509Row:last-child{border-bottom:0}
-#bhMarketOdds509 .mo509Boat{font-weight:900}.mo509Pct{font-size:16px;font-weight:1000}
-#bhMarketOdds509 .mo509State{font-size:11px;color:#8fa8b9;margin:7px 2px 0}
-#bhMarketOdds509 .mo509Odds{max-height:260px;overflow:auto;margin-top:8px;border-top:1px solid #29465c;padding-top:6px}
-#bhMarketOdds509 .mo509OddRow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:3px 4px;font-size:11px}
+</style><style id="bhV510RankCompareStyle">
+#bhRankCompare510{margin:10px 0 12px;padding:8px;border:1px solid #1d78a6;border-radius:12px;background:#071824;color:#fff;overflow:hidden}
+#bhRankCompare510 .rc510Title{font-size:14px;font-weight:1000;margin:0 0 7px;padding:2px 3px;color:#eefaff}
+#bhRankCompare510 .rc510Scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#bhRankCompare510 table{width:100%;min-width:720px;border-collapse:separate;border-spacing:2px;font-size:12px;text-align:center}
+#bhRankCompare510 th{background:#0d2b3d;padding:6px 4px;border-radius:4px;font-weight:900}
+#bhRankCompare510 td{background:#0a1e2b;padding:6px 4px;border-radius:3px}
+#bhRankCompare510 .boat{font-size:17px;font-weight:1000;min-width:34px}
+#bhRankCompare510 .b1{background:#f3f3f3;color:#111}.b2{background:#171d23;color:#fff}.b3{background:#d9232e;color:#fff}.b4{background:#0868d7;color:#fff}.b5{background:#f2d51d;color:#111}.b6{background:#079344;color:#fff}
+#bhRankCompare510 .rank{font-size:15px;font-weight:1000}.rcUp{color:#ff4040;font-size:21px;font-weight:1000}.rcDown{color:#35a9ff;font-size:21px;font-weight:1000}.rcSame{color:#dce8ef;font-size:20px;font-weight:1000}
+#bhRankCompare510 .grade{font-size:16px;font-weight:1000}.rc510State{font-size:10px;color:#8fa8b9;text-align:right;padding:2px 3px 0}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15257,7 +15255,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.509</div>
+  <div class="topVol">Vol.510</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23965,76 +23963,87 @@ window.__BH_V396_FORCE_2BOX__=true;
    setTimeout(apply,900); setTimeout(apply,1800);
  });
 })();
-</script><script id="bhV509MarketOdds">
+</script><script id="bhV510RankCompare">
 (()=>{
  const $=id=>document.getElementById(id);
- const key=()=>`BH_ODDS509_${$("date")?.value||""}_${$("stadium")?.value||""}_${$("race")?.value||""}`;
- const valid=s=>s&&Array.isArray(s.odds)&&s.odds.length===120;
- const save=s=>{try{localStorage.setItem(key(),JSON.stringify(s))}catch(_){}};
- const load=()=>{try{const s=JSON.parse(localStorage.getItem(key())||"null");return valid(s)?s:null}catch(_){return null}};
+ const cacheKey=()=>`BH_ODDS510_${$("date")?.value||""}_${$("stadium")?.value||""}_${$("race")?.value||""}`;
+ const valid=x=>x&&Array.isArray(x.odds)&&x.odds.length===120;
+ const save=x=>{try{localStorage.setItem(cacheKey(),JSON.stringify(x))}catch(_){}};
+ const load=()=>{try{const x=JSON.parse(localStorage.getItem(cacheKey())||"null");return valid(x)?x:null}catch(_){return null}};
+ const num=v=>{v=Number(v);return Number.isFinite(v)?v:null};
 
- function calc(snap){
-   const head=Array(6).fill(0),axis=Array(6).fill(0);
-   let z=0;
+ function market(snap){
+   const h=Array(6).fill(0),a=Array(6).fill(0);let z=0;
    for(const x of snap.odds){
-     const o=Number(x.odds); if(!(o>0))continue;
-     const a=String(x.combo||"").split("-").map(Number);
-     if(a.length!==3||a.some(n=>n<1||n>6))continue;
-     const w=1/o; z+=w;
-     head[a[0]-1]+=w;
-     axis[a[1]-1]+=w; axis[a[2]-1]+=w;
+     const o=num(x.odds),c=String(x.combo||"").split("-").map(Number);
+     if(!(o>0)||c.length!==3||c.some(n=>n<1||n>6))continue;
+     const w=1/o;z+=w;h[c[0]-1]+=w;a[c[1]-1]+=w;a[c[2]-1]+=w;
    }
-   if(!(z>0))return null;
-   return {
-     head:head.map((v,i)=>({boat:i+1,pct:v/z*100})).sort((a,b)=>b.pct-a.pct||a.boat-b.boat),
-     axis:axis.map((v,i)=>({boat:i+1,pct:v/z*100})).sort((a,b)=>b.pct-a.pct||a.boat-b.boat)
-   };
+   if(!z)return null;
+   const hp=h.map(v=>v/z*100),ap=a.map(v=>v/z*100);
+   const order=[0,1,2,3,4,5].sort((i,j)=>hp[j]-hp[i]||i-j);
+   const rank=Array(6);order.forEach((i,n)=>rank[i]=n+1);
+   return {head:hp,axis:ap,rank};
  }
- function ensurePanel(){
-   let p=$("bhMarketOdds509"); if(p)return p;
-   p=document.createElement("section");p.id="bhMarketOdds509";
-   p.innerHTML=`<button type="button" class="mo509Toggle" aria-expanded="false"><span>オッズ・世間評価</span><strong>表示 ＋</strong></button>
-   <div class="mo509Body mo509Hide"><div class="mo509Cols"><div class="mo509Col"><h4>頭候補（オッズのみ）</h4><div id="mo509Head"></div></div><div class="mo509Col"><h4>軸候補（2・3着支持）</h4><div id="mo509Axis"></div></div></div><div class="mo509State" id="mo509State">AI解析で120通り取得</div><div class="mo509Odds" id="mo509Odds"></div></div>`;
+ function sourceRows(){
+   const ability=window.__BH_DIAG_ROWS||window.__HUNTER_DIAG_ROWS||window.__BH_COMPARE_ROWS||[];
+   const flow=window.__BH_RACE_FLOW_ROWS||window.__HUNTER_RACE_FLOW||window.__bhRaceFlowRows||[];
+   return {ability,flow};
+ }
+ function pick(rows,boat){
+   if(!Array.isArray(rows))return null;
+   return rows.find((x,i)=>Number(x?.boat??x?.entry??x?.course??(i+1))===boat)||rows[boat-1]||null;
+ }
+ function score(x){
+   return num(x?.score??x?.finalScore??x?.total??x?.abilityScore??x?.best?.score);
+ }
+ function grade(x){
+   return String(x?.grade??x?.rankGrade??x?.evaluation??x?.best?.grade??"—");
+ }
+ function ranks(rows){
+   const q=[1,2,3,4,5,6].map(boat=>({boat,row:pick(rows,boat)}));
+   q.sort((x,y)=>(score(y.row)??-1)-(score(x.row)??-1)||x.boat-y.boat);
+   const out={};q.forEach((x,i)=>out[x.boat]=i+1);return out;
+ }
+ function arrow(base,now){
+   if(!base||!now)return '<span class="rcSame">—</span>';
+   const d=base-now;
+   if(d>=2)return '<span class="rcUp">↑↑</span>';
+   if(d===1)return '<span class="rcUp">↑</span>';
+   if(d<=-2)return '<span class="rcDown">↓↓</span>';
+   if(d===-1)return '<span class="rcDown">↓</span>';
+   return '<span class="rcSame">→</span>';
+ }
+ function ensure(){
+   let p=$("bhRankCompare510");if(p)return p;
+   p=document.createElement("section");p.id="bhRankCompare510";
+   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間評価を基準にした変化）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="2">艇番</th><th colspan="3">世間評価（オッズ基準）</th><th colspan="3">6艇評価（能力評価）</th><th colspan="3">レース展望評価（展開予測）</th><th colspan="2">世間からの変化</th></tr><tr><th>順位</th><th>頭支持率</th><th>軸支持率</th><th>順位</th><th>スコア</th><th>評価</th><th>順位</th><th>スコア</th><th>評価</th><th>6艇評価</th><th>展望評価</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
    const outlook=$("outlookPanel");
-   if(outlook)outlook.insertAdjacentElement("afterend",p);
-   else document.body.appendChild(p);
-   const b=p.querySelector(".mo509Toggle"),body=p.querySelector(".mo509Body"),st=b.querySelector("strong");
-   b.addEventListener("click",()=>{const open=body.classList.toggle("mo509Hide")===false;b.setAttribute("aria-expanded",String(open));st.textContent=open?"閉じる −":"表示 ＋"});
+   if(outlook)outlook.insertAdjacentElement("afterend",p); else document.body.appendChild(p);
    return p;
  }
- function render(snap,source){
-   ensurePanel();
-   const c=calc(snap); if(!c)return;
-   const row=x=>`<div class="mo509Row"><span class="mo509Boat">${x.boat}号艇</span><strong class="mo509Pct">${x.pct.toFixed(1)}%</strong></div>`;
-   $("mo509Head").innerHTML=c.head.map(row).join("");
-   $("mo509Axis").innerHTML=c.axis.map(row).join("");
-   $("mo509State").textContent=`120/120通り保持済み${source==="cache"?"（保持データ）":"（AI解析時取得）"} / 評価材料はオッズのみ`;
-   $("mo509Odds").innerHTML=[...snap.odds].filter(x=>Number(x.odds)>0).sort((a,b)=>a.odds-b.odds).map((x,i)=>`<div class="mo509OddRow"><span>${i+1}人気</span><b>${x.combo}</b><strong>${Number(x.odds).toFixed(1)}倍</strong></div>`).join("");
-   window.__BH_MARKET_ODDS_EVAL509=c;
+ function render(snap){
+   ensure();const m=market(snap);if(!m)return;
+   const {ability,flow}=sourceRows(),ar=ranks(ability),fr=ranks(flow);
+   $("rc510Body").innerHTML=[1,2,3,4,5,6].map(b=>{
+     const A=pick(ability,b),F=pick(flow,b),as=score(A),fs=score(F);
+     return `<tr><td class="boat b${b}">${b}</td><td class="rank">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="rank">${ar[b]||"—"}${ar[b]?"位":""}</td><td>${as==null?"—":as.toFixed(0)}</td><td class="grade">${grade(A)}</td><td class="rank">${fr[b]||"—"}${fr[b]?"位":""}</td><td>${fs==null?"—":fs.toFixed(0)}</td><td class="grade">${grade(F)}</td><td>${arrow(m.rank[b-1],ar[b])}</td><td>${arrow(m.rank[b-1],fr[b])}</td></tr>`;
+   }).join("");
+   $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間順位との差";
+   window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr};
  }
  async function run(){
-   ensurePanel();
-   const cached=load();
-   if(cached){
-     window.__HUNTER_ODDS120=cached;
-     render(cached,"cache");
-     return cached;
-   }
-   $("mo509State").textContent="AI解析：3連単120通り取得中…";
-   try{
-     await window.getOdds120?.();
-     const snap=window.__HUNTER_ODDS120;
-     if(!valid(snap))throw new Error("120 incomplete");
-     save(snap);render(snap,"live");return snap;
-   }catch(e){
-     $("mo509State").textContent="オッズ未公開 / 120通りを取得できませんでした";
-     return null;
-   }
+   ensure();let snap=load();
+   if(!snap){
+     $("rc510State").textContent="AI解析：3連単120通り取得中…";
+     try{await window.getOdds120?.();snap=window.__HUNTER_ODDS120;if(valid(snap))save(snap)}catch(_){}
+   }else window.__HUNTER_ODDS120=snap;
+   if(valid(snap))render(snap);else $("rc510State").textContent="120通りオッズ未取得 / 未公開";
  }
- function restore(){ensurePanel();const x=load();if(x){window.__HUNTER_ODDS120=x;render(x,"cache")}}
- window.BH_GET_MARKET_ODDS509=run;
+ function restore(){ensure();const x=load();if(x){window.__HUNTER_ODDS120=x;render(x)}}
+ window.BH_RENDER_RANK_COMPARE510=run;
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",restore,{once:true}):restore();
- $("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(run,0));
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>{setTimeout(run,0);setTimeout(()=>{const x=window.__HUNTER_ODDS120||load();if(valid(x))render(x)},1900)});
  ["stadium","race","date"].forEach(id=>$(id)?.addEventListener("change",()=>setTimeout(restore,0)));
 })();
 </script>
