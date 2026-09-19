@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V505</title>
+<title>BOAT HUNTER V506</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15218,7 +15218,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.505</div>
+  <div class="topVol">Vol.506</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18036,6 +18036,11 @@ $('top').classList.remove('hide');
     const windTxt=w?.wind!=null?`${bhWindInfo(w.direction).label}${w.wind}m`:"風未取得";
     if($("outlookSummary"))$("outlookSummary").textContent=`${vn}の場特性 × ${windTxt} × 進入設定 × 選手データを統合して展望`;
   }
+  window.BH_CONDITIONS_V506={
+    getWind:getSui,getTide:getTide,getKachigake:getTokuten,
+    windHtml:windHtml,tideHtml:tideHtml,kachigakeHtml:kachigakeHtml,
+    venueHtml:venueHtml,windInfo:bhWindInfo
+  };
   window.buildRaceOutlook=buildRaceOutlook;
   const _oldBuild=window.buildRaceOutlook;
   window.buildRaceOutlook=async function(){window.applyVenueOutlookPhoto?.();return _oldBuild();};
@@ -23610,48 +23615,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  font-size:.52em!important;font-weight:900!important;margin-left:3px!important;vertical-align:middle!important;
 }
 </style>
-<script id="bhV484FixJS">
-(()=>{
- function compactF(){
-   const body=document.getElementById('compareRows'); if(!body)return;
-   body.querySelectorAll('td.compareFST475').forEach(td=>{
-     const t=(td.textContent||'').trim();
-     if(/F後ST|F後/.test(t)){
-       const n=(t.match(/\d+\.\d+/)||[])[0];
-       if(n) td.innerHTML=`${n}<span class="bhFMark480">F</span>`;
-     }
-   });
- }
 
- /* 展望解析は元の描画を完了させてから、風だけ独立取得。
-    風失敗で勝負掛け/場特性/潮位を触らない。 */
- async function windOnly(){
-   const wind=document.getElementById('windOutlook');
-   if(!wind || !/取得不可|未取得|^\s*[—-]\s*$/.test(wind.textContent||''))return;
-   try{
-     const w=await window.BH_OFFICIAL_WEATHER_FALLBACK?.();
-     if(!w)return;
-     if(typeof window.windHtml==='function') wind.innerHTML=window.windHtml(w);
-     else wind.innerHTML=`<div class="strong windSpeed">${w.direction?`${w.direction} `:''}${w.wind}m/s</div><div class="windMeta">公式直前情報${w.wave!=null?` / 波 ${w.wave}cm`:''}</div>`;
-     /* 風取得成功時だけ最終展開補正を再計算 */
-     try{window.BH_APPLY_FINAL_OUTLOOK478?.()}catch(_){}
-   }catch(e){console.warn('V484 wind-only fallback',e)}
- }
-
- function afterRun(){
-   setTimeout(()=>{compactF();windOnly()},900);
- }
- document.addEventListener('click',e=>{
-   if(e.target.closest('#get,#bhOutlookRun478')) afterRun();
- },true);
- document.readyState==='loading'
-   ?document.addEventListener('DOMContentLoaded',()=>setTimeout(compactF,700))
-   :setTimeout(compactF,700);
-
- window.BH_V484_COMPACT_F=compactF;
- window.BH_V484_WIND_ONLY=windOnly;
-})();
-</script>
 
 <style id="bhV484DiagnosisSTSize">
 #compareRows tr.bhSTRow479 td:not(:first-child),#compareRows tr.bhSTRow481 td:not(:first-child),#compareRows td.compareFST475{font-size:26px!important;font-weight:900!important;line-height:1.05!important;letter-spacing:-.5px!important}
@@ -23850,5 +23814,34 @@ window.__BH_V396_FORCE_2BOX__=true;
   document.getElementById("get")?.addEventListener("click",()=>setTimeout(settle,0));
   document.getElementById("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(settle,0));
   window.bhPlaceCoreSectionsV505=place;
+})();
+</script><script id="bhV506ConditionsUnified">
+(()=>{
+ const $=id=>document.getElementById(id);
+ async function render(){
+   const api=window.BH_CONDITIONS_V506;
+   if(!api)return;
+   const venue=$("venueOutlook"),wind=$("windOutlook"),tide=$("tideOutlook"),bet=$("kachigakeOutlook");
+   if(venue)venue.innerHTML=api.venueHtml();
+   if(wind)wind.innerHTML='<span class="muted">取得中…</span>';
+   if(tide)tide.innerHTML='<span class="muted">取得中…</span>';
+   if(bet)bet.innerHTML='<span class="muted">判定中…</span>';
+
+   const [wr,tr,kr]=await Promise.allSettled([api.getWind(),api.getTide(),api.getKachigake()]);
+   const w=wr.status==="fulfilled"?wr.value:null;
+   const t=tr.status==="fulfilled"?tr.value:null;
+   const k=kr.status==="fulfilled"?kr.value:null;
+
+   if(wind)wind.innerHTML=api.windHtml(w);
+   if(tide)tide.innerHTML=api.tideHtml(t);
+   if(bet)bet.innerHTML=api.kachigakeHtml(k);
+
+   window.__BH_RACE_CONDITIONS=Object.assign({},window.__BH_RACE_CONDITIONS||{},{
+     wind:w||null,tide:t||null,kachigake:k||null,updatedAt:Date.now()
+   });
+   try{window.BH_APPLY_FINAL_OUTLOOK478?.()}catch(_){}
+ }
+ window.BH_RENDER_CONDITIONS_V506=render;
+ document.getElementById("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(render,250));
 })();
 </script>
