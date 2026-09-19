@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V518</title>
+<title>BOAT HUNTER V519</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15311,6 +15311,14 @@ input,
 #bhLearningIO518 button,#bhLearningIO518 label{flex:1;min-width:130px;border:1px solid #38566d;border-radius:8px;padding:9px 8px;background:#122434;color:#fff;font-weight:800;font-size:12px;text-align:center}
 #bhLearningIO518 label{cursor:pointer}#bhLearningIO518 input{display:none}
 #bhLearningIOStatus518{width:100%;font-size:10px;color:#8fa9bd;text-align:right}
+</style><style id="bhV519LearningCSS">
+#bhLearningDock519{margin:10px 0;padding:10px;background:#08131e;border:1px solid #28516e;border-radius:12px;color:#fff}
+#bhLearningDock519 .title{font-weight:900;color:#f0c94c;margin-bottom:7px}
+#bhLearningDock519 .summary{font-size:12px;line-height:1.6;color:#dce9f2;margin-bottom:7px}
+#bhLearningDock519 .io{display:flex;gap:7px}
+#bhLearningDock519 button,#bhLearningDock519 label{flex:1;background:#122a3c;border:1px solid #3a607a;border-radius:8px;padding:9px 6px;color:#fff;font-weight:800;font-size:11px;text-align:center}
+#bhLearningDock519 input{display:none}
+#bhLearningDock519 .status{font-size:10px;color:#91a9ba;margin-top:6px;text-align:right}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15321,7 +15329,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.518</div>
+  <div class="topVol">Vol.519</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24223,7 +24231,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(/結果|確認|確定/.test(t.textContent||""))[700,1600,2800].forEach(ms=>setTimeout(attachResult,ms));
  },true);
 })();
-</script><script id="bhV517BetLearning">
+</script><script type="text/plain" id="bhV517BetLearning_OLD">
 (()=>{
  const $=id=>document.getElementById(id);
  const N=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
@@ -24312,7 +24320,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[3000,5000].forEach(ms=>setTimeout(render,ms)));
  document.addEventListener("click",e=>{if(/結果|確認|確定/.test(e.target?.textContent||""))setTimeout(render,2200)},true);
 })();
-</script><script id="bhV518LearningIO">
+</script><script type="text/plain" id="bhV518LearningIO_OLD">
 (()=>{
  const DB="BH_LEARNING_RACES_V516";
  const $=id=>document.getElementById(id);
@@ -24375,5 +24383,90 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_LEARNING_IO_V518={exportData,importData,mount};
  [0,1200,3000].forEach(ms=>setTimeout(mount,ms));
  $("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(()=>{mount();status(`保存 ${read().length}R`)},5200));
+})();
+</script><script id="bhV519PredictionResultLearning">
+(()=>{
+ const DB="BH_LEARNING_RACES_V516", $=id=>document.getElementById(id), N=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
+ const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
+ const write=x=>localStorage.setItem(DB,JSON.stringify(x));
+ const key=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
+ function flowPrediction(){
+   const rows=window.__BH_RACE_FLOW_ROWS||[];
+   const cand=rows.map(r=>({
+     boat:N(r.boat), score:N(r.score??r.best?.score),
+     grade:String(r.grade??r.best?.grade??"—"),
+     technique:String(r.technique??r.move??r.best?.technique??r.best?.move??"").trim()
+   })).filter(x=>x.boat&&x.score!=null&&x.technique);
+   cand.sort((a,b)=>b.score-a.score||a.boat-b.boat);
+   const x=cand[0];
+   return x?{boat:x.boat,technique:x.technique,score:x.score,grade:x.grade,all:cand}:null;
+ }
+ function savePrediction(){
+   const db=read(),i=db.findIndex(r=>r.key===key()); if(i<0)return false;
+   const flow=flowPrediction(); if(!flow)return false;
+   db[i].prediction=Object.assign({},db[i].prediction||{},{
+     savedAt:Date.now(), mainFlow:{boat:flow.boat,technique:flow.technique,score:flow.score,grade:flow.grade},
+     flowCandidates:flow.all,
+     headCandidates:(window.BH_BET_LEARNING_V517?.predict?.()?.head)||[],
+     axisCandidates:(window.BH_BET_LEARNING_V517?.predict?.()?.axis)||[],
+     cutCandidates:(window.BH_BET_LEARNING_V517?.predict?.()?.cuts)||[]
+   });
+   write(db);window.__BH_LEARNING_DB_V516=db;refresh();return true;
+ }
+ function actualTechnique(){
+   const roots=["resultPanel","resultArea","raceResult","selectedRaceResult"].map($).filter(Boolean);
+   const txt=roots.map(x=>x.innerText||"").join(" ");
+   const m=txt.match(/決まり手\s*[:：]?\s*(逃げ|差し|まくり差し|まくり|抜き|恵まれ)/);
+   return m?.[1]||null;
+ }
+ function attachActual(){
+   const db=read(),i=db.findIndex(r=>r.key===key());if(i<0)return false;
+   const roots=["resultPanel","resultArea","raceResult","selectedRaceResult"].map($).filter(Boolean);
+   const txt=roots.map(x=>x.innerText||"").join(" ");
+   let m=txt.match(/(?:確定|結果|3連単)[^1-6]{0,20}([1-6])\s*[-－]\s*([1-6])\s*[-－]\s*([1-6])/);
+   if(!m)m=txt.match(/\b([1-6])\s*[-－]\s*([1-6])\s*[-－]\s*([1-6])\b/);
+   if(!m)return false;
+   const order=[+m[1],+m[2],+m[3]];if(new Set(order).size!==3)return false;
+   db[i].result={order,combo:order.join("-"),technique:actualTechnique(),confirmedAt:Date.now()};
+   if(db[i].prediction?.mainFlow){
+     const p=db[i].prediction.mainFlow;
+     db[i].learningOutcome={
+       predicted:`${p.boat}号艇 ${p.technique}`,actualTechnique:db[i].result.technique,
+       winner:order[0],second:order[1],third:order[2],
+       mainFlowWinner:p.boat===order[0],
+       techniqueMatched:db[i].result.technique?String(p.technique).includes(db[i].result.technique):null
+     };
+   }
+   write(db);window.__BH_LEARNING_DB_V516=db;refresh();return true;
+ }
+ function dock(){
+   let d=$("bhLearningDock519");if(d)return d;
+   d=document.createElement("section");d.id="bhLearningDock519";
+   const anchor=$("resultPanel")||document.querySelector('[id*="result"]')||document.body.lastElementChild;
+   anchor?.insertAdjacentElement("afterend",d);return d;
+ }
+ function refresh(){
+   const d=dock();if(!d)return;
+   const db=read(),cur=db.find(r=>r.key===key()),p=cur?.prediction?.mainFlow,res=cur?.result;
+   d.innerHTML=`<div class="title">HUNTER 学習データ</div>
+   <div class="summary">${p?`今回予測：<b>${p.boat}号艇 ${p.technique}</b>（展開${p.grade} / ${p.score}）`:"今回予測：未保存"}<br>
+   ${res?`実結果：<b>${res.combo}</b>${res.technique?` ／ 決まり手 ${res.technique}`:""}`:"実結果：未確定"}</div>
+   <div class="io"><button id="bhEx519">学習データ書き出し</button><label>学習データ読み込み<input id="bhIm519" type="file" accept=".json,application/json"></label></div>
+   <div class="status">保存 ${db.length}R ／ 結果確定 ${db.filter(x=>x.result?.order?.length===3).length}R</div>`;
+   $("bhEx519").onclick=exportData;$("bhIm519").onchange=importData;
+ }
+ function exportData(){
+   const races=read(),blob=new Blob([JSON.stringify({format:"BOAT_HUNTER_LEARNING",version:519,exportedAt:new Date().toISOString(),races},null,2)],{type:"application/json"});
+   const a=document.createElement("a"),d=new Date(),p=n=>String(n).padStart(2,"0");a.href=URL.createObjectURL(blob);a.download=`BOAT_HUNTER_LEARNING_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ }
+ async function importData(e){
+   try{const x=JSON.parse(await e.target.files[0].text()),inc=Array.isArray(x)?x:x.races;if(!Array.isArray(inc))throw 0;
+     const map=new Map(read().filter(r=>r.key).map(r=>[r.key,r]));for(const r of inc)if(r?.key)map.set(r.key,Object.assign({},map.get(r.key)||{},r));write([...map.values()]);refresh();
+   }catch(_){alert("学習データを読み込めませんでした")}finally{e.target.value=""}
+ }
+ window.BH_LEARNING_V519={savePrediction,attachActual,flowPrediction,refresh};
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>[3200,5000,7000].forEach(ms=>setTimeout(()=>{savePrediction();refresh()},ms)));
+ document.addEventListener("click",e=>{const t=e.target?.closest?.("button");if(t&&/結果|確認|確定/.test(t.textContent||""))[800,1800,3000].forEach(ms=>setTimeout(()=>{attachActual();refresh()},ms))},true);
+ [0,1200,3000].forEach(ms=>setTimeout(refresh,ms));
 })();
 </script>
