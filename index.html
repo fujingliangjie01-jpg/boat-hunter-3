@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V532</title>
+<title>BOAT HUNTER V533</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15379,7 +15379,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.532</div>
+  <div class="topVol">Vol.533</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24816,7 +24816,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_CORE_FIX_V528={fixAll,reset};
 })();
 </script>
-<script id="bhV531EscapeBetEngine">
+<script id="bhV533DualHeadBetEngine">
 (()=>{
  const $=id=>document.getElementById(id);
  const rows=()=>{const x=window.BH_RANK_TREND_V521?.current?.();return Array.isArray(x)?x:[]};
@@ -24831,25 +24831,42 @@ window.__BH_V396_FORCE_2BOX__=true;
  }
  function make(){
    const a=rows();if(a.length<6)return null;
-   if(!escape())return {escape:false,bets:[]};
-   const six=R(6);
-   const cut6=!!six && +six.head>=5 && +six.axis>=5 && +six.ability>=5 && +six.flow>=5;
-   const cand=a.filter(x=>+x.boat!==1&&!(cut6&&+x.boat===6));
-   // Main 2nd: strongest market-axis boat + strongest boat raised by ability/flow relative to market.
-   const axisTop=[...cand].sort((x,y)=>+x.axis-+y.axis||+x.head-+y.head)[0];
-   const raised=[...cand].filter(x=>+x.boat!==+axisTop?.boat).sort((x,y)=>{
-     const sx=(+x.head-+x.ability)+(+x.head-+x.flow);
-     const sy=(+y.head-+y.ability)+(+y.head-+y.flow);
-     return sy-sx||(+x.axis)-(+y.axis)||(+x.boat)-(+y.boat);
+   const r1=R(1);
+   // Keep 1 as a live head when its final ability/flow has recovered to B-or-better territory
+   // even if market head rank is 2-3. This is the 1/4 split-head pattern seen in the supplied case.
+   const oneLive=!!r1 && (+r1.head<=3) && (+r1.flow<=2 || +r1.ability<=2);
+   const bestOutside=[...a].filter(x=>+x.boat!==1).sort((x,y)=>{
+     const sx=(+x.head)+(+x.ability)+(+x.flow), sy=(+y.head)+(+y.ability)+(+y.flow);
+     return sx-sy||+x.head-+y.head;
    })[0];
-   const main2=[...new Set([+axisTop?.boat,+raised?.boat].filter(Boolean))];
-   // Cover: strongest remaining market-axis boat; only 2nd against the two main boats.
-   const cover=[...cand].filter(x=>!main2.includes(+x.boat)).sort((x,y)=>+x.axis-+y.axis||+x.head-+y.head).slice(0,1).map(x=>+x.boat);
-   const third=cand.map(x=>+x.boat);
-   const bets=[];
-   for(const b of main2)for(const c of third)if(c!==b)bets.push(`1-${b}-${c}`);
-   for(const b of cover)for(const c of main2)if(c!==b)bets.push(`1-${b}-${c}`);
-   return {escape:true,main2,cover,third,cut:cut6?[6]:[],bets:[...new Set(bets)]};
+   const dual=oneLive && bestOutside && +bestOutside.head===1 && +bestOutside.ability<=2 && +bestOutside.flow<=2;
+   const heads=dual?[1,+bestOutside.boat]:[1];
+   if(!dual && !escape())return {escape:false,bets:[]};
+   const cut=[...a].filter(x=>+x.head>=5&&+x.axis>=5&&+x.ability>=5&&+x.flow>=5).map(x=>+x.boat);
+   function sevenFor(h,otherHead){
+     const cand=a.filter(x=>+x.boat!==h&&!cut.includes(+x.boat));
+     const scored=cand.map(x=>({
+       ...x,
+       sc:(7-(+x.axis))*2 + Math.max(0,(+x.head)-(+x.axis))*1.2 +
+          Math.max(0,4-(+x.ability))*.5 + Math.max(0,4-(+x.flow))*.6 +
+          (+x.boat===otherHead?3:0)
+     })).sort((x,y)=>y.sc-x.sc||+x.axis-+y.axis);
+     const seconds=scored.slice(0,2).map(x=>+x.boat);
+     if(otherHead&&!seconds.includes(otherHead))seconds.unshift(otherHead);
+     const thirds=scored.map(x=>+x.boat);
+     const out=[];
+     for(const q of seconds)for(const z of thirds){
+       if(q===z||z===h)continue;
+       out.push(`${h}-${q}-${z}`);
+     }
+     return [...new Set(out)].slice(0,7);
+   }
+   if(dual){
+     const b1=sevenFor(1,+bestOutside.boat), b2=sevenFor(+bestOutside.boat,1);
+     return {escape:true,dual:true,heads,bets:[...b1,...b2],b1,b2,cut};
+   }
+   const single=sevenFor(1,0).slice(0,8);
+   return {escape:true,dual:false,heads:[1],bets:single,cut};
  }
  function host(){
    return $("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
@@ -24863,13 +24880,19 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(target&&box.nextElementSibling!==target)target.parentNode.insertBefore(box,target);
    else if(!box.isConnected)document.body.appendChild(box);
    if(!p.escape){
-     box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div><div class="note">イン逃げ以外の買い目は現在生成しません。</div>`;return;
+     box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div>`;return;
    }
-   box.innerHTML=`<div class="title">HUNTER買い目</div>
-   <div class="bh532Technique">決まり手予測：逃げ</div>
-   <div class="bets">${p.bets.join(" / ")}</div>`;
+   if(p.dual){
+     box.innerHTML=`<div class="title">HUNTER買い目</div>
+       <div class="bh532Technique">頭候補：${p.heads.join("・")}　｜　1逃げ / ${p.heads[1]}攻め</div>
+       <div class="bets">${p.b1.join(" / ")}<br>${p.b2.join(" / ")}</div>`;
+   }else{
+     box.innerHTML=`<div class="title">HUNTER買い目</div>
+       <div class="bh532Technique">決まり手予測：逃げ</div>
+       <div class="bets">${p.bets.join(" / ")}</div>`;
+   }
  }
- window.BH_ESCAPE_BET_V531={make,render};
+ window.BH_ESCAPE_BET_V533={make,render};
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[4800,7000,9000].forEach(ms=>setTimeout(render,ms)));
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
 })();
@@ -24889,7 +24912,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
  }
  function currentBet(){
-   const p=window.BH_ESCAPE_BET_V531?.make?.()||window.BH_ESCAPE_BET_V530?.make?.();
+   const p=window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||window.BH_ESCAPE_BET_V530?.make?.();
    return p?.bets||[];
  }
  function key(){
