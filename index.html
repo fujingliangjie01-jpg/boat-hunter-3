@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V529</title>
+<title>BOAT HUNTER V530</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15363,6 +15363,13 @@ input,
 </style><style id="bhV529FSourceCSS">
 .compactPhotoWrap{position:relative!important}
 .compactPhotoWrap>.compactFPhotoBadge{position:absolute!important;top:5px!important;right:5px!important;left:auto!important;bottom:auto!important;min-width:0!important;width:auto!important;height:19px!important;padding:0 5px!important;margin:0!important;font-size:10px!important;line-height:17px!important;border-width:1px!important;border-radius:5px!important;transform:none!important;z-index:8!important}
+</style><style id="bhV530EscapeBetCSS">
+#bhEscapeBet530{margin:12px 0;padding:12px;background:#071923;border:2px solid #19b7f1;border-radius:12px;color:#fff}
+#bhEscapeBet530 .title{font-size:16px;font-weight:900;color:#ffd43b;margin-bottom:7px}
+#bhEscapeBet530 .alert{padding:10px;border-radius:8px;background:#39151b;color:#ff8b95;font-weight:900;text-align:center}
+#bhEscapeBet530 .meta{font-size:12px;line-height:1.6;margin-bottom:7px}
+#bhEscapeBet530 .bets{font-size:14px;font-weight:900;line-height:1.7;padding:9px;background:#102c3c;border-radius:8px}
+#bhEscapeBet530 .note{font-size:10px;color:#9db2bd;margin-top:6px}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15373,7 +15380,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.529</div>
+  <div class="topVol">Vol.530</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24878,5 +24885,75 @@ window.__BH_V396_FORCE_2BOX__=true;
  const mo=new MutationObserver(()=>{clearTimeout(window.__bh528);window.__bh528=setTimeout(fixAll,80)});
  if(document.body)mo.observe(document.body,{subtree:true,childList:true});
  window.BH_CORE_FIX_V528={fixAll,reset};
+})();
+</script>
+<script id="bhV530EscapeBetEngine">
+(()=>{
+ const $=id=>document.getElementById(id);
+ function rankRows(){
+   const x=window.BH_RANK_TREND_V521?.current?.();
+   return Array.isArray(x)?x:[];
+ }
+ function row(b){return rankRows().find(x=>+x.boat===+b)}
+ function flowMain(){
+   const a=(window.__BH_RACE_FLOW_ROWS||[]).map(x=>({boat:+x.boat,score:+x.score||0,grade:String(x.grade||""),tech:String(x.technique||x.move||x.best?.technique||x.best?.move||"")})).filter(x=>x.boat);
+   a.sort((x,y)=>y.score-x.score||x.boat-y.boat); return a[0]||null;
+ }
+ function isEscape(){
+   const r1=row(1), fm=flowMain();
+   if(!r1)return false;
+   // 1 must be public head No.1 and must not be downgraded by ability/flow.
+   const strong1=(+r1.head===1) && (+r1.ability<=2) && (+r1.flow<=2);
+   // If race-flow explicitly says another boat's makuri/makuri-sashi is main, this is non-escape.
+   const outsideAttack=fm && fm.boat!==1 && /まくり/.test(fm.tech);
+   return strong1 && !outsideAttack;
+ }
+ function make(){
+   const rows=rankRows(); if(rows.length<6)return null;
+   if(!isEscape())return {escape:false};
+   const r6=row(6);
+   const cut6=!!r6 && +r6.head>=5 && +r6.axis>=5 && +r6.ability>=5 && +r6.flow>=5;
+   const usable=rows.filter(x=>+x.boat!==1 && !(cut6&&+x.boat===6));
+   // 2nd-place strength: market axis is primary; improvement from public head rank is rewarded.
+   const sec=usable.map(x=>{
+     const rise=(+x.head)-(+x.axis);
+     const stable=Math.max(0,3-(+x.ability))+Math.max(0,3-(+x.flow));
+     return {...x,secScore:(7-(+x.axis))*2+rise*1.25+stable*.45};
+   }).sort((a,b)=>b.secScore-a.secScore||+a.axis-+b.axis);
+   const main2=sec.slice(0,2).map(x=>+x.boat);
+   // A boat that is strong in market but then drops in ability/flow becomes a 2nd-place cover, not main.
+   const cover=usable.filter(x=>!main2.includes(+x.boat) && +x.head<=3 && (+x.ability>=3||+x.flow>=3))
+                     .sort((a,b)=>+a.axis-+b.axis).slice(0,1).map(x=>+x.boat);
+   const third=usable.filter(x=>!cut6||+x.boat!==6).map(x=>+x.boat);
+   const bets=[];
+   for(const a of main2)for(const c of third)if(c!==a)bets.push(`1-${a}-${c}`);
+   for(const a of cover)for(const c of main2)if(c!==a)bets.push(`1-${a}-${c}`);
+   return {escape:true,main2,cover,third,cut:cut6?[6]:[],bets:[...new Set(bets)]};
+ }
+ function resultHost(){
+   const result=$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
+     [...document.querySelectorAll("section,div")].find(e=>/結果確認・収支管理/.test(e.textContent||""));
+   return result?.closest("section")||result||null;
+ }
+ function render(){
+   const p=make(); if(!p)return;
+   let box=$("bhEscapeBet530");
+   if(!box){box=document.createElement("section");box.id="bhEscapeBet530"}
+   const host=resultHost();
+   if(host && box.nextElementSibling!==host)host.parentNode.insertBefore(box,host);
+   else if(!box.isConnected)document.body.appendChild(box);
+   if(!p.escape){
+     box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div><div class="note">この段階では買い目を自動生成しません。</div>`;
+     return;
+   }
+   box.innerHTML=`<div class="title">HUNTER買い目｜イン逃げ</div>
+   <div class="meta">頭：<b>1</b>　2着本線：<b>${p.main2.join("・")||"—"}</b>${p.cover.length?`　2着抑え：<b>${p.cover.join("・")}</b>`:""}　切り：<b>${p.cut.join("・")||"なし"}</b></div>
+   <div class="bets">${p.bets.join(" / ")||"買い目なし"}</div>
+   <div class="note">世間頭順位 → 軸順位 → 6艇評価 → レース展望の順位変化から2・3着を選別。</div>`;
+ }
+ window.BH_ESCAPE_BET_V530={make,render};
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>[4800,7000,9000].forEach(ms=>setTimeout(render,ms)));
+ document.addEventListener("change",e=>{if(["stadium","race","date"].includes(e.target?.id))setTimeout(render,100)},true);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1600),{once:true});else setTimeout(render,1600);
 })();
 </script>
