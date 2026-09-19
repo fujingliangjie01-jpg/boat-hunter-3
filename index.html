@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V498</title>
+<title>BOAT HUNTER V501</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -1238,7 +1238,7 @@ body.theme-sg .raceStepBtn{background:linear-gradient(180deg,#7a5511,#4e3306)!im
 #cards{order:10!important}
 #previewActions{order:20!important}
 
-#aiPanel{order:22!important}
+#aiPanel{}
 #entryPanel{order:30!important}
 #outlookPanel{order:40!important}
 
@@ -15191,10 +15191,7 @@ input,
 .previewHead{display:flex!important;align-items:center!important;gap:8px!important}
 .previewHead>div:first-child{margin-right:auto!important}
 .previewFetchBtn{height:34px!important;padding:0 12px!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.72)!important;background:linear-gradient(180deg,#1687cf,#075b91)!important;color:#fff!important;font-weight:900!important;font-size:12px!important}
-.bhWeatherTide498{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:7px 10px 5px}
-.bhWeatherTide498>div{min-width:0;padding:7px 9px;border:1px solid rgba(72,180,235,.24);border-radius:9px;background:rgba(5,29,43,.72)}
-.bhWeatherTide498 span{display:block;font-size:9px;font-weight:900;color:#78c9f1;letter-spacing:.08em}
-.bhWeatherTide498 b{display:block;margin-top:2px;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15205,7 +15202,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.498</div>
+  <div class="topVol">Vol.501</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15334,11 +15331,7 @@ input,
       <button id="getPreview" type="button" class="previewFetchBtn">直前情報取得</button><div id="previewStamp" class="previewStamp">—</div>
     </div>
     <div id="previewState" class="previewState">直前情報取得を押してください</div>
-    <div id="bhWeatherTide498" class="bhWeatherTide498">
-  <div><span>風</span><b id="bhWind498">取得待ち</b></div>
-  <div><span>潮位</span><b id="bhTide498">取得待ち</b></div>
-</div>
-<div class="previewScroll">
+    <div class="previewScroll">
       <table class="previewTable">
         <thead>
           <tr>
@@ -15360,11 +15353,15 @@ input,
     </div>
   </section>
 
-
-  <section id="aiPanel" class="aiPanel hide">
+<section id="aiPanel" class="aiPanel hide">
     <div class="aiReadyMark">AI</div>
     <div><b id="aiModeTitle">解析データ準備完了</b><small id="aiModeSub">HUNTER解析用データを固定しました</small></div>
   </section>
+
+
+
+
+  
 <section id="hunterAnalysisBase" class="hab habCollapsed">
   <button type="button" id="hunterAnalysisToggle" class="habAnalysisToggle" aria-expanded="false">
     <span><small>ANALYSIS DETAIL</small><b>世間評価・HUNTER事前評価</b></span><strong>詳細を見る ＋</strong>
@@ -23726,17 +23723,9 @@ window.__BH_V396_FORCE_2BOX__=true;
  const $=id=>document.getElementById(id);
  const fmt=n=>Number.isFinite(Number(n))?Number(n).toFixed(1):"—";
  async function refreshConditions(){
-   const w=await getSui().catch(()=>null);
-   if(w){
-     const info=bhWindInfo(w.directionDeg??w.direction);
-     $("bhWind498").textContent=`${info.label} ${fmt(w.wind)}m/s${w.gust!=null?`（瞬間 ${fmt(w.gust)}）`:""}`;
-   }else $("bhWind498").textContent="風データ取得不可";
-   const t=await getTide().catch(()=>null);
-   if(t){
-     const level=t.level??t.height??t.value;
-     const phase=t.phaseLabel||t.phase||t.state||"潮位取得済み";
-     $("bhTide498").textContent=`${phase}${level!=null?` ${level}`:""}`;
-   }else $("bhTide498").textContent="潮位データ取得不可";
+   /* 風・潮位は取得だけ行い、直前情報には表示しない。レース展望側で使用 */
+   await getSui().catch(()=>null);
+   await getTide().catch(()=>null);
  }
  function bind(){
    const b=$("getPreview"); if(!b||b.dataset.bound498)return;
