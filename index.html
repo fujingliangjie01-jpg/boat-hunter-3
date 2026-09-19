@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V526</title>
+<title>BOAT HUNTER V527</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15352,6 +15352,12 @@ input,
 #bhResultStats526 .cell{background:#102737;border-radius:7px;padding:7px 3px;text-align:center;font-size:10px}
 #bhResultStats526 .cell b{display:block;font-size:15px;color:#fff;margin-top:2px}
 #bhResultStats526 .note{font-size:9px;color:#91a9b8;margin-top:6px;text-align:right}
+</style><style id="bhV527LearnBetCSS">
+#bhLearnBet527{margin:10px 0;padding:11px;background:#071722;border:2px solid #25a5d8;border-radius:11px;color:#fff}
+#bhLearnBet527 .ttl{font-weight:900;color:#ffd34d;font-size:15px;margin-bottom:7px}
+#bhLearnBet527 .line{font-size:11px;line-height:1.55;margin:3px 0}
+#bhLearnBet527 .bets{margin-top:7px;padding:8px;background:#102838;border-radius:8px;font-weight:900;font-size:13px;line-height:1.55}
+#bhLearnBet527 .sub{font-size:9px;color:#91a9b8;margin-top:5px}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15362,7 +15368,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.526</div>
+  <div class="topVol">Vol.527</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24748,5 +24754,76 @@ window.__BH_V396_FORCE_2BOX__=true;
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
  [800,1800,3500].forEach(ms=>setTimeout(render,ms));
  window.BH_RESULT_STATS_V526={read,register,render};
+})();
+</script>
+<script id="bhV527LearnedBetEngine">
+(()=>{
+ const DB="BH_LEARNING_RACES_V516",$=id=>document.getElementById(id);
+ const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
+ const rk=()=>window.BH_RANK_TREND_V521?.current?.()||null;
+ const curFlow=()=>window.__BH_RACE_FLOW_ROWS||[];
+ const mainTechnique=()=>{
+   const a=curFlow().map(x=>({boat:+x.boat,score:+x.score||0,t:String(x.technique||x.move||x.best?.technique||x.best?.move||"")})).filter(x=>x.boat&&x.t);
+   a.sort((x,y)=>y.score-x.score||x.boat-y.boat);return a[0]||null;
+ };
+ function dist(a,b){
+   let d=0,n=0;
+   for(const k of ["head","axis","ability","flow"]){if(Number.isFinite(+a[k])&&Number.isFinite(+b[k])){d+=Math.abs(+a[k]-+b[k]);n++}}
+   return n?d/n:99;
+ }
+ function learned(){
+   const now=rk();if(!now)return null;
+   const hist=read().filter(r=>r.result?.order?.length===3&&r.rankComparison?.boats?.length===6);
+   const scores={};for(let b=1;b<=6;b++)scores[b]={w:0,p1:0,p2:0,p3:0};
+   for(const r of hist){
+     for(const x of now){
+       const old=r.rankComparison.boats.find(z=>+z.boat===+x.boat);if(!old)continue;
+       const dd=dist(x,old);if(dd>2.25)continue;
+       const w=1/(1+dd);const z=scores[x.boat];z.w+=w;
+       const pos=r.result.order.indexOf(x.boat);if(pos===0)z.p1+=w;else if(pos===1)z.p2+=w;else if(pos===2)z.p3+=w;
+     }
+   }
+   const rows=now.map(x=>{const z=scores[x.boat],den=z.w||1;return {...x,sample:z.w,win:z.p1/den,second:z.p2/den,third:z.p3/den,top3:(z.p1+z.p2+z.p3)/den}});
+   return {rows,history:hist.length};
+ }
+ function build(){
+   const L=learned();if(!L)return null;
+   const t=mainTechnique();
+   let heads=[...L.rows].sort((a,b)=>b.win-a.win||a.head-b.head);
+   const enough=heads[0]?.sample>=3;
+   let headBoats;
+   if(enough && heads[0].win>=.52 && heads[0].win-heads[1].win>=.12)headBoats=[heads[0].boat];
+   else headBoats=heads.slice(0,2).map(x=>x.boat);
+   // If learning is thin, use rank-comparison consensus rather than inventing certainty.
+   if(!enough)headBoats=[...L.rows].sort((a,b)=>(a.head+a.ability+a.flow)-(b.head+b.ability+b.flow)).slice(0,2).map(x=>x.boat);
+   const axis=[...L.rows].filter(x=>!headBoats.includes(x.boat)).sort((a,b)=>(b.second+b.third*0.75)-(a.second+a.third*0.75)||a.axis-b.axis);
+   const third=[...L.rows].sort((a,b)=>b.top3-a.top3||a.flow-b.flow);
+   const cuts=[...L.rows].filter(x=>x.sample>=4&&x.top3<=.12).map(x=>x.boat);
+   let bets=[];
+   for(const h of headBoats)for(const a of axis.slice(0,3))for(const c of third){
+     if(h===a.boat||h===c.boat||a.boat===c.boat||cuts.includes(c.boat))continue;
+     bets.push({combo:`${h}-${a.boat}-${c.boat}`,score:(a.second*2+a.third)+(c.third*1.5+c.second*.4)+(heads.find(x=>x.boat===h)?.win||0)*2});
+   }
+   bets.sort((a,b)=>b.score-a.score);
+   bets=[...new Map(bets.map(x=>[x.combo,x])).values()];
+   const spread=(heads[0]?.win||0)-(heads[1]?.win||0);
+   let points=!enough?16:spread>=.20?5:spread>=.12?8:spread>=.06?12:16;
+   if(!t?.t)points+=4;points=Math.min(21,Math.max(5,points));
+   return {history:L.history,technique:t,heads:headBoats,axis:axis.slice(0,3).map(x=>x.boat),cuts,points,see:points>20,bets:bets.slice(0,Math.min(points,20)),rows:L.rows};
+ }
+ function render(){
+   const p=build();if(!p)return;
+   let box=$("bhLearnBet527");const host=$("bhBetLearn517")||$("outlookPanel")||document.body;
+   if(!box){box=document.createElement("section");box.id="bhLearnBet527";host.insertAdjacentElement("afterend",box)}
+   const bettxt=p.see?"見推奨":(p.bets.length?p.bets.map(x=>x.combo).join(" / "):"学習データ不足");
+   box.innerHTML=`<div class="ttl">学習ベース買い目</div>
+   <div class="line">頭：<b>${p.heads.join("・")}</b>　軸：<b>${p.axis.join("・")||"—"}</b>　切り：<b>${p.cuts.join("・")||"なし"}</b></div>
+   <div class="line">主展開：<b>${p.technique?`${p.technique.boat}号艇 ${p.technique.t}`:"—"}</b>　目標：<b>${p.see?"見":p.points+"点"}</b></div>
+   <div class="bets">${bettxt}</div><div class="sub">順位比較＋実結果の類似パターン ${p.history}R を参照。データ不足時は順位比較を優先。</div>`;
+ }
+ window.BH_LEARNED_BET_V527={learned,build,render};
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>[4500,6500,8500].forEach(ms=>setTimeout(render,ms)));
+ document.addEventListener("click",e=>{if(e.target?.closest?.("#bhResultLearnButton525"))setTimeout(render,500)},true);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
 })();
 </script>
