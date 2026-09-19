@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V517</title>
+<title>BOAT HUNTER V518</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15306,6 +15306,11 @@ input,
 .blBottom517{margin-top:8px;display:flex;justify-content:space-between;align-items:center;background:#162332;border-radius:8px;padding:8px}
 .blBottom517>b{color:#ffd447;font-size:18px}.blBottom517 span{font-size:11px;color:#c8d5df}
 .blNote517{font-size:10px;color:#8fa9bd;margin-top:6px;line-height:1.45}
+</style><style id="bhV518LearningIOCSS">
+#bhLearningIO518{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+#bhLearningIO518 button,#bhLearningIO518 label{flex:1;min-width:130px;border:1px solid #38566d;border-radius:8px;padding:9px 8px;background:#122434;color:#fff;font-weight:800;font-size:12px;text-align:center}
+#bhLearningIO518 label{cursor:pointer}#bhLearningIO518 input{display:none}
+#bhLearningIOStatus518{width:100%;font-size:10px;color:#8fa9bd;text-align:right}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15316,7 +15321,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.517</div>
+  <div class="topVol">Vol.518</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24306,5 +24311,69 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_BET_LEARNING_V517={predict,render,learnedRates};
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[3000,5000].forEach(ms=>setTimeout(render,ms)));
  document.addEventListener("click",e=>{if(/結果|確認|確定/.test(e.target?.textContent||""))setTimeout(render,2200)},true);
+})();
+</script><script id="bhV518LearningIO">
+(()=>{
+ const DB="BH_LEARNING_RACES_V516";
+ const $=id=>document.getElementById(id);
+ const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
+ const status=t=>{const e=$("bhLearningIOStatus518");if(e)e.textContent=t};
+ function mount(){
+   const host=$("bhBetLearn517");if(!host||$("bhLearningIO518"))return false;
+   const box=document.createElement("div");box.id="bhLearningIO518";
+   box.innerHTML=`<button type="button" id="bhLearningExport518">学習データ書き出し</button>
+   <label>学習データ読み込み<input id="bhLearningImport518" type="file" accept=".json,application/json"></label>
+   <div id="bhLearningIOStatus518">保存 ${read().length}R</div>`;
+   host.appendChild(box);
+   $("bhLearningExport518").onclick=exportData;
+   $("bhLearningImport518").onchange=importData;
+   return true;
+ }
+ function exportData(){
+   const races=read();
+   const payload={
+     format:"BOAT_HUNTER_LEARNING",
+     version:518,
+     exportedAt:new Date().toISOString(),
+     count:races.length,
+     confirmed:races.filter(x=>x?.result?.order?.length===3).length,
+     races
+   };
+   const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+   const a=document.createElement("a");
+   a.href=URL.createObjectURL(blob);
+   const d=new Date(),pad=n=>String(n).padStart(2,"0");
+   a.download=`BOAT_HUNTER_LEARNING_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+   status(`書き出し ${payload.count}R / 結果確定 ${payload.confirmed}R`);
+ }
+ async function importData(e){
+   const f=e.target.files?.[0];if(!f)return;
+   try{
+     const x=JSON.parse(await f.text());
+     const incoming=Array.isArray(x)?x:Array.isArray(x?.races)?x.races:null;
+     if(!incoming)throw new Error("形式が違います");
+     const map=new Map(read().filter(r=>r?.key).map(r=>[r.key,r]));
+     let added=0,updated=0;
+     for(const r of incoming){
+       if(!r?.key)continue;
+       const old=map.get(r.key);
+       if(!old){map.set(r.key,r);added++;continue}
+       const newer=(Number(r.savedAt)||0)>=(Number(old.savedAt)||0)?r:old;
+       if(old.result&&!newer.result)newer.result=old.result;
+       if(r.result&&!newer.result)newer.result=r.result;
+       map.set(r.key,newer);updated++;
+     }
+     const merged=[...map.values()].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.stadium||"").localeCompare(b.stadium||"")-(0)||(Number(a.race)||0)-(Number(b.race)||0));
+     localStorage.setItem(DB,JSON.stringify(merged));
+     window.__BH_LEARNING_DB_V516=merged;
+     window.BH_BET_LEARNING_V517?.render?.();
+     status(`読み込み完了 +${added}R / 更新${updated}R / 合計${merged.length}R`);
+   }catch(err){status(`読み込み失敗: ${err?.message||"JSONエラー"}`)}
+   finally{e.target.value=""}
+ }
+ window.BH_LEARNING_IO_V518={exportData,importData,mount};
+ [0,1200,3000].forEach(ms=>setTimeout(mount,ms));
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(()=>{mount();status(`保存 ${read().length}R`)},5200));
 })();
 </script>
