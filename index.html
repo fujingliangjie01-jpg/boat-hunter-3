@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V511</title>
+<title>BOAT HUNTER V512</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15235,16 +15235,16 @@ input,
   transform:none!important;
 }
 </style><style id="bhV510RankCompareStyle">
-#bhRankCompare510{margin:10px 0 12px;padding:8px;border:2px solid #0aa7ff;border-radius:13px;background:linear-gradient(180deg,#061b2b,#04131f);color:#fff;overflow:hidden;box-shadow:0 0 18px rgba(0,153,255,.10)}
+#bhRankCompare510{margin:10px 0 12px;padding:8px;border:2px solid #0aa7ff;border-radius:13px;background:#061722;color:#fff;overflow:hidden;box-shadow:0 0 18px rgba(0,153,255,.10)}
 #bhRankCompare510 .rc510Title{font-size:15px;font-weight:1000;margin:0 0 8px;padding:4px 5px;color:#f4fbff}
 #bhRankCompare510 .rc510Scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 #bhRankCompare510 table{width:100%;min-width:760px;border-collapse:separate;border-spacing:2px;font-size:12px;text-align:center}
 #bhRankCompare510 th{padding:7px 4px;border-radius:4px;font-weight:1000}
-#bhRankCompare510 td{background:#091d2b;padding:7px 4px;border-radius:3px;border:1px solid rgba(53,132,175,.24)}
-#bhRankCompare510 thead tr:first-child th:nth-child(2){background:linear-gradient(180deg,#086acb,#064c94);border:1px solid #1ca6ff}
-#bhRankCompare510 thead tr:first-child th:nth-child(3){background:linear-gradient(180deg,#8b6300,#513a00);border:1px solid #f4b91f}
-#bhRankCompare510 thead tr:first-child th:nth-child(4){background:linear-gradient(180deg,#6720a1,#35105c);border:1px solid #a34cff}
-#bhRankCompare510 thead tr:first-child th:nth-child(5){background:linear-gradient(180deg,#006c3b,#003d23);border:1px solid #11c56e}
+#bhRankCompare510 td{background:#0a1c28;padding:7px 4px;border-radius:3px;border:1px solid rgba(53,132,175,.24)}
+#bhRankCompare510 thead tr:first-child th:nth-child(2){background:linear-gradient(180deg,#0b4f7d,#073653);border:1px solid #1ca6ff}
+#bhRankCompare510 thead tr:first-child th:nth-child(3){background:linear-gradient(180deg,#66500e,#3d3009);border:1px solid #f4b91f}
+#bhRankCompare510 thead tr:first-child th:nth-child(4){background:linear-gradient(180deg,#532378,#34154d);border:1px solid #a34cff}
+#bhRankCompare510 thead tr:first-child th:nth-child(5){background:linear-gradient(180deg,#075a3b,#043923);border:1px solid #11c56e}
 #bhRankCompare510 thead tr:nth-child(2) th:nth-child(-n+3){background:#073d67}
 #bhRankCompare510 thead tr:nth-child(2) th:nth-child(n+4):nth-child(-n+6){background:#4b3908}
 #bhRankCompare510 thead tr:nth-child(2) th:nth-child(n+7):nth-child(-n+9){background:#351451}
@@ -15267,6 +15267,11 @@ input,
 #bhRankCompare510 .rcSame{color:#dceaf5;font-size:22px;font-weight:1000}
 #bhRankCompare510 .changeCell{background:#052c21;border-color:#087c50}
 #bhRankCompare510 .rc510State{font-size:10px;color:#8fa8b9;text-align:right;padding:4px 3px 0}
+</style>
+<style id="bhV512MobileCompare">
+#bhRankCompare510 table{min-width:700px!important}
+#bhRankCompare510 td,#bhRankCompare510 th{padding:6px 3px!important}
+#bhRankCompare510 .changeCell{background:#092219!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15277,7 +15282,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.511</div>
+  <div class="topVol">Vol.512</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24007,25 +24012,60 @@ window.__BH_V396_FORCE_2BOX__=true;
    const rank=Array(6);order.forEach((i,n)=>rank[i]=n+1);
    return {head:hp,axis:ap,rank};
  }
- function sourceRows(){
-   const ability=window.__BH_DIAG_ROWS||window.__HUNTER_DIAG_ROWS||window.__BH_COMPARE_ROWS||[];
-   const flow=window.__BH_RACE_FLOW_ROWS||window.__HUNTER_RACE_FLOW||window.__bhRaceFlowRows||[];
-   return {ability,flow};
+ function relativeGrade(rows){
+   const z=rows.filter(x=>num(x.score)!=null).slice().sort((a,b)=>b.score-a.score||a.boat-b.boat),g={};
+   z.forEach(x=>g[x.boat]="B"); if(!z.length)return g;
+   const top=z[0],second=z[1],last=z[z.length-1];
+   if(second&&top.score>=72&&top.score-second.score>=12)g[top.boat]="S"; else g[top.boat]="A";
+   if(last&&last.boat!==top.boat)g[last.boat]="D";
+   z.slice(1,-1).forEach(x=>{if(x.score<38)g[x.boat]="C"});
+   return g;
  }
- function pick(rows,boat){
-   if(!Array.isArray(rows))return null;
-   return rows.find((x,i)=>Number(x?.boat??x?.entry??x?.course??(i+1))===boat)||rows[boat-1]||null;
+ function abilityRows510(){
+   const src=window.__BH_DIAG_ROWS||window.__HUNTER_DIAG||window.__bhDiagnosisRows;
+   if(Array.isArray(src)&&src.length===6){
+     const rows=src.map((x,i)=>({boat:num(x.boat??x.entry_number)??i+1,score:num(x.score??x.total??x.point),grade:String(x.grade??x.rankGrade??x.evaluation??"")}));
+     const g=relativeGrade(rows);
+     rows.forEach(x=>{if(!/^[SABCD]$/.test(x.grade))x.grade=g[x.boat]||"—"});
+     return rows;
+   }
+   const panel=$("comparePanel");
+   return [1,2,3,4,5,6].map((boat,i)=>{
+     const th=panel?.querySelectorAll("thead th")?.[i+1];
+     const gr=(panel?.querySelector(`[data-boat="${boat}"] .bhDiagGrade470,[data-boat="${boat}"] .compareEval475`)?.textContent||th?.querySelector(".bhDiagGrade470,.compareEval475")?.textContent||"").replace(/能力|評価/g,"").trim();
+     const candidates=[
+       panel?.querySelector(`[data-boat="${boat}"] [data-diag-score]`),
+       panel?.querySelector(`[data-entry="${boat}"] [data-diag-score]`)
+     ];
+     const sc=candidates.map(e=>num(e?.dataset?.diagScore??e?.textContent)).find(v=>v!=null);
+     return {boat,score:sc,grade:/^[SABCD]$/.test(gr)?gr:"—"};
+   });
  }
- function score(x){
-   return num(x?.score??x?.finalScore??x?.total??x?.abilityScore??x?.best?.score);
+ function flowRows510(){
+   const src=window.__BH_RACE_FLOW_ROWS||window.__HUNTER_RACE_FLOW||window.__bhRaceFlowRows;
+   if(Array.isArray(src)&&src.length===6){
+     const rows=src.map((x,i)=>({boat:num(x.boat)??i+1,score:num(x.score??x.best?.score),grade:String(x.grade??x.flowGrade??x.best?.grade??"")}));
+     const g=relativeGrade(rows);
+     rows.forEach(x=>{if(!/^[SABCD]$/.test(x.grade))x.grade=g[x.boat]||"—"});
+     return rows;
+   }
+   const box=$("bhRaceFlowV460"),cards=box?[...box.querySelectorAll(".flowCard,.raceFlowCard,[data-flow-boat],.bhBoatMove")]:[];
+   const rows=[1,2,3,4,5,6].map((boat,i)=>{
+     const c=cards[i],sc=num(c?.querySelector(".ufScore,.bhBoatMoveScore")?.textContent);
+     const gr=(c?.querySelector(".bhFlowGrade470,.flowEval475,.ufOutlook .ufGrade")?.textContent||"").replace(/展開|評価/g,"").trim();
+     return {boat,score:sc,grade:/^[SABCD]$/.test(gr)?gr:"—"};
+   });
+   const g=relativeGrade(rows);rows.forEach(x=>{if(x.grade==="—"&&x.score!=null)x.grade=g[x.boat]||"—"});return rows;
  }
- function grade(x){
-   return String(x?.grade??x?.rankGrade??x?.evaluation??x?.best?.grade??"—");
- }
+ function sourceRows(){return {ability:abilityRows510(),flow:flowRows510()}}
+ function pick(rows,boat){return Array.isArray(rows)?rows.find(x=>Number(x.boat)===boat)||null:null}
+ function score(x){return num(x?.score)}
+ function grade(x){return /^[SABCD]$/.test(String(x?.grade||""))?String(x.grade):"—"}
  function ranks(rows){
-   const q=[1,2,3,4,5,6].map(boat=>({boat,row:pick(rows,boat)}));
-   q.sort((x,y)=>(score(y.row)??-1)-(score(x.row)??-1)||x.boat-y.boat);
-   const out={};q.forEach((x,i)=>out[x.boat]=i+1);return out;
+   const good=(rows||[]).filter(x=>score(x)!=null);
+   if(!good.length)return {};
+   const q=good.slice().sort((x,y)=>score(y)-score(x)||x.boat-y.boat),out={};
+   q.forEach((x,i)=>out[x.boat]=i+1);return out;
  }
  function arrow(base,now){
    if(!base||!now)return '<span class="rcSame">—</span>';
@@ -24065,7 +24105,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  function restore(){ensure();const x=load();if(x){window.__HUNTER_ODDS120=x;render(x)}}
  window.BH_RENDER_RANK_COMPARE510=run;
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",restore,{once:true}):restore();
- $("aiAnalyzeTop503")?.addEventListener("click",()=>{setTimeout(run,0);setTimeout(()=>{const x=window.__HUNTER_ODDS120||load();if(valid(x))render(x)},1900)});
+ $("aiAnalyzeTop503")?.addEventListener("click",()=>{setTimeout(run,0);[900,1800,2800].forEach(ms=>setTimeout(()=>{const x=window.__HUNTER_ODDS120||load();if(valid(x))render(x)},ms))});
  ["stadium","race","date"].forEach(id=>$(id)?.addEventListener("change",()=>setTimeout(restore,0)));
 })();
 </script>
