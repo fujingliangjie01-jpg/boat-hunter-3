@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V530</title>
+<title>BOAT HUNTER V531</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15352,12 +15352,6 @@ input,
 #bhResultStats526 .cell{background:#102737;border-radius:7px;padding:7px 3px;text-align:center;font-size:10px}
 #bhResultStats526 .cell b{display:block;font-size:15px;color:#fff;margin-top:2px}
 #bhResultStats526 .note{font-size:9px;color:#91a9b8;margin-top:6px;text-align:right}
-</style><style id="bhV527LearnBetCSS">
-#bhLearnBet527{margin:10px 0;padding:11px;background:#071722;border:2px solid #25a5d8;border-radius:11px;color:#fff}
-#bhLearnBet527 .ttl{font-weight:900;color:#ffd34d;font-size:15px;margin-bottom:7px}
-#bhLearnBet527 .line{font-size:11px;line-height:1.55;margin:3px 0}
-#bhLearnBet527 .bets{margin-top:7px;padding:8px;background:#102838;border-radius:8px;font-weight:900;font-size:13px;line-height:1.55}
-#bhLearnBet527 .sub{font-size:9px;color:#91a9b8;margin-top:5px}
 </style><style id="bhV528ActionStateCSS">
 .bhActionDone528{background:#777!important;border-color:#888!important;color:#ddd!important;box-shadow:none!important;filter:saturate(.15)!important;opacity:.72!important}
 </style><style id="bhV529FSourceCSS">
@@ -15380,7 +15374,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.530</div>
+  <div class="topVol">Vol.531</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24776,77 +24770,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_RESULT_STATS_V526={read,register,render};
 })();
 </script>
-<script id="bhV527LearnedBetEngine">
-(()=>{
- const DB="BH_LEARNING_RACES_V516",$=id=>document.getElementById(id);
- const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
- const rk=()=>window.BH_RANK_TREND_V521?.current?.()||null;
- const curFlow=()=>window.__BH_RACE_FLOW_ROWS||[];
- const mainTechnique=()=>{
-   const a=curFlow().map(x=>({boat:+x.boat,score:+x.score||0,t:String(x.technique||x.move||x.best?.technique||x.best?.move||"")})).filter(x=>x.boat&&x.t);
-   a.sort((x,y)=>y.score-x.score||x.boat-y.boat);return a[0]||null;
- };
- function dist(a,b){
-   let d=0,n=0;
-   for(const k of ["head","axis","ability","flow"]){if(Number.isFinite(+a[k])&&Number.isFinite(+b[k])){d+=Math.abs(+a[k]-+b[k]);n++}}
-   return n?d/n:99;
- }
- function learned(){
-   const now=rk();if(!now)return null;
-   const hist=read().filter(r=>r.result?.order?.length===3&&r.rankComparison?.boats?.length===6);
-   const scores={};for(let b=1;b<=6;b++)scores[b]={w:0,p1:0,p2:0,p3:0};
-   for(const r of hist){
-     for(const x of now){
-       const old=r.rankComparison.boats.find(z=>+z.boat===+x.boat);if(!old)continue;
-       const dd=dist(x,old);if(dd>2.25)continue;
-       const w=1/(1+dd);const z=scores[x.boat];z.w+=w;
-       const pos=r.result.order.indexOf(x.boat);if(pos===0)z.p1+=w;else if(pos===1)z.p2+=w;else if(pos===2)z.p3+=w;
-     }
-   }
-   const rows=now.map(x=>{const z=scores[x.boat],den=z.w||1;return {...x,sample:z.w,win:z.p1/den,second:z.p2/den,third:z.p3/den,top3:(z.p1+z.p2+z.p3)/den}});
-   return {rows,history:hist.length};
- }
- function build(){
-   const L=learned();if(!L)return null;
-   const t=mainTechnique();
-   let heads=[...L.rows].sort((a,b)=>b.win-a.win||a.head-b.head);
-   const enough=heads[0]?.sample>=3;
-   let headBoats;
-   if(enough && heads[0].win>=.52 && heads[0].win-heads[1].win>=.12)headBoats=[heads[0].boat];
-   else headBoats=heads.slice(0,2).map(x=>x.boat);
-   // If learning is thin, use rank-comparison consensus rather than inventing certainty.
-   if(!enough)headBoats=[...L.rows].sort((a,b)=>(a.head+a.ability+a.flow)-(b.head+b.ability+b.flow)).slice(0,2).map(x=>x.boat);
-   const axis=[...L.rows].filter(x=>!headBoats.includes(x.boat)).sort((a,b)=>(b.second+b.third*0.75)-(a.second+a.third*0.75)||a.axis-b.axis);
-   const third=[...L.rows].sort((a,b)=>b.top3-a.top3||a.flow-b.flow);
-   const cuts=[...L.rows].filter(x=>x.sample>=4&&x.top3<=.12).map(x=>x.boat);
-   let bets=[];
-   for(const h of headBoats)for(const a of axis.slice(0,3))for(const c of third){
-     if(h===a.boat||h===c.boat||a.boat===c.boat||cuts.includes(c.boat))continue;
-     bets.push({combo:`${h}-${a.boat}-${c.boat}`,score:(a.second*2+a.third)+(c.third*1.5+c.second*.4)+(heads.find(x=>x.boat===h)?.win||0)*2});
-   }
-   bets.sort((a,b)=>b.score-a.score);
-   bets=[...new Map(bets.map(x=>[x.combo,x])).values()];
-   const spread=(heads[0]?.win||0)-(heads[1]?.win||0);
-   let points=!enough?16:spread>=.20?5:spread>=.12?8:spread>=.06?12:16;
-   if(!t?.t)points+=4;points=Math.min(21,Math.max(5,points));
-   return {history:L.history,technique:t,heads:headBoats,axis:axis.slice(0,3).map(x=>x.boat),cuts,points,see:points>20,bets:bets.slice(0,Math.min(points,20)),rows:L.rows};
- }
- function render(){
-   const p=build();if(!p)return;
-   let box=$("bhLearnBet527");const host=$("bhBetLearn517")||$("outlookPanel")||document.body;
-   if(!box){box=document.createElement("section");box.id="bhLearnBet527";host.insertAdjacentElement("afterend",box)}
-   const bettxt=p.see?"見推奨":(p.bets.length?p.bets.map(x=>x.combo).join(" / "):"学習データ不足");
-   box.innerHTML=`<div class="ttl">学習ベース買い目</div>
-   <div class="line">頭：<b>${p.heads.join("・")}</b>　軸：<b>${p.axis.join("・")||"—"}</b>　切り：<b>${p.cuts.join("・")||"なし"}</b></div>
-   <div class="line">主展開：<b>${p.technique?`${p.technique.boat}号艇 ${p.technique.t}`:"—"}</b>　目標：<b>${p.see?"見":p.points+"点"}</b></div>
-   <div class="bets">${bettxt}</div><div class="sub">順位比較＋実結果の類似パターン ${p.history}R を参照。データ不足時は順位比較を優先。</div>`;
- }
- window.BH_LEARNED_BET_V527={learned,build,render};
- $("aiAnalyzeTop503")?.addEventListener("click",()=>[4500,6500,8500].forEach(ms=>setTimeout(render,ms)));
- document.addEventListener("click",e=>{if(e.target?.closest?.("#bhResultLearnButton525"))setTimeout(render,500)},true);
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
-})();
-</script>
+
 <script id="bhV528CoreFixes">
 (()=>{
  const $=id=>document.getElementById(id);
@@ -24887,73 +24811,62 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_CORE_FIX_V528={fixAll,reset};
 })();
 </script>
-<script id="bhV530EscapeBetEngine">
+<script id="bhV531EscapeBetEngine">
 (()=>{
  const $=id=>document.getElementById(id);
- function rankRows(){
-   const x=window.BH_RANK_TREND_V521?.current?.();
-   return Array.isArray(x)?x:[];
- }
- function row(b){return rankRows().find(x=>+x.boat===+b)}
+ const rows=()=>{const x=window.BH_RANK_TREND_V521?.current?.();return Array.isArray(x)?x:[]};
+ const R=b=>rows().find(x=>+x.boat===+b);
  function flowMain(){
-   const a=(window.__BH_RACE_FLOW_ROWS||[]).map(x=>({boat:+x.boat,score:+x.score||0,grade:String(x.grade||""),tech:String(x.technique||x.move||x.best?.technique||x.best?.move||"")})).filter(x=>x.boat);
-   a.sort((x,y)=>y.score-x.score||x.boat-y.boat); return a[0]||null;
+   const a=(window.__BH_RACE_FLOW_ROWS||[]).map(x=>({boat:+x.boat,score:+x.score||0,tech:String(x.technique||x.move||x.best?.technique||x.best?.move||"")})).filter(x=>x.boat);
+   a.sort((x,y)=>y.score-x.score||x.boat-y.boat);return a[0]||null;
  }
- function isEscape(){
-   const r1=row(1), fm=flowMain();
-   if(!r1)return false;
-   // 1 must be public head No.1 and must not be downgraded by ability/flow.
-   const strong1=(+r1.head===1) && (+r1.ability<=2) && (+r1.flow<=2);
-   // If race-flow explicitly says another boat's makuri/makuri-sashi is main, this is non-escape.
-   const outsideAttack=fm && fm.boat!==1 && /まくり/.test(fm.tech);
-   return strong1 && !outsideAttack;
+ function escape(){
+   const r=R(1),f=flowMain(); if(!r)return false;
+   return +r.head===1 && +r.ability<=2 && +r.flow<=2 && !(f&&f.boat!==1&&/まくり/.test(f.tech));
  }
  function make(){
-   const rows=rankRows(); if(rows.length<6)return null;
-   if(!isEscape())return {escape:false};
-   const r6=row(6);
-   const cut6=!!r6 && +r6.head>=5 && +r6.axis>=5 && +r6.ability>=5 && +r6.flow>=5;
-   const usable=rows.filter(x=>+x.boat!==1 && !(cut6&&+x.boat===6));
-   // 2nd-place strength: market axis is primary; improvement from public head rank is rewarded.
-   const sec=usable.map(x=>{
-     const rise=(+x.head)-(+x.axis);
-     const stable=Math.max(0,3-(+x.ability))+Math.max(0,3-(+x.flow));
-     return {...x,secScore:(7-(+x.axis))*2+rise*1.25+stable*.45};
-   }).sort((a,b)=>b.secScore-a.secScore||+a.axis-+b.axis);
-   const main2=sec.slice(0,2).map(x=>+x.boat);
-   // A boat that is strong in market but then drops in ability/flow becomes a 2nd-place cover, not main.
-   const cover=usable.filter(x=>!main2.includes(+x.boat) && +x.head<=3 && (+x.ability>=3||+x.flow>=3))
-                     .sort((a,b)=>+a.axis-+b.axis).slice(0,1).map(x=>+x.boat);
-   const third=usable.filter(x=>!cut6||+x.boat!==6).map(x=>+x.boat);
+   const a=rows();if(a.length<6)return null;
+   if(!escape())return {escape:false,bets:[]};
+   const six=R(6);
+   const cut6=!!six && +six.head>=5 && +six.axis>=5 && +six.ability>=5 && +six.flow>=5;
+   const cand=a.filter(x=>+x.boat!==1&&!(cut6&&+x.boat===6));
+   // Main 2nd: strongest market-axis boat + strongest boat raised by ability/flow relative to market.
+   const axisTop=[...cand].sort((x,y)=>+x.axis-+y.axis||+x.head-+y.head)[0];
+   const raised=[...cand].filter(x=>+x.boat!==+axisTop?.boat).sort((x,y)=>{
+     const sx=(+x.head-+x.ability)+(+x.head-+x.flow);
+     const sy=(+y.head-+y.ability)+(+y.head-+y.flow);
+     return sy-sx||(+x.axis)-(+y.axis)||(+x.boat)-(+y.boat);
+   })[0];
+   const main2=[...new Set([+axisTop?.boat,+raised?.boat].filter(Boolean))];
+   // Cover: strongest remaining market-axis boat; only 2nd against the two main boats.
+   const cover=[...cand].filter(x=>!main2.includes(+x.boat)).sort((x,y)=>+x.axis-+y.axis||+x.head-+y.head).slice(0,1).map(x=>+x.boat);
+   const third=cand.map(x=>+x.boat);
    const bets=[];
-   for(const a of main2)for(const c of third)if(c!==a)bets.push(`1-${a}-${c}`);
-   for(const a of cover)for(const c of main2)if(c!==a)bets.push(`1-${a}-${c}`);
+   for(const b of main2)for(const c of third)if(c!==b)bets.push(`1-${b}-${c}`);
+   for(const b of cover)for(const c of main2)if(c!==b)bets.push(`1-${b}-${c}`);
    return {escape:true,main2,cover,third,cut:cut6?[6]:[],bets:[...new Set(bets)]};
  }
- function resultHost(){
-   const result=$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
+ function host(){
+   return $("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
      [...document.querySelectorAll("section,div")].find(e=>/結果確認・収支管理/.test(e.textContent||""));
-   return result?.closest("section")||result||null;
  }
  function render(){
-   const p=make(); if(!p)return;
-   let box=$("bhEscapeBet530");
-   if(!box){box=document.createElement("section");box.id="bhEscapeBet530"}
-   const host=resultHost();
-   if(host && box.nextElementSibling!==host)host.parentNode.insertBefore(box,host);
+   document.getElementById("bhLearnBet527")?.remove();
+   const p=make();if(!p)return;
+   let box=$("bhEscapeBet530");if(!box){box=document.createElement("section");box.id="bhEscapeBet530"}
+   const h=host(),target=h?.closest("section")||h;
+   if(target&&box.nextElementSibling!==target)target.parentNode.insertBefore(box,target);
    else if(!box.isConnected)document.body.appendChild(box);
    if(!p.escape){
-     box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div><div class="note">この段階では買い目を自動生成しません。</div>`;
-     return;
+     box.innerHTML=`<div class="title">HUNTER買い目</div><div class="alert">⚠ イン逃げ以外</div><div class="note">イン逃げ以外の買い目は現在生成しません。</div>`;return;
    }
    box.innerHTML=`<div class="title">HUNTER買い目｜イン逃げ</div>
-   <div class="meta">頭：<b>1</b>　2着本線：<b>${p.main2.join("・")||"—"}</b>${p.cover.length?`　2着抑え：<b>${p.cover.join("・")}</b>`:""}　切り：<b>${p.cut.join("・")||"なし"}</b></div>
-   <div class="bets">${p.bets.join(" / ")||"買い目なし"}</div>
-   <div class="note">世間頭順位 → 軸順位 → 6艇評価 → レース展望の順位変化から2・3着を選別。</div>`;
+   <div class="meta">頭：<b>1</b>　2着本線：<b>${p.main2.join("・")}</b>${p.cover.length?`　2着抑え：<b>${p.cover.join("・")}</b>`:""}　切り：<b>${p.cut.join("・")||"なし"}</b></div>
+   <div class="bets">${p.bets.join(" / ")}</div>
+   <div class="note">イン逃げ時：軸上位＋評価上昇艇を2着本線、評価を落とした艇は2着抑え、低評価艇は3着まで／切り。</div>`;
  }
- window.BH_ESCAPE_BET_V530={make,render};
+ window.BH_ESCAPE_BET_V531={make,render};
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[4800,7000,9000].forEach(ms=>setTimeout(render,ms)));
- document.addEventListener("change",e=>{if(["stadium","race","date"].includes(e.target?.id))setTimeout(render,100)},true);
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1600),{once:true});else setTimeout(render,1600);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(render,1500),{once:true});else setTimeout(render,1500);
 })();
 </script>
