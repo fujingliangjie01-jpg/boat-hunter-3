@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V504</title>
+<title>BOAT HUNTER V505</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15208,11 +15208,6 @@ input,
  box-shadow:0 0 12px rgba(21,147,220,.25)!important;
 }
 .aiAnalyzeTop503.running{background:linear-gradient(180deg,#0b5d8f,#073c5d)!important}
-</style><style id="bhV504FinalSectionOrder">
-#cards{order:4!important}
-#comparePanel{order:5!important}
-#previewPanel,#previewPanel.hide{order:6!important;display:block!important}
-#aiPanel{order:7!important}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15223,7 +15218,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.504</div>
+  <div class="topVol">Vol.505</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23816,5 +23811,44 @@ window.__BH_V396_FORCE_2BOX__=true;
    setTimeout(sync,1000);
  }
  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",bind,{once:true}):bind();
+})();
+</script>
+<script id="bhV505HardSectionOrder">
+(()=>{
+  function place(){
+    const compare=document.getElementById("comparePanel");
+    const preview=document.getElementById("previewPanel");
+    const ai=document.getElementById("aiPanel");
+    if(!compare||!preview)return false;
+    const p=compare.parentElement;
+    if(!p)return false;
+
+    /* 6艇診断 → 直前情報 → 解析データ準備完了 */
+    p.insertBefore(preview,compare.nextSibling);
+    if(ai && ai.parentElement===p)p.insertBefore(ai,preview.nextSibling);
+
+    /* historical CSS order must not participate */
+    compare.style.setProperty("order","0","important");
+    preview.style.setProperty("order","0","important");
+    if(ai)ai.style.setProperty("order","0","important");
+    return compare.nextElementSibling===preview &&
+           (!ai || ai.parentElement!==p || preview.nextElementSibling===ai);
+  }
+
+  function settle(){
+    place();
+    requestAnimationFrame(place);
+    setTimeout(place,50);
+    setTimeout(place,300);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",settle,{once:true});
+  }else settle();
+
+  /* legacy renderers run again after these actions, so restore the required DOM order then */
+  document.getElementById("get")?.addEventListener("click",()=>setTimeout(settle,0));
+  document.getElementById("aiAnalyzeTop503")?.addEventListener("click",()=>setTimeout(settle,0));
+  window.bhPlaceCoreSectionsV505=place;
 })();
 </script>
