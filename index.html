@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V546</title>
+<title>BOAT HUNTER V549</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.546</div>
+  <div class="topVol">Vol.549</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24676,36 +24676,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  setTimeout(updateCount,1000);
 })();
 </script>
-<script id="bhV523ManualResultLearning">
-(()=>{
- const $=id=>document.getElementById(id);
- function mount(){
-   let b=$("bhResultLearn523");
-   if(b)return b;
-   const host=$("bhLearningDock521")||$("bhLearningDock520")||$("bhBetLearn517")||$("resultPanel")||document.body;
-   const box=document.createElement("div");box.id="bhResultLearnBox523";
-   box.innerHTML=`<button type="button" id="bhResultLearn523">この結果を学習する</button><div id="bhResultLearnStatus523">結果確認後に押してください</div>`;
-   host.appendChild(box);
-   b=$("bhResultLearn523");
-   b.addEventListener("click",()=>{
-     const ok=window.BH_RESULT_LEARNING_V522?.saveResult?.();
-     const st=$("bhResultLearnStatus523");
-     if(ok){b.textContent="学習済み ✓";b.classList.add("done");st.textContent="このレースの予測と実結果を保存しました";
-       window.BH_RANK_TREND_V521?.save?.();
-     }else{b.textContent="この結果を学習する";b.classList.remove("done");st.textContent="確定結果を取得できません。先に結果確認してください";}
-   });
-   return b;
- }
- function reset(){
-   const b=mount(),st=$("bhResultLearnStatus523");if(!b)return;
-   b.textContent="この結果を学習する";b.classList.remove("done");if(st)st.textContent="結果確認後に押してください";
- }
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
- [700,1800,3500,6000].forEach(ms=>setTimeout(mount,ms));
- $("race")?.addEventListener("change",reset);$("stadium")?.addEventListener("change",reset);$("date")?.addEventListener("change",reset);
- window.BH_RESULT_BUTTON_V523={mount,reset};
-})();
-</script>
+<script id="bhV523ManualResultLearning" type="application/x-disabled">/* disabled by V547 */</script>
 <script id="bhV524FBadgeMove">
 (()=>{
  const isF=e=>/^(F[123])$/.test((e.textContent||"").trim());
@@ -25050,54 +25021,99 @@ window.__BH_V396_FORCE_2BOX__=true;
  document.addEventListener("click",e=>{if(e.target?.closest?.("#aiAnalyzeTop503"))setTimeout(mount,7500)},true);
 })();
 </script>
-<script id="bhV538ResultLearningFix">
+<script id="bhV538ResultLearningFix" type="application/x-disabled">/* disabled by V547 */</script>
+
+
+
+<script id="bhV546ResultLearnButtonFix" type="application/x-disabled">/* disabled by V547 */</script>
+<script id="bhV547ResultLearningSinglePath">
 (()=>{
- function visibleResult(){
+ const DBKEY="BH_LEARNING_RACES_V516";
+ const DONEKEY="BH_RESULT_LEARNED_V547";
+ const $=id=>document.getElementById(id);
+
+ function result(){
    const txt=document.body.innerText||"";
-   const m=txt.match(/確定着順[\s\S]{0,100}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+   let m=txt.match(/確定着順[\s\S]{0,160}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+   if(!m)m=txt.match(/選択中レース結果[\s\S]{0,220}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
    if(!m)return null;
-   const tech=(txt.match(/決まり手[\s\S]{0,40}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
-   const pay=Number(((txt.match(/3連単払戻[\s\S]{0,40}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+   const tech=(txt.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+   const pay=Number(((txt.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
    return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
  }
- function learn(){
-   const res=visibleResult();
-   const btn=document.getElementById("bhResultLearnButton525");
-   const msg=btn?.nextElementSibling;
-   if(!res){
-     if(msg)msg.textContent="確定結果を取得できません。先に結果確認してください";
-     return false;
+ function key(){
+   const d=$("date")?.value||new Date().toLocaleDateString("sv-SE");
+   const st=String($("stadium")?.value||"").padStart(2,"0");
+   const r=String($("race")?.value||"");
+   return `${d}_${st}_${r}`;
+ }
+ function save(){
+   const res=result(); if(!res)return {ok:false,msg:"確定結果を取得できません"};
+   const k=key();
+   let db={}; try{db=JSON.parse(localStorage.getItem(DBKEY)||"{}")}catch(_){}
+   const rec=db[k]||{key:k,createdAt:new Date().toISOString()};
+   rec.result={order:res.order,technique:res.technique,payout:res.payout,confirmedAt:new Date().toISOString()};
+   rec.learnedAt=new Date().toISOString();
+   db[k]=rec;
+   localStorage.setItem(DBKEY,JSON.stringify(db));
+   const verify=JSON.parse(localStorage.getItem(DBKEY)||"{}");
+   if(!verify[k]?.result?.order?.length)return {ok:false,msg:"保存確認に失敗"};
+   localStorage.setItem(DONEKEY,JSON.stringify({key:k,result:res,at:new Date().toISOString()}));
+   // Secondary learners run only after storage verification.
+   for(const f of [
+     ()=>window.BH_RANK_TREND_V521?.save?.(),
+     ()=>window.BH_DEEP_LEARNING_V535?.save?.(),
+     ()=>window.BH_RESULT_STATS_V526?.register?.()
+   ]){try{f()}catch(_){}}
+   return {ok:true,msg:`${res.order.join("-")} / ${res.technique||"決まり手なし"} 学習保存済み`};
+ }
+ function mount(){
+   // Reuse existing button if present; otherwise create one below result panel.
+   let btn=$("bhResultLearnButton547")||$("bhResultLearnButton525");
+   if(btn){
+     btn.id="bhResultLearnButton547";
+     btn.disabled=false;
+     btn.textContent="この結果を学習する";
+   }else{
+     const panel=[...document.querySelectorAll("section,div")].find(e=>/選択中レース結果/.test(e.innerText||"")&&/確定着順/.test(e.innerText||""));
+     if(!panel)return;
+     btn=document.createElement("button");btn.id="bhResultLearnButton547";btn.type="button";btn.textContent="この結果を学習する";
+     btn.style.cssText="width:100%;margin:14px 0;padding:14px;border-radius:12px;border:1px solid #d6a52a;background:#754600;color:#fff;font-weight:900;font-size:16px";
+     panel.insertAdjacentElement("afterend",btn);
    }
-   let ok=false;
-   try{ ok=window.BH_DEEP_LEARNING_V535?.save?.()===true || ok; }catch(_){}
-   try{ ok=window.BH_RESULT_CONFIRM_V532?.save?.()===true || ok; }catch(_){}
-   try{ window.BH_RANK_TREND_V521?.save?.(); }catch(_){}
-   if(btn){btn.textContent="学習済み ✓";btn.disabled=true}
-   if(msg)msg.textContent=`${res.order.join("-")} / ${res.technique||"決まり手取得済み"} を学習しました`;
-   return true;
+   btn.onclick=()=>{
+     const r=save();
+     btn.textContent=r.ok?"学習済み ✓":"学習失敗";
+     btn.disabled=!!r.ok;
+     let st=$("bhResultLearnStatus547");
+     if(!st){st=document.createElement("div");st.id="bhResultLearnStatus547";st.style.cssText="text-align:center;margin:7px 0 12px;color:#d8e6ed;font-size:13px";btn.insertAdjacentElement("afterend",st)}
+     st.textContent=r.msg;
+   };
  }
- function bind(){
-   const btn=document.getElementById("bhResultLearnButton525")||
-     [...document.querySelectorAll("button")].find(b=>/この結果を学習する/.test(b.textContent||""));
-   if(!btn||btn.dataset.bh538)return;
-   btn.dataset.bh538="1";
-   // V538 handler runs first and uses the already-visible confirmed result.
-   btn.addEventListener("click",e=>{learn()},true);
- }
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(bind,500),{once:true});else setTimeout(bind,500);
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,600),{once:true});else setTimeout(mount,600);
  document.addEventListener("click",e=>{
-   if(e.target?.closest?.("button")&&/結果を確認/.test(e.target.closest("button").textContent||""))setTimeout(bind,1200);
+   if(e.target?.closest?.("button")&&/結果を確認/.test(e.target.closest("button").textContent||""))setTimeout(mount,1400);
  },true);
- window.BH_RESULT_LEARN_V538={visibleResult,learn};
+ window.BH_RESULT_LEARN_V547={result,save,mount};
 })();
 </script>
-<script id="bhV539TopButtonPlacement">
+<script id="bhV548TopButtonUnderBet">
 (()=>{
  function place(){
-   const bet=document.getElementById("bhEscapeBet530");
-   const top=document.getElementById("bhTop537") ||
+   const bet=document.getElementById("bhEscapeBet530") ||
+     [...document.querySelectorAll("section,div")].find(e=>
+       /HUNTER買い目/.test(e.innerText||"") &&
+       (/決まり手予測/.test(e.innerText||"") || /イン逃げ/.test(e.innerText||""))
+     );
+   let top=document.getElementById("bhTop537") ||
      [...document.querySelectorAll("button")].find(b=>/一番上に戻る|上に戻る/.test(b.textContent||""));
-   if(!bet||!top)return;
+   if(!bet)return;
+   if(!top){
+     top=document.createElement("button");
+     top.id="bhTop537";top.type="button";top.className="bhNav537";
+     top.textContent="一番上に戻る";
+     top.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+   }
    bet.insertAdjacentElement("afterend",top);
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(place,700),{once:true});else setTimeout(place,700);
@@ -25107,59 +25123,59 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
+<style id="bhV549FPhotoLowerEdge">
+/* V549: F1/F2/F3を写真下枠寄りへ。階級・選手名には入れない */
+.racer-card .photo-wrap,
+.player-card .photo-wrap,
+.racerCard .photo-wrap,
+.playerCard .photo-wrap,
+.racer-card .racer-photo,
+.player-card .racer-photo {
+  position: relative !important;
+}
+.racer-card .photo-wrap .f-badge,
+.racer-card .photo-wrap .fBadge,
+.racer-card .photo-wrap .f-patch,
+.racer-card .photo-wrap .fPatch,
+.player-card .photo-wrap .f-badge,
+.player-card .photo-wrap .fBadge,
+.player-card .photo-wrap .f-patch,
+.player-card .photo-wrap .fPatch,
+.racerCard .photo-wrap .f-badge,
+.racerCard .photo-wrap .fBadge,
+.playerCard .photo-wrap .f-badge,
+.playerCard .photo-wrap .fBadge {
+  top: auto !important;
+  bottom: -2px !important;
+  right: 6px !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 8 !important;
+}
+</style>
 
-<script id="bhV546ResultLearnButtonFix">
+<script id="bhV549FPhotoLowerEdgeFix">
 (()=>{
- const KEY="BH_LEARNING_RACES_V516";
- function parseResult(){
-   const txt=document.body.innerText||"";
-   const m=txt.match(/確定着順[\s\S]{0,120}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
-   if(!m)return null;
-   const tech=(txt.match(/決まり手[\s\S]{0,45}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
-   const pay=Number(((txt.match(/3連単払戻[\s\S]{0,45}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
-   return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
+ function fix(){
+   const badges=[...document.querySelectorAll(".f-badge,.fBadge,.f-patch,.fPatch,[class*='f-badge'],[class*='fBadge']")];
+   badges.forEach(b=>{
+     if(!/^F[123]$/.test((b.textContent||"").trim()))return;
+     const card=b.closest(".racer-card,.player-card,.racerCard,.playerCard,[class*='racer-card'],[class*='player-card']");
+     if(!card)return;
+     const photo=card.querySelector(".photo-wrap,.racer-photo,.player-photo,.photo,[class*='photo']");
+     if(!photo)return;
+     if(b.parentElement!==photo)photo.appendChild(b);
+     const cs=getComputedStyle(photo);
+     if(cs.position==="static")photo.style.position="relative";
+     Object.assign(b.style,{
+       position:"absolute",top:"auto",bottom:"-2px",right:"6px",
+       left:"auto",transform:"none",margin:"0",zIndex:"8"
+     });
+   });
  }
- function raceKey(){
-   const d=document.getElementById("date")?.value||new Date().toISOString().slice(0,10);
-   const st=String(document.getElementById("stadium")?.value||"").padStart(2,"0");
-   const r=document.getElementById("race")?.value||"";
-   return [d,st,r].join("_");
- }
- function directSave(res){
-   let db={};try{db=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(_){}
-   const k=raceKey();
-   const rec=db[k]||{key:k,createdAt:new Date().toISOString()};
-   rec.result={...(rec.result||{}),order:res.order,technique:res.technique,payout:res.payout,confirmedAt:new Date().toISOString()};
-   db[k]=rec;localStorage.setItem(KEY,JSON.stringify(db));
-   return true;
- }
- function learn(btn){
-   const res=parseResult();
-   const status=document.getElementById("bhResultLearnStatus525")||btn?.nextElementSibling;
-   if(!res){if(status)status.textContent="確定結果がありません。先に結果確認してください";return}
-   let ok=false;
-   // First persist the confirmed result independently.
-   try{ok=directSave(res)}catch(_){}
-   // Then feed every available learning layer. A failure in one must not block the others.
-   for(const fn of [
-     ()=>window.BH_RESULT_CONFIRM_V532?.save?.(),
-     ()=>window.BH_DEEP_LEARNING_V535?.save?.(),
-     ()=>window.BH_RANK_TREND_V521?.save?.(),
-     ()=>window.BH_RESULT_STATS_V526?.register?.()
-   ]){try{fn()}catch(_){}}
-   if(ok&&btn){
-     btn.textContent="学習済み ✓";
-     btn.disabled=true;
-     if(status)status.textContent=`${res.order.join("-")} / ${res.technique||"決まり手未取得"} を保存・学習しました`;
-   }
- }
- // Delegation avoids mount timing problems after the result panel re-renders.
- document.addEventListener("click",e=>{
-   const btn=e.target?.closest?.("#bhResultLearnButton525");
-   if(!btn)return;
-   e.preventDefault();
-   learn(btn);
- },false);
- window.BH_RESULT_LEARN_V546={parseResult,learn};
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(fix,500),{once:true});
+ else setTimeout(fix,500);
+ const mo=new MutationObserver(()=>requestAnimationFrame(fix));
+ mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
