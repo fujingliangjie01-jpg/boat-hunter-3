@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V574</title>
+<title>BOAT HUNTER V575</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.574</div>
+  <div class="topVol">Vol.575</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24389,10 +24389,54 @@ window.__BH_V396_FORCE_2BOX__=true;
    $("bhV571Send").disabled=false;m.textContent="✓ 結果取得完了";
   }catch(e){console.warn("V574 result",e);m.textContent="結果取得に失敗しました"}
  }
+ function collectHunter(){
+  const cmp=[...document.querySelectorAll("section,div")].find(e=>/各評価の順位比較/.test(e.textContent||""));
+  const buy=document.getElementById("bhEscapeBet530")||document.getElementById("hunterFinalBuyBlock");
+  return {
+   outlook:"",
+   powerGap:cmp?.innerText||"",
+   beforeInfo:"",
+   sixBoatEvaluation:cmp?.innerText||"",
+   developmentEvaluation:cmp?.innerText||"",
+   marketComparison:cmp?.innerText||null,
+   betPrediction:buy?.innerText||null,
+   pageText:document.body.innerText||""
+  };
+ }
  function send(){
-  if(!last)return;const q=sel();
-  const payload={schema:"HUNTER_CYCLE_V3",sentAt:new Date().toISOString(),race:q,result:last,pageSnapshot:document.body.innerText};
-  try{localStorage.setItem("BH_DEME_LAB_INBOX_V3",JSON.stringify(payload));localStorage.setItem("BH_DEME_LAB_INBOX_V3_PING",String(Date.now()));if("BroadcastChannel"in window){const c=new BroadcastChannel("BH_HUNTER_CYCLE_V3");c.postMessage(payload);c.close()}$("bhV571Msg").textContent="✓ 出目研究所へ送信しました"}catch(e){$("bhV571Msg").textContent="送信失敗"}
+  if(!last)return;
+  const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
+  const key=`${q.date}_${stadium}_${raceNo}R`;
+  const payload={
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:575,hunterCycle:true,
+   key,sentAt:new Date().toISOString(),
+   race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
+   hunter:collectHunter(),
+   result:{
+    confirmed:true,
+    order:String(last.out||"").split("-").map(Number).filter(Boolean),
+    combo:last.out||"",trifecta:last.out||"",
+    technique:last.way||"",winningMove:last.way||"",
+    payout:Number(last.pay||0)||0,
+    verdict:last.judge||""
+   }
+  };
+  try{
+   const K="BH_DEME_LAB_INBOX_V3";
+   let a=[];
+   try{const x=JSON.parse(localStorage.getItem(K)||"[]");a=Array.isArray(x)?x:(x&&typeof x==="object"?[x]:[])}catch(_){}
+   const i=a.findIndex(x=>x?.key===key);
+   if(i>=0)a[i]=payload;else a.push(payload);
+   localStorage.setItem(K,JSON.stringify(a));
+   localStorage.setItem("BH_DEME_LAB_INBOX_V3_PING",String(Date.now()));
+   try{const c=new BroadcastChannel("BH_HUNTER_CYCLE_V3");c.postMessage({source:"BOAT_HUNTER",key,payload});c.close()}catch(_){}
+   $("bhV571Msg").textContent="✓ 出目研究所へ送信しました";
+   $("bhV571Send").textContent="送信済み ✓";
+   setTimeout(()=>{$("bhV571Send").textContent="出目研究所へ送る"},1600);
+  }catch(e){
+   console.warn("V575 lab send",e);
+   $("bhV571Msg").textContent="研究所への送信に失敗しました";
+  }
  }
  $("bhV571Check")?.addEventListener("click",check);
  $("bhV571Send")?.addEventListener("click",send);
