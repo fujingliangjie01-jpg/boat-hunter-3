@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V575</title>
+<title>BOAT HUNTER V576</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.575</div>
+  <div class="topVol">Vol.576</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16056,9 +16056,22 @@ function allRaces(j){
  return out;
 }
 function historyResultRacers(r){
- const a=Object.values(r?.result?.racers||{});
- if(a.length)return a;
- return Object.values(r?.racers||{}).filter(x=>Number(x?.place_number||x?.place||0)>0);
+ const resultObj=r?.result?.racers||{};
+ const programObj=r?.racers||{};
+ const resultEntries=Object.entries(resultObj);
+ if(resultEntries.length){
+   return resultEntries.map(([k,res])=>{
+     const entry=Number(res?.entry_number??res?.boat_number??k)||0;
+     const pr=programObj?.[String(entry)]||Object.values(programObj).find(x=>Number(x?.entry_number??x?.boat_number)===entry)||{};
+     /* 結果側に無い選手番号・コース等を出走表側から補完する。着順/STは結果側を優先。 */
+     return {...pr,...res,
+       entry_number:Number(res?.entry_number??res?.boat_number??pr?.entry_number??entry)||entry,
+       number:res?.number??res?.racer_number??res?.registration_number??pr?.number??pr?.racer_number??pr?.registration_number,
+       course_number:res?.course_number??res?.course??pr?.course_number??pr?.course??res?.entry_number??pr?.entry_number??entry
+     };
+   });
+ }
+ return Object.values(programObj).filter(x=>Number(x?.place_number||x?.place||0)>0);
 }
 function historyPlace(x){return Number(x?.place_number??x?.place??0)||0}
 function historyCourse(x){return Number(x?.course_number??x?.course??x?.entry_number??0)||0}
@@ -16169,7 +16182,7 @@ async function buildHistory(){
  const allDone=()=>[...targets.values()].every(o=>(o.rows?.length||0)>=20);
 
  // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
- const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V435";
+ const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V576";
  let persistent={};
  try{persistent=JSON.parse(localStorage.getItem(CACHE_KEY)||"{}")}catch(e){persistent={}}
  const cacheKey=(r)=>`${start}|${Number(r.number)}|C${Number(r.entry_number)}`;
@@ -19292,7 +19305,7 @@ function renderOdds(odds){
 
   /* iPhone Safariでselect値がコード側から変わったケースも拾うため、
      軽量な値監視を追加。値が変わった時だけDOMを書き換える。 */
-  setInterval(()=>updateRaceFloat(false),250);
+  /* V576: 常時250ms再描画を廃止。選択変更イベントでのみ更新。 */
 
   ["stadium","race","date"].forEach(id=>{
     $(id)?.addEventListener("change",()=>{
@@ -20720,7 +20733,7 @@ window.__HUNTER_VENUE_BASE_META={
      if(name&&!name.parentElement?.querySelector(".bh317CourseFit"))name.insertAdjacentHTML("afterend",patch(r));
    }
  }
- setInterval(()=>{try{inject()}catch(e){}},700);
+ const run=()=>{try{inject()}catch(e){}}; run(); document.addEventListener("click",()=>setTimeout(run,0),true);
  window.bh317CourseFit=calc;
 })();
 </script>
@@ -20747,7 +20760,7 @@ window.__HUNTER_VENUE_BASE_META={
      });
    });
  }
- setInterval(run,900);
+ run(); document.addEventListener("click",()=>setTimeout(run,0),true);
 })();
 </script>
 
@@ -23936,54 +23949,6 @@ window.__BH_V396_FORCE_2BOX__=true;
  $("aiAnalyzeTop503")?.addEventListener("click",()=>[3500,5500,7500].forEach(ms=>setTimeout(save,ms)));
 })();
 </script>
-<script id="bhV522ResultLearningFix">
-(()=>{
- const DB="BH_LEARNING_RACES_V516",$=id=>document.getElementById(id);
- const read=()=>{try{const x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
- const write=x=>{localStorage.setItem(DB,JSON.stringify(x));window.__BH_LEARNING_DB_V516=x};
- const key=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
- function resultFromDOM(){
-   const selectors=["#resultPanel","#resultArea","#raceResult","#selectedRaceResult","[id*='result']",".resultPanel",".race-result"];
-   const txt=selectors.flatMap(q=>[...document.querySelectorAll(q)]).map(e=>e.innerText||"").join(" ");
-   const patterns=[
-    /(?:3連単|確定|結果)[^1-6]{0,40}([1-6])\s*[-－–→]\s*([1-6])\s*[-－–→]\s*([1-6])/,
-    /\b([1-6])\s*[-－–→]\s*([1-6])\s*[-－–→]\s*([1-6])\b/
-   ];
-   let m;for(const p of patterns){m=txt.match(p);if(m)break}if(!m)return null;
-   const order=[+m[1],+m[2],+m[3]];if(new Set(order).size!==3)return null;
-   const km=txt.match(/決まり手\s*[:：]?\s*(逃げ|差し|まくり差し|まくり|抜き|恵まれ)/);
-   return {order,combo:order.join("-"),technique:km?.[1]||null,confirmedAt:Date.now()};
- }
- function ensureRace(d){
-   let i=d.findIndex(x=>x.key===key());
-   if(i>=0)return i;
-   const x={key:key(),date:$("date")?.value||"",stadium:String($("stadium")?.value||"").padStart(2,"0"),race:+($("race")?.value||0)||null,savedAt:Date.now()};
-   d.push(x);return d.length-1;
- }
- function saveResult(){
-   const r=resultFromDOM();if(!r)return false;
-   const d=read(),i=ensureRace(d);d[i].result=r;
-   const p=d[i].prediction?.mainFlow;
-   if(p)d[i].learningOutcome={predicted:`${p.boat}号艇 ${p.technique}`,actualTechnique:r.technique,winner:r.order[0],second:r.order[1],third:r.order[2],mainFlowWinner:+p.boat===r.order[0],techniqueMatched:r.technique?String(p.technique).includes(r.technique):null};
-   write(d);updateCount();return true;
- }
- function updateCount(){
-   const d=read(),n=d.filter(x=>x.result?.order?.length===3).length;
-   document.querySelectorAll(".bhLStatus,.st521,.bhLStatus520").forEach(e=>e.textContent=`保存 ${d.length}R ／ 結果確定 ${n}R`);
- }
- function trySave(){[250,700,1400,2500,4000].forEach(ms=>setTimeout(saveResult,ms))}
- document.addEventListener("click",e=>{
-   const b=e.target?.closest?.("button,[role='button']");
-   if(b&&/結果|確認|確定|取得/.test(b.textContent||""))trySave();
- },true);
- // Result panels may update asynchronously after the click.
- const mo=new MutationObserver(()=>{clearTimeout(window.__bhRes522T);window.__bhRes522T=setTimeout(saveResult,350)});
- if(document.body)mo.observe(document.body,{subtree:true,childList:true,characterData:true});
- else document.addEventListener("DOMContentLoaded",()=>mo.observe(document.body,{subtree:true,childList:true,characterData:true}),{once:true});
- window.BH_RESULT_LEARNING_V522={saveResult,resultFromDOM,updateCount};
- setTimeout(updateCount,1000);
-})();
-</script>
 <script id="bhV523ManualResultLearning" type="application/x-disabled">/* disabled by V547 */</script>
 <script id="bhV524FBadgeMove">
 (()=>{
@@ -24004,44 +23969,6 @@ window.__BH_V396_FORCE_2BOX__=true;
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",fix,{once:true});else fix();
  [300,900,1800,3500].forEach(ms=>setTimeout(fix,ms));
  window.BH_F_BADGE_V524={fix};
-})();
-</script>
-<script id="bhV525ResultLearnFixed">
-(()=>{
- const $=id=>document.getElementById(id);
- function resultHost(){
-   return $("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
-          document.querySelector("[id*='result'][class*='panel'],[class*='result'][class*='panel']");
- }
- function mount(){
-   const host=resultHost();if(!host)return false;
-   let box=$("bhResultLearnFixed525");
-   if(!box){box=document.createElement("div");box.id="bhResultLearnFixed525"}
-   // Always put it at the bottom INSIDE the result-confirmation panel.
-   if(box.parentElement!==host)host.appendChild(box);
-   box.innerHTML=`<div class="st" id="bhResultLearnStatus525">結果確認後に押してください</div>`;
-   const b=$("bhResultLearnButton525"),st=$("bhResultLearnStatus525");
-   b.onclick=()=>{
-     const ok=window.BH_RESULT_LEARNING_V522?.saveResult?.();
-     if(ok){
-       window.BH_RANK_TREND_V521?.save?.();
-       b.textContent="学習済み ✓";b.classList.add("done");st.textContent="予測・順位比較・実結果を保存しました";
-     }else{
-       b.textContent="この結果を学習する";b.classList.remove("done");st.textContent="確定結果がありません。先に結果確認してください";
-     }
-   };
-   return true;
- }
- function retry(){[0,250,700,1400,2500].forEach(ms=>setTimeout(mount,ms))}
- document.addEventListener("click",e=>{
-   const b=e.target?.closest?.("button,[role='button']");
-   if(b&&/結果|確認|確定/.test(b.textContent||""))retry();
- },true);
- const mo=new MutationObserver(()=>{clearTimeout(window.__bh525);window.__bh525=setTimeout(mount,200)});
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{mount();mo.observe(document.body,{subtree:true,childList:true})},{once:true});
- else {mount();mo.observe(document.body,{subtree:true,childList:true})}
- [800,1800,3500,6000].forEach(ms=>setTimeout(mount,ms));
- window.BH_RESULT_BUTTON_V525={mount,retry};
 })();
 </script>
 <script id="bhV528CoreFixes">
