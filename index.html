@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V557</title>
+<title>BOAT HUNTER V558</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.557</div>
+  <div class="topVol">Vol.558</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25321,5 +25321,86 @@ function retry(){[0,250,700,1400].forEach(ms=>setTimeout(render,ms))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
 document.addEventListener("click",e=>{if(/結果を確認|結果確認/.test(e.target?.closest?.("button")?.textContent||""))retry()},true);
 new MutationObserver(()=>{clearTimeout(window.__bh557);window.__bh557=setTimeout(render,180)}).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
+
+<style id="bhV558FlowStyle">
+/* V558: legacy back-to-top controls are hidden; only #bhTopOnly558 remains */
+.bhV558OldTop{display:none!important}
+</style>
+<script id="bhV558ResultFlowRepair">
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+
+function hideOldTops(){
+ [...document.querySelectorAll("button,a,[role='button']")].forEach(e=>{
+   if(e.id!=="bhTopOnly558" && /上に戻る/.test((e.textContent||"").trim())){
+     e.classList.add("bhV558OldTop");
+   }
+ });
+ const old=document.getElementById("bhTopOnly556"); if(old)old.remove();
+}
+
+function findResult(){
+ return $("hunterFinalResult")||$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||
+ [...document.querySelectorAll("section,div")].find(e=>/結果確認・収支管理|選択中レース結果/.test(e.textContent||""));
+}
+
+function ensureResult(){
+ let r=findResult();
+ if(r){r.style.display="";return r}
+ const buy=$("hunterFinalBuyBlock")||[...document.querySelectorAll("section,div")].find(e=>/HUNTER買い目/.test(e.textContent||""));
+ if(!buy)return null;
+ r=document.createElement("section");r.id="bhResultPanel558";
+ r.style.cssText="margin:16px 0;padding:14px;border:1px solid #2a6078;border-radius:16px;background:#071b27;color:#fff";
+ r.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><div style="font-size:10px;color:#73c9ed;font-weight:900;letter-spacing:.12em">RESULT</div><div style="font-size:18px;font-weight:950">結果確認</div></div><button id="bhCheckResult558" type="button" style="width:auto;padding:11px 16px;border:1px solid #5ccdf8;border-radius:12px;background:#0879aa;color:#fff;font-weight:900">結果を確認</button></div><div id="bhResultBody558" style="margin-top:12px;color:#9db4c1">結果確認待ち</div>';
+ buy.insertAdjacentElement("afterend",r);
+ $("bhCheckResult558").onclick=()=>{
+   const old=[...document.querySelectorAll("button")].find(b=>b.id!=="bhCheckResult558"&&/結果を確認/.test(b.textContent||""));
+   if(old)old.click();
+   setTimeout(renderResult,450);setTimeout(renderResult,1200);
+ };
+ return r;
+}
+function parsed(){
+ const txt=document.body.innerText||"";
+ const m=txt.match(/確定着順[\s\S]{0,120}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
+       ||txt.match(/選択中レース結果[\s\S]{0,200}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+ if(!m)return null;
+ const tech=(txt.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"—";
+ const pay=Number(((txt.match(/3連単払戻[\s\S]{0,60}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+ const judge=(txt.match(/HUNTER判定[\s\S]{0,40}?(的中|ハズレ)/)||txt.match(/\b(的中|ハズレ)\b/))?.[1]||"—";
+ return {combo:`${m[1]}-${m[2]}-${m[3]}`,tech,pay,judge};
+}
+function renderResult(){
+ const r=ensureResult();if(!r)return;
+ const b=$("bhResultBody558");if(!b)return;
+ const x=parsed();
+ if(!x){b.textContent="結果確認待ち";return}
+ b.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+ <div style="padding:10px;background:#06141d;border-radius:11px"><small style="color:#7895a6">出目結果</small><b style="display:block;font-size:22px">${x.combo}</b></div>
+ <div style="padding:10px;background:#06141d;border-radius:11px"><small style="color:#7895a6">HUNTER判定</small><b style="display:block;font-size:20px">${x.judge}</b></div>
+ <div style="padding:10px;background:#06141d;border-radius:11px"><small style="color:#7895a6">決まり手</small><b style="display:block;font-size:18px">${x.tech}</b></div>
+ <div style="padding:10px;background:#06141d;border-radius:11px"><small style="color:#7895a6">3連単払戻</small><b style="display:block;font-size:18px">${x.pay?`¥${x.pay.toLocaleString()}`:"—"}</b></div></div>`;
+}
+function arrange(){
+ hideOldTops();
+ const r=ensureResult(); if(!r)return;
+ let send=$("bhDemeSendBox556"); if(send){send.style.display=""; if(r.nextElementSibling!==send)r.insertAdjacentElement("afterend",send)}
+ let top=$("bhTopOnly558");
+ if(!top){
+   top=document.createElement("button");top.id="bhTopOnly558";top.type="button";top.textContent="↑ 上に戻る";
+   top.style.cssText="width:100%;min-height:54px;margin:0 0 14px;border:1px solid #3c6b80;border-radius:15px;background:#0b202d;color:#b9d8e7;font-weight:900;font-size:16px";
+   top.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+ }
+ if(send&&send.nextElementSibling!==top)send.insertAdjacentElement("afterend",top);
+ hideOldTops(); renderResult();
+}
+function retry(){[0,250,700,1400,2600].forEach(ms=>setTimeout(arrange,ms))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
+document.addEventListener("click",e=>{if(/結果|買い目|確認/.test(e.target?.closest?.("button")?.textContent||""))retry()},true);
+new MutationObserver(()=>{clearTimeout(window.__bh558);window.__bh558=setTimeout(arrange,180)}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
