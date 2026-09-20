@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V573</title>
+<title>BOAT HUNTER V574</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.573</div>
+  <div class="topVol">Vol.574</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24296,39 +24296,6 @@ window.__BH_V396_FORCE_2BOX__=true;
  <button id="bhV571Send" type="button" disabled>出目研究所へ送る</button>
  <button id="bhV571Top" type="button">一番上へ戻る</button>
 </section>
-<script id="bhV571ResultLogic">
-(()=>{
- const $=id=>document.getElementById(id); let last=null;
- const venue=()=>{const e=$("stadium");return {code:String(e?.value||""),name:(e?.selectedOptions?.[0]?.textContent||"").trim()}};
- const race=()=>Number($("race")?.value||0), date=()=>String($("date")?.value||new Date().toISOString().slice(0,10));
- const objs=x=>{const a=[],q=[x],z=new Set();while(q.length){const v=q.shift();if(!v||typeof v!=="object"||z.has(v))continue;z.add(v);a.push(v);Array.isArray(v)?q.push(...v):q.push(...Object.values(v))}return a};
- const pick=(o,ks)=>{for(const k of ks)if(o&&o[k]!=null&&o[k]!=="")return o[k]};
- const num=v=>{const n=Number(String(v??"").replace(/[^\d.]/g,""));return Number.isFinite(n)?n:null};
- function parse(j){
-  const rn=race(),v=venue();let rr=null,sc0=-1;
-  for(const o of objs(j)){if(Array.isArray(o))continue;const r=num(pick(o,["race_number","race_no","race","number"]));if(r!==rn)continue;let sc=1;const p=String(pick(o,["stadium_number","stadium_code","stadium","venue_code","stadium_name","venue_name"])||"");if(p&&(p===v.code||v.name.includes(p)||p.includes(v.name)))sc+=5;if(sc>sc0){rr=o;sc0=sc}}
-  if(!rr)return null;const os=objs(rr),f=[];let way="",pay=null;
-  for(const o of os){if(Array.isArray(o))continue;const p=num(pick(o,["place","rank","arrival","finish_order","order"])),b=num(pick(o,["entry_number","boat_number","boat","lane","frame_number"]));if(p>=1&&p<=3&&b>=1&&b<=6&&!f.some(x=>x.p===p))f.push({p,b});
-   if(!way){const x=pick(o,["winning_trick","winning_technique","technique","kimarite","決まり手"]);if(x&&/逃|差|まく|抜|恵/.test(String(x)))way=String(x)}
-   if(pay==null){const z=num(pick(o,["trifecta_payout","trifecta_payoff","payout_3t","sanrentan_payout"]));if(z>=100)pay=z}}
-  f.sort((a,b)=>a.p-b.p);return f.length===3?{out:f.map(x=>x.b).join("-"),way:way||"—",pay}:null;
- }
- async function check(){
-  $("bhV571Msg").textContent="結果取得中…";$("bhV571Send").disabled=true;last=null;
-  const d=date().replaceAll("-",""),y=d.slice(0,4),urls=[`https://boatraceopenapi.github.io/api/v1/${y}/${d}.json`,`https://boatraceopenapi.github.io/results/v3/${y}/${d}.json`,`https://boatraceopenapi.github.io/results/v2/${y}/${d}.json`];
-  for(const u of urls)try{const r=await fetch(u,{cache:"no-store"});if(!r.ok)continue;const z=parse(await r.json());if(z){const buy=($("hunterFinalBuyBlock")?.innerText||$("bhEscapeBet530")?.innerText||"");z.judge=new RegExp(z.out.replaceAll("-","\\\\s*-\\\\s*")).test(buy)?"的中":"ハズレ";last=z;$("bhV571Out").textContent=z.out;$("bhV571Way").textContent=z.way;$("bhV571Pay").textContent=z.pay?`¥${z.pay.toLocaleString("ja-JP")}`:"—";$("bhV571Judge").textContent=z.judge;$("bhV571Send").disabled=false;$("bhV571Msg").textContent="✓ 結果取得完了";return}}catch(e){}
-  $("bhV571Msg").textContent="結果未確定、または取得できません";
- }
- function send(){
-  if(!last)return;const v=venue();
-  const payload={schema:"HUNTER_CYCLE_V3",sentAt:new Date().toISOString(),race:{date:date(),stadium:v.code,stadiumName:v.name,race:race()},result:last,pageSnapshot:document.body.innerText};
-  try{localStorage.setItem("BH_DEME_LAB_INBOX_V3",JSON.stringify(payload));localStorage.setItem("BH_DEME_LAB_INBOX_V3_PING",String(Date.now()));if("BroadcastChannel"in window){const c=new BroadcastChannel("BH_HUNTER_CYCLE_V3");c.postMessage(payload);c.close()}$("bhV571Msg").textContent="✓ 出目研究所へ送信しました"}catch(e){$("bhV571Msg").textContent="送信失敗"}
- }
- $("bhV571Check").addEventListener("click",check);$("bhV571Send").addEventListener("click",send);$("bhV571Top").addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
-})();
-</script>
-
-
 <script id="bhV573ResultPositionFix">
 (()=>{
  const result=document.getElementById("bhV571Result");
@@ -24346,5 +24313,89 @@ window.__BH_V396_FORCE_2BOX__=true;
  }
  place();
  new MutationObserver(place).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style","class"]});
+})();
+</script>
+
+<script id="bhV574ResultLogic">
+(()=>{
+ const $=id=>document.getElementById(id); let last=null;
+ const TECH={1:"逃げ",2:"差し",3:"まくり",4:"まくり差し",5:"抜き",6:"恵まれ"};
+ function sel(){
+  const e=$("stadium");
+  return {date:$("date")?.value||new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Tokyo"}),
+   venue:String(e?.value||"").padStart(2,"0"),venueName:(e?.selectedOptions?.[0]?.textContent||"").trim(),race:Number($("race")?.value||0)};
+ }
+ function urls(date){
+  const ymd=date.replaceAll("-",""),y=ymd.slice(0,4);
+  return [`https://boatraceopenapi.github.io/api/v1/${y}/${ymd}.json`,
+          `https://boatraceopenapi.github.io/programs/v3/${y}/${ymd}.json`,
+          `https://boatraceopenapi.github.io/programs/v2/${y}/${ymd}.json`];
+ }
+ async function daily(date){
+  for(const u of urls(date))try{const r=await fetch(u,{cache:"no-store"});if(r.ok){const j=await r.json();if(j)return j}}catch(e){}
+  throw Error("結果API取得失敗");
+ }
+ function raceNode(json,venue,race){
+  const st=json?.programs?.stadiums||json?.stadiums||{};
+  const keys=[String(Number(venue)),String(venue),String(venue).padStart(2,"0")];
+  let v=null; for(const k of keys)if(st?.[k]){v=st[k];break}
+  if(!v)v=Object.values(st).find(x=>Number(x?.stadium_number??x?.number??x?.stadium)===Number(venue))||null;
+  if(!v)return null;
+  const rs=v?.races||{};
+  return rs?.[String(Number(race))]||rs?.[String(race)]||Object.values(rs).find(x=>Number(x?.race_number??x?.number)===Number(race))||null;
+ }
+ function resultNode(race){
+  for(const x of [race?.result,race?.results,race?.race_result,race?.raceResult,race?.result_data,race?.resultData,(race?.racers||race?.payouts)?race:null].filter(Boolean)){
+   if(Array.isArray(x)){if(x[0]&&typeof x[0]==="object")return x[0]}
+   else if(typeof x==="object")return x;
+  } return null;
+ }
+ function trifecta(race,result){
+  for(const p of [result?.payouts?.trifecta,result?.payout?.trifecta,race?.payouts?.trifecta,race?.payout?.trifecta,result?.trifecta,race?.trifecta]){
+   const x=Array.isArray(p)?p[0]:p;if(!x)continue;
+   const combination=String(x.combination||x.combo||x.result||"").replace(/\s/g,"").replace(/[=>]/g,"-");
+   const amount=Number(x.amount??x.payout??x.payoff??x.money);
+   if(/^[1-6]-[1-6]-[1-6]$/.test(combination)||Number.isFinite(amount))return {combination,amount};
+  } return null;
+ }
+ function combo(race,result,tf){
+  for(const pool of [result?.racers,result?.boats,result?.entries,race?.racers,race?.boats]){
+   if(!pool)continue;
+   const a=(Array.isArray(pool)?pool:Object.values(pool)).map(x=>({
+    boat:Number(x?.entry_number??x?.boat_number??x?.boat??x?.waku??x?.number),
+    place:Number(x?.place_number??x?.place??x?.rank??x?.arrival)
+   })).filter(x=>x.boat>=1&&x.boat<=6&&x.place>=1&&x.place<=3).sort((a,b)=>a.place-b.place);
+   if(a.length>=3)return a.slice(0,3).map(x=>x.boat).join("-");
+  }
+  const c=String(tf?.combination||"").replace(/\s/g,"").replace(/[=>]/g,"-");
+  return /^[1-6]-[1-6]-[1-6]$/.test(c)?c:"";
+ }
+ function buyTickets(){
+  const engine=window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||null;
+  const a=Array.isArray(engine?.bets)?engine.bets:(window.__HUNTER_BUY_TICKETS||window.__HUNTER_FINAL_TICKETS||[]);
+  return (Array.isArray(a)?a:[]).map(x=>String(typeof x==="string"?x:(x.combo||x.key||"")).replace(/[=>]/g,"-")).filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x));
+ }
+ async function check(){
+  const m=$("bhV571Msg");m.textContent="結果取得中…";$("bhV571Send").disabled=true;last=null;
+  try{
+   const q=sel(),j=await daily(q.date),r=raceNode(j,q.venue,q.race);
+   if(!r){m.textContent="レースデータを取得できませんでした";return}
+   const res=resultNode(r),tf=trifecta(r,res),out=combo(r,res,tf);
+   if(!out){m.textContent="結果はまだ公開されていません";return}
+   const payout=Number(tf?.amount),tech=TECH[Number(res?.technique_number??res?.technique)]||res?.technique_number_source||res?.technique_name||"—";
+   const bets=buyTickets(),judge=bets.length?(bets.includes(out)?"的中":"ハズレ"):"判定なし";
+   last={out,way:tech,pay:Number.isFinite(payout)?payout:null,judge};
+   $("bhV571Out").textContent=out;$("bhV571Way").textContent=tech;$("bhV571Pay").textContent=Number.isFinite(payout)?`¥${payout.toLocaleString("ja-JP")}`:"—";$("bhV571Judge").textContent=judge;
+   $("bhV571Send").disabled=false;m.textContent="✓ 結果取得完了";
+  }catch(e){console.warn("V574 result",e);m.textContent="結果取得に失敗しました"}
+ }
+ function send(){
+  if(!last)return;const q=sel();
+  const payload={schema:"HUNTER_CYCLE_V3",sentAt:new Date().toISOString(),race:q,result:last,pageSnapshot:document.body.innerText};
+  try{localStorage.setItem("BH_DEME_LAB_INBOX_V3",JSON.stringify(payload));localStorage.setItem("BH_DEME_LAB_INBOX_V3_PING",String(Date.now()));if("BroadcastChannel"in window){const c=new BroadcastChannel("BH_HUNTER_CYCLE_V3");c.postMessage(payload);c.close()}$("bhV571Msg").textContent="✓ 出目研究所へ送信しました"}catch(e){$("bhV571Msg").textContent="送信失敗"}
+ }
+ $("bhV571Check")?.addEventListener("click",check);
+ $("bhV571Send")?.addEventListener("click",send);
+ $("bhV571Top")?.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
 })();
 </script>
