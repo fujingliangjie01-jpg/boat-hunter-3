@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V542</title>
+<title>BOAT HUNTER V543</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15383,33 +15383,15 @@ input,
 #bhFSTCompare540 .fstValue{font-size:23px;font-weight:900;color:#fff;line-height:1.25}
 #bhFSTCompare540 .fstArrow{font-size:24px;font-weight:900;color:#fff}
 @media(max-width:560px){#bhFSTCompare540{gap:6px}#bhFSTCompare540 .fstBox{min-width:96px;padding:6px 8px}#bhFSTCompare540 .fstValue{font-size:20px}}
-</style><style id="bhV542FSTPositionCSS">
-#bhFSTCompare540{
-  position:absolute!important;
-  right:16px!important;
-  top:70px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:8px!important;
-  width:auto!important;
-  margin:0!important;
-}
-#bhFSTCompare540 .bhNormalST540{
-  border:2px solid #fff!important;
-  background:#102231!important;
-}
-#bhFSTCompare540 .bhNormalST540 .fstLabel,
-#bhFSTCompare540 .bhNormalST540 .fstValue{color:#fff!important}
-#bhFSTCompare540 .fstArrow{color:#fff!important}
-#bhFSTCompare540 > .fstBox:not(.bhNormalST540){
-  border-color:#8f3dd8!important;
-}
+</style><style id="bhV543FSTFixCSS">
+#bhFSTCompare540{display:flex!important;align-items:center!important;gap:7px!important;margin-left:auto!important;width:auto!important;position:static!important}
+#bhFSTCompare540 .fstBox{min-width:108px!important;padding:7px 10px!important;border-radius:12px!important;text-align:center!important;background:#102231!important}
+#bhFSTCompare540 .bhNormalST540{border:2px solid #fff!important}
+#bhFSTCompare540 .bhNormalST540 .fstLabel,#bhFSTCompare540 .bhNormalST540 .fstValue{color:#fff!important}
+#bhFSTCompare540 .fstArrow{font-size:23px!important;color:#fff!important;font-weight:900!important}
+#bhFSTCompare540 > .fstBox:not(.bhNormalST540){border:2px solid #8f3dd8!important}
 #bhFSTCompare540 > .fstBox:not(.bhNormalST540) .fstLabel{color:#c76cff!important}
-@media(max-width:560px){
- #bhFSTCompare540{right:14px!important;top:68px!important;gap:6px!important}
- #bhFSTCompare540 .fstBox{min-width:96px!important}
-}
+@media(max-width:560px){#bhFSTCompare540 .fstBox{min-width:96px!important;padding:6px 7px!important}#bhFSTCompare540{gap:5px!important}}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15420,7 +15402,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.542</div>
+  <div class="topVol">Vol.543</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25124,14 +25106,37 @@ window.__BH_V396_FORCE_2BOX__=true;
    return +(m?.[1]||window.__BH_SELECTED_BOAT||0);
  }
  function normalST(boat){
+   const candidates=[];
+   const push=o=>{if(o&&typeof o==="object")candidates.push(o)};
    const pools=[
-     window.__BH_DIAG_ROWS, window.__BH_RACE_FLOW_ROWS,
+     window.__BH_DIAG_ROWS,window.__BH_RACE_FLOW_ROWS,window.__BH_RACERS,
+     window.racers,window.players,window.entryData,window.raceData?.racers,
      window.BH_RANK_TREND_V521?.current?.()
    ];
    for(const p of pools){
-     if(!Array.isArray(p))continue;
-     const r=p.find(x=>+x.boat===+boat); if(!r)continue;
-     for(const k of ["normalST","avgST","averageST","baseST","st"]){const n=num(r[k]);if(n)return n}
+     if(Array.isArray(p)){const r=p.find(x=>+(x.boat??x.lane??x.waku??x.number)===+boat);push(r)}
+   }
+   for(const r of candidates){
+     for(const k of ["preFST","beforeFST","normalST","avgSTBeforeF","avgST","averageST","baseST","startAverage","stAvg"]){
+       const n=num(r?.[k]);if(n)return n;
+     }
+     // If start history exists, average starts before the most recent F marker.
+     const hist=r?.starts||r?.startHistory||r?.recentStarts||r?.history;
+     if(Array.isArray(hist)){
+       const vals=[];
+       for(const x of hist){
+         if(x?.F||x?.flying||String(x?.result||"").toUpperCase()==="F")break;
+         const n=num(typeof x==="number"?x:(x?.st??x?.start));if(n)vals.push(n);
+       }
+       if(vals.length>=2)return vals.reduce((q,w)=>q+w,0)/vals.length;
+     }
+   }
+   // Last safe fallback: read the normal 平均ST shown for the same boat in 6艇診断.
+   const diag=[...document.querySelectorAll("section,div")].find(e=>/6艇診断/.test(e.innerText||"")&&/平均ST/.test(e.innerText||""));
+   if(diag){
+     const lines=(diag.innerText||"").split(/\n+/).map(x=>x.trim());
+     const vals=lines.filter(x=>/^0\.\d{3}$/.test(x)).map(Number);
+     if(vals[boat-1]&&vals[boat-1]>0)return vals[boat-1];
    }
    return null;
  }
@@ -25146,7 +25151,10 @@ window.__BH_V396_FORCE_2BOX__=true;
    const fm=(fBox.innerText||"").match(/F後ST[\s\S]*?(0\.\d{3})/);
    if(!fm)return;
    let wrap=document.getElementById("bhFSTCompare540");
-   if(!wrap){wrap=document.createElement("div");wrap.id="bhFSTCompare540";fBox.parentNode.insertBefore(wrap,fBox)}
+   if(!wrap){
+     wrap=document.createElement("div");wrap.id="bhFSTCompare540";
+     fBox.parentNode.insertBefore(wrap,fBox);
+   }
    fBox.classList.add("fstBox");
    let nbox=wrap.querySelector(".bhNormalST540");if(!nbox){nbox=document.createElement("div");nbox.className="fstBox bhNormalST540"}
    nbox.innerHTML=`<div class="fstLabel">Fなし平均ST</div><div class="fstValue">${normal?normal.toFixed(3):"---"}</div>`;
@@ -25158,19 +25166,5 @@ window.__BH_V396_FORCE_2BOX__=true;
  }
  document.addEventListener("click",()=>setTimeout(mount,120));
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,1000),{once:true});else setTimeout(mount,1000);
-})();
-</script>
-<script id="bhV542FSTPositionFix">
-(()=>{
- function fix(){
-   const wrap=document.getElementById("bhFSTCompare540");if(!wrap)return;
-   const detail=[...document.querySelectorAll("section,div")].find(e=>/選手詳細/.test(e.innerText||"")&&/F後ST/.test(e.innerText||""));
-   if(detail)detail.style.position="relative";
-   const n=wrap.querySelector(".bhNormalST540"), a=wrap.querySelector(".fstArrow");
-   const f=[...wrap.children].find(e=>e.classList?.contains("fstBox")&&!e.classList.contains("bhNormalST540"));
-   if(n&&a&&f){wrap.append(n,a,f)}
- }
- document.addEventListener("click",()=>setTimeout(fix,180));
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(fix,1200),{once:true});else setTimeout(fix,1200);
 })();
 </script>
