@@ -25180,161 +25180,44 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
-<script id="bhV550DemeLabBridge">
+<script id="bhV550DemeLabExportBridge">
 (()=>{
-  "use strict";
-  /* V550: 出目研究所ブリッジ
-     既存BOAT HUNTERの機能・学習DB・結果DBは削除/変更しない。
-     同一GitHub Pages originなら localStorage の共通INBOXで研究所へ渡せる。 */
-  const INBOX="BH_DEME_LAB_INBOX_V1";
-  const $=id=>document.getElementById(id);
-  const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return null}};
-  const readInbox=()=>{try{const x=JSON.parse(localStorage.getItem(INBOX)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
-  const writeInbox=x=>localStorage.setItem(INBOX,JSON.stringify(x));
-
-  function raceKey(){
-    return [
-      $("date")?.value||"",
-      String($("stadium")?.value||"").padStart(2,"0"),
-      $("race")?.value||""
-    ].join("_");
-  }
-
-  function learnedRecord(){
-    const k=raceKey();
-    try{
-      const raw=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]");
-      if(Array.isArray(raw)) return raw.find(x=>x?.key===k)||null;
-      if(raw && typeof raw==="object") return raw[k]||null;
-    }catch(_){}
-    return null;
-  }
-
-  function resultFromScreen(){
-    try{
-      const x=window.BH_RESULT_LEARN_V547?.result?.();
-      if(x?.order?.length===3)return clone(x);
-    }catch(_){}
-    const roots=[
-      $("resultPanel"),$("resultArea"),$("raceResult"),$("selectedRaceResult"),
-      $("hunterFinalResult")
-    ].filter(Boolean);
-    const txt=roots.map(x=>x.innerText||"").join("\n");
-    let m=txt.match(/確定着順[\s\S]{0,180}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
-       || txt.match(/選択中レース結果[\s\S]{0,260}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
-       || txt.match(/\b([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])\b/);
-    if(!m)return null;
-    const order=[+m[1],+m[2],+m[3]];
-    if(new Set(order).size!==3)return null;
-    const technique=(txt.match(/決まり手[\s\S]{0,60}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
-    const payout=Number(((txt.match(/3連単払戻[\s\S]{0,60}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
-    return {order,combo:order.join("-"),technique,payout};
-  }
-
-  function currentSnapshot(){
-    const learned=clone(learnedRecord())||{};
-    const result=resultFromScreen()||clone(learned.result)||null;
-    const market=clone(window.__BH_MARKET_COMPARE510)||null;
-    const ability=clone(window.__BH_DIAG_ROWS)||clone(learned.ability)||[];
-    const flow=clone(window.__BH_RACE_FLOW_ROWS)||clone(learned.flow)||[];
-    const odds=clone(window.__HUNTER_ODDS120)||clone(learned.odds)||null;
-    let bet=null;
-    try{bet=clone(window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||null)}catch(_){}
-
-    return {
-      schemaVersion:1,
-      source:"BOAT_HUNTER",
-      sourceVersion:550,
-      hunterCycle:true,
-      key:raceKey(),
-      sentAt:new Date().toISOString(),
-      race:{
-        date:$("date")?.value||"",
-        stadium:String($("stadium")?.value||"").padStart(2,"0"),
-        raceNo:Number($("race")?.value||0)||null
-      },
-      hunter:{
-        learnedRecord:learned,
-        marketComparison:market,
-        sixBoatEvaluation:ability,
-        developmentEvaluation:flow,
-        odds120:odds,
-        betPrediction:bet
-      },
-      result:result
-    };
-  }
-
-  function send(){
-    const rec=currentSnapshot();
-    if(!rec.race.date||!rec.race.stadium||!rec.race.raceNo){
-      return {ok:false,msg:"日付・場・レースを選択してください"};
-    }
-    const a=readInbox();
-    const i=a.findIndex(x=>x?.key===rec.key);
-    if(i>=0)a[i]=rec;else a.push(rec);
-    writeInbox(a);
-
-    const verify=readInbox().find(x=>x?.key===rec.key);
-    if(!verify)return {ok:false,msg:"研究所INBOXへの保存に失敗しました"};
-    return {ok:true,msg:`${rec.race.raceNo}Rを出目研究所へ送信済み`,record:rec,count:a.length};
-  }
-
-  function findAnchor(){
-    return $("bhResultLearnFixed525") ||
-           $("bhResultLearnButton547")?.parentElement ||
-           $("hunterFinalResult") ||
-           $("resultPanel") || $("resultArea") || $("raceResult") ||
-           document.querySelector("#main .wrap");
-  }
-
-  function mount(){
-    if($("bhSendDemeLab550"))return true;
-    const host=findAnchor();if(!host)return false;
-    const box=document.createElement("div");
-    box.id="bhDemeLabBridge550";
-    box.style.cssText="margin:10px 0 14px";
-    box.innerHTML=`
-      <button type="button" id="bhSendDemeLab550"
-        style="width:100%;min-height:52px;border-radius:14px;border:1px solid #38bdf8;background:linear-gradient(180deg,#0d6f9f,#084b70);color:#fff;font-weight:950;font-size:15px">
-        出目研究所へ送る
-      </button>
-      <div id="bhDemeLabStatus550" style="margin-top:6px;text-align:center;font-size:11px;color:#8fb2c5">
-        BOAT HUNTERの既存データは変更しません
-      </div>`;
-    host.insertAdjacentElement("afterend",box);
-    $("bhSendDemeLab550").onclick=()=>{
-      const r=send();
-      $("bhDemeLabStatus550").textContent=r.msg;
-      if(r.ok){
-        $("bhSendDemeLab550").textContent="研究所へ送信済み ✓";
-        setTimeout(()=>{$("bhSendDemeLab550")&&($("bhSendDemeLab550").textContent="出目研究所へ送る")},1800);
-      }
-    };
-    return true;
-  }
-
-  // When result-learning succeeds, also refresh the research INBOX.
-  document.addEventListener("click",e=>{
-    const b=e.target?.closest?.("button");
-    if(!b)return;
-    if(/この結果を学習する|学習済み/.test(b.textContent||"")){
-      setTimeout(()=>{
-        const r=send();
-        const st=$("bhDemeLabStatus550");
-        if(st&&r.ok)st.textContent="結果学習データも研究所へ同期済み";
-      },700);
-    }
-    if(/結果を確認/.test(b.textContent||"")) [500,1200,2200].forEach(ms=>setTimeout(mount,ms));
-  },true);
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",()=>[300,900,1800].forEach(ms=>setTimeout(mount,ms)),{once:true});
-  }else [0,500,1400].forEach(ms=>setTimeout(mount,ms));
-
-  const mo=new MutationObserver(()=>{clearTimeout(window.__bhDeme550);window.__bhDeme550=setTimeout(mount,250)});
-  if(document.body)mo.observe(document.body,{subtree:true,childList:true});
-
-  window.BH_DEME_LAB_BRIDGE_V550={send,currentSnapshot,readInbox,key:INBOX};
+"use strict";
+const $=id=>document.getElementById(id);
+const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return null}};
+function key(){return [$("#date")?.value||"",String($("#stadium")?.value||"").padStart(2,"0"),$("#race")?.value||""].join("_")}
+function learned(){
+ try{const x=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]");if(Array.isArray(x))return x.find(r=>r?.key===key())||null;if(x&&typeof x==="object")return x[key()]||null}catch(_){} return null;
+}
+function visibleResult(){
+ const txt=($("#hunterFinalResult")?.innerText||$("#resultPanel")?.innerText||document.body.innerText||"");
+ const m=txt.match(/確定着順[\s\S]{0,180}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)||txt.match(/選択中レース結果[\s\S]{0,240}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+ if(!m)return null;const order=[+m[1],+m[2],+m[3]];if(new Set(order).size!==3)return null;
+ const technique=(txt.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+ const payout=Number(((txt.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+ return {order,combo:order.join("-"),technique,payout};
+}
+function payload(){
+ const lr=clone(learned())||{}, result=visibleResult()||clone(lr.result)||null;
+ let bet=null;try{bet=clone(window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||null)}catch(_){}
+ return {schemaVersion:1,source:"BOAT_HUNTER",sourceVersion:550,hunterCycle:true,key:key(),sentAt:new Date().toISOString(),
+  race:{date:$("#date")?.value||"",stadium:String($("#stadium")?.value||"").padStart(2,"0"),raceNo:Number($("#race")?.value||0)||null},
+  hunter:{learnedRecord:lr,marketComparison:clone(window.__BH_MARKET_COMPARE510)||null,sixBoatEvaluation:clone(window.__BH_DIAG_ROWS)||[],developmentEvaluation:clone(window.__BH_RACE_FLOW_ROWS)||[],odds120:clone(window.__HUNTER_ODDS120)||null,betPrediction:bet},
+  result};
+}
+function download(){
+ const p=payload();if(!p.race.date||!p.race.stadium||!p.race.raceNo){alert("日付・場・レースを選択してください");return}
+ const blob=new Blob([JSON.stringify(p,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`HUNTER_TO_DEME_${p.race.date}_${p.race.stadium}_${p.race.raceNo}R.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function host(){return $("#bhResultLearnFixed525")||$("#hunterFinalResult")||$("#resultPanel")||document.querySelector("#main .wrap")}
+function mount(){
+ if($("#bhDemeExport550"))return;const h=host();if(!h)return;
+ const box=document.createElement("div");box.id="bhDemeExport550";box.style.cssText="margin:10px 0 14px";box.innerHTML='<button id="bhDemeExportBtn550" type="button" style="width:100%;min-height:52px;border-radius:14px;border:1px solid #38bdf8;background:linear-gradient(180deg,#0d6f9f,#084b70);color:#fff;font-weight:950;font-size:15px">出目研究所へ送る</button><div style="margin-top:5px;text-align:center;font-size:10px;color:#8da9ba">研究所連携JSONを書き出します（既存HUNTERデータは変更しません）</div>';
+ h.insertAdjacentElement("afterend",box);$("#bhDemeExportBtn550").onclick=download;
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>[300,900,1800].forEach(ms=>setTimeout(mount,ms)),{once:true});else [0,500,1400].forEach(ms=>setTimeout(mount,ms));
+document.addEventListener("click",e=>{if(/結果|確認|確定|学習/.test(e.target?.closest?.("button")?.textContent||""))[400,1000].forEach(ms=>setTimeout(mount,ms))},true);
+new MutationObserver(()=>{clearTimeout(window.__bh550m);window.__bh550m=setTimeout(mount,250)}).observe(document.body,{childList:true,subtree:true});
+window.BH_DEME_EXPORT_V550={payload,download};
 })();
 </script>
