@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V576</title>
+<title>BOAT HUNTER V578</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.576</div>
+  <div class="topVol">Vol.578</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16183,6 +16183,34 @@ async function buildHistory(){
 
  // V423: 選手×コース単位の永続キャッシュ。取得日が同じなら即利用。
  const CACHE_KEY="BH_HISTORY20_SAMECOURSE_V576";
+const DIAG20_KEY="BH_DIAG_FROM_CARD20_V578";
+function bhV578StoreDiag20(reg,course,rows){
+ try{
+  const valid=(Array.isArray(rows)?rows:[]).filter(x=>{
+   const p=Number(x?.place_number??x?.place??x?.rank??x?.arrival??0);
+   return p>=1&&p<=6;
+  });
+  if(!reg||!course||!valid.length)return null;
+  const wins=valid.filter(x=>Number(x?.place_number??x?.place??x?.rank??x?.arrival)===1).length;
+  const top3=valid.filter(x=>{const p=Number(x?.place_number??x?.place??x?.rank??x?.arrival);return p>=1&&p<=3}).length;
+  const rec={reg:String(reg),course:Number(course),n:valid.length,
+    winRate:wins/valid.length*100,top3Rate:top3/valid.length*100,updatedAt:Date.now()};
+  const db=JSON.parse(localStorage.getItem(DIAG20_KEY)||"{}");
+  db[`${rec.reg}_${rec.course}`]=rec;
+  localStorage.setItem(DIAG20_KEY,JSON.stringify(db));
+  window.__BH_DIAG20_V578=db;
+  return rec;
+ }catch(_){return null}
+}
+window.bhV578StoreDiag20=bhV578StoreDiag20;
+function bhV578Diag20(reg,course){
+ try{
+  const db=window.__BH_DIAG20_V578||JSON.parse(localStorage.getItem(DIAG20_KEY)||"{}");
+  return db[`${String(reg)}_${Number(course)}`]||null;
+ }catch(_){return null}
+}
+window.bhV578Diag20=bhV578Diag20;
+
  let persistent={};
  try{persistent=JSON.parse(localStorage.getItem(CACHE_KEY)||"{}")}catch(e){persistent={}}
  const cacheKey=(r)=>`${start}|${Number(r.number)}|C${Number(r.entry_number)}`;
@@ -24357,8 +24385,13 @@ window.__BH_V396_FORCE_2BOX__=true;
    localStorage.setItem(K,JSON.stringify(a));
    localStorage.setItem("BH_DEME_LAB_INBOX_V3_PING",String(Date.now()));
    try{const c=new BroadcastChannel("BH_HUNTER_CYCLE_V3");c.postMessage({source:"BOAT_HUNTER",key,payload});c.close()}catch(_){}
-   $("bhV571Msg").textContent="✓ 出目研究所へ送信しました";
-   $("bhV571Send").textContent="送信済み ✓";
+   /* V577: Safari/PWAの保存領域差に依存しない直接受け渡しも併用 */
+   const packed=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+   const labUrl=new URL("/deme-lab/",location.origin);
+   labUrl.hash="hunter="+encodeURIComponent(packed);
+   $("bhV571Msg").textContent="✓ 送信データを作成しました";
+   $("bhV571Send").textContent="研究所を開く ✓";
+   setTimeout(()=>{ location.href=labUrl.toString(); },180);
    setTimeout(()=>{$("bhV571Send").textContent="出目研究所へ送る"},1600);
   }catch(e){
    console.warn("V575 lab send",e);
@@ -24368,5 +24401,42 @@ window.__BH_V396_FORCE_2BOX__=true;
  $("bhV571Check")?.addEventListener("click",check);
  $("bhV571Send")?.addEventListener("click",send);
  $("bhV571Top")?.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
+})();
+</script>
+
+<script id="bhV578Card20ToDiag">
+(()=>{
+ "use strict";
+ function txtReg(card){
+   const t=card?.innerText||"";
+   const m=t.match(/(?:登録|登番|登録番号)\s*[:：]?\s*(\d{4})/);
+   return m?.[1]||"";
+ }
+ function courseOf(card,index){return Number(card?.dataset?.course||card?.dataset?.lane||index+1)}
+ function apply(){
+  const root=[...document.querySelectorAll("section,div")].find(e=>/6艇診断/.test(e.textContent||"")&&/今コース勝率/.test(e.textContent||""));
+  if(!root)return;
+  const cards=[...document.querySelectorAll("[data-racer-number],[data-registration-number],.racer-card,.player-card")].filter(e=>e.offsetParent!==null);
+  const rows=[...root.querySelectorAll("tr")].filter(tr=>/今コース勝率/.test(tr.textContent||"")||/今コース3連対率/.test(tr.textContent||""));
+  if(!rows.length)return;
+  const regs=[];
+  for(let i=0;i<6;i++){
+   const c=cards[i], reg=String(c?.dataset?.racerNumber||c?.dataset?.registrationNumber||txtReg(c)||"");
+   regs.push({reg,course:courseOf(c,i)});
+  }
+  for(const tr of rows){
+   const top3=/3連対/.test(tr.textContent||"");
+   const cells=[...tr.querySelectorAll("td")];
+   for(let i=0;i<6;i++){
+    const x=window.bhV578Diag20?.(regs[i]?.reg,regs[i]?.course);
+    if(x&&cells[i+1])cells[i+1].textContent=`${(top3?x.top3Rate:x.winRate).toFixed(1)}%`;
+   }
+  }
+ }
+ window.bhV578ApplyCard20ToDiag=apply;
+ document.addEventListener("click",e=>{
+   if(/AI解析|展望解析|過去20走/.test(e.target?.textContent||"")) setTimeout(apply,600);
+ },true);
+ window.addEventListener("bh:history20-ready",apply);
 })();
 </script>
