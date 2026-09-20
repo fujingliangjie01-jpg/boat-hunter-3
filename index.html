@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V560</title>
+<title>BOAT HUNTER V561</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.560</div>
+  <div class="topVol">Vol.561</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25180,111 +25180,107 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
-<style id="bhV560ResultOnlyCSS">
-#bhV560Flow{margin:14px 0}
-#bhV560Flow .box{padding:14px;border:1px solid #2b6a85;border-radius:16px;background:#071b27;color:#fff}
-#bhV560Flow .head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-#bhV560Flow .title{font-size:18px;font-weight:950}
-#bhV560Flow .check{width:auto;padding:11px 16px;border:1px solid #62d2ff;border-radius:12px;background:#087ba9;color:#fff;font-weight:900}
-#bhV560Flow .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-#bhV560Flow .cell{padding:10px;border-radius:11px;background:#06141d}
-#bhV560Flow small{display:block;font-size:10px;color:#809dac;margin-bottom:3px}
-#bhV560Flow b{font-size:18px}
-#bhV560Send,#bhV560Top{width:100%;min-height:54px;margin-top:12px;border-radius:15px;font-weight:950;font-size:16px}
-#bhV560Send{border:1px solid #59cff9;background:#09658f;color:#fff}
-#bhV560Top{border:1px solid #3c6b80;background:#0b202d;color:#c3deea}
-.bhV560Hidden{display:none!important}
+<style id="bhV561ResultFlowCSS">
+/* V561: presentation only; analysis/buy logic untouched */
+#bhV561Flow{margin:14px 0}
+#bhV561Result{padding:14px;border:1px solid #2c6883;border-radius:16px;background:#071b27;color:#fff}
+#bhV561Result .h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#bhV561Result .t{font-size:18px;font-weight:950}
+#bhV561Check{width:auto;padding:11px 16px;border:1px solid #67d5ff;border-radius:12px;background:#087ba9;color:#fff;font-weight:900}
+#bhV561Grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+#bhV561Grid>div{padding:10px;background:#06141d;border-radius:11px}
+#bhV561Grid small{display:block;color:#7f9cab;font-size:10px;margin-bottom:3px}
+#bhV561Grid b{font-size:18px}
+#bhV561Send,#bhV561Top{width:100%;min-height:54px;margin-top:12px;border-radius:15px;font-weight:950;font-size:16px}
+#bhV561Send{border:1px solid #59cff9;background:#09658f;color:#fff}
+#bhV561Top{border:1px solid #3c6b80;background:#0b202d;color:#c3deea}
+.bhV561DisplayOff{display:none!important}
 </style>
-<script id="bhV560ResultOnlyLayer">
+<script id="bhV561ResultFlow">
 (()=>{
 "use strict";
-const $=id=>document.getElementById(id), INBOX="BH_DEME_LAB_INBOX_V3";
+const $=id=>document.getElementById(id);
+const INBOX="BH_DEME_LAB_INBOX_V3";
 
-function context(){
- const st=$("stadium"), rr=$("race");
- return {
-   date:$("date")?.value||new Date(Date.now()+32400000).toISOString().slice(0,10),
-   stadium:String(st?.value||"").padStart(2,"0"),
-   stadiumName:(st?.selectedOptions?.[0]?.textContent||"").trim(),
-   raceNo:Number(rr?.value||0)
- };
+function ctx(){
+ const st=$("stadium"),rr=$("race");
+ return {date:$("date")?.value||"",stadium:String(st?.value||"").padStart(2,"0"),
+ stadiumName:(st?.selectedOptions?.[0]?.textContent||"").trim(),raceNo:Number(rr?.value||0)};
 }
-function coreResultButton(){
- return [...document.querySelectorAll("button")].find(b=>!b.closest("#bhV560Flow") && /結果を確認/.test((b.textContent||"").trim()));
-}
-function parseResult(){
- const t=document.body.innerText||"";
- const m=t.match(/確定着順[\s\S]{0,160}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
-       ||t.match(/選択中レース結果[\s\S]{0,220}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+function readActual(){
+ /* Prefer the existing V361 result snapshot/rendered result. Read only. */
+ const roots=[$("hunterFinalResult"),$("resultPanel"),$("resultArea"),$("raceResult"),$("selectedRaceResult")].filter(Boolean);
+ const txt=(roots.map(x=>x.innerText||"").join("\n")||document.body.innerText||"");
+ const m=txt.match(/確定着順[\s\S]{0,140}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
+       ||txt.match(/選択中レース結果[\s\S]{0,220}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
  if(!m)return null;
- const technique=(t.match(/決まり手[\s\S]{0,55}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"—";
- const payout=Number(((t.match(/3連単払戻[\s\S]{0,60}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
- const judge=(t.match(/HUNTER判定[\s\S]{0,45}?(的中|ハズレ)/)||t.match(/\b(的中|ハズレ)\b/))?.[1]||"—";
+ const technique=(txt.match(/決まり手[\s\S]{0,45}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"—";
+ const payout=Number(((txt.match(/3連単払戻[\s\S]{0,55}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+ const judge=(txt.match(/HUNTER判定[\s\S]{0,45}?(的中|ハズレ)/)||txt.match(/結果確定[\s\S]{0,80}?(的中|ハズレ)/))?.[1]||"—";
  return {confirmed:true,order:[+m[1],+m[2],+m[3]],combo:`${m[1]}-${m[2]}-${m[3]}`,technique,payout,judge};
 }
-function draw(){
- const body=$("bhV560ResultBody"); if(!body)return;
- const x=parseResult();
- if(!x){body.innerHTML='<div style="margin-top:12px;color:#91a9b7">結果確認待ち</div>';return}
- body.innerHTML=`<div class="grid">
- <div class="cell"><small>出目結果</small><b>${x.combo}</b></div>
- <div class="cell"><small>HUNTER判定</small><b>${x.judge}</b></div>
- <div class="cell"><small>決まり手</small><b>${x.technique}</b></div>
- <div class="cell"><small>3連単払戻</small><b>${x.payout?`¥${x.payout.toLocaleString()}`:"—"}</b></div>
- </div>`;
+function render(){
+ const b=$("bhV561Body");if(!b)return;
+ const x=readActual();
+ if(!x){b.innerHTML='<div style="margin-top:12px;color:#91a9b7">結果確認待ち</div>';return}
+ b.innerHTML=`<div id="bhV561Grid">
+ <div><small>出目結果</small><b>${x.combo}</b></div>
+ <div><small>HUNTER判定</small><b>${x.judge}</b></div>
+ <div><small>決まり手</small><b>${x.technique}</b></div>
+ <div><small>3連単払戻</small><b>${x.payout?`¥${x.payout.toLocaleString("ja-JP")}`:"—"}</b></div></div>`;
+}
+function coreCheck(){
+ return [...document.querySelectorAll("button")].find(b=>!b.closest("#bhV561Flow")&&/結果を確認/.test((b.textContent||"").trim()));
 }
 function send(){
- const r=context(), x=parseResult();
+ const c=ctx(),x=readActual();
  if(!x){alert("結果確認を先に行ってください");return}
- if(!r.stadium||r.stadium==="00"||!r.raceNo){alert("現在の場・レースを取得できません");return}
- const p={schemaVersion:3,source:"BOAT_HUNTER",sourceVersion:560,hunterCycle:true,
-   key:`${r.date}_${r.stadium}_${r.raceNo}R`,sentAt:new Date().toISOString(),
-   race:r,result:x,
-   hunter:{sixBoatEvaluation:window.__BH_DIAG_ROWS||[],developmentEvaluation:window.__BH_RACE_FLOW_ROWS||[],odds120:window.__HUNTER_ODDS120||null}};
+ if(!c.date||!c.stadium||c.stadium==="00"||!c.raceNo){alert("現在の場・レースを取得できません");return}
+ const p={schemaVersion:3,source:"BOAT_HUNTER",sourceVersion:561,hunterCycle:true,
+ key:`${c.date}_${c.stadium}_${c.raceNo}R`,sentAt:new Date().toISOString(),race:c,result:x,
+ hunter:{sixBoatEvaluation:window.__BH_DIAG_ROWS||[],developmentEvaluation:window.__BH_RACE_FLOW_ROWS||[],odds120:window.__HUNTER_ODDS120||null}};
  let a=[];try{const z=JSON.parse(localStorage.getItem(INBOX)||"[]");if(Array.isArray(z))a=z}catch(_){}
  const i=a.findIndex(v=>v?.key===p.key);if(i>=0)a[i]=p;else a.push(p);
  localStorage.setItem(INBOX,JSON.stringify(a));
  try{const bc=new BroadcastChannel("BH_HUNTER_CYCLE_V3");bc.postMessage({source:"BOAT_HUNTER",key:p.key});bc.close()}catch(_){}
- const b=$("bhV560Send");b.textContent=`${r.stadiumName||r.stadium} ${r.raceNo}R → 送信済み ✓`;
- setTimeout(()=>b.textContent="出目研究所へ送る",1500);
+ const btn=$("bhV561Send");btn.textContent=`${c.stadiumName||c.stadium} ${c.raceNo}R → 送信済み ✓`;
+ setTimeout(()=>btn.textContent="出目研究所へ送る",1500);
 }
-function buyBox(){
- return $("hunterFinalBuyBlock") ||
- [...document.querySelectorAll("section,div")].find(e=>/HUNTER買い目/.test(e.textContent||"") && /決まり手予測/.test(e.textContent||""));
-}
-function mount(){
- if($("bhV560Flow"))return;
- const buy=buyBox();if(!buy)return;
- const f=document.createElement("div");f.id="bhV560Flow";
- f.innerHTML='<section class="box"><div class="head"><div><div style="font-size:10px;color:#73c9ed;font-weight:900">CURRENT RACE RESULT</div><div class="title">結果確認</div></div><button id="bhV560Check" class="check" type="button">結果を確認</button></div><div id="bhV560ResultBody"><div style="margin-top:12px;color:#91a9b7">結果確認待ち</div></div></section><button id="bhV560Send" type="button">出目研究所へ送る</button><button id="bhV560Top" type="button">↑ 上に戻る</button>';
- buy.insertAdjacentElement("afterend",f);
- $("bhV560Check").onclick=()=>{const b=coreResultButton();if(b)b.click();setTimeout(draw,500)};
- $("bhV560Send").onclick=send;
- $("bhV560Top").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
- cleanup();
-}
-function cleanup(){
- /* DISPLAY ONLY. No learning/analysis scripts or databases are touched. */
+function hideDisplayOnly(){
+ /* Never remove nodes and never touch storage/functions. */
  [...document.querySelectorAll("button,a,[role=button]")].forEach(e=>{
-   if(!e.closest("#bhV560Flow") && /上に戻る/.test((e.textContent||"").trim()))e.classList.add("bhV560Hidden");
-   if(/この結果を学習する/.test((e.textContent||"").trim()))e.classList.add("bhV560Hidden");
+   const t=(e.textContent||"").trim();
+   if(!e.closest("#bhV561Flow")&&(/上に戻る/.test(t)||/この結果を学習する/.test(t)))e.classList.add("bhV561DisplayOff");
  });
  [...document.querySelectorAll("section,div")].forEach(e=>{
-   if(e.closest("#bhV560Flow"))return;
+   if(e.closest("#bhV561Flow"))return;
    const t=(e.textContent||"").trim();
-   if((/結果確認\s*累積/.test(t)||/全国3連単\s*出目カウンター/.test(t)||/学習結果/.test(t)) && e.children.length<20)e.classList.add("bhV560Hidden");
+   if((/結果確認\s*累積/.test(t)||/全国3連単\s*出目カウンター/.test(t)||/^HUNTER 学習データ/.test(t))&&e.children.length<18)e.classList.add("bhV561DisplayOff");
  });
 }
-function init(){mount();cleanup();draw()}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
-/* Event-driven only: no MutationObserver, no repeating timers. */
+function mount(){
+ if($("bhV561Flow"))return true;
+ const buy=$("hunterFinalBuyBlock");
+ if(!buy)return false;
+ const flow=document.createElement("div");flow.id="bhV561Flow";
+ flow.innerHTML='<section id="bhV561Result"><div class="h"><div><div style="font-size:10px;color:#73c9ed;font-weight:900">CURRENT RACE RESULT</div><div class="t">結果確認</div></div><button id="bhV561Check" type="button">結果を確認</button></div><div id="bhV561Body"><div style="margin-top:12px;color:#91a9b7">結果確認待ち</div></div></section><button id="bhV561Send" type="button">出目研究所へ送る</button><button id="bhV561Top" type="button">↑ 上に戻る</button>';
+ buy.insertAdjacentElement("afterend",flow);
+ $("bhV561Check").onclick=()=>{const b=coreCheck();if(b)b.click();setTimeout(render,650)};
+ $("bhV561Send").onclick=send;
+ $("bhV561Top").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+ hideDisplayOnly();render();return true;
+}
+function afterBuy(){
+ /* finite retries only after the existing AI button was pressed */
+ let n=0;const f=()=>{n++;if(mount()||n>=20)return;setTimeout(f,150)};f();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{mount();hideDisplayOnly()},{once:true});
+else {mount();hideDisplayOnly()}
 document.addEventListener("click",e=>{
- const b=e.target?.closest?.("button");
- if(!b)return;
- const t=(b.textContent||"").trim();
- if(/AI解析|展望解析/.test(t))setTimeout(()=>{mount();cleanup()},0);
- if(/結果を確認/.test(t) && !b.closest("#bhV560Flow"))setTimeout(draw,500);
+ const b=e.target?.closest?.("button");if(!b)return;
+ if(b.id==="aiAnalyze"||b.id==="aiAnalyzeTop503"){setTimeout(afterBuy,0)}
+ if(!b.closest("#bhV561Flow")&&/結果を確認/.test(b.textContent||""))setTimeout(render,650);
 },true);
-window.BH_RESULT_FLOW_V560={mount,draw,send};
+window.BH_RESULT_FLOW_V561={mount,render,send};
 })();
 </script>
