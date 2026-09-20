@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V555</title>
+<title>BOAT HUNTER V557</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.555</div>
+  <div class="topVol">Vol.557</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25180,125 +25180,146 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
-<script id="bhV552DemeButtonBelowResultLearning">
+<script id="bhV556ResultFlowClean">
 (()=>{
 "use strict";
-const $=id=>document.getElementById(id),clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return null}};
-function raceKey(){return [$("#date")?.value||"",String($("#stadium")?.value||"").padStart(2,"0"),$("#race")?.value||""].join("_")}
-function learned(){try{const x=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]"),k=raceKey();if(Array.isArray(x))return x.find(r=>r?.key===k)||null;if(x&&typeof x==="object")return x[k]||null}catch(_){}return null}
-function visibleResult(){const t=document.body.innerText||"",m=t.match(/確定着順[\s\S]{0,220}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);if(!m)return null;const o=[+m[1],+m[2],+m[3]],tech=(t.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"",pay=Number(((t.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));return {order:o,combo:o.join("-"),technique:tech,payout:pay}}
-function payload(){const lr=clone(learned())||{};return {schemaVersion:1,source:"BOAT_HUNTER",sourceVersion:552,hunterCycle:true,key:raceKey(),sentAt:new Date().toISOString(),race:{date:$("#date")?.value||"",stadium:String($("#stadium")?.value||"").padStart(2,"0"),raceNo:Number($("#race")?.value||0)||null},hunter:{learnedRecord:lr,marketComparison:clone(window.__BH_MARKET_COMPARE510)||null,sixBoatEvaluation:clone(window.__BH_DIAG_ROWS)||[],developmentEvaluation:clone(window.__BH_RACE_FLOW_ROWS)||[],odds120:clone(window.__HUNTER_ODDS120)||null},result:visibleResult()||clone(lr.result)||null}}
-function download(){const p=payload();if(!p.race.date||!p.race.stadium||!p.race.raceNo){alert("日付・場・レースを選択してください");return}const b=new Blob([JSON.stringify(p,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`HUNTER_TO_DEME_${p.race.date}_${p.race.stadium}_${p.race.raceNo}R.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function anchor(){return $("bhResultLearnStatus547")||$("bhResultLearnButton547")||$("bhResultLearnStatus525")||$("bhResultLearnButton525")}
-function mount(){const a=anchor();if(!a)return false;let box=$("bhDemeSend552");if(!box){box=document.createElement("div");box.id="bhDemeSend552";box.style.cssText="margin:10px 0 14px";box.innerHTML='<button id="bhDemeSendBtn552" type="button" style="width:100%;min-height:52px;border-radius:14px;border:1px solid #38bdf8;background:#075985;color:#fff;font-weight:950;font-size:16px">出目研究所へ送る</button><div style="text-align:center;margin-top:5px;font-size:10px;color:#8da9ba">BOAT HUNTERの既存データは変更しません</div>'}if(a.nextElementSibling!==box)a.insertAdjacentElement("afterend",box);$("#bhDemeSendBtn552").onclick=download;return true}
-function retry(){[0,200,600,1200,2200].forEach(ms=>setTimeout(mount,ms))}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
-document.addEventListener("click",e=>{const b=e.target?.closest?.("button");if(b&&/結果を確認|この結果を学習する|学習済み/.test(b.textContent||""))retry()},true);
-new MutationObserver(()=>{clearTimeout(window.__bh552);window.__bh552=setTimeout(mount,180)}).observe(document.documentElement,{childList:true,subtree:true});
-window.BH_DEME_EXPORT_V552={payload,download,mount};
-})();
-</script>
+const $=id=>document.getElementById(id);
+const INBOX="BH_DEME_LAB_INBOX_V3";
 
-
-<script id="bhV553HideOldResultLearnButton">
-(()=>{
-"use strict";
-function apply(){
-  ["bhResultLearnButton547","bhResultLearnButton525"].forEach(id=>{
-    const b=document.getElementById(id);
-    if(b){b.style.display="none";b.setAttribute("aria-hidden","true")}
-  });
-}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply,{once:true});else apply();
-new MutationObserver(()=>{clearTimeout(window.__bh553);window.__bh553=setTimeout(apply,100)}).observe(document.documentElement,{childList:true,subtree:true});
-})();
-</script>
-
-
-<script id="bhV554DemeDirectSync">
-(()=>{
-"use strict";
-const INBOX="BH_DEME_LAB_INBOX_V3",LAB_URL="/deme-lab/";
-function sendDirect(){
-  try{
-    const maker=window.BH_DEME_EXPORT_V552?.payload;
-    if(typeof maker!=="function")throw new Error("送信データを作れません");
-    const p=maker(); p.source="BOAT_HUNTER"; p.sourceVersion=554; p.sentAt=new Date().toISOString();
-    if(!p.race?.date||!p.race?.stadium||!p.race?.raceNo)throw new Error("日付・場・レースを選択してください");
-    let a=[];try{const x=JSON.parse(localStorage.getItem(INBOX)||"[]");if(Array.isArray(x))a=x}catch(_){}
-    const k=p.key||`${p.race.date}_${p.race.stadium}_${p.race.raceNo}R`;
-    p.key=k;
-    const i=a.findIndex(x=>x?.key===k);
-    if(i>=0)a[i]=p;else a.push(p);
-    localStorage.setItem(INBOX,JSON.stringify(a));
-    try{const bc=new BroadcastChannel("BH_HUNTER_CYCLE_V3");bc.postMessage({source:"BOAT_HUNTER",key:k});bc.close()}catch(_){}
-    const b=document.getElementById("bhDemeSendBtn552");
-    if(b){b.textContent="出目研究所へ送信済み ✓";setTimeout(()=>b.textContent="出目研究所へ送る",1800)}
-    return true;
-  }catch(e){alert("出目研究所へ送信できませんでした\\n"+(e?.message||e));return false}
-}
-function wire(){
- const b=document.getElementById("bhDemeSendBtn552");if(!b)return false;
- b.textContent="出目研究所へ送る";
- b.onclick=()=>{
-   if(sendDirect()){
-     if(confirm("送信しました。出目研究所を開きますか？"))location.href=LAB_URL;
-   }
+/* 研究所へ送るための選択レース取得。本体と同じ date/stadium/race を使用。 */
+function ctx(){
+ const d=$("date")?.value||new Date(Date.now()+32400000).toISOString().slice(0,10);
+ const st=$("stadium"), r=$("race");
+ return {
+   date:d,
+   stadium:String(st?.value||"").padStart(2,"0"),
+   stadiumName:(st?.selectedOptions?.[0]?.textContent||"").trim(),
+   raceNo:Number(r?.value||0)
  };
- const note=b.nextElementSibling;if(note)note.textContent="同じGitHub Pages内の出目研究所へ直接保存します";
- return true;
 }
-function retry(){[0,250,700,1500,2600].forEach(ms=>setTimeout(wire,ms))}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
-new MutationObserver(()=>{clearTimeout(window.__bh554);window.__bh554=setTimeout(wire,120)}).observe(document.documentElement,{childList:true,subtree:true});
-window.BH_DEME_DIRECT_V554={send:sendDirect,wire};
-})();
-</script>
-
-
-<script id="bhV555DemeRaceContextFix">
-(()=>{
-"use strict";
-function selected(){
- const d=document.getElementById("date")?.value||new Date(Date.now()+32400000).toISOString().slice(0,10);
- const st=document.getElementById("stadium");
- const rr=document.getElementById("race");
- const stadiumCode=String(st?.value||"").padStart(2,"0");
- const stadiumName=(st?.selectedOptions?.[0]?.textContent||"").replace(/\s+/g," ").trim();
- const raceNo=Number(rr?.value||0);
- return {date:d,stadium:stadiumCode,stadiumName,raceNo};
+function result(){
+ const roots=["#resultPanel","#resultArea","#raceResult","#selectedRaceResult","[id*='result']",".resultPanel",".race-result"]
+   .flatMap(q=>[...document.querySelectorAll(q)]);
+ const txt=(roots.map(e=>e.innerText||"").join("\n")||document.body.innerText||"");
+ const m=txt.match(/確定着順[\s\S]{0,100}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)
+       ||txt.match(/選択中レース結果[\s\S]{0,180}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+ if(!m)return null;
+ const order=[+m[1],+m[2],+m[3]];
+ const technique=(txt.match(/決まり手[\s\S]{0,40}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+ const payout=Number(((txt.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+ const judge=(txt.match(/HUNTER判定[\s\S]{0,40}?(的中|ハズレ)/)||txt.match(/\b(的中|ハズレ)\b/))?.[1]||"";
+ return {confirmed:true,order,combo:order.join("-"),technique,payout,judge};
 }
-function direct(){
+function learned(){
+ const k=[ctx().date,ctx().stadium,String(ctx().raceNo)].join("_");
  try{
-   const c=selected();
-   if(!c.stadium||c.stadium==="00"||!c.raceNo)throw new Error("現在の場・レースを取得できません");
-   let base={};
-   try{base=window.BH_DEME_EXPORT_V552?.payload?.()||{}}catch(_){}
-   const p={...base,source:"BOAT_HUNTER",sourceVersion:555,hunterCycle:true,
+   const x=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]");
+   if(Array.isArray(x))return x.find(v=>v?.key===k)||null;
+   return x?.[k]||null;
+ }catch(_){return null}
+}
+function send(){
+ try{
+   const c=ctx(); if(!c.stadium||c.stadium==="00"||!c.raceNo)throw Error("現在の場・レースを取得できません");
+   const res=result(); if(!res)throw Error("結果確認を先に行ってください");
+   const p={schemaVersion:3,source:"BOAT_HUNTER",sourceVersion:556,hunterCycle:true,
      key:`${c.date}_${c.stadium}_${c.raceNo}R`,sentAt:new Date().toISOString(),
-     race:{...(base.race||{}),date:c.date,stadium:c.stadium,stadiumName:c.stadiumName,raceNo:c.raceNo}};
-   const K="BH_DEME_LAB_INBOX_V3";
-   let a=[];try{const x=JSON.parse(localStorage.getItem(K)||"[]");if(Array.isArray(x))a=x}catch(_){}
-   const i=a.findIndex(x=>x?.key===p.key);if(i>=0)a[i]=p;else a.push(p);
-   localStorage.setItem(K,JSON.stringify(a));
+     race:c,result:res,
+     hunter:{learnedRecord:learned(),sixBoatEvaluation:window.__BH_DIAG_ROWS||[],developmentEvaluation:window.__BH_RACE_FLOW_ROWS||[],odds120:window.__HUNTER_ODDS120||null}};
+   let a=[];try{const x=JSON.parse(localStorage.getItem(INBOX)||"[]");if(Array.isArray(x))a=x}catch(_){}
+   const i=a.findIndex(x=>x?.key===p.key); if(i>=0)a[i]=p; else a.push(p);
+   localStorage.setItem(INBOX,JSON.stringify(a));
    try{const bc=new BroadcastChannel("BH_HUNTER_CYCLE_V3");bc.postMessage({source:"BOAT_HUNTER",key:p.key});bc.close()}catch(_){}
-   const b=document.getElementById("bhDemeSendBtn552");
-   if(b){b.textContent=`${c.stadiumName||c.stadium} ${c.raceNo}R 送信済み ✓`;setTimeout(()=>b.textContent="出目研究所へ送る",1800)}
-   if(confirm(`${c.stadiumName||c.stadium} ${c.raceNo}R を送信しました。\n出目研究所を開きますか？`))location.href="/deme-lab/";
+   const b=$("bhDemeSend556"); if(b){b.textContent=`${c.stadiumName||c.stadium} ${c.raceNo}R → 研究所へ送信済み ✓`;setTimeout(()=>b.textContent="出目研究所へ送る",1800)}
  }catch(e){alert("出目研究所へ送信できませんでした\n"+(e?.message||e))}
 }
-function wire(){
- const b=document.getElementById("bhDemeSendBtn552");if(!b)return;
- b.onclick=direct;b.textContent="出目研究所へ送る";
-}
-function cleanLiteralNewlines(){
- [...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.nodeValue||"")).forEach(n=>{
-   if((n.nodeValue||"").includes("\\n"))n.nodeValue=(n.nodeValue||"").replace(/\\n/g,"");
+
+/* 不要な累積・学習UIだけ非表示。保存DBや結果確認そのものは触らない。 */
+function hideUnwanted(){
+ const ids=[
+  "bhResultLearnFixed525","bhResultLearnButton525","bhResultLearnButton547","bhResultLearnStatus547",
+  "bhResultLearningStats","bhLearningStats","bhResultLearningDock","bhLearningDock"
+ ];
+ ids.forEach(id=>{const e=$(id);if(e)e.style.display="none"});
+ [...document.querySelectorAll("section,div")].forEach(e=>{
+   const t=(e.textContent||"").trim();
+   if(!t)return;
+   if((/結果確認\s*累積/.test(t)||/学習結果/.test(t)||/全国3連単\s*出目カウンター/.test(t)) && e.children.length<20){
+     e.style.display="none";
+   }
  });
 }
-function run(){wire();cleanLiteralNewlines()}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",run,{once:true});else run();
-new MutationObserver(()=>{clearTimeout(window.__bh555);window.__bh555=setTimeout(run,120)}).observe(document.documentElement,{childList:true,subtree:true});
-window.BH_DEME_DIRECT_V555={send:direct,selected};
+
+/* 買い目ブロック → 結果確認ブロック → 研究所送信 → 上に戻る1個 */
+function arrange(){
+ hideUnwanted();
+
+ const buy=$("hunterFinalBuyBlock")||[...document.querySelectorAll("section,div")].find(e=>/HUNTER買い目/.test(e.textContent||""));
+ const resultBox=$("hunterFinalResult")||$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")
+   ||[...document.querySelectorAll("section,div")].find(e=>/結果確認・収支管理/.test(e.textContent||""));
+
+ if(buy&&resultBox&&buy.parentElement===resultBox.parentElement && buy.nextElementSibling!==resultBox){
+   buy.insertAdjacentElement("afterend",resultBox);
+ }
+
+ if(resultBox){
+   let sendBox=$("bhDemeSendBox556");
+   if(!sendBox){
+     sendBox=document.createElement("div");sendBox.id="bhDemeSendBox556";sendBox.style.cssText="margin:12px 0";
+     sendBox.innerHTML='<button id="bhDemeSend556" type="button" style="width:100%;min-height:54px;border:1px solid #38bdf8;border-radius:15px;background:#075985;color:#fff;font-weight:950;font-size:16px">出目研究所へ送る</button>';
+   }
+   if(resultBox.nextElementSibling!==sendBox)resultBox.insertAdjacentElement("afterend",sendBox);
+   $("bhDemeSend556").onclick=send;
+
+   let top=$("bhTopOnly556");
+   if(!top){
+     top=document.createElement("button");top.id="bhTopOnly556";top.type="button";top.textContent="↑ 上に戻る";
+     top.style.cssText="width:100%;min-height:54px;margin:0 0 14px;border:1px solid #3c6b80;border-radius:15px;background:#0b202d;color:#b9d8e7;font-weight:900;font-size:16px";
+     top.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+   }
+   if(sendBox.nextElementSibling!==top)sendBox.insertAdjacentElement("afterend",top);
+ }
+
+ /* 既存の上に戻るは新ボタン以外すべて隠す */
+ [...document.querySelectorAll("button,a")].forEach(e=>{
+   if(e.id!=="bhTopOnly556" && /上に戻る/.test(e.textContent||""))e.style.display="none";
+ });
+ /* 文字として漏れている \n も除去 */
+ [...document.body.childNodes].filter(n=>n.nodeType===3).forEach(n=>{if((n.nodeValue||"").includes("\\n"))n.nodeValue=n.nodeValue.replace(/\\n/g,"")});
+}
+function retry(){[0,250,700,1400,2600].forEach(ms=>setTimeout(arrange,ms))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
+document.addEventListener("click",e=>{if(/結果|確認|解析|買い目/.test(e.target?.closest?.("button")?.textContent||""))retry()},true);
+new MutationObserver(()=>{clearTimeout(window.__bh556);window.__bh556=setTimeout(arrange,160)}).observe(document.documentElement,{childList:true,subtree:true});
+window.BH_DEME_V556={send,arrange};
+})();
+</script>
+
+
+<script id="bhV557ResultTechniqueDisplay">
+(()=>{
+"use strict";
+function resultBox(){
+ return document.getElementById("hunterFinalResult")||document.getElementById("resultPanel")||
+ document.getElementById("resultArea")||document.getElementById("raceResult")||
+ document.getElementById("selectedRaceResult")||
+ [...document.querySelectorAll("section,div")].find(e=>/選択中レース結果/.test(e.textContent||""));
+}
+function technique(){
+ const box=resultBox(),txt=box?.innerText||document.body.innerText||"";
+ return (txt.match(/決まり手[\s\S]{0,40}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+}
+function render(){
+ const box=resultBox();if(!box)return;
+ let el=document.getElementById("bhResultTechnique557");
+ if(!el){el=document.createElement("div");el.id="bhResultTechnique557";el.style.cssText="margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#071a25;border:1px solid #ffffff14;text-align:center;font-weight:900"}
+ const k=technique();el.innerHTML=`<span style="font-size:10px;color:#7f9cac;display:block;margin-bottom:3px">決まり手</span><span style="font-size:17px;color:#72ddff">${k||"結果確認待ち"}</span>`;
+ const target=[...box.querySelectorAll("*")].find(e=>/3連単払戻/.test(e.textContent||""))||box.lastElementChild;
+ if(target?.parentElement)target.parentElement.insertAdjacentElement("beforeend",el);else box.appendChild(el);
+}
+function retry(){[0,250,700,1400].forEach(ms=>setTimeout(render,ms))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
+document.addEventListener("click",e=>{if(/結果を確認|結果確認/.test(e.target?.closest?.("button")?.textContent||""))retry()},true);
+new MutationObserver(()=>{clearTimeout(window.__bh557);window.__bh557=setTimeout(render,180)}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
