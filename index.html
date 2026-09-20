@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V544</title>
+<title>BOAT HUNTER V546</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.544</div>
+  <div class="topVol">Vol.546</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23072,16 +23072,19 @@ window.__BH_V396_FORCE_2BOX__=true;
      const course=Number(pv.course??pv.entry_course??boat)||boat;
      const techs=courseTech(course,h).map(x=>{
        const hasTech=Number.isFinite(x.v);
-       let score=hasTech ? x.v*1.25+28 : 22;
-       if(st!=null&&meanST!=null)score+=(meanST-st)*180;
-       score+=windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
-       if(tilt>=1.5&&/まくり/.test(x.name))score+=10+(tilt-1.5)*4;
-       else if(tilt>=.5&&/まくり/.test(x.name))score+=3;
-       // Fは一律減点しない。BH_CURRENT_STで推定した現在STを採用し、そのST差だけで展開へ反映。
-       return {...x,score:C(score)};
-     }).sort((a,b)=>b.score-a.score);
-     if(st==null&&techs[0]&&techs[0].score>49)techs[0].score=49;
-     return {boat,course,r,h,st,tilt,fc,best:techs[0],techs,dataCount:h.length};
+       let score=hasTech ? x.v*1.25+28 : null;
+       if(score!=null){
+         if(st!=null&&meanST!=null)score+=(meanST-st)*180;
+         score+=windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
+         if(tilt>=1.5&&/まくり/.test(x.name))score+=10+(tilt-1.5)*4;
+         else if(tilt>=.5&&/まくり/.test(x.name))score+=3;
+       }
+       // 決まり手実績が無い場合は「差し」に固定せず判定待ち。
+       return {...x,score:score==null?null:C(score)};
+     }).sort((a,b)=>(b.score??-1)-(a.score??-1));
+     let best=techs.find(x=>Number.isFinite(x.score))||{name:'判定待ち',v:null,score:null};
+     if(st==null&&best&&Number.isFinite(best.score)&&best.score>49)best={...best,score:49};
+     return {boat,course,r,h,st,tilt,fc,best,techs,dataCount:h.length};
    });
  }
  function wall2(rows){
@@ -23096,21 +23099,21 @@ window.__BH_V396_FORCE_2BOX__=true;
    let box=document.getElementById('bhRaceFlowV460');
    if(!box){box=document.createElement('section');box.id='bhRaceFlowV460';box.className='bhRaceFlow';const grid=panel.querySelector('.outlookGrid');panel.insertBefore(box,grid||null)}
    const one=rows.find(x=>x.course===1)||rows[0],wall=wall2(rows);
-   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5&&x.st!=null).sort((a,b)=>b.best.score-a.best.score)[0];
-   const oneScore=one?.best?.score??0;
+   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5&&x.st!=null&&Number.isFinite(x.best?.score)).sort((a,b)=>(b.best.score??-1)-(a.best.score??-1))[0];
+   const oneScore=Number.isFinite(one?.best?.score)?one.best.score:0;
    let main='展開材料不足';
    if(one&&one.dataCount>=5&&oneScore>=55){
-     if(outside&&outside.best.score>=62)main=`イン逃げ ＋ ${outside.boat}${outside.best.name}`;
+     if(outside&&Number.isFinite(outside.best.score)&&outside.best.score>=62)main=`イン逃げ ＋ ${outside.boat}${outside.best.name}`;
      else if(wall>=58)main='イン逃げ ＋ 2壁';
      else main='イン逃げ中心';
-   }else if(outside&&outside.best.score>=62){
+   }else if(outside&&Number.isFinite(outside.best.score)&&outside.best.score>=62){
      main=`${outside.boat}${outside.best.name} ＋ ${outside.boat<6?outside.boat+1:1}展開`;
    }else if(rows.some(x=>x.dataCount>=5)){
      main='展開拮抗';
    }
    const moves=rows.map(x=>{
      const meta=[];if(x.fc>0)meta.push(`F${x.fc} 現在ST`);if(x.tilt>=1.5)meta.push(`チルト+${x.tilt.toFixed(1)}`);if(!meta.length&&x.st!=null)meta.push(`ST ${x.st.toFixed(3)}`);if(!meta.length)meta.push('ST —');
-     return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${x.best.score.toFixed(0)}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
+     return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${Number.isFinite(x.best.score)?x.best.score.toFixed(0):'—'}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
    }).join('');
    box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各艇の決まり手 × 現在ST × 場特性 × 風 × 潮位 × チルトを統合</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
  }
@@ -25079,7 +25082,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(!btn||btn.dataset.bh538)return;
    btn.dataset.bh538="1";
    // V538 handler runs first and uses the already-visible confirmed result.
-   btn.addEventListener("click",e=>{e.preventDefault();e.stopImmediatePropagation();learn()},true);
+   btn.addEventListener("click",e=>{learn()},true);
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(bind,500),{once:true});else setTimeout(bind,500);
  document.addEventListener("click",e=>{
@@ -25104,3 +25107,59 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
+
+<script id="bhV546ResultLearnButtonFix">
+(()=>{
+ const KEY="BH_LEARNING_RACES_V516";
+ function parseResult(){
+   const txt=document.body.innerText||"";
+   const m=txt.match(/確定着順[\s\S]{0,120}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
+   if(!m)return null;
+   const tech=(txt.match(/決まり手[\s\S]{0,45}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
+   const pay=Number(((txt.match(/3連単払戻[\s\S]{0,45}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
+   return {order:[+m[1],+m[2],+m[3]],technique:tech,payout:pay};
+ }
+ function raceKey(){
+   const d=document.getElementById("date")?.value||new Date().toISOString().slice(0,10);
+   const st=String(document.getElementById("stadium")?.value||"").padStart(2,"0");
+   const r=document.getElementById("race")?.value||"";
+   return [d,st,r].join("_");
+ }
+ function directSave(res){
+   let db={};try{db=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(_){}
+   const k=raceKey();
+   const rec=db[k]||{key:k,createdAt:new Date().toISOString()};
+   rec.result={...(rec.result||{}),order:res.order,technique:res.technique,payout:res.payout,confirmedAt:new Date().toISOString()};
+   db[k]=rec;localStorage.setItem(KEY,JSON.stringify(db));
+   return true;
+ }
+ function learn(btn){
+   const res=parseResult();
+   const status=document.getElementById("bhResultLearnStatus525")||btn?.nextElementSibling;
+   if(!res){if(status)status.textContent="確定結果がありません。先に結果確認してください";return}
+   let ok=false;
+   // First persist the confirmed result independently.
+   try{ok=directSave(res)}catch(_){}
+   // Then feed every available learning layer. A failure in one must not block the others.
+   for(const fn of [
+     ()=>window.BH_RESULT_CONFIRM_V532?.save?.(),
+     ()=>window.BH_DEEP_LEARNING_V535?.save?.(),
+     ()=>window.BH_RANK_TREND_V521?.save?.(),
+     ()=>window.BH_RESULT_STATS_V526?.register?.()
+   ]){try{fn()}catch(_){}}
+   if(ok&&btn){
+     btn.textContent="学習済み ✓";
+     btn.disabled=true;
+     if(status)status.textContent=`${res.order.join("-")} / ${res.technique||"決まり手未取得"} を保存・学習しました`;
+   }
+ }
+ // Delegation avoids mount timing problems after the result panel re-renders.
+ document.addEventListener("click",e=>{
+   const btn=e.target?.closest?.("#bhResultLearnButton525");
+   if(!btn)return;
+   e.preventDefault();
+   learn(btn);
+ },false);
+ window.BH_RESULT_LEARN_V546={parseResult,learn};
+})();
+</script>
