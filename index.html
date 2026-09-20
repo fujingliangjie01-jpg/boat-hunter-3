@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V541</title>
+<title>BOAT HUNTER V542</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15383,6 +15383,33 @@ input,
 #bhFSTCompare540 .fstValue{font-size:23px;font-weight:900;color:#fff;line-height:1.25}
 #bhFSTCompare540 .fstArrow{font-size:24px;font-weight:900;color:#fff}
 @media(max-width:560px){#bhFSTCompare540{gap:6px}#bhFSTCompare540 .fstBox{min-width:96px;padding:6px 8px}#bhFSTCompare540 .fstValue{font-size:20px}}
+</style><style id="bhV542FSTPositionCSS">
+#bhFSTCompare540{
+  position:absolute!important;
+  right:16px!important;
+  top:70px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  width:auto!important;
+  margin:0!important;
+}
+#bhFSTCompare540 .bhNormalST540{
+  border:2px solid #fff!important;
+  background:#102231!important;
+}
+#bhFSTCompare540 .bhNormalST540 .fstLabel,
+#bhFSTCompare540 .bhNormalST540 .fstValue{color:#fff!important}
+#bhFSTCompare540 .fstArrow{color:#fff!important}
+#bhFSTCompare540 > .fstBox:not(.bhNormalST540){
+  border-color:#8f3dd8!important;
+}
+#bhFSTCompare540 > .fstBox:not(.bhNormalST540) .fstLabel{color:#c76cff!important}
+@media(max-width:560px){
+ #bhFSTCompare540{right:14px!important;top:68px!important;gap:6px!important}
+ #bhFSTCompare540 .fstBox{min-width:96px!important}
+}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15393,7 +15420,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.541</div>
+  <div class="topVol">Vol.542</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25131,5 +25158,19 @@ window.__BH_V396_FORCE_2BOX__=true;
  }
  document.addEventListener("click",()=>setTimeout(mount,120));
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,1000),{once:true});else setTimeout(mount,1000);
+})();
+</script>
+<script id="bhV542FSTPositionFix">
+(()=>{
+ function fix(){
+   const wrap=document.getElementById("bhFSTCompare540");if(!wrap)return;
+   const detail=[...document.querySelectorAll("section,div")].find(e=>/選手詳細/.test(e.innerText||"")&&/F後ST/.test(e.innerText||""));
+   if(detail)detail.style.position="relative";
+   const n=wrap.querySelector(".bhNormalST540"), a=wrap.querySelector(".fstArrow");
+   const f=[...wrap.children].find(e=>e.classList?.contains("fstBox")&&!e.classList.contains("bhNormalST540"));
+   if(n&&a&&f){wrap.append(n,a,f)}
+ }
+ document.addEventListener("click",()=>setTimeout(fix,180));
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(fix,1200),{once:true});else setTimeout(fix,1200);
 })();
 </script>
