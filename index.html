@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V554</title>
+<title>BOAT HUNTER V555</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.554</div>
+  <div class="topVol">Vol.555</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25252,5 +25252,53 @@ function retry(){[0,250,700,1500,2600].forEach(ms=>setTimeout(wire,ms))}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
 new MutationObserver(()=>{clearTimeout(window.__bh554);window.__bh554=setTimeout(wire,120)}).observe(document.documentElement,{childList:true,subtree:true});
 window.BH_DEME_DIRECT_V554={send:sendDirect,wire};
+})();
+</script>
+
+
+<script id="bhV555DemeRaceContextFix">
+(()=>{
+"use strict";
+function selected(){
+ const d=document.getElementById("date")?.value||new Date(Date.now()+32400000).toISOString().slice(0,10);
+ const st=document.getElementById("stadium");
+ const rr=document.getElementById("race");
+ const stadiumCode=String(st?.value||"").padStart(2,"0");
+ const stadiumName=(st?.selectedOptions?.[0]?.textContent||"").replace(/\s+/g," ").trim();
+ const raceNo=Number(rr?.value||0);
+ return {date:d,stadium:stadiumCode,stadiumName,raceNo};
+}
+function direct(){
+ try{
+   const c=selected();
+   if(!c.stadium||c.stadium==="00"||!c.raceNo)throw new Error("現在の場・レースを取得できません");
+   let base={};
+   try{base=window.BH_DEME_EXPORT_V552?.payload?.()||{}}catch(_){}
+   const p={...base,source:"BOAT_HUNTER",sourceVersion:555,hunterCycle:true,
+     key:`${c.date}_${c.stadium}_${c.raceNo}R`,sentAt:new Date().toISOString(),
+     race:{...(base.race||{}),date:c.date,stadium:c.stadium,stadiumName:c.stadiumName,raceNo:c.raceNo}};
+   const K="BH_DEME_LAB_INBOX_V3";
+   let a=[];try{const x=JSON.parse(localStorage.getItem(K)||"[]");if(Array.isArray(x))a=x}catch(_){}
+   const i=a.findIndex(x=>x?.key===p.key);if(i>=0)a[i]=p;else a.push(p);
+   localStorage.setItem(K,JSON.stringify(a));
+   try{const bc=new BroadcastChannel("BH_HUNTER_CYCLE_V3");bc.postMessage({source:"BOAT_HUNTER",key:p.key});bc.close()}catch(_){}
+   const b=document.getElementById("bhDemeSendBtn552");
+   if(b){b.textContent=`${c.stadiumName||c.stadium} ${c.raceNo}R 送信済み ✓`;setTimeout(()=>b.textContent="出目研究所へ送る",1800)}
+   if(confirm(`${c.stadiumName||c.stadium} ${c.raceNo}R を送信しました。\n出目研究所を開きますか？`))location.href="/deme-lab/";
+ }catch(e){alert("出目研究所へ送信できませんでした\n"+(e?.message||e))}
+}
+function wire(){
+ const b=document.getElementById("bhDemeSendBtn552");if(!b)return;
+ b.onclick=direct;b.textContent="出目研究所へ送る";
+}
+function cleanLiteralNewlines(){
+ [...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.nodeValue||"")).forEach(n=>{
+   if((n.nodeValue||"").includes("\\n"))n.nodeValue=(n.nodeValue||"").replace(/\\n/g,"");
+ });
+}
+function run(){wire();cleanLiteralNewlines()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",run,{once:true});else run();
+new MutationObserver(()=>{clearTimeout(window.__bh555);window.__bh555=setTimeout(run,120)}).observe(document.documentElement,{childList:true,subtree:true});
+window.BH_DEME_DIRECT_V555={send:direct,selected};
 })();
 </script>
