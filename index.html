@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V543</title>
+<title>BOAT HUNTER V544</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15376,22 +15376,18 @@ input,
 </style><style id="bhV537NavCSS">
 .bhNav537{width:100%;margin:9px 0;padding:12px 14px;border-radius:10px;border:1px solid #28aee8;background:#0d6fa8;color:#fff;font-weight:900;font-size:15px}
 #bhTop537{margin-top:10px;background:#263d4b;border-color:#526b79}
-</style><style id="bhV540FSTCompareCSS">
-#bhFSTCompare540{display:flex;align-items:center;gap:10px;margin-left:auto}
-#bhFSTCompare540 .fstBox{min-width:126px;border:2px solid #8f3dd8;border-radius:12px;padding:7px 12px;text-align:center;background:#102231}
-#bhFSTCompare540 .fstLabel{font-size:11px;font-weight:800;color:#c76cff;line-height:1.1}
-#bhFSTCompare540 .fstValue{font-size:23px;font-weight:900;color:#fff;line-height:1.25}
-#bhFSTCompare540 .fstArrow{font-size:24px;font-weight:900;color:#fff}
-@media(max-width:560px){#bhFSTCompare540{gap:6px}#bhFSTCompare540 .fstBox{min-width:96px;padding:6px 8px}#bhFSTCompare540 .fstValue{font-size:20px}}
-</style><style id="bhV543FSTFixCSS">
-#bhFSTCompare540{display:flex!important;align-items:center!important;gap:7px!important;margin-left:auto!important;width:auto!important;position:static!important}
-#bhFSTCompare540 .fstBox{min-width:108px!important;padding:7px 10px!important;border-radius:12px!important;text-align:center!important;background:#102231!important}
-#bhFSTCompare540 .bhNormalST540{border:2px solid #fff!important}
-#bhFSTCompare540 .bhNormalST540 .fstLabel,#bhFSTCompare540 .bhNormalST540 .fstValue{color:#fff!important}
-#bhFSTCompare540 .fstArrow{font-size:23px!important;color:#fff!important;font-weight:900!important}
-#bhFSTCompare540 > .fstBox:not(.bhNormalST540){border:2px solid #8f3dd8!important}
-#bhFSTCompare540 > .fstBox:not(.bhNormalST540) .fstLabel{color:#c76cff!important}
-@media(max-width:560px){#bhFSTCompare540 .fstBox{min-width:96px!important;padding:6px 7px!important}#bhFSTCompare540{gap:5px!important}}
+</style><style id="bhV544DetailSTCompare">
+#racerDetailBody .detailSTCompare544{position:absolute!important;right:10px!important;top:54px!important;display:flex!important;align-items:center!important;gap:7px!important;z-index:3!important}
+#racerDetailBody .detailSTBox544{width:110px!important;min-height:48px!important;padding:5px 6px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;border-radius:11px!important;background:linear-gradient(180deg,#0b2533,#071a25)!important;box-sizing:border-box!important}
+#racerDetailBody .detailSTNormal544{border:2px solid #fff!important}
+#racerDetailBody .detailSTNormal544 span,#racerDetailBody .detailSTNormal544 b{color:#fff!important}
+#racerDetailBody .detailSTAfter544{border:2px solid #9b4de3!important}
+#racerDetailBody .detailSTAfter544 span{color:#b966f0!important}
+#racerDetailBody .detailSTBox544 span{font-size:9px!important;font-weight:900!important;line-height:1.1!important}
+#racerDetailBody .detailSTBox544 b{margin-top:2px!important;font-size:20px!important;line-height:1!important;color:#fff!important}
+#racerDetailBody .detailSTArrow544{font-size:24px!important;font-weight:1000!important;color:#fff!important;line-height:1!important}
+#racerDetailBody .detailFST486{display:none!important}
+@media(max-width:520px){#racerDetailBody .detailSTCompare544{right:9px!important;top:54px!important;gap:5px!important}#racerDetailBody .detailSTBox544{width:96px!important;min-height:48px!important;padding:5px 4px!important}#racerDetailBody .detailSTBox544 b{font-size:19px!important}.detailSTArrow544{font-size:21px!important}}
 </style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15402,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.543</div>
+  <div class="topVol">Vol.544</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16533,9 +16529,12 @@ async function bhSelectRacerDetail(boatNo,number){
   // Vol.486: F持ち選手は詳細上段の空きスペースへF後/現在STを表示
   const detailFCount=window.HUNTER_F?.count?.(r)||0;
   let detailFST=null;
+  let detailNormalST=null;
   if(detailFCount){
     try{
       const h=historyCache instanceof Map ? (historyCache.get(Number(r.number))?.rows||[]) : [];
+      /* Fなし平均ST = 元の同コース過去20走平均。F後STへの置換前の基準値 */
+      detailNormalST=histMetrics(h).avgST;
       const fa=window.HUNTER_F?.after?.(h,detailFCount);
       if(fa?.avgST!=null && !fa?.before20) detailFST=Number(fa.avgST);
       if(detailFST==null){
@@ -16571,9 +16570,16 @@ async function bhSelectRacerDetail(boatNo,number){
         <button type="button" class="detailTab" onclick="bhDetailTab(${boatNo},'course',this)">コース別・決まり手</button>
       </div>
       ${detailFCount&&detailFST!=null?`
-      <div class="detailFST486">
-        <span>F後ST</span>
-        <b>${detailFST.toFixed(3)}</b>
+      <div class="detailSTCompare544">
+        <div class="detailSTBox544 detailSTNormal544">
+          <span>Fなし平均ST</span>
+          <b>${detailNormalST!=null?detailNormalST.toFixed(3):"—"}</b>
+        </div>
+        <div class="detailSTArrow544">→</div>
+        <div class="detailSTBox544 detailSTAfter544">
+          <span>F後ST</span>
+          <b>${detailFST.toFixed(3)}</b>
+        </div>
       </div>`:""}
 
       <div id="detailBasic${boatNo}" class="detailMetrics">
@@ -25097,74 +25103,4 @@ window.__BH_V396_FORCE_2BOX__=true;
  },true);
 })();
 </script>
-<script id="bhV540FSTCompare">
-(()=>{
- function num(v){const n=Number(v);return Number.isFinite(n)&&n>0&&n<1?n:null}
- function currentBoat(){
-   const detail=document.querySelector("#racerDetail,[id*='racerDetail'],.racer-detail,.player-detail");
-   const m=(detail?.innerText||"").match(/(?:^|\s)([1-6])(?:号艇|\s)/);
-   return +(m?.[1]||window.__BH_SELECTED_BOAT||0);
- }
- function normalST(boat){
-   const candidates=[];
-   const push=o=>{if(o&&typeof o==="object")candidates.push(o)};
-   const pools=[
-     window.__BH_DIAG_ROWS,window.__BH_RACE_FLOW_ROWS,window.__BH_RACERS,
-     window.racers,window.players,window.entryData,window.raceData?.racers,
-     window.BH_RANK_TREND_V521?.current?.()
-   ];
-   for(const p of pools){
-     if(Array.isArray(p)){const r=p.find(x=>+(x.boat??x.lane??x.waku??x.number)===+boat);push(r)}
-   }
-   for(const r of candidates){
-     for(const k of ["preFST","beforeFST","normalST","avgSTBeforeF","avgST","averageST","baseST","startAverage","stAvg"]){
-       const n=num(r?.[k]);if(n)return n;
-     }
-     // If start history exists, average starts before the most recent F marker.
-     const hist=r?.starts||r?.startHistory||r?.recentStarts||r?.history;
-     if(Array.isArray(hist)){
-       const vals=[];
-       for(const x of hist){
-         if(x?.F||x?.flying||String(x?.result||"").toUpperCase()==="F")break;
-         const n=num(typeof x==="number"?x:(x?.st??x?.start));if(n)vals.push(n);
-       }
-       if(vals.length>=2)return vals.reduce((q,w)=>q+w,0)/vals.length;
-     }
-   }
-   // Last safe fallback: read the normal 平均ST shown for the same boat in 6艇診断.
-   const diag=[...document.querySelectorAll("section,div")].find(e=>/6艇診断/.test(e.innerText||"")&&/平均ST/.test(e.innerText||""));
-   if(diag){
-     const lines=(diag.innerText||"").split(/\n+/).map(x=>x.trim());
-     const vals=lines.filter(x=>/^0\.\d{3}$/.test(x)).map(Number);
-     if(vals[boat-1]&&vals[boat-1]>0)return vals[boat-1];
-   }
-   return null;
- }
- function mount(){
-   const detail=[...document.querySelectorAll("section,div")].find(e=>/選手詳細/.test(e.innerText||"")&&/F後ST/.test(e.innerText||""));
-   if(!detail)return;
-   const fEl=[...detail.querySelectorAll("*")].find(e=>/F後ST/.test(e.textContent||"") && /^\s*F後ST\s*[\d.]+\s*$/.test((e.parentElement?.innerText||"").replace(/\n/g," ")));
-   const fBox=fEl?.parentElement || [...detail.querySelectorAll("div")].find(e=>/F後ST\s*\n?\s*0\.\d{3}/.test(e.innerText||""));
-   if(!fBox)return;
-   const boat=currentBoat();
-   const normal=normalST(boat);
-   const fm=(fBox.innerText||"").match(/F後ST[\s\S]*?(0\.\d{3})/);
-   if(!fm)return;
-   let wrap=document.getElementById("bhFSTCompare540");
-   if(!wrap){
-     wrap=document.createElement("div");wrap.id="bhFSTCompare540";
-     fBox.parentNode.insertBefore(wrap,fBox);
-   }
-   fBox.classList.add("fstBox");
-   let nbox=wrap.querySelector(".bhNormalST540");if(!nbox){nbox=document.createElement("div");nbox.className="fstBox bhNormalST540"}
-   nbox.innerHTML=`<div class="fstLabel">Fなし平均ST</div><div class="fstValue">${normal?normal.toFixed(3):"---"}</div>`;
-   let arrow=wrap.querySelector(".fstArrow");if(!arrow){arrow=document.createElement("div");arrow.className="fstArrow";arrow.textContent="→"}
-   /* 左：Fなし平均ST → 右：F後ST */
-   wrap.appendChild(nbox);
-   wrap.appendChild(arrow);
-   wrap.appendChild(fBox);
- }
- document.addEventListener("click",()=>setTimeout(mount,120));
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(mount,1000),{once:true});else setTimeout(mount,1000);
-})();
-</script>
+
