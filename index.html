@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V551</title>
+<title>BOAT HUNTER V553</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.551</div>
+  <div class="topVol">Vol.553</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25180,53 +25180,36 @@ window.__BH_V396_FORCE_2BOX__=true;
 })();
 </script>
 
-<script id="bhV550DemeLabExportBridge">
+<script id="bhV552DemeButtonBelowResultLearning">
 (()=>{
 "use strict";
-const $=id=>document.getElementById(id);
-const clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return null}};
-function key(){return [$("#date")?.value||"",String($("#stadium")?.value||"").padStart(2,"0"),$("#race")?.value||""].join("_")}
-function learned(){
- try{const x=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]");if(Array.isArray(x))return x.find(r=>r?.key===key())||null;if(x&&typeof x==="object")return x[key()]||null}catch(_){} return null;
+const $=id=>document.getElementById(id),clone=x=>{try{return JSON.parse(JSON.stringify(x))}catch(_){return null}};
+function raceKey(){return [$("#date")?.value||"",String($("#stadium")?.value||"").padStart(2,"0"),$("#race")?.value||""].join("_")}
+function learned(){try{const x=JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]"),k=raceKey();if(Array.isArray(x))return x.find(r=>r?.key===k)||null;if(x&&typeof x==="object")return x[k]||null}catch(_){}return null}
+function visibleResult(){const t=document.body.innerText||"",m=t.match(/確定着順[\s\S]{0,220}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);if(!m)return null;const o=[+m[1],+m[2],+m[3]],tech=(t.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"",pay=Number(((t.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));return {order:o,combo:o.join("-"),technique:tech,payout:pay}}
+function payload(){const lr=clone(learned())||{};return {schemaVersion:1,source:"BOAT_HUNTER",sourceVersion:552,hunterCycle:true,key:raceKey(),sentAt:new Date().toISOString(),race:{date:$("#date")?.value||"",stadium:String($("#stadium")?.value||"").padStart(2,"0"),raceNo:Number($("#race")?.value||0)||null},hunter:{learnedRecord:lr,marketComparison:clone(window.__BH_MARKET_COMPARE510)||null,sixBoatEvaluation:clone(window.__BH_DIAG_ROWS)||[],developmentEvaluation:clone(window.__BH_RACE_FLOW_ROWS)||[],odds120:clone(window.__HUNTER_ODDS120)||null},result:visibleResult()||clone(lr.result)||null}}
+function download(){const p=payload();if(!p.race.date||!p.race.stadium||!p.race.raceNo){alert("日付・場・レースを選択してください");return}const b=new Blob([JSON.stringify(p,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`HUNTER_TO_DEME_${p.race.date}_${p.race.stadium}_${p.race.raceNo}R.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function anchor(){return $("bhResultLearnStatus547")||$("bhResultLearnButton547")||$("bhResultLearnStatus525")||$("bhResultLearnButton525")}
+function mount(){const a=anchor();if(!a)return false;let box=$("bhDemeSend552");if(!box){box=document.createElement("div");box.id="bhDemeSend552";box.style.cssText="margin:10px 0 14px";box.innerHTML='<button id="bhDemeSendBtn552" type="button" style="width:100%;min-height:52px;border-radius:14px;border:1px solid #38bdf8;background:#075985;color:#fff;font-weight:950;font-size:16px">出目研究所へ送る</button><div style="text-align:center;margin-top:5px;font-size:10px;color:#8da9ba">BOAT HUNTERの既存データは変更しません</div>'}if(a.nextElementSibling!==box)a.insertAdjacentElement("afterend",box);$("#bhDemeSendBtn552").onclick=download;return true}
+function retry(){[0,200,600,1200,2200].forEach(ms=>setTimeout(mount,ms))}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",retry,{once:true});else retry();
+document.addEventListener("click",e=>{const b=e.target?.closest?.("button");if(b&&/結果を確認|この結果を学習する|学習済み/.test(b.textContent||""))retry()},true);
+new MutationObserver(()=>{clearTimeout(window.__bh552);window.__bh552=setTimeout(mount,180)}).observe(document.documentElement,{childList:true,subtree:true});
+window.BH_DEME_EXPORT_V552={payload,download,mount};
+})();
+</script>
+
+
+<script id="bhV553HideOldResultLearnButton">
+(()=>{
+"use strict";
+function apply(){
+  ["bhResultLearnButton547","bhResultLearnButton525"].forEach(id=>{
+    const b=document.getElementById(id);
+    if(b){b.style.display="none";b.setAttribute("aria-hidden","true")}
+  });
 }
-function visibleResult(){
- const txt=($("#hunterFinalResult")?.innerText||$("#resultPanel")?.innerText||document.body.innerText||"");
- const m=txt.match(/確定着順[\s\S]{0,180}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/)||txt.match(/選択中レース結果[\s\S]{0,240}?([1-6])\s*[-－–]\s*([1-6])\s*[-－–]\s*([1-6])/);
- if(!m)return null;const order=[+m[1],+m[2],+m[3]];if(new Set(order).size!==3)return null;
- const technique=(txt.match(/決まり手[\s\S]{0,50}?(まくり差し|逃げ|差し|まくり|抜き|恵まれ)/)||[])[1]||"";
- const payout=Number(((txt.match(/3連単払戻[\s\S]{0,50}?¥?\s*([\d,]+)/)||[])[1]||"0").replaceAll(",",""));
- return {order,combo:order.join("-"),technique,payout};
-}
-function payload(){
- const lr=clone(learned())||{}, result=visibleResult()||clone(lr.result)||null;
- let bet=null;try{bet=clone(window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||null)}catch(_){}
- return {schemaVersion:1,source:"BOAT_HUNTER",sourceVersion:550,hunterCycle:true,key:key(),sentAt:new Date().toISOString(),
-  race:{date:$("#date")?.value||"",stadium:String($("#stadium")?.value||"").padStart(2,"0"),raceNo:Number($("#race")?.value||0)||null},
-  hunter:{learnedRecord:lr,marketComparison:clone(window.__BH_MARKET_COMPARE510)||null,sixBoatEvaluation:clone(window.__BH_DIAG_ROWS)||[],developmentEvaluation:clone(window.__BH_RACE_FLOW_ROWS)||[],odds120:clone(window.__HUNTER_ODDS120)||null,betPrediction:bet},
-  result};
-}
-function download(){
- const p=payload();if(!p.race.date||!p.race.stadium||!p.race.raceNo){alert("日付・場・レースを選択してください");return}
- const blob=new Blob([JSON.stringify(p,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`HUNTER_TO_DEME_${p.race.date}_${p.race.stadium}_${p.race.raceNo}R.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-function host(){
- /* 結果確認パネルを最優先。研究所送信ボタンは必ずその直下へ置く。 */
- return $("#hunterFinalResult")||$("#resultPanel")||$("#resultArea")||$("#raceResult")||$("#selectedRaceResult");
-}
-function mount(){
- const h=host();if(!h)return;
- let box=$("#bhDemeExport550");
- if(!box){
-   box=document.createElement("div");box.id="bhDemeExport550";box.style.cssText="margin:10px 0 14px";
-   box.innerHTML='<button id="bhDemeExportBtn550" type="button" style="width:100%;min-height:52px;border-radius:14px;border:1px solid #38bdf8;background:linear-gradient(180deg,#0d6f9f,#084b70);color:#fff;font-weight:950;font-size:15px">出目研究所へ送る</button><div style="margin-top:5px;text-align:center;font-size:10px;color:#8da9ba">研究所連携JSONを書き出します（既存HUNTERデータは変更しません）</div>';
- }
- /* 結果確認の外側・直後へ固定。再描画されても位置を戻す。 */
- if(h.nextElementSibling!==box) h.insertAdjacentElement("afterend",box);
- const b=$("#bhDemeExportBtn550");if(b)b.onclick=download;
-}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>[300,900,1800].forEach(ms=>setTimeout(mount,ms)),{once:true});else [0,500,1400].forEach(ms=>setTimeout(mount,ms));
-document.addEventListener("click",e=>{if(/結果|確認|確定|学習/.test(e.target?.closest?.("button")?.textContent||""))[400,1000].forEach(ms=>setTimeout(mount,ms))},true);
-new MutationObserver(()=>{clearTimeout(window.__bh550m);window.__bh550m=setTimeout(mount,250)}).observe(document.body,{childList:true,subtree:true});
-window.BH_DEME_EXPORT_V550={payload,download};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply,{once:true});else apply();
+new MutationObserver(()=>{clearTimeout(window.__bh553);window.__bh553=setTimeout(apply,100)}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
