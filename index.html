@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V566</title>
+<title>BOAT HUNTER V568</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.566</div>
+  <div class="topVol">Vol.568</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24044,56 +24044,6 @@ window.__BH_V396_FORCE_2BOX__=true;
  window.BH_RESULT_BUTTON_V525={mount,retry};
 })();
 </script>
-<script id="bhV526SeparateResultStats">
-(()=>{
- const KEY="BH_RESULT_STATS_V526",$=id=>document.getElementById(id);
- const blank=()=>({races:0,headHit:0,axisHit:0,cutHit:0,betHit:0,returnYen:0,stakeYen:0,keys:{}});
- const read=()=>{try{return Object.assign(blank(),JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(_){return blank()}};
- const write=x=>localStorage.setItem(KEY,JSON.stringify(x));
- const raceKey=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
- function learnedRace(){
-   try{return (JSON.parse(localStorage.getItem("BH_LEARNING_RACES_V516")||"[]")||[]).find(x=>x.key===raceKey())||null}catch(_){return null}
- }
- function candidates(r){
-   const p=r?.prediction||{};
-   const nums=x=>(x||[]).map(v=>+(v.boat??v)).filter(n=>n>=1&&n<=6);
-   return {head:nums(p.headCandidates),axis:nums(p.axisCandidates),cuts:nums(p.cutCandidates)};
- }
- function register(){
-   const r=learnedRace(),order=r?.result?.order;if(!order||order.length!==3)return false;
-   const st=read(),k=raceKey();if(st.keys[k]){render();return "duplicate"}
-   const c=candidates(r),winner=+order[0],top3=order.map(Number);
-   const headHit=c.head.includes(winner);
-   const axisHit=c.axis.length?c.axis.some(n=>top3.slice(1).includes(n)):false;
-   const cutHit=c.cuts.length?c.cuts.every(n=>!top3.includes(n)):false;
-   st.races++;if(headHit)st.headHit++;if(axisHit)st.axisHit++;if(cutHit)st.cutHit++;
-   // Bet hit/return are only counted when an actual saved bet/result payout exists; never invent them.
-   const betHit=!!r?.betResult?.hit,ret=Number(r?.betResult?.returnYen)||0,stake=Number(r?.betResult?.stakeYen)||0;
-   if(betHit)st.betHit++;st.returnYen+=ret;st.stakeYen+=stake;
-   st.keys[k]={savedAt:Date.now(),headHit,axisHit,cutHit,betHit,combo:r.result.combo||order.join("-")};
-   write(st);render();return true;
- }
- function pct(a,n){return n?`${(a/n*100).toFixed(1)}%`:"—"}
- function render(){
-   const st=read();let box=$("bhResultStats526");
-   const host=$("resultPanel")||$("resultArea")||$("raceResult")||$("selectedRaceResult")||document.body;
-   if(!box){box=document.createElement("section");box.id="bhResultStats526"}if(box.parentElement!==host)host.appendChild(box);
-   box.innerHTML=`<div class="ttl">結果確認 累積</div><div class="grid">
-   <div class="cell">集計R<b>${st.races}</b></div><div class="cell">頭的中<b>${pct(st.headHit,st.races)}</b></div><div class="cell">軸的中<b>${pct(st.axisHit,st.races)}</b></div>
-   <div class="cell">切り的中<b>${pct(st.cutHit,st.races)}</b></div><div class="cell">買い目的中<b>${pct(st.betHit,st.races)}</b></div><div class="cell">収支<b>${st.returnYen-st.stakeYen>=0?"+":""}${st.returnYen-st.stakeYen}円</b></div>
-   </div><div class="note">結果確認の累積とAI学習データは別保存</div>`;
- }
- // Hook the explicit learning button only to register result stats AFTER result has been saved.
- document.addEventListener("click",e=>{
-   const b=e.target?.closest?.("#bhResultLearnButton525");
-   if(!b)return;setTimeout(()=>{const x=register();const st=$("bhResultLearnStatus525");if(x==="duplicate"&&st)st.textContent="学習済み・累積は登録済みです";},120);
- },true);
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});else render();
- [800,1800,3500].forEach(ms=>setTimeout(render,ms));
- window.BH_RESULT_STATS_V526={read,register,render};
-})();
-</script>
-
 <script id="bhV528CoreFixes">
 (()=>{
  const $=id=>document.getElementById(id);
