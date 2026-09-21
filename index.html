@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V581</title>
+<title>BOAT HUNTER V583</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.581</div>
+  <div class="topVol">Vol.583</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24693,5 +24693,133 @@ document.addEventListener("click",e=>{
 },true);
 window.addEventListener("bh:history20-ready",()=>setTimeout(refresh,50));
 setTimeout(refresh,900);
+})();
+</script>
+
+<script id="bhV582SingleHeadAndMutual14">
+(()=>{
+"use strict";
+const uniq=a=>[...new Set(a)];
+function formation(A,B,C){
+ const z=[]; for(const a of A)for(const b of B)for(const c of C)
+  if(a!==b&&b!==c&&a!==c)z.push(`${a}-${b}-${c}`);
+ return uniq(z);
+}
+function state(){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ const env=a.environment||{};
+ return {
+   wind:Number(env.windSpeed??a.windSpeed??window.__BH_WIND_SPEED)||0,
+   windChange:Number(env.windChange??a.windChange??0)||0,
+   tideChange:Number(env.tideChange??a.tideChange??0)||0,
+   classDominant:Boolean(a.classDominant??a.topClassDominant??false),
+   topConcentrated:Boolean(a.topConcentrated??a.firstPlaceConcentrated??false)
+ };
+}
+function rankedOutside(pair){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ const boats=a.boats||a.racers||window.__BH_BOATS||[];
+ return Array.from({length:6},(_,i)=>{
+  const b=boats[i]||{};
+  return {lane:i+1,
+   pickup:Number(b.pickupScore??b.developmentPickup??b.followScore??0)||0,
+   score:Number(b.finalScore??b.hunterScore??b.score??b.totalScore)||0};
+ }).filter(x=>!pair.includes(x.lane))
+   .sort((x,y)=>(y.pickup-x.pickup)||(y.score-x.score)).map(x=>x.lane);
+}
+function mutual14(a,b){
+ const pair=[a,b], outside=rankedOutside(pair);
+ /* AB-AB-○ と AB-○-AB を両方作る */
+ let bets=[
+   ...formation(pair,pair,outside),
+   ...formation(pair,outside,pair)
+ ];
+ /* 展開拾い順位を保ったまま14点フル */
+ bets=uniq(bets).slice(0,14);
+ return {mode:"MUTUAL_14",heads:pair,maxBets:14,full14:true,bets,
+   patterns:[`${a}${b}-${a}${b}-○`,`${a}${b}-○-${a}${b}`],
+   pickup:outside};
+}
+function compactSingle(head){
+ const x=state();
+ const attack=(window.__BH_V580_ATTACK||[]).some(v=>v.score>=55);
+ const envStable=x.wind<3 && Math.abs(x.windChange)<1 && Math.abs(x.tideChange)<1;
+ const canCompact=envStable&&x.classDominant&&x.topConcentrated&&!attack;
+ return {mode:canCompact?"SINGLE_COMPACT":"SINGLE_FLEX",
+   heads:[head],maxBets:canCompact?7:14,minBets:canCompact?5:0,
+   compact:canCompact,
+   reason:canCompact?"環境安定＋階級優位＋1位評価集中＋強攻め艇なし":"状況に応じて対抗頭を追加"};
+}
+function policy(heads){
+ heads=uniq((heads||[]).map(Number).filter(x=>x>=1&&x<=6));
+ if(heads.length>=4)return {mode:"WATCH",alert:"見",maxBets:0,bets:[],heads};
+ if(heads.length===3 && typeof window.bhV581ApplyHeadCountPolicy==="function")
+   return window.bhV581ApplyHeadCountPolicy(heads);
+ if(heads.length===2)return mutual14(heads[0],heads[1]);
+ if(heads.length===1){
+   const base=compactSingle(heads[0]);
+   /* 元は1頭でもV580の明確な攻め艇が別なら相互頭14点へ */
+   const atk=(window.__BH_V580_BET_POLICY?.attackHeads||[]).find(x=>x!==heads[0]);
+   return atk?mutual14(heads[0],atk):base;
+ }
+ return {mode:"NORMAL",maxBets:14,bets:[],heads:[]};
+}
+window.bhV582BetPolicy=policy;
+function refresh(){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ let heads=a.headCandidates||a.heads||window.__BH_HEAD_CANDIDATES||[];
+ if(!Array.isArray(heads))heads=[];
+ const p=policy(heads);
+ window.__BH_V582_BET_POLICY=p;
+ try{localStorage.setItem("BH_V582_BET_POLICY",JSON.stringify({at:Date.now(),policy:p}))}catch(_){}
+ window.dispatchEvent(new CustomEvent("bh:v582-policy",{detail:p}));
+}
+document.addEventListener("click",e=>{
+ if(/AI解析|展望解析|買い目/.test(e.target?.textContent||""))setTimeout(refresh,700);
+},true);
+window.addEventListener("bh:history20-ready",()=>setTimeout(refresh,80));
+setTimeout(refresh,1000);
+})();
+</script>
+
+<style id="bhV583OddsOpenFix">
+/* V583: 独自の隠しボタンで開いた時だけ、元の oddsList.hide を解除して120通りを表示 */
+#oddsPanel:not(.bhV579Closed) #oddsList{display:block!important}
+#oddsPanel.bhV579Closed #oddsList{display:none!important}
+</style>
+<script id="bhV583OddsOpenFixJS">
+(()=>{
+"use strict";
+const panel=document.getElementById("oddsPanel");
+const btn=document.getElementById("bhV579OddsHide");
+const list=document.getElementById("oddsList");
+if(!panel||!btn||!list)return;
+
+function openOdds(){
+ if(panel.classList.contains("bhV579Closed"))return;
+ list.classList.remove("hide"); // 元の120通りトグルのhideを確実に解除
+ const snap=window.__HUNTER_ODDS120;
+ if(Array.isArray(snap?.odds)&&snap.odds.length){
+   if(typeof window.renderHunterOdds==="function")window.renderHunterOdds(snap.odds);
+   const st=document.getElementById("oddsState");
+   if(st)st.textContent=`取得済み：${snap.odds.length}/120通り`;
+ }else{
+   const st=document.getElementById("oddsState");
+   if(st)st.textContent="オッズ未取得";
+ }
+}
+btn.addEventListener("click",()=>setTimeout(openOdds,0));
+
+/* 取得後に閉じていてもデータは保持。開いた時に必ず再描画 */
+const get=document.getElementById("getOdds120");
+get?.addEventListener("click",()=>{
+ const watch=setInterval(()=>{
+   if(window.__HUNTER_ODDS120?.odds?.length){
+     clearInterval(watch);
+     if(!panel.classList.contains("bhV579Closed"))openOdds();
+   }
+ },150);
+ setTimeout(()=>clearInterval(watch),12000);
+});
 })();
 </script>
