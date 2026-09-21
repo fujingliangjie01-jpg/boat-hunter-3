@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V579</title>
+<title>BOAT HUNTER V581</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15398,7 +15398,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.579</div>
+  <div class="topVol">Vol.581</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24505,5 +24505,193 @@ window.__BH_V396_FORCE_2BOX__=true;
      }
    }
  });
+})();
+</script>
+
+<style id="bhV580AttackStyle">
+#bhV580AttackBox{margin:8px 0;padding:10px;border:1px solid rgba(86,190,240,.28);border-radius:12px;background:#081c28}
+#bhV580AttackBox .t{font-size:12px;font-weight:900;color:#9ee6ff;margin-bottom:6px}
+#bhV580AttackBox .g{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+#bhV580AttackBox .c{padding:6px 2px;text-align:center;border-radius:8px;background:#102b39;font-size:9px}
+#bhV580AttackBox .n{font-size:15px;font-weight:950}.bhV580Hi{outline:1px solid #ffcc66}
+#bhV580AttackBox .r{margin-top:6px;font-size:10px;line-height:1.45;color:#cfe8f3}
+</style>
+<script id="bhV580AttackLogic">
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const num=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
+const pct=v=>{const n=num(v);return n==null?0:n};
+const txt=o=>String(o??"");
+
+function pickBoatData(){
+ const src=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ const arr=src.boats||src.racers||window.__BH_BOATS||[];
+ return Array.from({length:6},(_,i)=>{
+   const b=arr[i]||{};
+   return {
+    lane:i+1,
+    st:num(b.currentST??b.fAfterST??b.avgST??b.st),
+    f:Number(b.fCount??b.F??0)||0,
+    exhibitST:num(b.exhibitST??b.tenjiST),
+    makuri:pct(b.makuriRate??b.attackMakuri),
+    makurizashi:pct(b.makuriZashiRate??b.attackMakuriZashi),
+    sashi:pct(b.sashiRate??b.attackSashi),
+    grade:txt(b.grade??b.developmentGrade??"")
+   };
+ });
+}
+function wind(){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||{};
+ return num(a.windSpeed??a.environment?.windSpeed??window.__BH_WIND_SPEED)||0;
+}
+function weapon(b){
+ if(b.lane===2)return Math.max(b.sashi,b.makuri);
+ return Math.max(b.makuri,b.makurizashi,b.sashi);
+}
+function calc(){
+ const bs=pickBoatData(), w=wind(), out=[];
+ for(let i=1;i<6;i++){
+   const b=bs[i], inside=bs[i-1];
+   let score=0, why=[];
+   if(b.st!=null&&inside.st!=null){
+     const d=inside.st-b.st;
+     if(d>=.08){score+=32;why.push(`内よりST ${d.toFixed(3)}速い`)}
+     else if(d>=.05){score+=24;why.push(`内よりST ${d.toFixed(3)}速い`)}
+     else if(d>=.03){score+=15;why.push(`内よりST ${d.toFixed(3)}速い`)}
+   }
+   if(inside.st!=null&&inside.st>=.19){score+=18;why.push("直内の壁が弱い")}
+   else if(inside.st!=null&&inside.st>=.17){score+=10;why.push("直内ST遅め")}
+   if(b.st!=null&&b.st<=.13){score+=20;why.push(b.f?"F後もST強い":"ST強い")}
+   else if(b.st!=null&&b.st<=.15){score+=12;why.push(b.f?"F後ST良好":"ST良好")}
+   const wp=weapon(b);
+   if(wp>=30){score+=16;why.push("攻め決まり手あり")}
+   else if(wp>=20){score+=10;why.push("決まり手適性あり")}
+   if(b.makuri>0&&b.makurizashi>0){score+=8;why.push("まくり/まくり差し両対応")}
+   if(b.exhibitST!=null&&b.exhibitST<=.05){score+=10;why.push("展示ST強い")}
+   if(w>=3){score+=8;why.push(`風${w.toFixed(1)}m`)}
+   out.push({lane:b.lane,score:Math.min(100,score),why});
+ }
+ return out;
+}
+function strongHeads(a){return a.filter(x=>x.score>=55).sort((x,y)=>y.score-x.score).slice(0,2)}
+function ensureBox(a){
+ let box=$("bhV580AttackBox");
+ if(!box){
+   box=document.createElement("div");box.id="bhV580AttackBox";
+   const outlook=$("outlookPanel");
+   if(outlook)outlook.appendChild(box);
+ }
+ if(!box)return;
+ const heads=strongHeads(a);
+ box.innerHTML=`<div class="t">今回の攻撃力｜2〜6C</div><div class="g">${
+  a.map(x=>`<div class="c ${x.score>=55?"bhV580Hi":""}"><div class="n">${x.lane}</div>${x.score}点</div>`).join("")
+ }</div><div class="r">${heads.length?heads.map(x=>`${x.lane}号艇：${x.why.join("・")}`).join("<br>"):"明確な対抗攻め艇なし"}</div>`;
+}
+function buildRequiredBets(a){
+ const heads=strongHeads(a);
+ const primary=heads[0];
+ if(!primary)return [];
+ /* 強イン＋明確な攻め艇は 1/攻め艇 の相互頭を必須候補化 */
+ const h=primary.lane;
+ const tails=[2,3,4,5,6].filter(x=>x!==h).slice(0,4);
+ let bets=[];
+ for(const t of tails){ if(t!==1&&t!==h) bets.push(`1-${h}-${t}`,`${h}-1-${t}`); }
+ return [...new Set(bets)].slice(0,8);
+}
+function run(){
+ const a=calc(); window.__BH_V580_ATTACK=a; ensureBox(a);
+ const req=buildRequiredBets(a); window.__BH_V580_REQUIRED_BETS=req;
+ /* 既存買い目生成側から参照できる共通フック。最大14点 */
+ window.__BH_V580_BET_POLICY={maxBets:14,required:req,attackHeads:strongHeads(a).map(x=>x.lane)};
+ try{localStorage.setItem("BH_V580_LAST_ATTACK",JSON.stringify({at:Date.now(),attack:a,policy:window.__BH_V580_BET_POLICY}))}catch(_){}
+}
+document.addEventListener("click",e=>{
+ if(/AI解析|展望解析|買い目/.test(e.target?.textContent||""))setTimeout(run,500);
+},true);
+window.addEventListener("bh:history20-ready",()=>setTimeout(run,0));
+setTimeout(run,700);
+})();
+</script>
+
+<script id="bhV581HeadCountBetRule">
+(()=>{
+"use strict";
+/*
+ V581 初期買い目基準
+ 1頭: 従来
+ 2頭: 最大14点
+ 3頭: 3頭BOX6点 + 上位2頭-3頭-展開拾い2艇8点
+ 4頭以上: 見
+ 研究所の蓄積結果により将来変更可能な初期設定。
+*/
+function perms3(a){
+ const z=[];
+ for(const x of a)for(const y of a)for(const q of a)
+   if(x!==y&&y!==q&&x!==q)z.push(`${x}-${y}-${q}`);
+ return z;
+}
+function formation(first,second,third){
+ const z=[];
+ for(const a of first)for(const b of second)for(const c of third)
+   if(a!==b&&b!==c&&a!==c)z.push(`${a}-${b}-${c}`);
+ return [...new Set(z)];
+}
+function rankOrder(){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ const boats=a.boats||a.racers||window.__BH_BOATS||[];
+ return Array.from({length:6},(_,i)=>{
+   const b=boats[i]||{};
+   const score=Number(b.finalScore??b.hunterScore??b.score??b.totalScore);
+   return {lane:i+1,score:Number.isFinite(score)?score:-999,
+     pickup:Number(b.pickupScore??b.developmentPickup??b.followScore??0)||0};
+ }).sort((x,y)=>y.score-x.score);
+}
+function pickupTwo(heads,ranked){
+ const outside=ranked.filter(x=>!heads.includes(x.lane));
+ /* 展開拾い値がある場合を優先し、同値ならHUNTER評価順 */
+ outside.sort((a,b)=>(b.pickup-a.pickup)||(b.score-a.score));
+ return outside.slice(0,2).map(x=>x.lane);
+}
+function applyPolicy(headCandidates){
+ const heads=[...new Set((headCandidates||[]).map(Number).filter(x=>x>=1&&x<=6))];
+ const ranked=rankOrder();
+ const rankedHeads=heads.slice().sort((a,b)=>{
+   const ia=ranked.findIndex(x=>x.lane===a),ib=ranked.findIndex(x=>x.lane===b);
+   return ia-ib;
+ });
+ if(heads.length>=4){
+   return {mode:"WATCH",alert:"見",maxBets:0,bets:[],heads:rankedHeads,
+     reason:"頭候補4艇以上のため初期設定ルールで見"};
+ }
+ if(heads.length===3){
+   const box=perms3(rankedHeads);                       // 6点
+   const pickup=pickupTwo(rankedHeads,ranked);          // 展開拾い2艇
+   const second=formation(rankedHeads.slice(0,2),rankedHeads,pickup); // 8点想定
+   return {mode:"THREE_HEADS",maxBets:14,heads:rankedHeads,pickup,
+     boxBets:box,developmentBets:second,bets:[...new Set([...box,...second])].slice(0,14),
+     reason:`3頭BOX＋上位2頭→3頭→展開拾い${pickup.join("・")}`};
+ }
+ return {mode:heads.length===2?"TWO_HEADS":"NORMAL",maxBets:14,heads:rankedHeads,bets:[]};
+}
+window.bhV581ApplyHeadCountPolicy=applyPolicy;
+
+/* V580の攻撃頭候補を既存頭候補へ足すための共有ポリシー */
+function refresh(){
+ const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};
+ let heads=a.headCandidates||a.heads||window.__BH_HEAD_CANDIDATES||[];
+ if(!Array.isArray(heads))heads=[];
+ const attack=window.__BH_V580_BET_POLICY?.attackHeads||[];
+ heads=[...new Set([...heads,...attack])];
+ const p=applyPolicy(heads);
+ window.__BH_V581_BET_POLICY=p;
+ try{localStorage.setItem("BH_V581_HEAD_POLICY",JSON.stringify({at:Date.now(),policy:p}))}catch(_){}
+ window.dispatchEvent(new CustomEvent("bh:v581-policy",{detail:p}));
+}
+document.addEventListener("click",e=>{
+ if(/AI解析|展望解析|買い目/.test(e.target?.textContent||""))setTimeout(refresh,650);
+},true);
+window.addEventListener("bh:history20-ready",()=>setTimeout(refresh,50));
+setTimeout(refresh,900);
 })();
 </script>
