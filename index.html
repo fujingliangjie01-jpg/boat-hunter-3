@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V596</title>
+<title>BOAT HUNTER V597</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.596</div>
+  <div class="topVol">Vol.597</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25094,7 +25094,7 @@ function odds(){
  return rows.map(x=>{const c=combo(x.combo||x.key||x.bet||x.number||x.kumi||x[0]);const v=Number(x.odds??x.value??x.rate??x[1]);return {combo:c,odds:v}}).filter(x=>x.combo&&Number.isFinite(x.odds)&&x.odds>0).sort((a,b)=>a.odds-b.odds).map((x,i)=>({...x,rank:i+1}));
 }
 function getPrediction(){
- let p=null;try{p=window.BH_ESCAPE_BET_V533?.make?.()}catch(e){console.warn('V595 bet engine',e)}
+ let p=null;try{p=window.BH_ESCAPE_BET_V533?.make?.()}catch(e){console.warn('V597 bet engine',e)}
  if(p?.watch)return {watch:true,heads:p.heads||[],bets:[]};
  const trend=window.BH_RANK_TREND_V521?.current?.()||[];
  const one=trend.find(x=>+x.boat===1), challenger=trend.filter(x=>+x.boat!==1)
@@ -25123,40 +25123,79 @@ function getPrediction(){
 function technique(n){const x=(window.__BH_RACE_FLOW_ROWS||[]).find(x=>Number(x.boat)===n);const t=String(x?.best?.name||x?.best?.technique||x?.technique||x?.tech||'');return /まくり差し/.test(t)?'まくり差し':/まくり/.test(t)?'まくり':/差し/.test(t)?'差し':n===1?'逃げ':'判定待ち'}
 function selected(p,od){
  const m=new Map(od.map(x=>[x.combo,x]));
- const normal=()=>({narrow:false,items:p.bets.slice(0,14).map(combo=>({combo,kind:'normal'}))});
  const trend=window.BH_RANK_TREND_V521?.current?.()||[];
  const flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
  const head=+p.heads[0],r=trend.find(x=>+x.boat===head);
- if(p.heads.length!==1||trend.length!==6||flow.length!==6||diag.length!==6||od.length<110||!r)return normal();
- // Narrow only when market, ability and outlook independently agree on a dominant head.
- if(+r.head!==1||+r.ability!==1||+r.flow!==1)return normal();
- const d=[...diag].sort((x,y)=>(+y.score||0)-(+x.score||0));
- const f=[...flow].sort((x,y)=>(+y.score||0)-(+x.score||0));
- if(+d[0]?.boat!==head||+f[0]?.boat!==head||(+d[0].score)-(+d[1].score)<15||(+f[0].score)-(+f[1].score)<15)return normal();
- const attack=window.__BH_V584_THREATS||[];
- if(attack.some(x=>+x.boat!==head&&+x.score>=45))return normal();
- // Missing wind/tide data is NOT proof that conditions are stable.
- const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||{};
- const env=a.environment||{},wind=Number(env.windSpeed??a.windSpeed);
- if(!Number.isFinite(wind)||wind>=3||Math.abs(Number(env.windChange??0))>=1||Math.abs(Number(env.tideChange??0))>=1)return normal();
- const market=window.__BH_MARKET_COMPARE510?.market;
- const supports=market?.headSupport||market?.headRate||market?.headPct||market?.headPercent||null;
- if(!supports)return normal();
- const vals=Array.isArray(supports)?supports:Object.values(supports);
- const sorted=vals.map(Number).filter(Number.isFinite).sort((x,y)=>y-x);
- if(sorted.length<2||sorted[0]-sorted[1]<10)return normal();
- const matched=p.bets.filter(c=>m.has(c)&&m.get(c).rank<=15).sort((a,b)=>m.get(a).rank-m.get(b).rank);
- if(matched.length<7)return normal();
- const main=matched.slice(0,5).map(combo=>({combo,kind:'main'})),used=new Set(main.map(x=>x.combo));
+ // 7点絞りは、世間・能力・展開の一致、突出、環境確認、人気一致の全条件が必要。
+ let narrow=p.heads.length===1&&trend.length===6&&flow.length===6&&diag.length===6&&od.length>=110&&r&&
+   +r.head===1&&+r.ability===1&&+r.flow===1;
+ if(narrow){
+  const d=[...diag].sort((x,y)=>(+y.score||0)-(+x.score||0));
+  const f=[...flow].sort((x,y)=>(+y.score||0)-(+x.score||0));
+  narrow=+d[0]?.boat===head&&+f[0]?.boat===head&&d[0].score-d[1].score>=15&&f[0].score-f[1].score>=15;
+  const attack=window.__BH_V584_THREATS||[];
+  if(attack.some(x=>+x.boat!==head&&+x.score>=45))narrow=false;
+  const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||{},env=a.environment||{};
+  const wind=Number(env.windSpeed??a.windSpeed);
+  if(env.windSpeed==null&&a.windSpeed==null||!Number.isFinite(wind)||wind>=3||env.windChange==null||env.tideChange==null||Math.abs(Number(env.windChange))>=1||Math.abs(Number(env.tideChange))>=1)narrow=false;
+  const market=window.__BH_MARKET_COMPARE510?.market;
+  const supports=market?.headSupport||market?.headRate||market?.headPct||market?.headPercent;
+  const vals=Array.isArray(supports)?supports:supports?Object.values(supports):[];
+  const sorted=vals.map(Number).filter(Number.isFinite).sort((x,y)=>y-x);
+  if(sorted.length<2||sorted[0]-sorted[1]<10)narrow=false;
+ }
+ if(narrow){
+  const matched=p.bets.filter(c=>m.has(c)&&m.get(c).rank<=15).sort((a,b)=>m.get(a).rank-m.get(b).rank);
+  if(matched.length>=7){
+   const main=matched.slice(0,5).map(combo=>({combo,kind:'main'})),used=new Set(main.map(x=>x.combo));
+   const tmap=new Map(trend.map(x=>[+x.boat,x]));
+   const extra=p.bets.filter(c=>!used.has(c)&&m.has(c)).map(c=>{
+    const third=+c.split('-')[2],t=tmap.get(third),up=t?+t.head-Math.min(+t.ability,+t.flow):0;
+    return {combo:c,kind:'extra',up,rank:m.get(c).rank,odds:m.get(c).odds,third};
+   });
+   const strong=extra.filter(x=>x.up>=2&&x.rank<=30&&+tmap.get(x.third)?.flow<=3).sort((a,b)=>b.up-a.up||b.odds-a.odds);
+   const picks=strong.slice(0,2);
+   for(const x of extra.sort((a,b)=>a.rank-b.rank))if(picks.length<2&&!picks.some(y=>y.combo===x.combo))picks.push({...x,up:0});
+   if(picks.length===2)return {narrow:true,items:[...main,...picks]};
+  }
+ }
+ // 通常レースは元エンジンの6点で打ち切らず、候補頭と展開・世間人気から最大14点に再構成。
+ // オッズ未取得時は、元エンジンが根拠を持って生成した買い目のみ表示する。
+ const candidates=new Set(p.heads.map(Number).filter(x=>x>=1&&x<=6));
+ for(const t of trend){
+  if(+t.head<=2&&+t.ability<=2&&+t.flow<=2)candidates.add(+t.boat);
+ }
+ const heads=[...candidates].filter(x=>x>=1&&x<=6);
+ if(heads.length>=4)return {watch:true,narrow:false,items:[]};
+ if(!heads.length)return {narrow:false,items:p.bets.slice(0,14).map(combo=>({combo,kind:'normal'}))};
+ if(od.length<110)return {narrow:false,items:p.bets.slice(0,14).map(combo=>({combo,kind:'normal'}))};
  const tmap=new Map(trend.map(x=>[+x.boat,x]));
- const extra=p.bets.filter(c=>!used.has(c)&&m.has(c)).map(c=>{
-  const third=+c.split('-')[2],t=tmap.get(third),up=t?+t.head-Math.min(+t.ability,+t.flow):0;
-  return {combo:c,kind:'extra',up,rank:m.get(c).rank,odds:m.get(c).odds,third};
- });
- const strong=extra.filter(x=>x.up>=2&&x.rank<=30&&+tmap.get(x.third)?.flow<=3).sort((a,b)=>b.up-a.up||b.odds-a.odds);
- const picks=strong.slice(0,2);
- for(const x of extra.sort((a,b)=>a.rank-b.rank))if(picks.length<2&&!picks.some(y=>y.combo===x.combo))picks.push({...x,up:0});
- return picks.length===2?{narrow:true,items:[...main,...picks]}:normal();
+ const score=(n)=>{const t=tmap.get(n);return t?((7-(+t.axis||6))*2+(7-(+t.flow||6))*2+(7-(+t.ability||6))):0};
+ const outside=[1,2,3,4,5,6].filter(n=>!heads.includes(n)).sort((a,b)=>score(b)-score(a));
+ let formations=[];
+ if(heads.length===2){
+  for(const z of outside)for(const h of heads){const other=heads.find(x=>x!==h);formations.push(`${h}-${other}-${z}`,`${h}-${z}-${other}`)}
+ }else if(heads.length===3){
+  for(const a of heads)for(const b of heads)for(const c of heads)if(a!==b&&b!==c&&a!==c)formations.push(`${a}-${b}-${c}`);
+  for(const z of outside)for(const h of heads)for(const other of heads)if(h!==other)formations.push(`${h}-${other}-${z}`,`${h}-${z}-${other}`);
+ }else{
+  const h=heads[0],other=[1,2,3,4,5,6].filter(n=>n!==h).sort((a,b)=>score(b)-score(a));
+  for(const b of other)for(const c of other)if(b!==c)formations.push(`${h}-${b}-${c}`);
+ }
+ const pool=[...new Set([...p.bets,...formations])].filter(c=>m.has(c));
+ // 既存のHUNTER候補を優先しつつ、各頭と折り返し形の偏りを防ぐ。
+ const chosen=[],used=new Set();
+ const add=c=>{if(c&&!used.has(c)&&m.has(c)&&chosen.length<14){used.add(c);chosen.push(c)}};
+ if(heads.length===2){
+  const [a,b]=heads;
+  for(const h of heads){const other=h===a?b:a;
+   const group1=pool.filter(c=>c.startsWith(`${h}-${other}-`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
+   const group2=pool.filter(c=>c.startsWith(`${h}-`)&&c.endsWith(`-${other}`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
+   group1.slice(0,4).forEach(add);group2.slice(0,3).forEach(add);
+  }
+ }else if(heads.length===3){formations.filter(c=>heads.every(h=>c.includes(String(h)))).forEach(add)}
+ for(const c of pool.sort((x,y)=>{const px=p.bets.includes(x)?-10:0,py=p.bets.includes(y)?-10:0;return (m.get(x).rank+px)-(m.get(y).rank+py)}))add(c);
+ return {narrow:false,items:chosen.map(combo=>({combo,kind:'normal'}))};
 }
 let rendering=false,previous='';
 function render(){
@@ -25173,6 +25212,7 @@ function render(){
  if(p.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div><div class="bh590Status">頭候補を絞れないため買い目は表示しません。</div>';return}
  if(!p.bets.length){root.innerHTML='<div class="bh590Status">買い目生成待ち：6艇比較データの連動を確認してください。取得済みデータが揃い次第、自動で再表示します。</div>';return}
  const result=selected(p,od),m=new Map(od.map(x=>[x.combo,x]));
+ if(result.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return;}
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
  if(heads.length>=4){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return}
  for(const t of ['逃げ','差し','まくり'])if(heads.some(h=>technique(h)===t))alerts.push(t+'推奨');
