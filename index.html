@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V605</title>
+<title>BOAT HUNTER V607</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.605</div>
+  <div class="topVol">Vol.607</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24504,22 +24504,28 @@ $('bh599Send').addEventListener('click',()=>{
   return /^[1-6]-[1-6]-[1-6]$/.test(c)?c:"";
  }
  function buyTickets(){
-  const engine=window.BH_ESCAPE_BET_V533?.make?.()||window.BH_ESCAPE_BET_V531?.make?.()||null;
-  const a=Array.isArray(engine?.bets)?engine.bets:(window.__HUNTER_BUY_TICKETS||window.__HUNTER_FINAL_TICKETS||[]);
-  return (Array.isArray(a)?a:[]).map(x=>String(typeof x==="string"?x:(x.combo||x.key||"")).replace(/[=>]/g,"-")).filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x));
+  // V606: 判定対象は実際に画面に表示された買い目。旧V533の再生成結果は使わない。
+  const panel=$("bhEscapeBet530");
+  const root=panel?.querySelector(".bh590Root");
+  if(!root || root.querySelector(".bh590Alert.watch"))return [];
+  const cards=[...root.querySelectorAll(".bh590Ticket .bh590Combo")];
+  const bets=cards.map(e=>String(e.textContent||"").trim().replace(/[－ー–—]/g,"-"))
+   .filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x)&&new Set(x.split("-")).size===3);
+  return [...new Set(bets)];
  }
  async function check(){
   const m=$("bhV571Msg");m.textContent="結果取得中…";$("bhV571Send").disabled=true;last=null;
+  const checkedRace=sel(), displayedBets=buyTickets();
   try{
-   const q=sel(),j=await daily(q.date),r=raceNode(j,q.venue,q.race);
+   const q=checkedRace,j=await daily(q.date),r=raceNode(j,q.venue,q.race);
    if(!r){m.textContent="レースデータを取得できませんでした";return}
    const res=resultNode(r),tf=trifecta(r,res),out=combo(r,res,tf);
    if(!out){m.textContent="結果はまだ公開されていません";return}
    const payout=Number(tf?.amount),tech=TECH[Number(res?.technique_number??res?.technique)]||res?.technique_number_source||res?.technique_name||"—";
-   const bets=buyTickets(),judge=bets.length?(bets.includes(out)?"的中":"ハズレ"):"判定なし";
+   const bets=displayedBets,judge=bets.length?(bets.includes(out)?"的中":"ハズレ"):"判定なし";
    last={out,way:tech,pay:Number.isFinite(payout)?payout:null,judge};
    $("bhV571Out").textContent=out;$("bhV571Way").textContent=tech;$("bhV571Pay").textContent=Number.isFinite(payout)?`¥${payout.toLocaleString("ja-JP")}`:"—";$("bhV571Judge").textContent=judge;
-   $("bhV571Send").disabled=false;m.textContent="✓ 結果取得完了";
+   $("bhV571Send").disabled=false;m.textContent=bets.length?`✓ 結果取得完了｜表示中の${bets.length}点と照合`:`✓ 結果取得完了｜表示買い目がないため判定なし`;
   }catch(e){console.warn("V574 result",e);m.textContent="結果取得に失敗しました"}
  }
  function collectHunter(){
@@ -25184,16 +25190,31 @@ function insideRisk(){
  const weakCourse=Number.isFinite(courseWin)&&courseWin<40;
  const weakTop3=Number.isFinite(courseTop3)&&courseTop3<60;
  const weakClass=/B1|B2/i.test(klass);
- const fSlow=Number.isFinite(fCount)&&fCount>0&&Number.isFinite(postF)&&postF>=.17;
- const fConcern=Number.isFinite(fCount)&&fCount>0&&(fSlow||delay);
+ const fPostSlow=Number.isFinite(fCount)&&fCount>0&&Number.isFinite(postF)&&postF>.15;
+ const fSlow=fPostSlow&&postF>=.17;
+ const fConcern=Number.isFinite(fCount)&&fCount>0&&(fPostSlow||delay);
  const superior=Number.isFinite(win1)&&Number.isFinite(win2)&&win2-win1>=1.5 ||
    (String(d2.grade)==='A'||String(d2.grade)==='S')&&['C','D'].includes(String(d1.grade));
  const weakness=[weakNational,weakCourse,weakTop3,weakClass].filter(Boolean).length;
  // F alone is never proof of a delayed start. Need measured ST or post-F ST plus weak record.
- const headCut=(delay||fSlow)&&weakness>=2&&superior;
+ const headCut=(delay||fSlow||(fPostSlow&&Number.isFinite(st2)&&postF-st2>=.025))&&weakness>=2&&superior;
  const fullCut=headCut&&(severeDelay||fSlow&&delay)&&weakness>=3;
  const sweep=headCut&&(severeDelay||fSlow)&&superior;
- return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,st1,st2};
+ // 1号艇F後ST > .15: 2〜4コースのまくり機会を増加。壁と実測ST差で強度を分ける。
+ const fSweepBoost={};
+ if(fPostSlow){
+  for(const n of [2,3,4]){
+   const attack=f(n),aST=number(attack.st,attack.currentST,get(n).fAfterST,get(n).currentST,get(n).st);
+   const gap=Number.isFinite(aST)?postF-aST:NaN;
+   const wall=n===2?true:[2,3].filter(k=>k<n).every(k=>{
+     const inner=f(k),innerST=number(inner.st,inner.currentST,get(k).currentST,get(k).st);
+     return Number.isFinite(innerST)&&Number.isFinite(aST)&&innerST>=aST-.005;
+   });
+   const strength=Number.isFinite(gap)?gap>=.055?3:gap>=.03?2:gap>=.01?1:0:0;
+   fSweepBoost[n]=wall?strength:Math.max(0,strength-1);
+  }
+ }
+ return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,fPostSlow,postF,fSweepBoost,st1,st2};
 }
 window.BH_V604_INSIDE_RISK=insideRisk;
 function getPrediction(){
@@ -25230,6 +25251,11 @@ function getPrediction(){
  let heads=rated.filter(qualifies).map(x=>x.n);
  if(risk.headCut)heads=heads.filter(n=>n!==1);
  if(risk.headCut&&!heads.includes(2)&&risk.superior)heads.unshift(2);
+ for(const n of [2,3,4])if(risk.fSweepBoost?.[n]>=2&&!heads.includes(n)){
+   const x=rated.find(r=>r.n===n);
+   if(x&&x.fg>=2&&x.dg>=2&&x.score>=rated[0].score-25)heads.push(n);
+ }
+ heads.sort((a,b)=>rated.findIndex(x=>x.n===a)-rated.findIndex(x=>x.n===b));
  // A race outlook of C/D cannot become the primary head solely from public odds or old engine.
  if(!heads.length&&rated.find(x=>!risk.headCut||x.n!==1)?.fg>=3)heads=[rated.find(x=>!risk.headCut||x.n!==1).n];
  if(heads.length>=4)return {watch:true,heads,bets:[]};
@@ -25268,6 +25294,7 @@ function technique(n){
  const tilt=Number(pv?.tilt??x.tilt??0);
  const risk=insideRisk();
  const fast=Number.isFinite(st)&&st>0&&Number.isFinite(oneST)&&oneST>0&&oneST-st>=.035;
+ if(course>=2&&course<=4&&risk.fSweepBoost?.[course]>=2)return 'まくり';
  if(course===2)return (risk.headCut&&risk.superior)||fast||tilt>=1.5||(/向かい風/.test(wind)&&Number.isFinite(st)&&st<=.14)?'まくり':'差し';
  if(fast||tilt>=1.5)return 'まくり';
  return course>=3?'まくり差し':'差し';
@@ -25343,6 +25370,10 @@ function selected(p,od){
    for(const a of outer)for(const b of outer)if(a!==b)formations.unshift(`2-${a}-${b}`);
    if(!clearSweep)for(const a of outer)formations.push(`2-${a}-1`);
  }
+ const protectedAxis=trend.find(t=>+t.axis===1&&+t.boat!==1&&
+   ['S','A','B'].includes(String(diag.find(d=>+d.boat===+t.boat)?.grade||''))&&
+   ['S','A','B','C'].includes(String(flow.find(f=>+f.boat===+t.boat)?.grade||'')));
+ const protectedBoat=protectedAxis?+protectedAxis.boat:null;
  const credible=c=>{
    const [h,b,z]=c.split('-').map(Number),tech=technique(h);
    if(risk.headCut&&h===1)return false;
@@ -25364,9 +25395,16 @@ function selected(p,od){
    if(makuri2&&h===2){group2.filter(c=>!clearSweep||!c.endsWith('-1')).slice(0,3).forEach(add)}else{group1.slice(0,4).forEach(add);group2.slice(0,3).forEach(add);}
   }
  }else if(heads.length===3){formations.filter(c=>heads.every(h=>c.includes(String(h)))).forEach(add)}
+ if(protectedBoat&&!risk.fullCut){
+  for(const h of heads){const c=pool.filter(x=>x.startsWith(h+'-')&&x.endsWith('-'+protectedBoat)).sort((a,b)=>m.get(a).rank-m.get(b).rank)[0];
+   if(c&&chosen.length<14)add(c);
+  }
+ }
  for(const c of pool.sort((x,y)=>{
   const priority=z=>{const a=z.split('-').map(Number);let v=m.get(z).rank+(p.bets.includes(z)?-10:0);
    if(makuri2&&a[0]===2){if(a[1]===1)v+=clearSweep?1000:100;if(a[1]>=3&&a[2]>=3)v-=18;if(a[2]===1)v+=clearSweep?120:5;}
+   if(protectedBoat&&a[2]===protectedBoat)v-=25;
+   if(a[0]>=2&&a[0]<=4&&technique(a[0])==='まくり'&&risk.fSweepBoost?.[a[0]]>=2&&a[1]>=3&&a[2]>=3)v-=14;
    return v;};return priority(x)-priority(y);
  }))add(c);
  return {narrow:false,items:chosen.map(combo=>({combo,kind:'normal'}))};
