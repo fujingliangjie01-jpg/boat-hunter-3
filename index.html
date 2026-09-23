@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.601</div>
+  <div class="topVol">Vol.602</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22494,8 +22494,13 @@ window.__BH_V396_FORCE_2BOX__=true;
          if(tilt>=1.5&&/まくり/.test(x.name))score+=10+(tilt-1.5)*4;
          else if(tilt>=.5&&/まくり/.test(x.name))score+=3;
        }
-       // 決まり手実績が無い場合は「差し」に固定せず判定待ち。
-       return {...x,score:score==null?null:C(score)};
+       // 実績不足でも予測は止めない。現在ST、コース、風、チルトから低信頼の暫定スコアを作る。
+       if(score==null){
+         const base=course===1?43:course===2?(x.name==='差し'?39:37):(x.name==='まくり差し'?37:x.name==='まくり'?36:33);
+         score=base+(st!=null&&meanST!=null?(meanST-st)*150:0)+windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
+         if(tilt>=1.5&&/まくり/.test(x.name))score+=8;
+       }
+       return {...x,score:C(score),estimated:!hasTech};
      }).sort((a,b)=>(b.score??-1)-(a.score??-1));
      let best=techs.find(x=>Number.isFinite(x.score))||{name:'判定待ち',v:null,score:null};
      if(st==null&&best&&Number.isFinite(best.score)&&best.score>49)best={...best,score:49};
@@ -25178,7 +25183,25 @@ function getPrediction(){
  const box=$('bhEscapeBet530'),raw=box?.querySelector('.bets')?.textContent||'';
  return {watch:false,heads:[],bets:valid([...raw.matchAll(/[1-6]\s*-\s*[1-6]\s*-\s*[1-6]/g)].map(x=>x[0]))};
 }
-function technique(n){const x=(window.__BH_RACE_FLOW_ROWS||[]).find(x=>Number(x.boat)===n);const t=String(x?.best?.name||x?.best?.technique||x?.technique||x?.tech||'');return /まくり差し/.test(t)?'まくり差し':/まくり/.test(t)?'まくり':/差し/.test(t)?'差し':n===1?'逃げ':'判定待ち'}
+// 買い目と展望は同じ予測を使う。実績欠損時もコース・ST・風・チルトで暫定決まり手を選ぶ。
+function technique(n){
+ if(n===1)return '逃げ';
+ const flow=window.__BH_RACE_FLOW_ROWS||[],x=flow.find(x=>Number(x.boat)===n)||{};
+ const norm=t=>/まくり差し/.test(t)?'まくり差し':/まくり/.test(t)?'まくり':/差し/.test(t)?'差し':null;
+ const opts=(x.techs||[]).filter(t=>norm(String(t.name||t.technique||''))&&Number.isFinite(Number(t.score)));
+ if(opts.length){const best=[...opts].sort((a,b)=>Number(b.score)-Number(a.score))[0];return norm(String(best.name||best.technique));}
+ const direct=norm(String(x.best?.name||x.best?.technique||x.technique||x.tech||''));
+ if(direct)return direct;
+ const prev=window.__HUNTER_PREVIEW||[],pv=Array.isArray(prev)?prev.find(z=>Number(z.boat??z.entry_number)===n):null;
+ const course=Number(x.course??pv?.course??n),st=Number(x.st??x.currentST??pv?.st),one=flow.find(z=>Number(z.boat)===1)||{},oneST=Number(one.st??one.currentST);
+ const wind=String(document.getElementById('windOutlook')?.textContent||'');
+ const tilt=Number(pv?.tilt??x.tilt??0);
+ const fast=Number.isFinite(st)&&st>0&&Number.isFinite(oneST)&&oneST>0&&oneST-st>=.035;
+ if(course===2)return fast||tilt>=1.5||(/向かい風/.test(wind)&&Number.isFinite(st)&&st<=.14)?'まくり':'差し';
+ if(fast||tilt>=1.5)return 'まくり';
+ return course>=3?'まくり差し':'差し';
+}
+window.BH_V602_PREDICT_TECHNIQUE=technique;
 function selected(p,od){
  const m=new Map(od.map(x=>[x.combo,x]));
  const trend=window.BH_RANK_TREND_V521?.current?.()||[];
@@ -25240,6 +25263,16 @@ function selected(p,od){
   const h=heads[0],other=[1,2,3,4,5,6].filter(n=>n!==h).sort((a,b)=>score(b)-score(a));
   for(const b of other)for(const c of other)if(b!==c)formations.push(`${h}-${b}-${c}`);
  }
+ // 2コースまくりでは1号艇の2着残しを優先しない。外側の追走艇を先に採用。
+ const makuri2=heads.includes(2)&&technique(2)==='まくり';
+ const oneST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===1)?.st);
+ const twoST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===2)?.st);
+ const clearSweep=makuri2&&Number.isFinite(oneST)&&oneST>0&&Number.isFinite(twoST)&&twoST>0&&oneST-twoST>=.05;
+ if(makuri2){
+   const outer=[3,4,5,6].filter(n=>!heads.includes(n)).sort((a,b)=>score(b)-score(a));
+   for(const a of outer)for(const b of outer)if(a!==b)formations.unshift(`2-${a}-${b}`);
+   if(!clearSweep)for(const a of outer)formations.push(`2-${a}-1`);
+ }
  const pool=[...new Set([...p.bets,...formations])].filter(c=>m.has(c));
  // 既存のHUNTER候補を優先しつつ、各頭と折り返し形の偏りを防ぐ。
  const chosen=[],used=new Set();
@@ -25249,17 +25282,21 @@ function selected(p,od){
   for(const h of heads){const other=h===a?b:a;
    const group1=pool.filter(c=>c.startsWith(`${h}-${other}-`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
    const group2=pool.filter(c=>c.startsWith(`${h}-`)&&c.endsWith(`-${other}`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
-   group1.slice(0,4).forEach(add);group2.slice(0,3).forEach(add);
+   if(makuri2&&h===2){group2.filter(c=>!clearSweep||!c.endsWith('-1')).slice(0,3).forEach(add)}else{group1.slice(0,4).forEach(add);group2.slice(0,3).forEach(add);}
   }
  }else if(heads.length===3){formations.filter(c=>heads.every(h=>c.includes(String(h)))).forEach(add)}
- for(const c of pool.sort((x,y)=>{const px=p.bets.includes(x)?-10:0,py=p.bets.includes(y)?-10:0;return (m.get(x).rank+px)-(m.get(y).rank+py)}))add(c);
+ for(const c of pool.sort((x,y)=>{
+  const priority=z=>{const a=z.split('-').map(Number);let v=m.get(z).rank+(p.bets.includes(z)?-10:0);
+   if(makuri2&&a[0]===2){if(a[1]===1)v+=clearSweep?1000:100;if(a[1]>=3&&a[2]>=3)v-=18;if(a[2]===1)v+=clearSweep?120:5;}
+   return v;};return priority(x)-priority(y);
+ }))add(c);
  return {narrow:false,items:chosen.map(combo=>({combo,kind:'normal'}))};
 }
 let rendering=false,previous='';
 function render(){
  if(rendering)return;
  const box=$('bhEscapeBet530');if(!box)return;
- const p=getPrediction(),od=odds(),sig=JSON.stringify([p,od,window.__BH_RACE_FLOW_ROWS?.map(x=>[x.boat,x.score,x.best?.name])]);
+ const p=getPrediction(),od=odds(),sig=JSON.stringify([p,od,window.__BH_RACE_FLOW_ROWS?.map(x=>[x.boat,x.score,x.st,x.best?.name,x.techs?.map(t=>[t.name,t.score])])]);
  if(sig===previous&&box.querySelector('.bh590Root'))return;
  previous=sig;rendering=true;
  try{
@@ -25280,7 +25317,7 @@ function render(){
  const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['比較分析 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['通常買い目｜最大14点',result.items,false]];
  for(const [name,items,isExtra] of groups){const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');const o=m.get(x.combo),t=technique(Number(x.combo[0]));
- const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
+ const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
  for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra){const e=document.createElement('div');e.className='bh590Reason';e.textContent=x.up>=2?'3着艇の評価が'+x.up+'順位上昇':'世間人気順で補充';card.append(e)}grid.append(card)}
  }
  window.__BH_V592_DISPLAY_BETS=result.items.map(x=>x.combo);
