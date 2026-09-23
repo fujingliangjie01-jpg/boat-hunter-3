@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.600</div>
+  <div class="topVol">Vol.601</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22998,8 +22998,8 @@ window.__BH_V396_FORCE_2BOX__=true;
      if(x.baseScore==null)x.baseScore=base;
      const z=conditionDelta(x,c);
      x.conditionDelta=z.d;x.conditionReasons=z.why;
-     if(x.best)x.best.score=clamp(x.baseScore+z.d,0,100);
-     x.score=clamp(x.baseScore+z.d,0,100);
+     if(x.best)x.best.score=clamp(x.baseScore+z.d,0,99);
+     x.score=clamp(x.baseScore+z.d,0,99);
    });
    try{window.BH_RENDER_UNIFIED_FLOW?.()}catch(_){}
    try{window.BH_RENDER_VISIBLE_GRADES?.()}catch(_){}
@@ -23096,7 +23096,7 @@ window.__BH_V396_FORCE_2BOX__=true;
      &&a.motor3!=null&&a.motor3>=48
      &&a.st!=null&&a.st<=.15&&!a.weakEscape&&a.historyCount>=10;
    const abilityS=(window.__BH_DIAG_ROWS||[]).find(x=>+x.boat===+a.boat&&x.grade==='S');
-   const fullFlow=!abilityMode&&a.ok!==false&&a.score>=90&&b&&a.score-b.score>=20
+   const fullFlow=!abilityMode&&a.ok!==false&&a.score>=90&&a.score<100&&b&&a.score-b.score>=20
      &&!!abilityS&&!(window.__BH_V584_THREATS||[]).some(x=>+x.boat!==+a.boat&&+x.score>=45);
    if(fullAbility||fullFlow)g[a.boat]='S';else if(a.ok!==false)g[a.boat]='A';
    if(d&&d.boat!==a.boat)g[d.boat]='D';
@@ -23150,8 +23150,9 @@ window.__BH_V396_FORCE_2BOX__=true;
  function fixFlow(){
    const box=document.getElementById('bhRaceFlowV460');if(!box)return;
    const cards=[...box.querySelectorAll('.bhBoatMove')];if(cards.length!==6)return;
-   const rows=cards.map((c,i)=>({boat:i+1,score:N(c.querySelector('.bhBoatMoveScore')?.textContent)??0,ok:!/ST\s*—/.test(c.textContent)}));
+   const rows=cards.map((c,i)=>({boat:i+1,score:Math.min(99,N(c.querySelector('.bhBoatMoveScore')?.textContent)??0),ok:!/ST\s*—/.test(c.textContent)}));
    const g=grades(rows); window.__BH_RACE_FLOW_ROWS=rows.map(x=>({...x,grade:g[x.boat]}));
+   cards.forEach((c,i)=>{const v=c.querySelector('.bhBoatMoveScore');if(v&&Number(v.textContent)>=100){v.dataset.rawScore='100';v.textContent='99';v.title='100点の表示は全条件の検証後のみ';}});
    cards.forEach((c,i)=>{let e=c.querySelector('.flowEval475');if(!e){e=document.createElement('div');e.className='flowEval475';c.querySelector('.bhBoatMoveTech')?.after(e)}e.className=`flowEval475 ev${g[i+1]}`;e.textContent=`展開 ${g[i+1]}`});
  }
  function run(){fixDiagnosis();fixFlow()}
@@ -23659,9 +23660,11 @@ window.__BH_V396_FORCE_2BOX__=true;
  function score(x){return num(x?.score)}
  function grade(x){return /^[SABCD]$/.test(String(x?.grade||""))?String(x.grade):"—"}
  function ranks(rows){
-   const good=(rows||[]).filter(x=>score(x)!=null);
+   // Grade and rank must share the same ordering; do not show an A-rated boat below C.
+   const order={S:5,A:4,B:3,C:2,D:1};
+   const good=(rows||[]).filter(x=>order[grade(x)]||score(x)!=null);
    if(!good.length)return {};
-   const q=good.slice().sort((x,y)=>score(y)-score(x)||x.boat-y.boat),out={};
+   const q=good.slice().sort((x,y)=>(order[grade(y)]||0)-(order[grade(x)]||0)||(score(y)??-1)-(score(x)??-1)||x.boat-y.boat),out={};
    q.forEach((x,i)=>out[x.boat]=i+1);return out;
  }
  function arrow(base,now){
@@ -23676,7 +23679,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  function ensure(){
    let p=$("bhRankCompare510");if(p)return p;
    p=document.createElement("section");p.id="bhRankCompare510";
-   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間評価を基準にした変化）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="3">艇番</th><th colspan="4">世間評価（オッズ基準）</th><th rowspan="2">6艇評価<br>（能力評価）</th><th rowspan="2">レース展望<br>（展開予測）</th><th colspan="2" rowspan="2">世間からの変化</th></tr><tr><th colspan="2" class="headGroup514">頭評価</th><th colspan="2" class="axisGroup514">軸評価</th></tr><tr><th>順位</th><th>支持率</th><th class="axisStart514">順位</th><th>支持率</th><th>評価</th><th>評価</th><th>6艇</th><th>展望</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
+   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間の軸評価を基準）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="3">艇番</th><th colspan="4">世間評価（オッズ基準）</th><th rowspan="2">6艇評価<br>（能力評価）</th><th rowspan="2">レース展望<br>（展開予測）</th><th colspan="2" rowspan="2">世間の軸順位との差</th></tr><tr><th colspan="2" class="headGroup514">頭評価</th><th colspan="2" class="axisGroup514">軸評価</th></tr><tr><th>順位</th><th>支持率</th><th class="axisStart514">順位</th><th>支持率</th><th>評価</th><th>評価</th><th>6艇</th><th>展望</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
    const outlook=$("outlookPanel");
    if(outlook)outlook.insertAdjacentElement("afterend",p); else document.body.appendChild(p);
    return p;
@@ -23686,9 +23689,9 @@ window.__BH_V396_FORCE_2BOX__=true;
    const {ability,flow}=sourceRows(),ar=ranks(ability),fr=ranks(flow);
    $("rc510Body").innerHTML=[1,2,3,4,5,6].map(b=>{
      const A=pick(ability,b),F=pick(flow,b),as=score(A),fs=score(F);
-     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]} axisStart514">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="grade g${grade(A)}">${grade(A)}</td><td class="grade g${grade(F)}">${grade(F)}</td><td class="changeCell">${arrow(m.rank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.rank[b-1],fr[b])}</td></tr>`;
+     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]} axisStart514">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="grade g${grade(A)}">${grade(A)}</td><td class="grade g${grade(F)}">${grade(F)}</td><td class="changeCell">${arrow(m.axisRank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.axisRank[b-1],fr[b])}</td></tr>`;
    }).join("");
-   $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間順位との差";
+   $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間の軸順位と能力・展開の評価順位との差";
    window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr};
  }
  async function run(){
