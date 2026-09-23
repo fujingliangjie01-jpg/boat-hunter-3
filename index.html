@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V604</title>
+<title>BOAT HUNTER V605</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.604</div>
+  <div class="topVol">Vol.605</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23664,14 +23664,17 @@ window.__BH_V396_FORCE_2BOX__=true;
  function pick(rows,boat){return Array.isArray(rows)?rows.find(x=>Number(x.boat)===boat)||null:null}
  function score(x){return num(x?.score)}
  function grade(x){return /^[SABCD]$/.test(String(x?.grade||""))?String(x.grade):"—"}
+ // V605: One score-based ranking shared by display, learning and ticket selection.
+ // Equal scores share ranks. Missing scores never become zero or last place.
  function ranks(rows){
-   // Grade and rank must share the same ordering; do not show an A-rated boat below C.
-   const order={S:5,A:4,B:3,C:2,D:1};
-   const good=(rows||[]).filter(x=>order[grade(x)]||score(x)!=null);
-   if(!good.length)return {};
-   const q=good.slice().sort((x,y)=>(order[grade(y)]||0)-(order[grade(x)]||0)||(score(y)??-1)-(score(x)??-1)||x.boat-y.boat),out={};
-   q.forEach((x,i)=>out[x.boat]=i+1);return out;
+   const good=(rows||[]).filter(x=>Number.isFinite(Number(x.score))&&x.score!==null&&x.score!=="")
+     .map(x=>({boat:Number(x.boat),score:Number(x.score)}))
+     .filter(x=>x.boat>=1&&x.boat<=6).sort((a,b)=>b.score-a.score||a.boat-b.boat);
+   const out={};let prev=null,rank=0;
+   good.forEach((x,i)=>{if(prev===null||Math.abs(x.score-prev)>0.000001)rank=i+1;out[x.boat]=rank;prev=x.score});
+   return out;
  }
+ window.BH_V605_SCORE_RANKS=ranks;
  function arrow(base,now){
    if(!base||!now)return '<span class="rcSame">—</span>';
    const d=base-now;
@@ -23684,7 +23687,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  function ensure(){
    let p=$("bhRankCompare510");if(p)return p;
    p=document.createElement("section");p.id="bhRankCompare510";
-   p.innerHTML='<div class="rc510Title">各評価の順位比較（世間の軸評価を基準）</div><div class="rc510Scroll"><table><thead><tr><th rowspan="3">艇番</th><th colspan="4">世間評価（オッズ基準）</th><th rowspan="2">6艇評価<br>（能力評価）</th><th rowspan="2">レース展望<br>（展開予測）</th><th colspan="2" rowspan="2">世間の軸順位との差</th></tr><tr><th colspan="2" class="headGroup514">頭評価</th><th colspan="2" class="axisGroup514">軸評価</th></tr><tr><th>順位</th><th>支持率</th><th class="axisStart514">順位</th><th>支持率</th><th>評価</th><th>評価</th><th>6艇</th><th>展望</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
+   p.innerHTML='<div class="rc510Title">各評価の順位比較｜頭と軸を分けて照合</div><div class="rc510Scroll"><table><thead><tr><th>艇</th><th>世間頭</th><th>頭支持</th><th>世間軸</th><th>軸支持</th><th>能力順位</th><th>展開順位</th><th>能力↔世間軸</th><th>展開↔世間軸</th></tr></thead><tbody id="rc510Body"></tbody></table></div><div class="rc510State" id="rc510State">AI解析でオッズ取得後に表示</div>';
    const outlook=$("outlookPanel");
    if(outlook)outlook.insertAdjacentElement("afterend",p); else document.body.appendChild(p);
    return p;
@@ -23694,10 +23697,10 @@ window.__BH_V396_FORCE_2BOX__=true;
    const {ability,flow}=sourceRows(),ar=ranks(ability),fr=ranks(flow);
    $("rc510Body").innerHTML=[1,2,3,4,5,6].map(b=>{
      const A=pick(ability,b),F=pick(flow,b),as=score(A),fs=score(F);
-     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]} axisStart514">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="grade g${grade(A)}">${grade(A)}</td><td class="grade g${grade(F)}">${grade(F)}</td><td class="changeCell">${arrow(m.axisRank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.axisRank[b-1],fr[b])}</td></tr>`;
+     return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]} axisStart514">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="grade g${grade(A)}">${ar[b]?ar[b]+"位 / ":"未取得 / "}${grade(A)}</td><td class="grade g${grade(F)}">${fr[b]?fr[b]+"位 / ":"未取得 / "}${grade(F)}</td><td class="changeCell">${arrow(m.axisRank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.axisRank[b-1],fr[b])}</td></tr>`;
    }).join("");
    $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間の軸順位と能力・展開の評価順位との差";
-   window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr};
+   window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr,updatedAt:Date.now(),raceKey:cacheKey()};
  }
  async function run(){
    ensure();let snap=load();
@@ -24073,11 +24076,13 @@ window.__BH_V396_FORCE_2BOX__=true;
  const read=()=>{try{let x=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(x)?x:[]}catch(_){return []}};
  const write=x=>{localStorage.setItem(DB,JSON.stringify(x));window.__BH_LEARNING_DB_V516=x};
  const key=()=>[$("date")?.value||"",String($("stadium")?.value||"").padStart(2,"0"),$("race")?.value||""].join("_");
- const rank=rows=>[...rows].sort((a,b)=>(+b.score||0)-(+a.score||0)||a.boat-b.boat).reduce((o,x,i)=>(o[x.boat]=i+1,o),{});
+ const rank=rows=>window.BH_V605_SCORE_RANKS?window.BH_V605_SCORE_RANKS(rows):{};
  function current(){
   const m=window.__BH_MARKET_COMPARE510?.market,a=window.__BH_DIAG_ROWS||[],f=window.__BH_RACE_FLOW_ROWS||[];
   if(!m||a.length!==6||f.length!==6)return null;const ar=rank(a),fr=rank(f);
-  return [1,2,3,4,5,6].map(b=>({boat:b,head:m.rank[b-1],axis:m.axisRank[b-1],ability:ar[b],flow:fr[b],abilityMove:m.rank[b-1]-ar[b],flowMove:m.rank[b-1]-fr[b]}));
+  return [1,2,3,4,5,6].map(b=>({boat:b,head:m.rank[b-1],axis:m.axisRank[b-1],ability:ar[b]??null,flow:fr[b]??null,
+    abilityMove:ar[b]!=null?m.axisRank[b-1]-ar[b]:null,flowMove:fr[b]!=null?m.axisRank[b-1]-fr[b]:null,
+    headAbilityMove:ar[b]!=null?m.rank[b-1]-ar[b]:null,headFlowMove:fr[b]!=null?m.rank[b-1]-fr[b]:null}));
  }
  function save(){const q=current();if(!q)return false;const d=read(),i=d.findIndex(x=>x.key===key());if(i<0)return false;d[i].rankComparison={savedAt:Date.now(),boats:q};write(d);return true}
  function stats(){const o={};for(const r of read().filter(x=>x.result?.order?.length===3&&x.rankComparison?.boats?.length===6))for(const x of r.rankComparison.boats){const k=`H${x.head}|X${x.axis}|A${x.ability}|F${x.flow}`,z=o[k]||(o[k]={n:0,p1:0,p2:0,p3:0,out:0});z.n++;const p=r.result.order.indexOf(x.boat);p===0?z.p1++:p===1?z.p2++:p===2?z.p3++:z.out++}return o}
@@ -25205,10 +25210,10 @@ function getPrediction(){
  const diagOf=n=>diag.find(x=>+x.boat===n)||{};
  const headScore=n=>{
    const t=byBoat.get(n)||{},f=flowOf(n),d=diagOf(n);
-   const fg=gradeRank(f.grade)||Math.max(0,6-(+t.flow||6));
-   const dg=gradeRank(d.grade)||Math.max(0,6-(+t.ability||6));
+   const fg=gradeRank(f.grade)||(Number.isFinite(Number(t.flow))?Math.max(0,6-Number(t.flow)):0);
+   const dg=gradeRank(d.grade)||(Number.isFinite(Number(t.ability))?Math.max(0,6-Number(t.ability)):0);
    const fs=Number(f.score??f.best?.score),ds=Number(d.score);
-   const market=7-(+t.head||6);
+   const market=Number.isFinite(Number(t.head))?7-Number(t.head):0;
    return {n,fg,dg,fs:Number.isFinite(fs)?fs:0,ds:Number.isFinite(ds)?ds:0,market,
      score:fg*12+dg*7+market*2+(Number.isFinite(fs)?fs*.14:0)+(Number.isFinite(ds)?ds*.08:0)};
  };
@@ -25297,7 +25302,7 @@ function selected(p,od){
    const main=matched.slice(0,5).map(combo=>({combo,kind:'main'})),used=new Set(main.map(x=>x.combo));
    const tmap=new Map(trend.map(x=>[+x.boat,x]));
    const extra=p.bets.filter(c=>!used.has(c)&&m.has(c)).map(c=>{
-    const third=+c.split('-')[2],t=tmap.get(third),up=t?+t.head-Math.min(+t.ability,+t.flow):0;
+    const third=+c.split('-')[2],t=tmap.get(third),up=t&&t.axis!=null&&t.ability!=null&&t.flow!=null?Number(t.axis)-Math.min(Number(t.ability),Number(t.flow)):0;
     return {combo:c,kind:'extra',up,rank:m.get(c).rank,odds:m.get(c).odds,third};
    });
    const strong=extra.filter(x=>x.up>=2&&x.rank<=30&&+tmap.get(x.third)?.flow<=3).sort((a,b)=>b.up-a.up||b.odds-a.odds);
