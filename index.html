@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V600</title>
+<title>BOAT HUNTER V604</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.603</div>
+  <div class="topVol">Vol.604</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25156,6 +25156,41 @@ function odds(){
  const rows=Array.isArray(raw)?raw:Object.entries(raw).map(([key,value])=>({combo:key,odds:value}));
  return rows.map(x=>{const c=combo(x.combo||x.key||x.bet||x.number||x.kumi||x[0]);const v=Number(x.odds??x.value??x.rate??x[1]);return {combo:c,odds:v}}).filter(x=>x.combo&&Number.isFinite(x.odds)&&x.odds>0).sort((a,b)=>a.odds-b.odds).map((x,i)=>({...x,rank:i+1}));
 }
+// V604: One shared, evidence-gated inside vulnerability assessment.
+function insideRisk(){
+ const flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
+ const pv=window.__HUNTER_PREVIEW||[];
+ const get=n=>Array.isArray(pv)?pv.find(x=>+(x.boat??x.entry_number??x.number)===n)||{}:{};
+ const f=n=>flow.find(x=>+x.boat===n)||{},d=n=>diag.find(x=>+x.boat===n)||{};
+ const one=get(1),two=get(2),f1=f(1),f2=f(2),d1=d(1),d2=d(2);
+ const number=(...v)=>{for(const x of v){if(x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x)))return Number(x)}return NaN};
+ const st1=number(f1.st,f1.currentST,one.fAfterST,one.currentST,one.st);
+ const st2=number(f2.st,f2.currentST,two.fAfterST,two.currentST,two.st);
+ const win1=number(one.nationalWinRate,one.winRate,one.national_rate,one.racer?.winRate,d1.nationalWinRate);
+ const win2=number(two.nationalWinRate,two.winRate,two.national_rate,two.racer?.winRate,d2.nationalWinRate);
+ const courseWin=number(one.courseWinRate,one.course1stRate,one.courseWinPct,d1.courseWinRate);
+ const courseTop3=number(one.course3Rate,one.courseTop3Rate,one.course3rdRate,d1.course3Rate);
+ const klass=String(one.class??one.grade??one.racerClass??d1.class??'');
+ const fCount=number(one.fCount,one.flyingCount,one.f,one.F,one.racer?.fCount);
+ const postF=number(one.fAfterST,one.postFST,one.recentST,f1.fAfterST);
+ const delay=Number.isFinite(st1)&&Number.isFinite(st2)&&st1-st2>=.035;
+ const severeDelay=Number.isFinite(st1)&&Number.isFinite(st2)&&st1-st2>=.065;
+ const weakNational=Number.isFinite(win1)&&win1<4.5;
+ const weakCourse=Number.isFinite(courseWin)&&courseWin<40;
+ const weakTop3=Number.isFinite(courseTop3)&&courseTop3<60;
+ const weakClass=/B1|B2/i.test(klass);
+ const fSlow=Number.isFinite(fCount)&&fCount>0&&Number.isFinite(postF)&&postF>=.17;
+ const fConcern=Number.isFinite(fCount)&&fCount>0&&(fSlow||delay);
+ const superior=Number.isFinite(win1)&&Number.isFinite(win2)&&win2-win1>=1.5 ||
+   (String(d2.grade)==='A'||String(d2.grade)==='S')&&['C','D'].includes(String(d1.grade));
+ const weakness=[weakNational,weakCourse,weakTop3,weakClass].filter(Boolean).length;
+ // F alone is never proof of a delayed start. Need measured ST or post-F ST plus weak record.
+ const headCut=(delay||fSlow)&&weakness>=2&&superior;
+ const fullCut=headCut&&(severeDelay||fSlow&&delay)&&weakness>=3;
+ const sweep=headCut&&(severeDelay||fSlow)&&superior;
+ return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,st1,st2};
+}
+window.BH_V604_INSIDE_RISK=insideRisk;
 function getPrediction(){
  // V603: head selection is derived from the SAME ability/flow grades displayed above.
  // Market ranks are a cross-check, never an independent replacement for race-flow evidence.
@@ -25177,6 +25212,7 @@ function getPrediction(){
    return {n,fg,dg,fs:Number.isFinite(fs)?fs:0,ds:Number.isFinite(ds)?ds:0,market,
      score:fg*12+dg*7+market*2+(Number.isFinite(fs)?fs*.14:0)+(Number.isFinite(ds)?ds*.08:0)};
  };
+ const risk=insideRisk();
  const rated=[1,2,3,4,5,6].map(headScore).sort((a,b)=>b.score-a.score);
  // A/A or S/S boats qualify; B/B only with an evidenced attack or close market support.
  const attacks=window.__BH_V584_THREATS||[];
@@ -25187,8 +25223,10 @@ function getPrediction(){
    return x.fg>=3&&x.dg>=3&&((attack&&+attack.score>=55)||x.market>=5);
  };
  let heads=rated.filter(qualifies).map(x=>x.n);
+ if(risk.headCut)heads=heads.filter(n=>n!==1);
+ if(risk.headCut&&!heads.includes(2)&&risk.superior)heads.unshift(2);
  // A race outlook of C/D cannot become the primary head solely from public odds or old engine.
- if(!heads.length&&rated[0]?.fg>=3)heads=[rated[0].n];
+ if(!heads.length&&rated.find(x=>!risk.headCut||x.n!==1)?.fg>=3)heads=[rated.find(x=>!risk.headCut||x.n!==1).n];
  if(heads.length>=4)return {watch:true,heads,bets:[]};
  if(!heads.length)return {watch:true,heads:[],bets:[]};
  heads=heads.slice(0,3);
@@ -25223,8 +25261,9 @@ function technique(n){
  const course=Number(x.course??pv?.course??n),st=Number(x.st??x.currentST??pv?.st),one=flow.find(z=>Number(z.boat)===1)||{},oneST=Number(one.st??one.currentST);
  const wind=String(document.getElementById('windOutlook')?.textContent||'');
  const tilt=Number(pv?.tilt??x.tilt??0);
+ const risk=insideRisk();
  const fast=Number.isFinite(st)&&st>0&&Number.isFinite(oneST)&&oneST>0&&oneST-st>=.035;
- if(course===2)return fast||tilt>=1.5||(/向かい風/.test(wind)&&Number.isFinite(st)&&st<=.14)?'まくり':'差し';
+ if(course===2)return (risk.headCut&&risk.superior)||fast||tilt>=1.5||(/向かい風/.test(wind)&&Number.isFinite(st)&&st<=.14)?'まくり':'差し';
  if(fast||tilt>=1.5)return 'まくり';
  return course>=3?'まくり差し':'差し';
 }
@@ -25235,7 +25274,7 @@ function selected(p,od){
  const flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
  const head=+p.heads[0],r=trend.find(x=>+x.boat===head);
  // 7点絞りは、世間・能力・展開の一致、突出、環境確認、人気一致の全条件が必要。
- let narrow=p.heads.length===1&&trend.length===6&&flow.length===6&&diag.length===6&&od.length>=110&&r&&
+ let narrow=!(insideRisk().headCut&&head===1)&&p.heads.length===1&&trend.length===6&&flow.length===6&&diag.length===6&&od.length>=110&&r&&
    +r.head===1&&+r.ability===1&&+r.flow===1&&diag.filter(x=>x.grade==='S').length===1&&flow.filter(x=>x.grade==='S').length===1&&diag.some(x=>+x.boat===head&&x.grade==='S')&&flow.some(x=>+x.boat===head&&x.grade==='S');
  if(narrow){
   const d=[...diag].sort((x,y)=>(+y.score||0)-(+x.score||0));
@@ -25289,16 +25328,26 @@ function selected(p,od){
   for(const b of other)for(const c of other)if(b!==c)formations.push(`${h}-${b}-${c}`);
  }
  // 2コースまくりでは1号艇の2着残しを優先しない。外側の追走艇を先に採用。
+ const risk=insideRisk();
  const makuri2=heads.includes(2)&&technique(2)==='まくり';
  const oneST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===1)?.st);
  const twoST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===2)?.st);
- const clearSweep=makuri2&&Number.isFinite(oneST)&&oneST>0&&Number.isFinite(twoST)&&twoST>0&&oneST-twoST>=.05;
+ const clearSweep=makuri2&&(risk.sweep||(Number.isFinite(oneST)&&oneST>0&&Number.isFinite(twoST)&&twoST>0&&oneST-twoST>=.05));
  if(makuri2){
    const outer=[3,4,5,6].filter(n=>!heads.includes(n)).sort((a,b)=>score(b)-score(a));
    for(const a of outer)for(const b of outer)if(a!==b)formations.unshift(`2-${a}-${b}`);
    if(!clearSweep)for(const a of outer)formations.push(`2-${a}-1`);
  }
- const pool=[...new Set([...formations,...p.bets.filter(c=>heads.includes(+c[0]))])].filter(c=>m.has(c));
+ const credible=c=>{
+   const [h,b,z]=c.split('-').map(Number),tech=technique(h);
+   if(risk.headCut&&h===1)return false;
+   if(risk.fullCut&&(b===1||z===1))return false;
+   if(h===2&&tech==='差し'&&!risk.fullCut&&b!==1&&z!==1)return false;
+   if(h===4&&tech==='まくり差し'&&!risk.fullCut&&b!==1&&z!==1)return false;
+   if(h===2&&tech==='まくり'&&risk.sweep&&b===1)return false;
+   return true;
+ };
+ const pool=[...new Set([...formations,...p.bets.filter(c=>heads.includes(+c[0]))])].filter(c=>m.has(c)&&credible(c));
  // 既存のHUNTER候補を優先しつつ、各頭と折り返し形の偏りを防ぐ。
  const chosen=[],used=new Set();
  const add=c=>{if(c&&!used.has(c)&&m.has(c)&&chosen.length<14){used.add(c);chosen.push(c)}};
@@ -25334,6 +25383,7 @@ function render(){
  const result=selected(p,od),m=new Map(od.map(x=>[x.combo,x]));
  if(result.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return;}
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
+ const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':'1号艇 頭切り｜ST遅れ＋能力差');
  if(heads.length>=4){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return}
  for(const t of ['逃げ','差し','まくり'])if(heads.some(h=>technique(h)===t))alerts.push(t+'推奨');
  if((window.__BH_RACE_FLOW_ROWS||[]).some(x=>/まくり差し/.test(String(x.best?.name||x.technique||x.tech||''))))alerts.push('まくり差し巧者存在');
