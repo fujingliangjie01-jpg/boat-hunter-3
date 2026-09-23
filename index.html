@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V597</title>
+<title>BOAT HUNTER V599</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.597</div>
+  <div class="topVol">Vol.599</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23085,7 +23085,20 @@ window.__BH_V396_FORCE_2BOX__=true;
    const z=rows.slice().sort((a,b)=>b.score-a.score||a.boat-b.boat),g={};
    z.forEach(x=>g[x.boat]='B'); if(!z.length)return g;
    const a=z[0],b=z[1],d=z[z.length-1];
-   if(a.ok!==false&&b&&a.score>=72&&a.score-b.score>=12)g[a.boat]='S';else if(a.ok!==false)g[a.boat]='A';
+   // Vol.599: Sは能力・展開の全条件が揃う突出艇のみ。欠損はS不可。
+   const abilityMode=Object.prototype.hasOwnProperty.call(a,'nationalWin');
+   const fullAbility=abilityMode&&a.ok!==false&&a.score>=85&&b&&a.score-b.score>=20
+     &&a.nationalWin!=null&&a.nationalWin>=6.5
+     &&a.national2!=null&&a.national2>=45
+     &&a.courseWin!=null&&a.courseWin>=45
+     &&a.course3!=null&&a.course3>=65
+     &&a.motor2!=null&&a.motor2>=38
+     &&a.motor3!=null&&a.motor3>=48
+     &&a.st!=null&&a.st<=.15&&!a.weakEscape&&a.historyCount>=10;
+   const abilityS=(window.__BH_DIAG_ROWS||[]).find(x=>+x.boat===+a.boat&&x.grade==='S');
+   const fullFlow=!abilityMode&&a.ok!==false&&a.score>=90&&b&&a.score-b.score>=20
+     &&!!abilityS&&!(window.__BH_V584_THREATS||[]).some(x=>+x.boat!==+a.boat&&+x.score>=45);
+   if(fullAbility||fullFlow)g[a.boat]='S';else if(a.ok!==false)g[a.boat]='A';
    if(d&&d.boat!==a.boat)g[d.boat]='D';
    z.slice(1,-1).forEach(x=>{if(x.score<38)g[x.boat]='C'});
    return g;
@@ -23118,7 +23131,7 @@ window.__BH_V396_FORCE_2BOX__=true;
      if(x.st!=null)score+=Math.max(-9,Math.min(9,(.17-x.st)*150));
      const weakEscape=x.boat===1&&courseWin!=null&&Number.isFinite(venue)&&courseWin<venue-10;
      if(weakEscape)score-=Math.min(12,(venue-courseWin)*.55);
-     return {boat:x.boat,score,ok:true,weakEscape,courseWin,course3,nationalWin,national2,motor2,motor3,st:x.st};
+     return {boat:x.boat,score,ok:true,weakEscape,courseWin,course3,nationalWin,national2,motor2,motor3,st:x.st,historyCount:n};
    });
    const g=grades(rows);
    // 最上位でも逃げ率が場平均より10pt以上低い艇はA/Sを認めない。
@@ -24348,6 +24361,45 @@ window.__BH_V396_FORCE_2BOX__=true;
 #bhV571Top{margin-top:9px;border:1px solid #8299a5;background:#294656;color:#fff}
 #bhV571Msg{min-height:17px;margin-top:7px;font-size:11px;color:#9eb8c4}
 </style>
+<style id="bh599BridgeStyle">
+#bh599Bridge{margin:7px 0;padding:9px;background:#122e3d;border:1px solid #4fa6c9;border-radius:12px}
+#bh599Send{width:100%;padding:13px;background:#e4a72b;color:#151b20;border:0;border-radius:10px;font-weight:1000;font-size:16px}
+#bh599State{font-size:12px;color:#c9dce7;margin-top:5px;min-height:15px}
+</style>
+<section id="bh599Bridge"><button id="bh599Send" type="button">出目研究所へデータ転送</button><div id="bh599State">結果確定前でも送信できます</div></section>
+<script id="bh599BridgeJS">(()=>{'use strict';
+const $=id=>document.getElementById(id),txt=id=>$(id)?.innerText?.trim()||'';
+const clean=s=>String(s||'').replace(/\\n/g,' ').replace(/\s+/g,' ').trim().slice(0,1300);
+function collect(){
+ const date=$('date')?.value||'',venue=$('stadium'),stadium=String(venue?.value||''),raceNo=Number($('race')?.value||0);
+ if(!date||!stadium||!raceNo)throw Error('日付・場・レースを選択してください');
+ const name=venue?.selectedOptions?.[0]?.textContent?.trim()||stadium;
+ const cards=[...document.querySelectorAll('.cards .card')].slice(0,6);
+ const boats=Array.from({length:6},(_,i)=>{const c=cards[i];return {number:i+1,name:clean(c?.querySelector('.name')?.textContent),stats:clean(c?.innerText).slice(0,700)}});
+ const comparison=clean(txt('comparePanel'));
+ const outlook=clean(txt('outlookPanel')||txt('raceOutlook')||txt('bhC3Diag'));
+ const before=clean(txt('beforeInfoPanel')||txt('beforeInfo'));
+ const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
+ const odds=clean(txt('oddsList')).slice(0,900);
+ const res=txt('bhV571Out'),way=txt('bhV571Way');
+ return {schemaVersion:4,schema:'HUNTER_LAB_599',source:'BOAT_HUNTER',sourceVersion:599,
+ key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
+ race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
+ developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds},
+ result:/^[1-6]-[1-6]-[1-6]$/.test(res)?{confirmed:true,trifecta:res,order:res.split('-').map(Number),winningMove:way}: {confirmed:false}};
+}
+$('bh599Send').addEventListener('click',()=>{
+ const state=$('bh599State');try{const p=collect();
+ // Small, structured URL payload works even when Safari PWA and browser storage are isolated.
+ const json=JSON.stringify(p),encoded=btoa(unescape(encodeURIComponent(json)));
+ const url=new URL('/deme-lab/',location.origin);url.hash='hunter599='+encodeURIComponent(encoded);
+ if(url.toString().length>16000)throw Error('送信データが大きすぎます。詳細を閉じて再試行してください');
+ try{let a=JSON.parse(localStorage.getItem('BH_DEME_LAB_INBOX_V3')||'[]');if(!Array.isArray(a))a=[];
+ const i=a.findIndex(x=>x.key===p.key);if(i>=0)a[i]=p;else a.push(p);localStorage.setItem('BH_DEME_LAB_INBOX_V3',JSON.stringify(a));}catch(e){console.warn('local backup',e)}
+ state.textContent='研究所を開いています…';location.assign(url.toString());
+ }catch(e){state.textContent='転送できません：'+e.message;console.error(e)}
+});
+})();</script>
 <section id="bhV571Result">
  <h3>結果確認</h3>
  <button id="bhV571Check" type="button">結果を確認</button>
@@ -25128,11 +25180,11 @@ function selected(p,od){
  const head=+p.heads[0],r=trend.find(x=>+x.boat===head);
  // 7点絞りは、世間・能力・展開の一致、突出、環境確認、人気一致の全条件が必要。
  let narrow=p.heads.length===1&&trend.length===6&&flow.length===6&&diag.length===6&&od.length>=110&&r&&
-   +r.head===1&&+r.ability===1&&+r.flow===1;
+   +r.head===1&&+r.ability===1&&+r.flow===1&&diag.filter(x=>x.grade==='S').length===1&&flow.filter(x=>x.grade==='S').length===1&&diag.some(x=>+x.boat===head&&x.grade==='S')&&flow.some(x=>+x.boat===head&&x.grade==='S');
  if(narrow){
   const d=[...diag].sort((x,y)=>(+y.score||0)-(+x.score||0));
   const f=[...flow].sort((x,y)=>(+y.score||0)-(+x.score||0));
-  narrow=+d[0]?.boat===head&&+f[0]?.boat===head&&d[0].score-d[1].score>=15&&f[0].score-f[1].score>=15;
+  narrow=+d[0]?.boat===head&&+f[0]?.boat===head&&d[0].score-d[1].score>=20&&f[0].score-f[1].score>=20&&d[0].grade==='S'&&f[0].grade==='S';
   const attack=window.__BH_V584_THREATS||[];
   if(attack.some(x=>+x.boat!==head&&+x.score>=45))narrow=false;
   const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||{},env=a.environment||{};
