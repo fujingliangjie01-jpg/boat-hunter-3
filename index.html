@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V611</title>
+<title>BOAT HUNTER V618</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.610</div>
+  <div class="topVol">Vol.618</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22459,6 +22459,24 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(course===2)return [{name:'差し',v:win(2)},{name:'まくり',v:win(3)}];
    return [{name:'差し',v:win(2)},{name:'まくり',v:win(3)},{name:'まくり差し',v:win(4)}];
  }
+ // Vol.613: 同一決まり手を持つ出走艇の実績平均との差を起点にする。
+ // 逃げは比較対象が1艇のため、場の1コース勝率を基準にする。基準不明なら中立扱い。
+ function techniqueBaselines(racersNow){
+   const all=[];
+   racersNow.forEach(r=>{
+     const boat=Number(r.entry_number),p=preview(boat),course=Number(p.course??p.entry_course??boat)||boat;
+     courseTech(course,hist(r)).forEach(t=>{if(Number.isFinite(t.v)&&hist(r).length>=5)all.push({name:t.name,v:t.v,course});});
+   });
+   const j=String(Number(document.getElementById('stadium')?.value||0)).padStart(2,'0');
+   const venueEscape=N(window.VENUE_BASE_202606_08?.[j]?.['1']?.p1);
+   const baseline={};
+   ['逃げ','差し','まくり','まくり差し'].forEach(name=>{
+     const a=all.filter(x=>x.name===name).map(x=>x.v);
+     if(name==='逃げ')baseline[name]=venueEscape;
+     else baseline[name]=a.length>=2?avg(a):null;
+   });
+   return baseline;
+ }
  function windBias(name){
    const t=(document.getElementById('windOutlook')?.textContent||'');
    if(/向かい風/.test(t))return /まくり/.test(name)?7:/逃げ/.test(name)?-7:1;
@@ -22483,12 +22501,16 @@ window.__BH_V396_FORCE_2BOX__=true;
  function calc(){
    const racersNow=rr(); if(racersNow.length!==6)return null;
    const sts=racersNow.map(r=>currentST(r,hist(r))).filter(Number.isFinite),meanST=avg(sts)??.17;
+   const baselines=techniqueBaselines(racersNow);
    return racersNow.map(r=>{
      const boat=Number(r.entry_number),h=hist(r),st=currentST(r,h),pv=preview(boat),tilt=N(pv.tilt??pv.tilt_adjustment)??0,fc=Number(r.flying_count??r.f_count??r.F??0)||0;
      const course=Number(pv.course??pv.entry_course??boat)||boat;
      const techs=courseTech(course,h).map(x=>{
        const hasTech=Number.isFinite(x.v);
-       let score=hasTech ? x.v*1.25+28 : null;
+       const baseline=baselines[x.name];
+       const hasBaseline=Number.isFinite(baseline);
+       // 偏差0を50点に置く。実績差1ポイントをスコア1点に換算（確率ではない）。
+       let score=hasTech&&hasBaseline ? 50+(x.v-baseline) : null;
        if(score!=null){
          if(st!=null&&meanST!=null)score+=(meanST-st)*180;
          score+=windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
@@ -22497,11 +22519,11 @@ window.__BH_V396_FORCE_2BOX__=true;
        }
        // 実績不足でも予測は止めない。現在ST、コース、風、チルトから低信頼の暫定スコアを作る。
        if(score==null){
-         const base=course===1?43:course===2?(x.name==='差し'?39:37):(x.name==='まくり差し'?37:x.name==='まくり'?36:33);
-         score=base+(st!=null&&meanST!=null?(meanST-st)*150:0)+windBias(x.name)+tideBias(boat,x.name)+venueBias(boat,x.name);
+         // 比較母集団なしでは高得点を捏造せず、暫定の中立50点から環境補正する。
+         score=50+(st!=null&&meanST!=null?(meanST-st)*150:0)+windBias(x.name)+tideBias(boat,x.name);
          if(tilt>=1.5&&/まくり/.test(x.name))score+=8;
        }
-       return {...x,score:C(score),estimated:!hasTech};
+       return {...x,score:C(score),estimated:!hasTech||!hasBaseline,baseline:hasBaseline?baseline:null};
      }).sort((a,b)=>(b.score??-1)-(a.score??-1));
      let best=techs.find(x=>Number.isFinite(x.score))||{name:'判定待ち',v:null,score:null};
      if(st==null&&best&&Number.isFinite(best.score)&&best.score>49)best={...best,score:49};
@@ -22520,10 +22542,10 @@ window.__BH_V396_FORCE_2BOX__=true;
    let box=document.getElementById('bhRaceFlowV460');
    if(!box){box=document.createElement('section');box.id='bhRaceFlowV460';box.className='bhRaceFlow';const grid=panel.querySelector('.outlookGrid');panel.insertBefore(box,grid||null)}
    const one=rows.find(x=>x.course===1)||rows[0],wall=wall2(rows);
-   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5&&x.st!=null&&Number.isFinite(x.best?.score)).sort((a,b)=>(b.best.score??-1)-(a.best.score??-1))[0];
+   const outside=rows.filter(x=>x.course!==1&&x.dataCount>=5&&x.st!=null&&!x.best?.estimated&&Number.isFinite(x.best?.score)).sort((a,b)=>(b.best.score??-1)-(a.best.score??-1))[0];
    const oneScore=Number.isFinite(one?.best?.score)?one.best.score:0;
    let main='展開材料不足';
-   if(one&&one.dataCount>=5&&oneScore>=55){
+   if(one&&one.dataCount>=5&&!one.best.estimated&&oneScore>=55){
      if(outside&&Number.isFinite(outside.best.score)&&outside.best.score>=62)main=`イン逃げ ＋ ${outside.boat}${outside.best.name}`;
      else if(wall>=58)main='イン逃げ ＋ 2壁';
      else main='イン逃げ中心';
@@ -22534,9 +22556,9 @@ window.__BH_V396_FORCE_2BOX__=true;
    }
    const moves=rows.map(x=>{
      const meta=[];if(x.fc>0)meta.push(`F${x.fc} 現在ST`);if(x.tilt>=1.5)meta.push(`チルト+${x.tilt.toFixed(1)}`);if(!meta.length&&x.st!=null)meta.push(`ST ${x.st.toFixed(3)}`);if(!meta.length)meta.push('ST —');
-     return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${Number.isFinite(x.best.score)?x.best.score.toFixed(0):'—'}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
+     return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${Number.isFinite(x.best.score)?x.best.score.toFixed(0)+(x.best.estimated?'※':''):'—'}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
    }).join('');
-   box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各艇の決まり手 × 現在ST × 場特性 × 風 × 潮位 × チルトを統合</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
+   box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各決まり手の平均からの偏差（50点基準）× 現在ST × 場特性 × 風 × 潮位 × チルト。※は基準不足の暫定値</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
  }
  const old=window.buildRaceOutlook;
  if(typeof old==='function')window.buildRaceOutlook=async function(){const z=await old.apply(this,arguments);render();return z};
@@ -25305,10 +25327,51 @@ function getPrediction(){
  if(!counterHeads.includes(2)&&mainHead!==2&&eligible(2)&&technique(2)==='差し'&&Number.isFinite(st(2))&&st(2)<=.16)counterHeads.push(2);
  for(const h of otherHeads)if(!counterHeads.includes(h))counterHeads.push(h);
  for(const h of counterHeads){if(counter.length>=5)break;build(counter,h,technique(h),5)}
+ // V615: normally supply a distinct second scenario. If the preferred counterattack
+ // produces no valid ticket, try the next qualified head, never an excluded inside head.
+ if(!counter.length){
+  const alternates=[...otherHeads,...[1,2,3,4,5,6].filter(n=>n!==mainHead&&eligible(n))];
+  for(const h of uniq(alternates)){
+   if(counter.length>=5)break;
+   build(counter,h,technique(h),5);
+  }
+ }
+ // If no second scenario passes the same eligibility/follower rules, report it;
+ // do not invent a bet just to fill the section.
  // If main is escape, retain axis reversals within the first scenario.
  if(mainHead===1){const ff=mainFollowers.slice(0,3);for(const b of ff)for(const c of ff)if(b.n!==c.n)add(main,1,b.n,c.n)}
+ // V618: Bet 3 uses head candidate 2, axis candidate 1 and top flow boat.
+ // If candidates overlap, fill the third BOX member with the largest positive
+ // rank improvement versus public AXIS rank (same basis as the comparison table).
+ // A BOX contains every permutation; "third" means the third selected member,
+ // not a fixed finishing position.
+ const rankedHeads=[1,2,3,4,5,6].filter(eligible).sort((a,b)=>headScore(b)-headScore(a));
+ const boxHead=heads[1]??rankedHeads.find(n=>n!==mainHead)??0;
+ const axisOrder=[1,2,3,4,5,6].filter(n=>!(risk.fullCut&&n===1))
+  .sort((a,b)=>axisScore(b)-axisScore(a));
+ const primaryAxis=axisOrder[0]??0;
+ const boxAxis=primaryAxis===boxHead?(axisOrder.find(n=>n!==boxHead)??0):primaryAxis;
+ const topFlow=[...flow].filter(x=>{const n=+x.boat;return n>=1&&n<=6&&!(risk.fullCut&&n===1)})
+  .sort((a,b)=>gr(b.grade)-gr(a.grade)||(Number(b.score)||0)-(Number(a.score)||0))[0];
+ const topFlowBoat=Number(topFlow?.boat)||0;
+ const overlap=primaryAxis===boxHead||topFlowBoat===boxHead||topFlowBoat===boxAxis;
+ const trendRows=window.BH_RANK_TREND_V521?.current?.()||[];
+ const rising=trendRows.filter(r=>{
+   const n=Number(r.boat),marketRank=Number(r.axis);
+   return n>=1&&n<=6&&n!==boxHead&&n!==boxAxis&&
+     !(risk.fullCut&&n===1)&&Number.isFinite(marketRank)&&marketRank>=1&&marketRank<=6&&
+     [r.ability,r.flow].some(v=>v!=null&&Number.isFinite(Number(v))&&Number(v)>=1&&Number(v)<=6);
+ }).map(r=>{
+   const marketRank=Number(r.axis);
+   const improvement=Math.max(...[r.ability,r.flow].filter(v=>v!=null&&Number.isFinite(Number(v))&&Number(v)>=1&&Number(v)<=6).map(v=>marketRank-Number(v)));
+   return {n:Number(r.boat),improvement,flowScore:Number(F(Number(r.boat)).score)||0};
+ }).filter(x=>x.improvement>0).sort((a,b)=>b.improvement-a.improvement||b.flowScore-a.flowScore||a.n-b.n);
+ const boxThird=overlap?(rising[0]?.n??0):topFlowBoat;
+ const boxBoats=[boxHead,boxAxis,boxThird];
+ const box=boxBoats.every(n=>n>=1&&n<=6)&&new Set(boxBoats).size===3&&!(risk.headCut&&boxHead===1)
+  ?boxBoats.flatMap((a,i)=>boxBoats.flatMap((b,j)=>i===j?[]:[`${a}-${b}-${boxBoats[3-i-j]}`])):[];
  const bets=[...main,...counter].slice(0,14);
- return {watch:false,heads,bets,main:main.filter(c=>bets.includes(c)),counter:counter.filter(c=>bets.includes(c)),mainHead,mainTech,rated:heads.map(n=>({n,score:headScore(n)}))};
+ return {watch:false,heads,bets,main:main.filter(c=>bets.includes(c)),counter:counter.filter(c=>bets.includes(c)),box,boxBoats,mainHead,mainTech,rated:heads.map(n=>({n,score:headScore(n)}))};
 }
 // 買い目と展望は同じ予測を使う。実績欠損時もコース・ST・風・チルトで暫定決まり手を選ぶ。
 function technique(n){
@@ -25343,7 +25406,7 @@ function selected(p,od){
  const market=window.__BH_MARKET_COMPARE510?.market||{};
  const supports=market.headSupport||market.headRate||market.headPct||market.headPercent||[];
  const values=(Array.isArray(supports)?supports:Object.values(supports)).map(Number).filter(Number.isFinite).sort((a,b)=>b-a);
- const narrow=p.heads.length===1&&p.counter.length===0&&r&&+r.head===1&&+r.ability===1&&+r.flow===1&&
+ const narrow=p.heads.length===1&&r&&+r.head===1&&+r.ability===1&&+r.flow===1&&
    ds[0]?.grade==='S'&&fs[0]?.grade==='S'&&+ds[0].boat===head&&+fs[0].boat===head&&
    diag.filter(x=>x.grade==='S').length===1&&flow.filter(x=>x.grade==='S').length===1&&
    (+ds[0].score)-(+ds[1].score)>=20&&(+fs[0].score)-(+fs[1].score)>=20&&
@@ -25351,8 +25414,8 @@ function selected(p,od){
    Math.abs(Number(env.windChange))<1&&Math.abs(Number(env.tideChange))<1&&od.length>=110;
  if(narrow){const popular=p.main.filter(c=>m.has(c)&&m.get(c).rank<=15).sort((a,b)=>m.get(a).rank-m.get(b).rank);
   if(popular.length>=7){const main=popular.slice(0,5).map(combo=>({combo,kind:'main'}));
-   const rest=popular.slice(5).map(combo=>({combo,kind:'extra'}));return {narrow:true,items:[...main,...rest.slice(0,2)]};}}
- return {narrow:false,items:[...p.main.map(combo=>({combo,kind:'main'})),...p.counter.map(combo=>({combo,kind:'counter'}))].slice(0,14)};
+   const rest=popular.slice(5).map(combo=>({combo,kind:'extra'}));return {narrow:true,items:[...main,...rest.slice(0,2)],box:p.box||[],boxBoats:p.boxBoats||[]};}}
+ return {narrow:false,items:[...p.main.map(combo=>({combo,kind:'main'})),...p.counter.map(combo=>({combo,kind:'counter'}))].slice(0,14),box:p.box||[],boxBoats:p.boxBoats||[]};
 }
 let rendering=false,previous='';
 function render(){
@@ -25378,12 +25441,20 @@ function render(){
  if(alerts.length){const ab=document.createElement('div');ab.className='bh590Alerts';alerts.forEach(t=>{const x=document.createElement('span');x.className='bh590Alert';x.textContent=t;ab.append(x)});root.append(ab)}
  if(od.length<110){const st=document.createElement('div');st.className='bh590Status';st.textContent='オッズ未取得：倍率・世間人気順位は取得後に反映。';root.append(st)}
  const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],['買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true]];
- for(const [name,items,isExtra] of groups){const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
+ for(const [name,items,isExtra] of groups){if(!items.length){const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目2：採用条件を満たす別展開なし（無理な補充はしません）';root.append(notice);continue;}const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');const o=m.get(x.combo),t=technique(Number(x.combo[0]));
  const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
  for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
- window.__BH_V592_DISPLAY_BETS=result.items.map(x=>x.combo);
+ // V618: bet 3 is a separate six-ticket box section, not part of the 14-ticket limit.
+ if(result.box?.length===6){
+  const title=document.createElement('div');title.className='bh590Section extra';title.textContent='買い目3｜頭候補2・軸候補1・展開1位（重複時：世間比上昇1位）BOX（6点）';root.append(title);
+  const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
+  for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';const o=m.get(c);
+   for(const [cl,val] of [['bh590Combo',c],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']]){
+    const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}grid.append(card)}
+ }else{const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目3：重複時の世間比上昇艇が未取得、または異なる3艇が揃わず生成待ち';root.append(notice)}
+ window.__BH_V592_DISPLAY_BETS=[...new Set([...result.items.map(x=>x.combo),...(result.box||[])])];
  }finally{rendering=false}
 }
 function boot(){const box=$('bhEscapeBet530');if(!box)return false;new MutationObserver(()=>{if(!rendering)queueMicrotask(render)}).observe(box,{childList:true,subtree:true,characterData:true});render();return true}
@@ -25448,5 +25519,89 @@ window.BH_V592_RENDER_BETS=render;
   mark();
   const observer=new MutationObserver(mark);
   observer.observe(tbody,{childList:true,subtree:false});
+})();
+</script>
+
+<!-- Vol.613: sequential action lights; stage advances only after its output exists. -->
+<style id="bhV612SequentialActions">
+#main .controls #get,#main .controls #aiAnalyzeTop503,#main .controls #bh609GoBets{
+ transition:background .2s,border-color .2s,box-shadow .2s,opacity .2s!important;
+}
+#main .controls .bh612Locked,#main .controls .bh612Done{
+ background:linear-gradient(180deg,#28343d,#17232c)!important;
+ border:2px solid #53616b!important;color:#a7b2ba!important;
+ box-shadow:none!important;opacity:.65!important;filter:none!important;
+}
+#main .controls .bh612Ready{
+ background:linear-gradient(180deg,#fff19a,#ffca3d)!important;
+ border:2px solid #fff1a2!important;color:#18212b!important;
+ box-shadow:0 0 0 2px #ffdc5270,0 0 22px #ffce4b8a!important;
+ opacity:1!important;filter:none!important;animation:bh612Glow 1.5s ease-in-out infinite alternate!important;
+}
+#main .controls .bh612Busy{background:linear-gradient(180deg,#194967,#113148)!important;
+ color:#fff!important;opacity:.8!important;animation:none!important;}
+@keyframes bh612Glow{from{box-shadow:0 0 0 1px #ffdc5260,0 0 9px #ffce4b70}to{box-shadow:0 0 0 2px #ffdc52a0,0 0 23px #ffce4bc0}}
+@media(prefers-reduced-motion:reduce){#main .controls .bh612Ready{animation:none!important}}
+</style>
+<script id="bhV612SequentialActionsJS">
+(()=>{'use strict';
+ const $=id=>document.getElementById(id);
+ let stage=0, analyzing=false, timer=0;
+ const buttons=()=>[$('get'),$('aiAnalyzeTop503'),$('bh609GoBets')];
+ const raceKey=()=>[$('stadium')?.value,$('race')?.value].join(':');
+ let key=raceKey();
+ const raceReady=()=>{
+  const b=$('get');
+  return !!b && /取得済|取得完了/.test(b.textContent||'') &&
+   document.querySelectorAll('#cards .card').length>=6;
+ };
+ const buyReady=()=>['bhEscapeBet530','hunterFinalBuyBlock'].some(id=>{
+  const e=$(id);if(!e||e.classList.contains('hide')||!e.getClientRects().length)return false;
+  const t=(e.innerText||e.textContent||'').trim();
+  return /(?:\d[-－]\d[-－]\d|本命)/.test(t)&&!/AI解析後に.*表示/.test(t);
+ });
+ function paint(){
+  const bs=buttons();if(bs.some(x=>!x))return;
+  const next=stage===0?0:stage===1?1:2;
+  bs.forEach((b,i)=>{
+   b.classList.remove('bh612Locked','bh612Ready','bh612Done','bh612Busy');
+   b.classList.add(i<next?'bh612Done':i===next?(analyzing&&i===1?'bh612Busy':'bh612Ready'):'bh612Locked');
+   if(i===0){b.disabled=stage>0||analyzing;b.textContent=stage>0?'① 出走表取得済み':'① 出走表取得';}
+   if(i===1){b.disabled=stage!==1||analyzing;b.innerHTML=stage>=2?'<span>②</span> AI解析済み':analyzing?'<span>②</span> 解析中…':'<span>②</span> AI解析';}
+   if(i===2){b.disabled=stage!==2;b.textContent='③ 買い目に行く ↓';}
+  });
+ }
+ function sync(){
+  if(raceKey()!==key){key=raceKey();stage=0;analyzing=false;}
+  if(stage===0&&raceReady())stage=1;
+  if(stage===1&&analyzing&&buyReady()){stage=2;analyzing=false;}
+  paint();
+ }
+ function schedule(){clearTimeout(timer);timer=setTimeout(sync,120);}
+ function init(){
+  if(buttons().some(x=>!x))return;
+  stage=raceReady()?1:0;
+  // Existing race may have already been analyzed before this script initializes.
+  if(stage===1&&buyReady())stage=2;
+  paint();
+  $('get').addEventListener('click',()=>{if(stage===0){schedule();setTimeout(sync,600);setTimeout(sync,1800);}},true);
+  $('aiAnalyzeTop503').addEventListener('click',()=>{
+   if(stage!==1)return;analyzing=true;paint();
+   [600,1500,3000,5500,8500,12000].forEach(ms=>setTimeout(sync,ms));
+  },false);
+  ['stadium','race'].forEach(id=>$(id)?.addEventListener('change',()=>{
+   key=raceKey();stage=0;analyzing=false;paint();
+  },true));
+  // React to asynchronous card and ticket rendering without polling continuously.
+  ['cards','bhEscapeBet530','hunterFinalBuyBlock'].forEach(id=>{
+   const el=$(id);if(el)new MutationObserver(schedule).observe(el,{childList:true,subtree:true,characterData:true});
+  });
+  const parent=$('bh609GoBets')?.parentElement;
+  if(parent)new MutationObserver(()=>{
+   if(stage===1&&analyzing)schedule();
+  }).observe(parent,{childList:true});
+  setTimeout(sync,400);
+ }
+ document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
 })();
 </script>
