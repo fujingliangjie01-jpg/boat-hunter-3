@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V607</title>
+<title>BOAT HUNTER V608</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.607</div>
+  <div class="topVol">Vol.608</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -16252,7 +16252,7 @@ async function buildHistory(){
  // V585: 選手カードと6艇診断は同じ履歴Mapを参照。キャッシュは解析直後に表示。
  function publishHistoryProgress(stage){
    const partial=new Map([...targets].map(([k,v])=>[k,{...v,rows:v.rows.slice(0,20)}]));
-   historyCache=partial;
+   historyCache=partial;window.__BH_HISTORY20_SHARED=partial;
    try{updateMainHistory(rr,partial)}catch(e){console.warn("V585 card",e)}
    try{bhRenderCompare()}catch(e){console.warn("V585 diagnosis",e)}
    try{bhRenderFAfterCompact(rr,partial)}catch(e){}
@@ -16425,7 +16425,7 @@ async function loadMeetPoints(rr){
 async function preloadHistory(rr){
  try{
   if(!historyLoading)historyLoading=buildHistory();
-  historyCache=await historyLoading;
+  historyCache=await historyLoading;window.__BH_HISTORY20_SHARED=historyCache;
   updateMainHistory(rr,historyCache);
   try{bhRenderFAfterCompact(rr,historyCache)}catch(e){}
   try{bhRenderCompare()}catch(e){}
@@ -25217,67 +25217,91 @@ function insideRisk(){
  return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,fPostSlow,postF,fSweepBoost,st1,st2};
 }
 window.BH_V604_INSIDE_RISK=insideRisk;
+// Vol.608: market-first, technique-first scenario engine. No odds-only ticket filling.
 function getPrediction(){
- // V603: head selection is derived from the SAME ability/flow grades displayed above.
- // Market ranks are a cross-check, never an independent replacement for race-flow evidence.
- let legacy=null;try{legacy=window.BH_ESCAPE_BET_V533?.make?.()}catch(e){console.warn('legacy candidates',e)}
- const trend=window.BH_RANK_TREND_V521?.current?.()||[];
- const flow=window.__BH_RACE_FLOW_ROWS||[];
- const diag=window.__BH_DIAG_ROWS||[];
- if(trend.length!==6||flow.length!==6)return {watch:false,heads:[],bets:[],pending:true};
- const byBoat=new Map(trend.map(t=>[+t.boat,t]));
- const gradeRank=g=>({S:5,A:4,B:3,C:2,D:1}[String(g||'').trim().toUpperCase()]||0);
- const flowOf=n=>flow.find(x=>+x.boat===n)||{};
- const diagOf=n=>diag.find(x=>+x.boat===n)||{};
- const headScore=n=>{
-   const t=byBoat.get(n)||{},f=flowOf(n),d=diagOf(n);
-   const fg=gradeRank(f.grade)||(Number.isFinite(Number(t.flow))?Math.max(0,6-Number(t.flow)):0);
-   const dg=gradeRank(d.grade)||(Number.isFinite(Number(t.ability))?Math.max(0,6-Number(t.ability)):0);
-   const fs=Number(f.score??f.best?.score),ds=Number(d.score);
-   const market=Number.isFinite(Number(t.head))?7-Number(t.head):0;
-   return {n,fg,dg,fs:Number.isFinite(fs)?fs:0,ds:Number.isFinite(ds)?ds:0,market,
-     score:fg*12+dg*7+market*2+(Number.isFinite(fs)?fs*.14:0)+(Number.isFinite(ds)?ds*.08:0)};
- };
- const risk=insideRisk();
- const rated=[1,2,3,4,5,6].map(headScore).sort((a,b)=>b.score-a.score);
- // A/A or S/S boats qualify; B/B only with an evidenced attack or close market support.
- const attacks=window.__BH_V584_THREATS||[];
- const qualifies=x=>{
-   if(x.fg>=4&&x.dg>=3)return true;
-   if(x.fg>=3&&x.dg>=4)return true;
-   const attack=attacks.find(t=>+t.boat===x.n);
-   return x.fg>=3&&x.dg>=3&&((attack&&+attack.score>=55)||x.market>=5);
- };
- let heads=rated.filter(qualifies).map(x=>x.n);
- if(risk.headCut)heads=heads.filter(n=>n!==1);
- if(risk.headCut&&!heads.includes(2)&&risk.superior)heads.unshift(2);
- for(const n of [2,3,4])if(risk.fSweepBoost?.[n]>=2&&!heads.includes(n)){
-   const x=rated.find(r=>r.n===n);
-   if(x&&x.fg>=2&&x.dg>=2&&x.score>=rated[0].score-25)heads.push(n);
+ const trend=window.BH_RANK_TREND_V521?.current?.()||[],flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
+ if(trend.length!==6||flow.length!==6||diag.length!==6)return {watch:false,heads:[],bets:[],pending:true};
+ const T=n=>trend.find(x=>+x.boat===n)||{},F=n=>flow.find(x=>+x.boat===n)||{},D=n=>diag.find(x=>+x.boat===n)||{};
+ const gr=g=>({S:5,A:4,B:3,C:2,D:1}[String(g||'').toUpperCase()]||0);
+ const rank=(n,k)=>Number(T(n)[k])||6, risk=insideRisk();
+ const marketFirst=[1,2,3,4,5,6].sort((a,b)=>rank(a,'head')-rank(b,'head'))[0];
+ const headScore=n=>{const d=D(n),f=F(n);return gr(d.grade)*9+gr(f.grade)*12+(7-rank(n,'head'))*3+(Number(d.score)||0)*.07+(Number(f.score)||0)*.10+(risk.fSweepBoost?.[n]||0)*8};
+ const eligible=n=>!(n===1&&risk.headCut)&&gr(F(n).grade)>=2&&gr(D(n).grade)>=2;
+ let heads=[1,2,3,4,5,6].filter(eligible).sort((a,b)=>headScore(b)-headScore(a));
+ // The public favorite is evaluated first, not automatically selected or rejected.
+ const best=heads.length?headScore(heads[0]):0;
+ heads=heads.filter(n=>headScore(n)>=best-17&&(n===marketFirst||gr(F(n).grade)>=3||risk.fSweepBoost?.[n]>=2));
+ if(eligible(marketFirst)&&!heads.includes(marketFirst)&&headScore(marketFirst)>=best-22)heads.push(marketFirst);
+ heads.sort((a,b)=>headScore(b)-headScore(a));
+ if(heads.length>=4)return {watch:true,heads,bets:[],reason:'頭候補4艇以上'};
+ if(!heads.length)return {watch:true,heads:[],bets:[],reason:'頭候補なし'};
+ const pv=window.__HUNTER_PREVIEW||[];
+ const P=n=>Array.isArray(pv)?pv.find(x=>+(x.boat??x.entry_number??x.number)===n)||{}:{};
+ const hist=n=>{const r=P(n);const reg=Number(r.number??r.racer?.number??r.registration_number);const shared=window.__BH_HISTORY20_SHARED;const live=shared instanceof Map?shared.get(reg)?.rows:null;return [live,r.recent20,r.history20,r.past20,r.history,r.racer?.recent20].find(Array.isArray)||[]};
+ const nval=v=>v==null||v===''?NaN:Number(v);
+ const st=n=>{const f=F(n),p=P(n);return [f.st,f.currentST,p.fAfterST,p.currentST,p.st,p.average_start_timing].map(nval).find(x=>Number.isFinite(x)&&x>0)??NaN};
+ const top3=n=>{const p=P(n);return [p.course3Rate,p.courseTop3Rate,p.course3rdRate].map(nval).find(Number.isFinite)??NaN};
+ const axisScore=n=>{const t=T(n);return (7-rank(n,'axis'))*5+gr(D(n).grade)*5+gr(F(n).grade)*5+(Number(D(n).score)||0)*.05+(Number(F(n).score)||0)*.07};
+ const protectedAxis=trend.find(t=>+t.axis===1&&gr(D(+t.boat).grade)>=3&&gr(F(+t.boat).grade)>=2);
+ const protect=protectedAxis?+protectedAxis.boat:0;
+ // A past-20 sample without recorded winner technique cannot be treated as a failed follow-up.
+ function followEvidence(n,head,tech){const rows=hist(n);const comparable=rows.filter(r=>{
+  const winner=Number(r.winnerCourse??r.winner??r.firstBoat??r.first_boat??r.result?.[0]??r.order?.[0]);
+  const raw=r.tech??r.winningTechnique??r.kimarite??r.technique??r.result?.technique;
+  const method=String(raw);const expected={'逃げ':'1','差し':'2','まくり':'3','まくり差し':'4'}[tech];
+  return winner===head&&(method===expected||method.includes(tech));
+ });
+ const second=comparable.filter(r=>Number(r.place??r.finish??r.rank??r.resultRank)===2).length;
+ return {sample:comparable.length,second};}
+ const mainHead=heads[0],mainTech=technique(mainHead);
+ const otherHeads=heads.slice(1);
+ // First scenario: strongest head's technique and evidence-based followers.
+ function followers(head,tech){const outer=head<6?head+1:0;
+  return [1,2,3,4,5,6].filter(n=>n!==head&&!(risk.fullCut&&n===1)).map(n=>{
+   let s=axisScore(n);const ev=followEvidence(n,head,tech);
+   if(ev.second>0)s+=13;else if(ev.sample>=3)s-=12; // unknown sample: no penalty
+   if(tech==='差し'&&n===1)s+=24;
+   if(tech==='まくり差し'&&n===1)s+=27;
+   if(tech==='まくり'&&n===outer)s+=21;
+   if(tech==='まくり'&&n===1)s-=risk.sweep?45:20;
+   if(protect===n)s+=17;
+   return {n,s,ev};
+  }).sort((a,b)=>b.s-a.s);}
+ const mainFollowers=followers(mainHead,mainTech);
+ // A genuinely crowded axis race is a pass, rather than inventing 14 tickets.
+ const strongAxis=mainFollowers.filter(x=>x.s>=mainFollowers[0].s-3);
+ if(strongAxis.length>=3)return {watch:true,heads,bets:[],reason:'軸候補3艇以上が拮抗'};
+ const main=[],counter=[],seen=new Set();
+ function add(target,h,b,c){if([h,b,c].some(x=>!x)||new Set([h,b,c]).size!==3||risk.headCut&&h===1||risk.fullCut&&(b===1||c===1))return;
+  const combo=`${h}-${b}-${c}`;if(!seen.has(combo)){seen.add(combo);target.push(combo)}}
+ function build(target,head,tech,limit){const ff=followers(head,tech),axes=ff.slice(0,4);
+  // A consistent runner is considered second; rising public-vs-HUNTER runners are considered third.
+  const thirdScore=n=>axisScore(n)+Math.max(0,rank(n,'axis')-Math.min(rank(n,'ability'),rank(n,'flow')))*5+(n===protect?18:0);
+  const options=[];for(const b of axes)for(const c of ff.filter(x=>x.n!==b.n).slice(0,5)){
+   if(tech==='差し'||tech==='まくり差し'){
+    if(head!==1&&!risk.fullCut&&b.n!==1&&c.n!==1)continue;
+   }
+   if(tech==='まくり'&&risk.sweep&&b.n===1)continue;
+   const bonus=(tech==='まくり'&&b.n===head+1?15:0)+(tech==='差し'&&b.n===1?18:0)+(tech==='まくり差し'&&b.n===1?18:0);
+   options.push({b:b.n,c:c.n,s:b.s+thirdScore(c.n)*.55+bonus});
+  }
+  options.sort((x,y)=>y.s-x.s);
+  for(const x of options){if(target.length>=limit)break;add(target,head,x.b,x.c)}
  }
- heads.sort((a,b)=>rated.findIndex(x=>x.n===a)-rated.findIndex(x=>x.n===b));
- // A race outlook of C/D cannot become the primary head solely from public odds or old engine.
- if(!heads.length&&rated.find(x=>!risk.headCut||x.n!==1)?.fg>=3)heads=[rated.find(x=>!risk.headCut||x.n!==1).n];
- if(heads.length>=4)return {watch:true,heads,bets:[]};
- if(!heads.length)return {watch:true,heads:[],bets:[]};
- heads=heads.slice(0,3);
- const axis=[...rated].sort((a,b)=>{
-   const ta=byBoat.get(a.n)||{},tb=byBoat.get(b.n)||{};
-   return ((+ta.axis||6)+(+ta.flow||6))-((+tb.axis||6)+(+tb.flow||6));
- }).map(x=>x.n);
- const bets=[],push=c=>{if(!bets.includes(c)&&new Set(c.split('-')).size===3)bets.push(c)};
- if(heads.length===2){
-   const [a,b]=heads,others=axis.filter(n=>!heads.includes(n));
-   // Interleave both heads and both formations, 14 unique tickets.
-   for(const z of others)for(const h of heads){const other=h===a?b:a;push(`${h}-${other}-${z}`);push(`${h}-${z}-${other}`)}
- }else if(heads.length===3){
-   for(const a of heads)for(const b of heads)for(const c of heads)if(a!==b&&b!==c)push(`${a}-${b}-${c}`);
-   for(const z of axis.filter(n=>!heads.includes(n)))for(const h of heads)for(const other of heads)if(h!==other){push(`${h}-${other}-${z}`);push(`${h}-${z}-${other}`)}
- }else{
-   const h=heads[0],others=axis.filter(n=>n!==h);
-   for(const b of others)for(const c of others)if(b!==c)push(`${h}-${b}-${c}`);
- }
- return {watch:false,heads,bets:bets.slice(0,14),rated};
+ build(main,mainHead,mainTech,9);
+ // Counter scenario: failure of the main attack. First escape, then the boat behind it
+ // with a credible makuri-sashi; only then a qualified #2 sashi.
+ const counterHeads=[];
+ if(mainHead!==1&&!risk.headCut&&gr(F(1).grade)>=3&&gr(D(1).grade)>=3)counterHeads.push(1);
+ const behind=mainHead>=2&&mainHead<=5?mainHead+1:0;
+ if(behind&&!counterHeads.includes(behind)&&eligible(behind)&&technique(behind)==='まくり差し')counterHeads.push(behind);
+ if(!counterHeads.includes(2)&&mainHead!==2&&eligible(2)&&technique(2)==='差し'&&Number.isFinite(st(2))&&st(2)<=.16)counterHeads.push(2);
+ for(const h of otherHeads)if(!counterHeads.includes(h))counterHeads.push(h);
+ for(const h of counterHeads){if(counter.length>=5)break;build(counter,h,technique(h),5)}
+ // If main is escape, retain axis reversals within the first scenario.
+ if(mainHead===1){const ff=mainFollowers.slice(0,3);for(const b of ff)for(const c of ff)if(b.n!==c.n)add(main,1,b.n,c.n)}
+ const bets=[...main,...counter].slice(0,14);
+ return {watch:false,heads,bets,main:main.filter(c=>bets.includes(c)),counter:counter.filter(c=>bets.includes(c)),mainHead,mainTech,rated:heads.map(n=>({n,score:headScore(n)}))};
 }
 // 買い目と展望は同じ予測を使う。実績欠損時もコース・ST・風・チルトで暫定決まり手を選ぶ。
 function technique(n){
@@ -25302,112 +25326,26 @@ function technique(n){
 window.BH_V602_PREDICT_TECHNIQUE=technique;
 function selected(p,od){
  const m=new Map(od.map(x=>[x.combo,x]));
- const trend=window.BH_RANK_TREND_V521?.current?.()||[];
- const flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
- const head=+p.heads[0],r=trend.find(x=>+x.boat===head);
- // 7点絞りは、世間・能力・展開の一致、突出、環境確認、人気一致の全条件が必要。
- let narrow=!(insideRisk().headCut&&head===1)&&p.heads.length===1&&trend.length===6&&flow.length===6&&diag.length===6&&od.length>=110&&r&&
-   +r.head===1&&+r.ability===1&&+r.flow===1&&diag.filter(x=>x.grade==='S').length===1&&flow.filter(x=>x.grade==='S').length===1&&diag.some(x=>+x.boat===head&&x.grade==='S')&&flow.some(x=>+x.boat===head&&x.grade==='S');
- if(narrow){
-  const d=[...diag].sort((x,y)=>(+y.score||0)-(+x.score||0));
-  const f=[...flow].sort((x,y)=>(+y.score||0)-(+x.score||0));
-  narrow=+d[0]?.boat===head&&+f[0]?.boat===head&&d[0].score-d[1].score>=20&&f[0].score-f[1].score>=20&&d[0].grade==='S'&&f[0].grade==='S';
-  const attack=window.__BH_V584_THREATS||[];
-  if(attack.some(x=>+x.boat!==head&&+x.score>=45))narrow=false;
-  const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||{},env=a.environment||{};
-  const wind=Number(env.windSpeed??a.windSpeed);
-  if(env.windSpeed==null&&a.windSpeed==null||!Number.isFinite(wind)||wind>=3||env.windChange==null||env.tideChange==null||Math.abs(Number(env.windChange))>=1||Math.abs(Number(env.tideChange))>=1)narrow=false;
-  const market=window.__BH_MARKET_COMPARE510?.market;
-  const supports=market?.headSupport||market?.headRate||market?.headPct||market?.headPercent;
-  const vals=Array.isArray(supports)?supports:supports?Object.values(supports):[];
-  const sorted=vals.map(Number).filter(Number.isFinite).sort((x,y)=>y-x);
-  if(sorted.length<2||sorted[0]-sorted[1]<10)narrow=false;
- }
- if(narrow){
-  const matched=p.bets.filter(c=>m.has(c)&&m.get(c).rank<=15).sort((a,b)=>m.get(a).rank-m.get(b).rank);
-  if(matched.length>=7){
-   const main=matched.slice(0,5).map(combo=>({combo,kind:'main'})),used=new Set(main.map(x=>x.combo));
-   const tmap=new Map(trend.map(x=>[+x.boat,x]));
-   const extra=p.bets.filter(c=>!used.has(c)&&m.has(c)).map(c=>{
-    const third=+c.split('-')[2],t=tmap.get(third),up=t&&t.axis!=null&&t.ability!=null&&t.flow!=null?Number(t.axis)-Math.min(Number(t.ability),Number(t.flow)):0;
-    return {combo:c,kind:'extra',up,rank:m.get(c).rank,odds:m.get(c).odds,third};
-   });
-   const strong=extra.filter(x=>x.up>=2&&x.rank<=30&&+tmap.get(x.third)?.flow<=3).sort((a,b)=>b.up-a.up||b.odds-a.odds);
-   const picks=strong.slice(0,2);
-   for(const x of extra.sort((a,b)=>a.rank-b.rank))if(picks.length<2&&!picks.some(y=>y.combo===x.combo))picks.push({...x,up:0});
-   if(picks.length===2)return {narrow:true,items:[...main,...picks]};
-  }
- }
- // 通常レースは元エンジンの6点で打ち切らず、候補頭と展開・世間人気から最大14点に再構成。
- // オッズ未取得時は、元エンジンが根拠を持って生成した買い目のみ表示する。
- const candidates=new Set(p.heads.map(Number).filter(x=>x>=1&&x<=6));
- // V603: do not promote an excluded C/D-flow boat from market ranks alone.
- const heads=[...candidates].filter(x=>x>=1&&x<=6);
- if(heads.length>=4)return {watch:true,narrow:false,items:[]};
- if(!heads.length)return {narrow:false,items:p.bets.slice(0,14).map(combo=>({combo,kind:'normal'}))};
- if(od.length<110)return {narrow:false,items:p.bets.slice(0,14).map(combo=>({combo,kind:'normal'}))};
- const tmap=new Map(trend.map(x=>[+x.boat,x]));
- const score=(n)=>{const t=tmap.get(n);return t?((7-(+t.axis||6))*2+(7-(+t.flow||6))*2+(7-(+t.ability||6))):0};
- const outside=[1,2,3,4,5,6].filter(n=>!heads.includes(n)).sort((a,b)=>score(b)-score(a));
- let formations=[];
- if(heads.length===2){
-  for(const z of outside)for(const h of heads){const other=heads.find(x=>x!==h);formations.push(`${h}-${other}-${z}`,`${h}-${z}-${other}`)}
- }else if(heads.length===3){
-  for(const a of heads)for(const b of heads)for(const c of heads)if(a!==b&&b!==c&&a!==c)formations.push(`${a}-${b}-${c}`);
-  for(const z of outside)for(const h of heads)for(const other of heads)if(h!==other)formations.push(`${h}-${other}-${z}`,`${h}-${z}-${other}`);
- }else{
-  const h=heads[0],other=[1,2,3,4,5,6].filter(n=>n!==h).sort((a,b)=>score(b)-score(a));
-  for(const b of other)for(const c of other)if(b!==c)formations.push(`${h}-${b}-${c}`);
- }
- // 2コースまくりでは1号艇の2着残しを優先しない。外側の追走艇を先に採用。
- const risk=insideRisk();
- const makuri2=heads.includes(2)&&technique(2)==='まくり';
- const oneST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===1)?.st);
- const twoST=Number((window.__BH_RACE_FLOW_ROWS||[]).find(x=>+x.boat===2)?.st);
- const clearSweep=makuri2&&(risk.sweep||(Number.isFinite(oneST)&&oneST>0&&Number.isFinite(twoST)&&twoST>0&&oneST-twoST>=.05));
- if(makuri2){
-   const outer=[3,4,5,6].filter(n=>!heads.includes(n)).sort((a,b)=>score(b)-score(a));
-   for(const a of outer)for(const b of outer)if(a!==b)formations.unshift(`2-${a}-${b}`);
-   if(!clearSweep)for(const a of outer)formations.push(`2-${a}-1`);
- }
- const protectedAxis=trend.find(t=>+t.axis===1&&+t.boat!==1&&
-   ['S','A','B'].includes(String(diag.find(d=>+d.boat===+t.boat)?.grade||''))&&
-   ['S','A','B','C'].includes(String(flow.find(f=>+f.boat===+t.boat)?.grade||'')));
- const protectedBoat=protectedAxis?+protectedAxis.boat:null;
- const credible=c=>{
-   const [h,b,z]=c.split('-').map(Number),tech=technique(h);
-   if(risk.headCut&&h===1)return false;
-   if(risk.fullCut&&(b===1||z===1))return false;
-   if(h===2&&tech==='差し'&&!risk.fullCut&&b!==1&&z!==1)return false;
-   if(h===4&&tech==='まくり差し'&&!risk.fullCut&&b!==1&&z!==1)return false;
-   if(h===2&&tech==='まくり'&&risk.sweep&&b===1)return false;
-   return true;
- };
- const pool=[...new Set([...formations,...p.bets.filter(c=>heads.includes(+c[0]))])].filter(c=>m.has(c)&&credible(c));
- // 既存のHUNTER候補を優先しつつ、各頭と折り返し形の偏りを防ぐ。
- const chosen=[],used=new Set();
- const add=c=>{if(c&&!used.has(c)&&m.has(c)&&chosen.length<14){used.add(c);chosen.push(c)}};
- if(heads.length===2){
-  const [a,b]=heads;
-  for(const h of heads){const other=h===a?b:a;
-   const group1=pool.filter(c=>c.startsWith(`${h}-${other}-`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
-   const group2=pool.filter(c=>c.startsWith(`${h}-`)&&c.endsWith(`-${other}`)).sort((x,y)=>m.get(x).rank-m.get(y).rank);
-   if(makuri2&&h===2){group2.filter(c=>!clearSweep||!c.endsWith('-1')).slice(0,3).forEach(add)}else{group1.slice(0,4).forEach(add);group2.slice(0,3).forEach(add);}
-  }
- }else if(heads.length===3){formations.filter(c=>heads.every(h=>c.includes(String(h)))).forEach(add)}
- if(protectedBoat&&!risk.fullCut){
-  for(const h of heads){const c=pool.filter(x=>x.startsWith(h+'-')&&x.endsWith('-'+protectedBoat)).sort((a,b)=>m.get(a).rank-m.get(b).rank)[0];
-   if(c&&chosen.length<14)add(c);
-  }
- }
- for(const c of pool.sort((x,y)=>{
-  const priority=z=>{const a=z.split('-').map(Number);let v=m.get(z).rank+(p.bets.includes(z)?-10:0);
-   if(makuri2&&a[0]===2){if(a[1]===1)v+=clearSweep?1000:100;if(a[1]>=3&&a[2]>=3)v-=18;if(a[2]===1)v+=clearSweep?120:5;}
-   if(protectedBoat&&a[2]===protectedBoat)v-=25;
-   if(a[0]>=2&&a[0]<=4&&technique(a[0])==='まくり'&&risk.fSweepBoost?.[a[0]]>=2&&a[1]>=3&&a[2]>=3)v-=14;
-   return v;};return priority(x)-priority(y);
- }))add(c);
- return {narrow:false,items:chosen.map(combo=>({combo,kind:'normal'}))};
+ const trend=window.BH_RANK_TREND_V521?.current?.()||[],flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
+ const head=p.mainHead,r=trend.find(x=>+x.boat===head);
+ // Seven-ticket narrowing is only permitted for one unique S in BOTH diagnoses,
+ // matching public first place and a 20-point lead in both score tables.
+ const ds=[...diag].sort((a,b)=>(+b.score||0)-(+a.score||0));
+ const fs=[...flow].sort((a,b)=>(+b.score||0)-(+a.score||0));
+ const env=window.__BH_ENVIRONMENT||window.__BH_RACE_ENV||{};
+ const market=window.__BH_MARKET_COMPARE510?.market||{};
+ const supports=market.headSupport||market.headRate||market.headPct||market.headPercent||[];
+ const values=(Array.isArray(supports)?supports:Object.values(supports)).map(Number).filter(Number.isFinite).sort((a,b)=>b-a);
+ const narrow=p.heads.length===1&&p.counter.length===0&&r&&+r.head===1&&+r.ability===1&&+r.flow===1&&
+   ds[0]?.grade==='S'&&fs[0]?.grade==='S'&&+ds[0].boat===head&&+fs[0].boat===head&&
+   diag.filter(x=>x.grade==='S').length===1&&flow.filter(x=>x.grade==='S').length===1&&
+   (+ds[0].score)-(+ds[1].score)>=20&&(+fs[0].score)-(+fs[1].score)>=20&&
+   values.length>=2&&values[0]-values[1]>=10&&env.windChange!=null&&env.tideChange!=null&&
+   Math.abs(Number(env.windChange))<1&&Math.abs(Number(env.tideChange))<1&&od.length>=110;
+ if(narrow){const popular=p.main.filter(c=>m.has(c)&&m.get(c).rank<=15).sort((a,b)=>m.get(a).rank-m.get(b).rank);
+  if(popular.length>=7){const main=popular.slice(0,5).map(combo=>({combo,kind:'main'}));
+   const rest=popular.slice(5).map(combo=>({combo,kind:'extra'}));return {narrow:true,items:[...main,...rest.slice(0,2)]};}}
+ return {narrow:false,items:[...p.main.map(combo=>({combo,kind:'main'})),...p.counter.map(combo=>({combo,kind:'counter'}))].slice(0,14)};
 }
 let rendering=false,previous='';
 function render(){
@@ -25432,11 +25370,11 @@ function render(){
  if((window.__BH_RACE_FLOW_ROWS||[]).some(x=>/まくり差し/.test(String(x.best?.name||x.technique||x.tech||''))))alerts.push('まくり差し巧者存在');
  if(alerts.length){const ab=document.createElement('div');ab.className='bh590Alerts';alerts.forEach(t=>{const x=document.createElement('span');x.className='bh590Alert';x.textContent=t;ab.append(x)});root.append(ab)}
  if(od.length<110){const st=document.createElement('div');st.className='bh590Status';st.textContent='オッズ未取得：倍率・世間人気順位は取得後に反映。';root.append(st)}
- const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['比較分析 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['通常買い目｜最大14点',result.items,false]];
+ const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],['買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true]];
  for(const [name,items,isExtra] of groups){const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');const o=m.get(x.combo),t=technique(Number(x.combo[0]));
  const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
- for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra){const e=document.createElement('div');e.className='bh590Reason';e.textContent=x.up>=2?'3着艇の評価が'+x.up+'順位上昇':'世間人気順で補充';card.append(e)}grid.append(card)}
+ for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
  window.__BH_V592_DISPLAY_BETS=result.items.map(x=>x.combo);
  }finally{rendering=false}
