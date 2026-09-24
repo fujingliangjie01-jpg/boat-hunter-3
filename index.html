@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V608</title>
+<title>BOAT HUNTER V610</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.608</div>
+  <div class="topVol">Vol.610</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15494,6 +15494,7 @@ input,
 <button id="aiAnalyzeTop503" type="button" class="aiAnalyzeTop503" disabled>
   <span>②</span> AI解析
 </button>
+<button id="bh609GoBets" type="button" class="bh609GoBets" aria-label="買い目へ移動">③ 買い目に行く ↓</button>
 <div id="voiceStatus" class="voiceStatus">「桐生 5レース」のように話せます</div>
     <input id="voiceFallbackInput" class="voiceFallbackInput hide"
       type="text" inputmode="text" autocomplete="off" autocapitalize="off"
@@ -25217,7 +25218,7 @@ function insideRisk(){
  return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,fPostSlow,postF,fSweepBoost,st1,st2};
 }
 window.BH_V604_INSIDE_RISK=insideRisk;
-// Vol.608: market-first, technique-first scenario engine. No odds-only ticket filling.
+// Vol.609: market-first, technique-first scenario engine. No odds-only ticket filling.
 function getPrediction(){
  const trend=window.BH_RANK_TREND_V521?.current?.()||[],flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
  if(trend.length!==6||flow.length!==6||diag.length!==6)return {watch:false,heads:[],bets:[],pending:true};
@@ -25383,5 +25384,63 @@ function boot(){const box=$('bhEscapeBet530');if(!box)return false;new MutationO
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(!boot()){const m=new MutationObserver(()=>{if(boot())m.disconnect()});m.observe(document.body,{childList:true,subtree:true})}},{once:true});else if(!boot()){const m=new MutationObserver(()=>{if(boot())m.disconnect()});m.observe(document.body,{childList:true,subtree:true})}
 document.addEventListener('click',e=>{if(e.target.closest('#aiAnalyzeTop503,#aiAnalyze,#bhOutlookRun469,#get,#getOdds120'))[500,1400,3000,5500].forEach(t=>setTimeout(render,t))},true);
 window.BH_V592_RENDER_BETS=render;
+})();
+</script>
+
+<style id="bhV609BetJumpStyle">
+/* Vol.609: top controls -> the currently visible HUNTER tickets */
+#main .controls #bh609GoBets{
+  grid-column:1/-1!important;display:block!important;width:100%!important;
+  min-height:48px!important;margin:2px 0 4px!important;padding:11px 15px!important;
+  border:2px solid #f4c95d!important;border-radius:13px!important;
+  background:linear-gradient(180deg,#ffdf78,#eab640)!important;
+  color:#202018!important;font-size:16px!important;font-weight:1000!important;
+  letter-spacing:.025em!important;box-shadow:0 4px 13px #0004!important;
+}
+#main .controls #bh609GoBets:active{transform:translateY(1px)}
+#bhEscapeBet530,#hunterFinalBuyBlock{scroll-margin-top:12px}
+</style>
+<script id="bhV609BetJumpScript">
+(function(){'use strict';
+  function visible(el){return !!(el && el.isConnected && !el.classList.contains('hide') &&
+    getComputedStyle(el).display!=='none' && el.getClientRects().length);}
+  function jump(){
+    // The Vol.608 scenario tickets render in bhEscapeBet530; do not jump to stale legacy panels.
+    const target=['bhEscapeBet530','hunterFinalBuyBlock'].map(id=>document.getElementById(id)).find(visible);
+    if(target){target.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    const btn=document.getElementById('bh609GoBets');
+    if(btn){const old=btn.textContent;btn.textContent='買い目はAI解析後に表示されます';
+      window.setTimeout(()=>{if(btn.isConnected)btn.textContent=old},2200);}
+  }
+  document.addEventListener('click',function(e){if(e.target.closest('#bh609GoBets'))jump();});
+})();
+</script>
+
+<!-- Vol.610: 6艇診断の平均ST・平均ST順位を他の診断数値と同じ文字サイズに統一 -->
+<style id="bhV610DiagnosisSTTypography">
+#comparePanel #compareRows tr.bhV610STRow td:not(:first-child),
+#comparePanel #compareRows tr.bhV610STRow td:not(:first-child) strong,
+#comparePanel #compareRows tr.bhV610STRow td.compareFST475,
+#comparePanel #compareRows tr.bhV610STRow td.compareFST475 strong {
+  font-size:15px!important;
+  font-weight:900!important;
+  line-height:1.12!important;
+  letter-spacing:0!important;
+}
+/* F後STの色分けは維持し、添字は主数値より小さくする */
+#comparePanel #compareRows tr.bhV610STRow .bhFMark480 {font-size:10px!important;}
+</style>
+<script id="bhV610DiagnosisSTTypographyJS">
+(()=>{'use strict';
+  const tbody=document.getElementById('compareRows');if(!tbody)return;
+  function mark(){
+    for(const tr of tbody.querySelectorAll('tr')){
+      const label=(tr.cells?.[0]?.textContent||'').replace(/\s/g,'');
+      tr.classList.toggle('bhV610STRow',/^(?:F後)?平均ST(?:順位)?$/.test(label));
+    }
+  }
+  mark();
+  const observer=new MutationObserver(mark);
+  observer.observe(tbody,{childList:true,subtree:false});
 })();
 </script>
