@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V610</title>
+<title>BOAT HUNTER V611</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -25176,15 +25176,15 @@ function insideRisk(){
  const f=n=>flow.find(x=>+x.boat===n)||{},d=n=>diag.find(x=>+x.boat===n)||{};
  const one=get(1),two=get(2),f1=f(1),f2=f(2),d1=d(1),d2=d(2);
  const number=(...v)=>{for(const x of v){if(x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x)))return Number(x)}return NaN};
- const st1=number(f1.st,f1.currentST,one.fAfterST,one.currentST,one.st);
- const st2=number(f2.st,f2.currentST,two.fAfterST,two.currentST,two.st);
- const win1=number(one.nationalWinRate,one.winRate,one.national_rate,one.racer?.winRate,d1.nationalWinRate);
- const win2=number(two.nationalWinRate,two.winRate,two.national_rate,two.racer?.winRate,d2.nationalWinRate);
- const courseWin=number(one.courseWinRate,one.course1stRate,one.courseWinPct,d1.courseWinRate);
- const courseTop3=number(one.course3Rate,one.courseTop3Rate,one.course3rdRate,d1.course3Rate);
+ const st1=number(d1.st,f1.st,f1.currentST,one.fAfterST,one.currentST,one.st);
+ const st2=number(d2.st,f2.st,f2.currentST,two.fAfterST,two.currentST,two.st);
+ const win1=number(one.nationalWinRate,one.winRate,one.national_rate,one.racer?.winRate,d1.nationalWinRate,d1.nationalWin);
+ const win2=number(two.nationalWinRate,two.winRate,two.national_rate,two.racer?.winRate,d2.nationalWinRate,d2.nationalWin);
+ const courseWin=number(one.courseWinRate,one.course1stRate,one.courseWinPct,d1.courseWinRate,d1.courseWin);
+ const courseTop3=number(one.course3Rate,one.courseTop3Rate,one.course3rdRate,d1.course3Rate,d1.course3);
  const klass=String(one.class??one.grade??one.racerClass??d1.class??'');
  const fCount=number(one.fCount,one.flyingCount,one.f,one.F,one.racer?.fCount);
- const postF=number(one.fAfterST,one.postFST,one.recentST,f1.fAfterST);
+ const postF=number(one.fAfterST,one.postFST,one.recentST,f1.fAfterST,d1.st);
  const delay=Number.isFinite(st1)&&Number.isFinite(st2)&&st1-st2>=.035;
  const severeDelay=Number.isFinite(st1)&&Number.isFinite(st2)&&st1-st2>=.065;
  const weakNational=Number.isFinite(win1)&&win1<4.5;
@@ -25198,7 +25198,13 @@ function insideRisk(){
    (String(d2.grade)==='A'||String(d2.grade)==='S')&&['C','D'].includes(String(d1.grade));
  const weakness=[weakNational,weakCourse,weakTop3,weakClass].filter(Boolean).length;
  // F alone is never proof of a delayed start. Need measured ST or post-F ST plus weak record.
- const headCut=(delay||fSlow||(fPostSlow&&Number.isFinite(st2)&&postF-st2>=.025))&&weakness>=2&&superior;
+ // V611: diagnosis rows are the authoritative source of the displayed adopted ST and course statistics.
+ // Reject a weak inside head when measured ST is markedly late, its same-course escape rate
+ // is below 40%, and the 2-course boat has a documented A/S vs C/D ability advantage.
+ const diagnosedMismatch=Number.isFinite(st1)&&Number.isFinite(st2)&&st1>=.20&&st1-st2>=.035
+   &&Number.isFinite(courseWin)&&courseWin<40&&['C','D'].includes(String(d1.grade))
+   &&['A','S'].includes(String(d2.grade));
+ const headCut=diagnosedMismatch||((delay||fSlow||(fPostSlow&&Number.isFinite(st2)&&postF-st2>=.025))&&weakness>=2&&superior);
  const fullCut=headCut&&(severeDelay||fSlow&&delay)&&weakness>=3;
  const sweep=headCut&&(severeDelay||fSlow)&&superior;
  // 1号艇F後ST > .15: 2〜4コースのまくり機会を増加。壁と実測ST差で強度を分ける。
@@ -25215,7 +25221,7 @@ function insideRisk(){
    fSweepBoost[n]=wall?strength:Math.max(0,strength-1);
   }
  }
- return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,fConcern,fPostSlow,postF,fSweepBoost,st1,st2};
+ return {headCut,fullCut,sweep,delay,severeDelay,weakness,superior,diagnosedMismatch,courseWin,fConcern,fPostSlow,postF,fSweepBoost,st1,st2};
 }
 window.BH_V604_INSIDE_RISK=insideRisk;
 // Vol.609: market-first, technique-first scenario engine. No odds-only ticket filling.
@@ -25240,7 +25246,7 @@ function getPrediction(){
  const P=n=>Array.isArray(pv)?pv.find(x=>+(x.boat??x.entry_number??x.number)===n)||{}:{};
  const hist=n=>{const r=P(n);const reg=Number(r.number??r.racer?.number??r.registration_number);const shared=window.__BH_HISTORY20_SHARED;const live=shared instanceof Map?shared.get(reg)?.rows:null;return [live,r.recent20,r.history20,r.past20,r.history,r.racer?.recent20].find(Array.isArray)||[]};
  const nval=v=>v==null||v===''?NaN:Number(v);
- const st=n=>{const f=F(n),p=P(n);return [f.st,f.currentST,p.fAfterST,p.currentST,p.st,p.average_start_timing].map(nval).find(x=>Number.isFinite(x)&&x>0)??NaN};
+ const st=n=>{const f=F(n),p=P(n);return [D(n).st,f.st,f.currentST,p.fAfterST,p.currentST,p.st,p.average_start_timing].map(nval).find(x=>Number.isFinite(x)&&x>0)??NaN};
  const top3=n=>{const p=P(n);return [p.course3Rate,p.courseTop3Rate,p.course3rdRate].map(nval).find(Number.isFinite)??NaN};
  const axisScore=n=>{const t=T(n);return (7-rank(n,'axis'))*5+gr(D(n).grade)*5+gr(F(n).grade)*5+(Number(D(n).score)||0)*.05+(Number(F(n).score)||0)*.07};
  const protectedAxis=trend.find(t=>+t.axis===1&&gr(D(+t.boat).grade)>=3&&gr(F(+t.boat).grade)>=2);
@@ -25365,7 +25371,7 @@ function render(){
  const result=selected(p,od),m=new Map(od.map(x=>[x.combo,x]));
  if(result.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return;}
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
- const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':'1号艇 頭切り｜ST遅れ＋能力差');
+ const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
  if(heads.length>=4){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return}
  for(const t of ['逃げ','差し','まくり'])if(heads.some(h=>technique(h)===t))alerts.push(t+'推奨');
  if((window.__BH_RACE_FLOW_ROWS||[]).some(x=>/まくり差し/.test(String(x.best?.name||x.technique||x.tech||''))))alerts.push('まくり差し巧者存在');
