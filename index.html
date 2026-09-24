@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V618</title>
+<title>BOAT HUNTER V619</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.618</div>
+  <div class="topVol">Vol.619</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -22502,7 +22502,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    const racersNow=rr(); if(racersNow.length!==6)return null;
    const sts=racersNow.map(r=>currentST(r,hist(r))).filter(Number.isFinite),meanST=avg(sts)??.17;
    const baselines=techniqueBaselines(racersNow);
-   return racersNow.map(r=>{
+   const rows=racersNow.map(r=>{
      const boat=Number(r.entry_number),h=hist(r),st=currentST(r,h),pv=preview(boat),tilt=N(pv.tilt??pv.tilt_adjustment)??0,fc=Number(r.flying_count??r.f_count??r.F??0)||0;
      const course=Number(pv.course??pv.entry_course??boat)||boat;
      const techs=courseTech(course,h).map(x=>{
@@ -22529,6 +22529,29 @@ window.__BH_V396_FORCE_2BOX__=true;
      if(st==null&&best&&Number.isFinite(best.score)&&best.score>49)best={...best,score:49};
      return {boat,course,r,h,st,tilt,fc,best,techs,dataCount:h.length};
    });
+   // V619: 5/6C makurizashi requires an attack by an INNER boat first.
+   // Do not use the 5/6 boat's own technique score as proof that space opens.
+   const innerAttack=course=>{
+     const x=rows.find(r=>r.course===course);
+     if(!x||x.st==null||x.dataCount<5)return false;
+     const m=x.techs.find(t=>t.name==='まくり');
+     return !!(m&&!m.estimated&&m.score>=55&&Number(m.v)>=10);
+   };
+   for(const x of rows){
+     if(x.course!==5&&x.course!==6)continue;
+     const inner=x.course===5?[3,4]:[3,4,5];
+     const strong=inner.filter(innerAttack);
+     const attackBonus=strong.includes(3)&&strong.includes(4)?15:strong.some(c=>c===3||c===4)?10:strong.length?5:-15;
+     x.techs=x.techs.map(t=>{
+       if(t.name!=='まくり差し')return t;
+       // F2 alone is not proof of slow ST. Penalize only when measured/current ST is slow.
+       const fPenalty=x.fc>=2&&x.st!=null&&x.st>.17?-8:0;
+       const score=C(t.score+attackBonus-fPenalty);
+       return {...t,score,innerAttackBonus:attackBonus,fPenalty,innerAttackCourses:strong};
+     }).sort((a,b)=>b.score-a.score);
+     x.best=x.techs[0];
+   }
+   return rows;
  }
  function wall2(rows){
    const x=rows.find(x=>x.boat===2);if(!x)return 0;
@@ -22558,7 +22581,7 @@ window.__BH_V396_FORCE_2BOX__=true;
      const meta=[];if(x.fc>0)meta.push(`F${x.fc} 現在ST`);if(x.tilt>=1.5)meta.push(`チルト+${x.tilt.toFixed(1)}`);if(!meta.length&&x.st!=null)meta.push(`ST ${x.st.toFixed(3)}`);if(!meta.length)meta.push('ST —');
      return `<div class="bhBoatMove b${x.boat}"><div class="bhBoatMoveNo">${x.boat}号艇</div><div class="bhBoatMoveTech">${x.best.name}</div><div class="bhBoatMoveScore">${Number.isFinite(x.best.score)?x.best.score.toFixed(0)+(x.best.estimated?'※':''):'—'}</div><div class="bhBoatMoveMeta">${meta.join(' / ')||'—'}</div></div>`
    }).join('');
-   box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各決まり手の平均からの偏差（50点基準）× 現在ST × 場特性 × 風 × 潮位 × チルト。※は基準不足の暫定値</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
+   box.innerHTML=`<div class="bhRaceFlowTitle">RACE FLOW</div><div class="bhRaceFlowMain">${main}</div><div class="bhRaceFlowSub">各決まり手の平均偏差（50点基準）＋現在ST・環境補正。5/6Cまくり差しは内側の攻め成立を追加判定。※は暫定値</div><div class="bhBoatMoves">${moves}</div><div class="bhRaceFactors">2コース壁 ${wall.toFixed(0)} / F持ちは通常平均STではなくF後・直近5走を含む現在ST予測を使用</div>`;
  }
  const old=window.buildRaceOutlook;
  if(typeof old==='function')window.buildRaceOutlook=async function(){const z=await old.apply(this,arguments);render();return z};
