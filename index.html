@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.627</div>
+  <div class="topVol">Vol.628</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25202,6 +25202,36 @@ setTimeout(run,1800);
  window.bh586SelectDate=select;
 })();
 </script>
+<script id="bhV628HistoricalVenueFix">
+(()=>{'use strict';
+ const date=document.getElementById('date'),venue=document.getElementById('stadium');
+ if(!date||!venue)return;
+ let generation=0;
+ const labels={1:'桐生',2:'戸田',3:'江戸川',4:'平和島',5:'多摩川',6:'浜名湖',7:'蒲郡',8:'常滑',9:'津',10:'三国',11:'びわこ',12:'住之江',13:'尼崎',14:'鳴門',15:'丸亀',16:'児島',17:'宮島',18:'徳山',19:'下関',20:'若松',21:'芦屋',22:'福岡',23:'唐津',24:'大村'};
+ const held=j=>{const sts=j?.programs?.stadiums||{};return Object.entries(sts).filter(([key,st])=>{
+  const rs=Array.isArray(st?.races)?st.races:Object.values(st?.races||{});
+  return rs.some(r=>{const a=Array.isArray(r?.racers)?r.racers:Object.values(r?.racers||{});return a.filter(Boolean).length===6});
+ }).map(([key,st])=>Number(st?.stadium_number||st?.number||key)).filter(n=>labels[n]).sort((a,b)=>a-b)};
+ async function reload(){
+  const token=++generation,chosen=date.value,ymd=chosen.replaceAll('-','');if(!/^\d{8}$/.test(ymd))return;
+  const previous=Number(venue.value),urls=[`https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v3/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v2/${ymd.slice(0,4)}/${ymd}.json`];
+  let codes=[],lastError;
+  for(const url of urls){try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();codes=held(j);if(codes.length)break;}catch(e){lastError=e}if(token!==generation||date.value!==chosen)return}
+  if(token!==generation||date.value!==chosen)return;
+  if(!codes.length){const st=document.getElementById('status');if(st)st.textContent=`${chosen} の開催場を取得できませんでした${lastError?'（通信・データを確認）':''}`;return}
+  const current=[...venue.options].map(o=>Number(o.value)).filter(Boolean);
+  if(current.length!==codes.length||codes.some(n=>!current.includes(n))){venue.innerHTML=codes.map(n=>`<option value="${n}">${labels[n]}</option>`).join('')}
+  venue.value=String(codes.includes(previous)?previous:codes[0]);
+  venue.dispatchEvent(new Event('change',{bubbles:true}));
+  try{window.setupVenueSelectDisplay?.();window.decorateVenueOptions?.('closed')}catch(e){}
+  const st=document.getElementById('bh586DateStatus');if(st)st.textContent=`${chosen}：${codes.length}場から選択できます`;
+ }
+ date.addEventListener('change',()=>{generation++;setTimeout(reload,300)},false);
+ // Other legacy listeners may overwrite the dropdown; repair after they settle.
+ date.addEventListener('change',()=>setTimeout(reload,1200),false);
+ window.BH_V628_REFRESH_VENUES=reload;
+})();
+</script>
 <style id="bhV592BuyStyle">
 #bhEscapeBet530{background:#555b63!important;border:2px solid #818994!important;border-radius:22px!important;padding:10px!important;color:#fff!important;box-shadow:0 14px 35px #0006!important}
 #bhEscapeBet530>.title{font-size:26px!important;font-weight:1000!important;color:#fff!important;letter-spacing:.06em}
@@ -25656,7 +25686,7 @@ window.BH_V592_RENDER_BETS=render;
  const $=id=>document.getElementById(id);
  let stage=0, analyzing=false, timer=0;
  const buttons=()=>[$('get'),$('aiAnalyzeTop503'),$('bh609GoBets')];
- const raceKey=()=>[$('stadium')?.value,$('race')?.value].join(':');
+ const raceKey=()=>[$('date')?.value,$('stadium')?.value,$('race')?.value].join(':');
  let key=raceKey();
  const raceReady=()=>{
   const b=$('get');
@@ -25666,7 +25696,7 @@ window.BH_V592_RENDER_BETS=render;
  const buyReady=()=>['bhEscapeBet530','hunterFinalBuyBlock'].some(id=>{
   const e=$(id);if(!e||e.classList.contains('hide')||!e.getClientRects().length)return false;
   const t=(e.innerText||e.textContent||'').trim();
-  return /(?:\d[-－]\d[-－]\d|本命)/.test(t)&&!/AI解析後に.*表示/.test(t);
+  return (/(?:\d[-－]\d[-－]\d|本命)/.test(t)||/見\s*[｜|]?\s*推奨|見送り|頭候補を絞れない/.test(t))&&!/AI解析後に.*表示/.test(t);
  });
  function paint(){
   const bs=buttons();if(bs.some(x=>!x))return;
@@ -25697,7 +25727,7 @@ window.BH_V592_RENDER_BETS=render;
    if(stage!==1)return;analyzing=true;paint();
    [600,1500,3000,5500,8500,12000].forEach(ms=>setTimeout(sync,ms));
   },false);
-  ['stadium','race'].forEach(id=>$(id)?.addEventListener('change',()=>{
+  ['date','stadium','race'].forEach(id=>$(id)?.addEventListener('change',()=>{
    key=raceKey();stage=0;analyzing=false;paint();
   },true));
   // React to asynchronous card and ticket rendering without polling continuously.
@@ -25729,7 +25759,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:627,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:628,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
