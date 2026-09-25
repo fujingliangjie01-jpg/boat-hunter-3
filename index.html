@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V622</title>
+<title>BOAT HUNTER V624</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.622</div>
+  <div class="topVol">Vol.624</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23105,7 +23105,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 .evS{color:#ffd54d!important}.evA{color:#ff625b!important}.evB{color:#5bc8ff!important}.evC{color:#bcc7ce!important}.evD{color:#7e8991!important}
 </style>
 <script id="bhV622OuterHeadGuard">
-/* Vol.622: F-risk and exceptional 6-course head qualification. Missing evidence never qualifies. */
+/* Vol.624: F-risk and exceptional 6-course head qualification. Missing evidence never qualifies. */
 (()=>{'use strict';
  const number=(...values)=>{for(const v of values){if(v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v)))return Number(v)}return NaN};
  const preview=()=>Array.isArray(window.__HUNTER_PREVIEW)?window.__HUNTER_PREVIEW:[];
@@ -25456,28 +25456,53 @@ function selected(p,od){
  // second-place runner, retaining the original head and avoiding all duplicates.
  function distinctBet3(items){
   const occupied=new Set(items.map(x=>x.combo));
-  const used=new Set();
-  const output=[];
+  const used=new Set(),output=[];
   const source=Array.isArray(p.box)?p.box:[];
-  const eligibleSecond=[...(p.boxBoats||[]).slice(2),1,2,3,4,5,6];
+  const trend=window.BH_RANK_TREND_V521?.current?.()||[];
+  const flow=window.__BH_RACE_FLOW_ROWS||[];
+  const diag=window.__BH_DIAG_ROWS||[];
+  const T=n=>trend.find(x=>+x.boat===n)||{};
+  const F=n=>flow.find(x=>+x.boat===n)||{};
+  const D=n=>diag.find(x=>+x.boat===n)||{};
+  const grade=g=>({S:5,A:4,B:3,C:2,D:1}[String(g||'').toUpperCase()]||0);
+  const rank=(n,k)=>{const v=Number(T(n)[k]);return v>=1&&v<=6?v:6};
+  // Public axis rank -> improvement in BOTH six-boat and flow diagnosis.
+  // Prefer boats improving in both; use grade/score to resolve equal improvements.
+  const rise=n=>{
+   const publicRank=rank(n,'axis'),a=publicRank-rank(n,'ability'),f=publicRank-rank(n,'flow');
+   return (a>0&&f>0?1000:0)+Math.max(0,a)*35+Math.max(0,f)*35+
+    grade(D(n).grade)*12+grade(F(n).grade)*16+(Number(D(n).score)||0)*.04+(Number(F(n).score)||0)*.06;
+  };
+  const anchors=(p.boxBoats||[]).slice(0,2).map(Number);
+  const thirdOrder=[1,2,3,4,5,6].filter(n=>!anchors.includes(n))
+   .sort((a,b)=>rise(b)-rise(a)||a-b);
+  const secondOrder=[...(p.boxBoats||[]).slice(2),...thirdOrder]
+   .map(Number).filter((n,i,arr)=>arr.indexOf(n)===i);
+  function valid(c){const ns=c.split('-').map(Number);return ns.length===3&&ns.every(n=>n>=1&&n<=6)&&
+   new Set(ns).size===3&&!occupied.has(c)&&!used.has(c)&&
+   window.BH_V622_GUARD?.canHead(ns[0])!==false;}
+  function append(c){if(!valid(c))return false;used.add(c);output.push(c);return true;}
   for(const original of source){
-   const [head,second,third]=original.split('-').map(Number);
-   if(![head,second,third].every(n=>n>=1&&n<=6))continue;
-   const candidates=[original,`${head}-${third}-${second}`];
-   for(const n of eligibleSecond){
-    if(n===head||n===third||n===second)continue;
-    candidates.push(`${head}-${n}-${third}`,`${head}-${third}-${n}`);
+   if(output.length>=6)break;
+   const [h,b,c]=original.split('-').map(Number);
+   if(![h,b,c].every(n=>n>=1&&n<=6))continue;
+   // 1. Original; 2. swap second/third; 3. replace third with a rising boat;
+   // 4. if still short, replace second. Never hide already generated tickets.
+   if(append(original)||append(`${h}-${c}-${b}`))continue;
+   let found=false;
+   for(const n of thirdOrder){if(n===h||n===b)continue;if(append(`${h}-${b}-${n}`)){found=true;break;}}
+   if(found)continue;
+   for(const n of secondOrder){if(n===h||n===c)continue;if(append(`${h}-${n}-${c}`)){found=true;break;}}
+   if(found)continue;
+   // Last resort: use a rising third and then another second-place boat.
+   for(const t of thirdOrder){
+    if(t===h)continue;
+    for(const n of secondOrder){if(n===h||n===t)continue;if(append(`${h}-${n}-${t}`)){found=true;break;}}
+    if(found)break;
    }
-   const chosen=candidates.find(c=>{
-    if(occupied.has(c)||used.has(c))return false;
-    const ns=c.split('-').map(Number);
-    return new Set(ns).size===3;
-   });
-   if(chosen){used.add(chosen);output.push(chosen)}
   }
   return output;
  }
-
  const trend=window.BH_RANK_TREND_V521?.current?.()||[],flow=window.__BH_RACE_FLOW_ROWS||[],diag=window.__BH_DIAG_ROWS||[];
  const head=p.mainHead,r=trend.find(x=>+x.boat===head);
  // Seven-ticket narrowing is only permitted for one unique S in BOTH diagnoses,
@@ -25529,13 +25554,14 @@ function render(){
  for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
  // V620: bet 3 is a separate six-ticket reversal formation, outside the 14-ticket limit.
- if(result.box?.length===6){
-  const title=document.createElement('div');title.className='bh590Section extra';title.textContent='買い目3｜頭候補2・軸候補1 折り返し／2着候補3艇（6点）';root.append(title);
+ if(result.box?.length>0){
+  const title=document.createElement('div');title.className='bh590Section extra';title.textContent='買い目3｜頭候補2・軸候補1 折り返し（'+result.box.length+'点）';root.append(title);
   const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
   for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';const o=m.get(c);
    for(const [cl,val] of [['bh590Combo',c],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']]){
     const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}grid.append(card)}
- }else{const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目3：頭候補2・軸候補1、または2着候補3艇が揃わず生成待ち';root.append(notice)}
+  if(result.box.length<6){const note=document.createElement('div');note.className='bh590Status';note.textContent='買い目3：重複回避後 '+result.box.length+'点を表示（不足分は順位上昇艇の3着付け→2着付けで補充を試行）';root.append(note)}
+ }else{const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目3：有効な頭候補2・軸候補1、または重複しない組み合わせがありません';root.append(notice)}
  window.__BH_V592_DISPLAY_BETS=[...new Set([...result.items.map(x=>x.combo),...(result.box||[])])];
  }finally{rendering=false}
 }
@@ -25685,5 +25711,51 @@ window.BH_V592_RENDER_BETS=render;
   setTimeout(sync,400);
  }
  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
+})();
+</script>
+
+<script id="bh624CycleResultSend">
+(()=>{'use strict';
+// Result-confirmed-only transfer. Existing V571 fetch/judgment remains unchanged.
+const $=id=>document.getElementById(id), INBOX='BH_DEME_LAB_INBOX_V3';
+let pending=false,busy=false;
+const clean=(s,n=1000)=>String(s||'').replace(/\s+/g,' ').trim().slice(0,n);
+function payload(){
+ const date=$('date')?.value,st=$('stadium'),stadium=String(st?.value||'').padStart(2,'0'),raceNo=Number($('race')?.value);
+ const combo=clean($('bhV571Out')?.textContent,12),way=clean($('bhV571Way')?.textContent,35);
+ if(!date||!st?.value||!raceNo||!/^([1-6]-){2}[1-6]$/.test(combo)||new Set(combo.split('-')).size!==3)throw Error('確定結果を確認できません');
+ const payout=Number(($('bhV571Pay')?.textContent||'').replace(/[^\d]/g,''));
+ const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
+ const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
+ const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:624,hunterCycle:true,
+  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
+  race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
+  hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
+  result:{confirmed:true,order:combo.split('-').map(Number),combo,trifecta:combo,technique:way,winningMove:way,payout:Number.isFinite(payout)?payout:0,verdict:clean($('bhV571Judge')?.textContent,25)}};
+}
+function send(){
+ if(busy||!pending)return;
+ const msg=$('bhV571Msg')?.textContent||'';
+ if(/結果はまだ|取得に失敗|取得できません/.test(msg)){pending=false;return}
+ if(!/結果取得完了/.test(msg))return;
+ busy=true;pending=false;
+ try{
+  const p=payload();let arr=[];
+  try{const v=JSON.parse(localStorage.getItem(INBOX)||'[]');if(Array.isArray(v))arr=v}catch(_){}
+  const i=arr.findIndex(x=>x?.key===p.key);if(i>=0)arr[i]=p;else arr.push(p);
+  localStorage.setItem(INBOX,JSON.stringify(arr));
+  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+  const url=new URL('/deme-lab/',location.origin);url.hash='hunter='+encodeURIComponent(b64);
+  if(url.href.length>16000)throw Error('転送データが大きすぎます');
+  $('bhV571Msg').textContent='✓ 結果確定・研究所へ移動中…';
+  location.assign(url.href);
+ }catch(e){busy=false;$('bhV571Msg').textContent='結果取得済み／研究所への転送失敗：'+e.message;console.error('HUNTER CYCLE',e)}
+}
+function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn.dataset.cycle624)return;
+ btn.dataset.cycle624='1';btn.addEventListener('click',()=>{pending=true;busy=false;},true);
+ new MutationObserver(send).observe(msg,{childList:true,subtree:true,characterData:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();
 </script>
