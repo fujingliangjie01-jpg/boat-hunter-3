@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.624</div>
+  <div class="topVol">Vol.625</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -23105,7 +23105,7 @@ window.__BH_V396_FORCE_2BOX__=true;
 .evS{color:#ffd54d!important}.evA{color:#ff625b!important}.evB{color:#5bc8ff!important}.evC{color:#bcc7ce!important}.evD{color:#7e8991!important}
 </style>
 <script id="bhV622OuterHeadGuard">
-/* Vol.624: F-risk and exceptional 6-course head qualification. Missing evidence never qualifies. */
+/* Vol.625: F-risk and exceptional 6-course head qualification. Missing evidence never qualifies. */
 (()=>{'use strict';
  const number=(...values)=>{for(const v of values){if(v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v)))return Number(v)}return NaN};
  const preview=()=>Array.isArray(window.__HUNTER_PREVIEW)?window.__HUNTER_PREVIEW:[];
@@ -25714,7 +25714,7 @@ window.BH_V592_RENDER_BETS=render;
 })();
 </script>
 
-<script id="bh624CycleResultSend">
+<script id="bh625CycleResultSend">
 (()=>{'use strict';
 // Result-confirmed-only transfer. Existing V571 fetch/judgment remains unchanged.
 const $=id=>document.getElementById(id), INBOX='BH_DEME_LAB_INBOX_V3';
@@ -25728,7 +25728,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:624,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:625,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
@@ -25745,15 +25745,15 @@ function send(){
   try{const v=JSON.parse(localStorage.getItem(INBOX)||'[]');if(Array.isArray(v))arr=v}catch(_){}
   const i=arr.findIndex(x=>x?.key===p.key);if(i>=0)arr[i]=p;else arr.push(p);
   localStorage.setItem(INBOX,JSON.stringify(arr));
-  const b64=btoa(unescape(encodeURIComponent(JSON.stringify(p))));
-  const url=new URL('/deme-lab/',location.origin);url.hash='hunter='+encodeURIComponent(b64);
-  if(url.href.length>16000)throw Error('転送データが大きすぎます');
-  $('bhV571Msg').textContent='✓ 結果確定・研究所へ移動中…';
-  location.assign(url.href);
+  // V625: result check stores the record but never navigates away from HUNTER.
+  // The lab receives the record from same-origin storage when opened separately.
+  localStorage.setItem('BH_DEME_LAB_INBOX_V3_PING',String(Date.now()));
+  try{const bc=new BroadcastChannel('BH_HUNTER_CYCLE_V3');bc.postMessage({source:'BOAT_HUNTER',key:p.key,payload:p});bc.close()}catch(_){}
+  $('bhV571Msg').textContent='✓ 結果確定・研究所へ保存済み（画面は移動しません）';
  }catch(e){busy=false;$('bhV571Msg').textContent='結果取得済み／研究所への転送失敗：'+e.message;console.error('HUNTER CYCLE',e)}
 }
-function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn.dataset.cycle624)return;
- btn.dataset.cycle624='1';btn.addEventListener('click',()=>{pending=true;busy=false;},true);
+function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn.dataset.cycle625)return;
+ btn.dataset.cycle625='1';btn.addEventListener('click',()=>{pending=true;busy=false;},true);
  new MutationObserver(send).observe(msg,{childList:true,subtree:true,characterData:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
