@@ -25714,12 +25714,13 @@ window.BH_V592_RENDER_BETS=render;
 })();
 </script>
 
-<script id="bh625CycleResultSend">
+<script id="bh626CycleResultSend">
 (()=>{'use strict';
-// Result-confirmed-only transfer. Existing V571 fetch/judgment remains unchanged.
-const $=id=>document.getElementById(id), INBOX='BH_DEME_LAB_INBOX_V3';
+const $=id=>document.getElementById(id),INBOX='BH_DEME_LAB_INBOX_V3',DB='BH_CYCLE_TRANSFER_V1';
 let pending=false,busy=false;
 const clean=(s,n=1000)=>String(s||'').replace(/\s+/g,' ').trim().slice(0,n);
+function openDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains('inbox'))q.result.createObjectStore('inbox',{keyPath:'key'})};q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})}
+async function persist(p){const db=await openDB();try{await new Promise((resolve,reject)=>{const tx=db.transaction('inbox','readwrite');tx.objectStore('inbox').put(p);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}finally{db.close()}}
 function payload(){
  const date=$('date')?.value,st=$('stadium'),stadium=String(st?.value||'').padStart(2,'0'),raceNo=Number($('race')?.value);
  const combo=clean($('bhV571Out')?.textContent,12),way=clean($('bhV571Way')?.textContent,35);
@@ -25728,32 +25729,28 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:625,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:626,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
   result:{confirmed:true,order:combo.split('-').map(Number),combo,trifecta:combo,technique:way,winningMove:way,payout:Number.isFinite(payout)?payout:0,verdict:clean($('bhV571Judge')?.textContent,25)}};
 }
-function send(){
+async function send(){
  if(busy||!pending)return;
  const msg=$('bhV571Msg')?.textContent||'';
  if(/結果はまだ|取得に失敗|取得できません/.test(msg)){pending=false;return}
  if(!/結果取得完了/.test(msg))return;
  busy=true;pending=false;
  try{
-  const p=payload();let arr=[];
-  try{const v=JSON.parse(localStorage.getItem(INBOX)||'[]');if(Array.isArray(v))arr=v}catch(_){}
-  const i=arr.findIndex(x=>x?.key===p.key);if(i>=0)arr[i]=p;else arr.push(p);
-  localStorage.setItem(INBOX,JSON.stringify(arr));
-  // V625: result check stores the record but never navigates away from HUNTER.
-  // The lab receives the record from same-origin storage when opened separately.
-  localStorage.setItem('BH_DEME_LAB_INBOX_V3_PING',String(Date.now()));
+  const p=payload();await persist(p);
+  // Legacy inbox is optional; never let a full localStorage invalidate the IDB save.
+  try{const arr=JSON.parse(localStorage.getItem(INBOX)||'[]');const list=Array.isArray(arr)?arr:[];const i=list.findIndex(x=>x?.key===p.key);if(i>=0)list[i]=p;else list.push(p);localStorage.setItem(INBOX,JSON.stringify(list))}catch(e){console.info('Legacy inbox skipped:',e?.name)}
   try{const bc=new BroadcastChannel('BH_HUNTER_CYCLE_V3');bc.postMessage({source:'BOAT_HUNTER',key:p.key,payload:p});bc.close()}catch(_){}
-  $('bhV571Msg').textContent='✓ 結果確定・研究所へ保存済み（画面は移動しません）';
- }catch(e){busy=false;$('bhV571Msg').textContent='結果取得済み／研究所への転送失敗：'+e.message;console.error('HUNTER CYCLE',e)}
+  $('bhV571Msg').textContent='✓ 結果確定・研究所へ保存済み（画面移動なし）';
+ }catch(e){$('bhV571Msg').textContent='結果取得済み／研究所への保存失敗：'+e.message;console.error('HUNTER CYCLE',e)}finally{busy=false}
 }
-function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn.dataset.cycle625)return;
- btn.dataset.cycle625='1';btn.addEventListener('click',()=>{pending=true;busy=false;},true);
+function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn.dataset.cycle626)return;
+ btn.dataset.cycle626='1';btn.addEventListener('click',()=>{pending=true;busy=false},true);
  new MutationObserver(send).observe(msg,{childList:true,subtree:true,characterData:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
