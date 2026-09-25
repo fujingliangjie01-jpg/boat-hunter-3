@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.625</div>
+  <div class="topVol">Vol.627</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25729,7 +25729,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:626,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:627,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
