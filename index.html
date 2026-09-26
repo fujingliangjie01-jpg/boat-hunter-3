@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.628</div>
+  <div class="topVol">Vol.630</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24486,17 +24486,17 @@ function collect(){
  if(!date||!stadium||!raceNo)throw Error('日付・場・レースを選択してください');
  const name=venue?.selectedOptions?.[0]?.textContent?.trim()||stadium;
  const cards=[...document.querySelectorAll('.cards .card')].slice(0,6);
- const boats=Array.from({length:6},(_,i)=>{const c=cards[i];return {number:i+1,name:clean(c?.querySelector('.name')?.textContent),stats:clean(c?.innerText).slice(0,700)}});
+ const research=window.BH_V630_COURSE?.snapshot?.()||[];const boats=Array.from({length:6},(_,i)=>{const c=cards[i],r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c?.querySelector('.name')?.textContent),stats:{...(r.stats||{}),rawText:clean(c?.innerText).slice(0,700)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:"nigeRate",差し:"sashiRate",まくり:"makuriRate",まくり差し:"makurizashiRate"})[a.method],a.rate]))}});
  const comparison=clean(txt('comparePanel'));
  const outlook=clean(txt('outlookPanel')||txt('raceOutlook')||txt('bhC3Diag'));
  const before=clean(txt('beforeInfoPanel')||txt('beforeInfo'));
  const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
  const odds=clean(txt('oddsList')).slice(0,900);
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:600,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:630,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
- developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds},
+ developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds,courseAttackResearch:research},
  result:/^[1-6]-[1-6]-[1-6]$/.test(res)?{confirmed:true,trifecta:res,order:res.split('-').map(Number),winningMove:way}: {confirmed:false}};
 }
 $('bh599Send').addEventListener('click',()=>{
@@ -25353,6 +25353,21 @@ function getPrediction(){
  heads=heads.filter(n=>headScore(n)>=best-17&&(n===marketFirst||gr(F(n).grade)>=3||risk.fSweepBoost?.[n]>=2));
  if(eligible(marketFirst)&&!heads.includes(marketFirst)&&headScore(marketFirst)>=best-22)heads.push(marketFirst);
  heads.sort((a,b)=>headScore(b)-headScore(a));
+ // V630: rescue a defensible inside escape when public and six-boat ability agree
+ // and the shared attack diagnosis finds no credible challenger. Flow D alone
+ // must not eliminate an inside escape; measured insideRisk still takes priority.
+ const attackRows=window.__BH_V580_ATTACK;
+ const noClearAttack=Array.isArray(attackRows)&&attackRows.length===5&&
+   attackRows.every(x=>Number.isFinite(Number(x.score))&&Number(x.score)<55);
+ const escapeRescue=!risk.headCut&&noClearAttack&&rank(1,'head')===1&&
+   gr(D(1).grade)>=4&&Number.isFinite(risk.courseWin)&&risk.courseWin>=30&&
+   window.BH_V622_GUARD?.canHead(1)!==false;
+ if(escapeRescue&&!heads.includes(1)){
+   heads.push(1);
+   heads.sort((a,b)=>headScore(b)-headScore(a));
+   // Do not turn a two/three-head race into a pass just by restoring the escape.
+   if(heads.length>3)heads=heads.filter(n=>n===1).concat(heads.filter(n=>n!==1).slice(0,2));
+ }
  if(heads.length>=4)return {watch:true,heads,bets:[],reason:'頭候補4艇以上'};
  if(!heads.length)return {watch:true,heads:[],bets:[],reason:'頭候補なし'};
  const pv=window.__HUNTER_PREVIEW||[];
@@ -25418,6 +25433,30 @@ function getPrediction(){
  if(!counterHeads.includes(2)&&mainHead!==2&&eligible(2)&&technique(2)==='差し'&&Number.isFinite(st(2))&&st(2)<=.16)counterHeads.push(2);
  for(const h of otherHeads)if(!counterHeads.includes(h))counterHeads.push(h);
  for(const h of counterHeads){if(counter.length>=5)break;build(counter,h,technique(h),5)}
+ // V630: When inside escape is rescued, make axis-led escape tickets a
+ // mandatory counter scenario, or the main scenario if #1 is already head.
+ // The second-place axis is chosen from actual axis/ability/flow evidence;
+ // third-place boats follow the same order. Keep the 14-ticket cap.
+ if(escapeRescue){
+   const axisBoats=[2,3,4,5,6].filter(n=>window.BH_V622_GUARD?.canTrustedAxis(n)!==false)
+     .sort((a,b)=>axisScore(b)-axisScore(a)||a-b);
+   const rescue=[];
+   const topAxes=axisBoats.slice(0,2);
+   for(const b of topAxes){
+     const thirds=axisBoats.filter(n=>n!==b).slice(0,3);
+     for(const c of thirds)rescue.push(`1-${b}-${c}`);
+   }
+   const distinct=uniq(rescue).filter(c=>!risk.fullCut);
+   if(mainHead===1){
+     const reordered=uniq([...distinct,...main]);
+     main.splice(0,main.length,...reordered.slice(0,9));
+   }else{
+     // Preserve at least three counter-scenario places for inside escape.
+     const reserved=distinct.filter(c=>!main.includes(c)).slice(0,5);
+     const reordered=uniq([...reserved,...counter]);
+     counter.splice(0,counter.length,...reordered.slice(0,5));
+   }
+ }
  // V615: normally supply a distinct second scenario. If the preferred counterattack
  // produces no valid ticket, try the next qualified head, never an excluded inside head.
  if(!counter.length){
@@ -25758,11 +25797,11 @@ function payload(){
  const payout=Number(($('bhV571Pay')?.textContent||'').replace(/[^\d]/g,''));
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
- const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>({number:i+1,name:clean(c.querySelector('.name')?.textContent,60),stats:clean(c.innerText,450)}));
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:628,hunterCycle:true,
+ const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:630,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
-  hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700)},
+  hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
   result:{confirmed:true,order:combo.split('-').map(Number),combo,trifecta:combo,technique:way,winningMove:way,payout:Number.isFinite(payout)?payout:0,verdict:clean($('bhV571Judge')?.textContent,25)}};
 }
 async function send(){
@@ -25784,5 +25823,27 @@ function bind(){const btn=$('bhV571Check'),msg=$('bhV571Msg');if(!btn||!msg||btn
  new MutationObserver(send).observe(msg,{childList:true,subtree:true,characterData:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();
+</script>
+
+<style id="bhV630CourseStyle">
+#bhV630Course{margin:14px 0 4px;padding:12px;background:#102c3a;border:1px solid #3988a6;border-radius:12px;color:#eef8ff}#bhV630Course h4{margin:0 0 6px;font-size:16px;color:#f8d26b}#bhV630Course .hint{font-size:11px;color:#b4cbd7;margin:0 0 9px}#bhV630Course .lane{border-top:1px solid #315063;padding:8px 0;font-size:12px}#bhV630Course .head{font-weight:800;margin-bottom:4px}#bhV630Course .line{line-height:1.7;color:#d6e7f0}#bhV630Course .unknown{color:#8ca6b6}
+</style>
+<script id="bhV630CourseResearch">
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const methods=['逃げ','差し','まくり','まくり差し'];
+const aliases={逃げ:['escapeRate','nigeRate','escape','nige'],差し:['sashiRate','sashi','insidePassRate'],まくり:['makuriRate','makuri','sweepRate'],'まくり差し':['makurizashiRate','makuriSashiRate','makurizashi','makuriSashi']};
+const get=(o,path)=>path.split('.').reduce((v,k)=>v?.[k],o);
+const pick=(o,paths)=>{for(const p of paths){const v=get(o,p);if(v!==undefined&&v!==null&&v!=='')return v}return null};
+const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(String(v).replace('%',''));return Number.isFinite(n)?n:null};
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function source(){const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};return a.boats||a.racers||window.__BH_BOATS||[]}
+function snapshot(){const arr=source();const cards=[...document.querySelectorAll('.cards .card')].slice(0,6);return Array.from({length:6},(_,i)=>{const b=arr[i]||{},st=b.stats||{},c=i+1,paths=k=>[k,'stats.'+k,'attack.'+k,'attackRates.'+k,'techniques.'+k,'decidingMoves.'+k];const attack=(c===1?methods.slice(0,1):methods.slice(1)).map(method=>({method,rate:num(pick(b,aliases[method].flatMap(paths)))}));const dkeys=c===1?['sashisareRate','makurarareRate','makurizashisareRate']:c===2?['outerAttackRate','outerMakurarareRate']:c===3?['outerAttackRate','outerMakurarareRate']:[];const defense=c<=3?{scope:c===1?'差され・まくられ・まくり差され':c===2?'3〜6Cからの攻撃':'4〜6Cからの攻撃',values:dkeys.map(k=>({key:k,rate:num(pick(b,[k,'defense.'+k]))})).filter(x=>x.rate!==null)}:null;return {course:c,name:String(pick(b,['name','racerName'])||cards[i]?.querySelector('.name')?.textContent||'').trim(),grade:pick(b,['class','racerClass','rank','grade','stats.grade'])||null,nationalWinRate:num(pick(b,['nationalWinRate','nationalRate','national.winRate','winRate','stats.nationalWinRate'])),attack,defense,st:num(pick(b,['currentST','fAfterST','averageST','avgST','st']))}})}
+function show(){const outlook=$('outlookPanel');if(!outlook)return;let box=$('bhV630Course');if(!box){box=document.createElement('section');box.id='bhV630Course'}if(box.parentElement!==outlook||outlook.lastElementChild!==box)outlook.appendChild(box);const bs=snapshot();window.__BH_V630_COURSE_RESEARCH={boats:bs,at:new Date().toISOString()};const fmt=v=>v===null?'未取得':v+'%';box.innerHTML='<h4>コース並び・攻め手調査</h4><p class="hint">研究所への蓄積用｜現在の買い目には反映しません。未取得の数値は推測しません。</p>'+bs.map(b=>'<div class="lane"><div class="head">'+b.course+'C '+escapeHtml(b.name)+(b.course<=3?'｜'+escapeHtml(b.grade||'階級未取得')+'｜全国勝率 '+(b.nationalWinRate??'未取得'):'')+'</div><div class="line">攻撃：'+b.attack.map(a=>escapeHtml(a.method)+' '+fmt(a.rate)).join(' ／ ')+'</div>'+(b.defense?'<div class="line">防御（'+b.defense.scope+'）：'+(b.defense.values.length?b.defense.values.map(v=>escapeHtml(v.key)+' '+fmt(v.rate)).join(' ／ '):'<span class="unknown">数値未取得</span>')+'</div>':'')+'</div>').join('');}
+window.BH_V630_COURSE={snapshot,show};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
+document.addEventListener('click',e=>{if(/AI解析|展望解析|出走表取得/.test(e.target?.textContent||''))setTimeout(show,900)},true);
+window.addEventListener('bh:history20-ready',()=>setTimeout(show,0));
 })();
 </script>
