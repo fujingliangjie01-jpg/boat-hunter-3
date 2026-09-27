@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V636</title>
+<title>BOAT HUNTER V638</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.636</div>
+  <div class="topVol">Vol.638</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24498,7 +24498,7 @@ function collect(){
  const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
  const odds=clean(txt('oddsList')).slice(0,900);
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:636,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:638,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds,courseAttackResearch:research},
@@ -25540,8 +25540,13 @@ function selected(p,od){
  const valid=c=>{const a=combo(c)?.split('-').map(Number);return a?.length===3&&a.every(n=>n>=1&&n<=6)&&new Set(a).size===3&&headOK(a[0])&&!(risk.fullCut&&a.includes(1))};
  const headScore=n=>(7-rank(n,'head'))*35+(7-rank(n,'ability'))*11+(7-rank(n,'flow'))*10+grade(F(n).grade)*4+grade(D(n).grade)*3;
  const axisScore=n=>(7-rank(n,'axis'))*22+(7-rank(n,'flow'))*7+grade(F(n).grade)*5+grade(D(n).grade)*3;
- const orderedHeads=[...new Set([...(p.heads||[]),1,2,3,4,5,6])].filter(headOK).sort((a,b)=>headScore(b)-headScore(a)||a-b);
- const mainHead=headOK(p.mainHead)?p.mainHead:orderedHeads[0];
+ // Use the displayed single-win candidates in their actual order. The other
+ // "head candidates" label has a different ordering and must not override it.
+ const singles=window.BH_DEEP_LEARNING_V535?.headSingles?.()||[];
+ const singleHeads=[...new Set(singles.map(x=>Number(x.boat)))].filter(headOK);
+ const displayedHeads=[...new Set([...singleHeads,...(p.heads||[])].map(Number))].filter(headOK);
+ const orderedHeads=[...displayedHeads,...[1,2,3,4,5,6].filter(n=>headOK(n)&&!displayedHeads.includes(n)).sort((a,b)=>headScore(b)-headScore(a)||a-b)];
+ const mainHead=singleHeads[0]??(headOK(p.mainHead)&&(!displayedHeads.length||displayedHeads.includes(p.mainHead))?p.mainHead:orderedHeads[0]);
  const counterHead=orderedHeads.find(n=>n!==mainHead);
  const candidates=[];
  for(let h=1;h<=6;h++)for(let b=1;b<=6;b++)for(let c=1;c<=6;c++){
@@ -25554,13 +25559,17 @@ function selected(p,od){
  candidates.sort((a,b)=>Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score||a.combo.localeCompare(b.combo));
  const used=new Set(),main=[],counter=[];
  function append(target,c,limit){if(target.length>=limit||!valid(c)||used.has(c))return false;used.add(c);target.push(c);return true}
- for(const c of p.main||[])append(main,c,6);
- for(const c of p.counter||[])append(counter,c,8);
+ for(const c of p.main||[])if(Number(c[0])===mainHead)append(main,c,6);
+ for(const c of p.counter||[])if(Number(c[0])!==mainHead&&(!displayedHeads.length||displayedHeads.includes(Number(c[0]))))append(counter,c,8);
  function fill(target,limit,headOrder){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
- fill(main,6,[mainHead,...orderedHeads.filter(n=>n!==mainHead)].filter(Boolean).slice(0,3));
- fill(counter,8,[counterHead,...orderedHeads.filter(n=>n!==counterHead)].filter(Boolean).slice(0,3));
+ fill(main,6,[mainHead].filter(Boolean));
+ // Reserve one counter ticket for every other displayed head before filling the section.
+ for(const h of displayedHeads.filter(n=>n!==mainHead)){
+  for(const row of candidates){if(row.h===h&&append(counter,row.combo,8))break}
+ }
+ fill(counter,8,(displayedHeads.filter(n=>n!==mainHead).length?displayedHeads.filter(n=>n!==mainHead):orderedHeads.filter(n=>n!==mainHead)).slice(0,3));
  const items=[...main.map(c=>({combo:c,kind:'main'})),...counter.map(c=>({combo:c,kind:'counter'}))];
  const firstTwo=(p.boxBoats||[]).slice(0,2).map(Number);
  let [anchorA,anchorB]=firstTwo;
@@ -25580,13 +25589,12 @@ function selected(p,od){
   const evaluated=new Set(items.flatMap(x=>x.combo.split('-').map(Number)));
   const heads=new Set(items.map(x=>Number(x.combo[0])));
   const supplement=candidates.filter(x=>!used.has(x.combo))
-   .sort((a,b)=>Number(b.eligibleOdds)-Number(a.eligibleOdds)||
-    Number(b.combo.split('-').every(n=>evaluated.has(+n)))-Number(a.combo.split('-').every(n=>evaluated.has(+n)))||
+   .sort((a,b)=>Number(b.combo.split('-').every(n=>evaluated.has(+n)))-Number(a.combo.split('-').every(n=>evaluated.has(+n)))||
     Number(heads.has(b.h))-Number(heads.has(a.h))||
-    b.score-a.score);
+    Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score);
   for(const x of supplement){if(box.length>=6)break;used.add(x.combo);box.push(x.combo)}
  }
- return {narrow:false,items,box,boxMode,boxBoats:p.boxBoats||[]};
+ return {narrow:false,items,box,boxMode,boxBoats:p.boxBoats||[],primaryHead:mainHead};
 }
 const LAB_RULES_KEY='DEME_LAB_ATTACK_RULES_V1';
 function readLabRules(){
@@ -25631,7 +25639,9 @@ function mergeLabBets(result,data,od,p){
  }
  if(!lab.length)return result;
  const labSet=new Set(lab.map(x=>x.combo));
- const buy1=[...lab,...main.filter(x=>!labSet.has(x.combo))].slice(0,6);
+ let buy1=[...lab,...main.filter(x=>!labSet.has(x.combo))].slice(0,6);
+ const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]),leadTicket=main.find(x=>Number(x.combo[0])===lead);
+ if(leadTicket&&!buy1.some(x=>Number(x.combo[0])===lead))buy1=[...buy1.slice(0,5),leadTicket];
  const items=[...buy1,...counter.slice(0,8)];
  return {...result,items,labMeta:meta};
 }
@@ -25842,7 +25852,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:636,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:638,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
