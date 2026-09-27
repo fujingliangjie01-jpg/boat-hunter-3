@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.656</div>
+  <div class="topVol">Vol.657</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -15474,6 +15474,7 @@ input,
       <div class="selectEyebrow">VENUE</div>
       <div class="selectLabel">開催場</div>
       <select id="stadium" aria-label="開催場選択"></select>
+      <button type="button" id="venueRetry657" style="padding:7px 10px;margin-top:7px;font-size:12px;background:#24536c;color:#fff">開催場を再取得</button>
       <div class="venueTimeLegend">
         <span>🌅 モーニング</span><span>🔵 デー</span><span>🌙 ナイター</span>
       </div>
@@ -16004,7 +16005,7 @@ async function bhRefreshHeldVenues(){
   if(!dateEl||!stadiumEl)return;
   const date=String(dateEl.value||today());
   try{
-    const j=await fetch(url(date),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
+    const j=await window.BH_V657_GET_DAY(date);
     const sts=j?.programs?.stadiums||{};
     const held=[];
     for(const [k,v] of Object.entries(sts)){
@@ -16042,7 +16043,7 @@ async function getRace(){
  window.resetHunterPreflight?.();
  $("status").textContent="取得中…";$("cards").innerHTML="";historyCache=null;historyLoading=null;window.__BH_HISTORY20_SHARED=null;
  try{
-  let j=await fetch(url($("date").value),{cache:"no-store"}).then(x=>{if(!x.ok)throw Error(x.status);return x.json()});
+  let j=await window.BH_V657_GET_DAY($("date").value);
   currentRace=raceOf(j,$("stadium").value,$("race").value);
   window.updateRaceFloat?.(true);
   window.syncEntryFromPreview?.();
@@ -16871,7 +16872,7 @@ async function selectNextRaceForVenue(){
   if(!venue||!d)return;
 
   try{
-    const j=await fetch(url(d),{cache:"no-store"}).then(r=>r.ok?r.json():null);
+    const j=await window.BH_V657_GET_DAY(d).catch(()=>null);
     if(token!==__nextRaceSelectToken || !j)return;
 
     const now=Date.now();
@@ -17788,7 +17789,7 @@ $('top').classList.remove('hide');
   window.refreshEntryFromLatest=async function(){
     if(!currentRace)return false;
     try{
-      const j=await fetch(url($("date").value),{cache:"no-store"}).then(r=>r.ok?r.json():null);
+      const j=await window.BH_V657_GET_DAY($("date").value).catch(()=>null);
       const fresh=j&&raceOf(j,$("stadium").value,$("race").value);
       if(fresh){
         currentRace=fresh;
@@ -18518,9 +18519,7 @@ $('top').classList.remove('hide');
     sel.disabled=true;
 
     try{
-      const r=await fetch(apiUrl(),{cache:"no-store"});
-      if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      const j=await r.json();
+      const j=await window.BH_V657_GET_DAY(chosenDate);
       if(generation!==venueLoadGeneration||dateValue()!==chosenDate)return;
 
       const codes=activeVenueCodes(j);
@@ -18548,11 +18547,13 @@ $('top').classList.remove('hide');
       }
     }catch(e){
       if(generation!==venueLoadGeneration||dateValue()!==chosenDate)return;
-      /* 24場フォールバックを廃止。誤った開催場を表示しない。 */
+      /* Keep stale venues out of the new date and offer an explicit retry. */
+      sel.replaceChildren();
+      window.__HUNTER_ACTIVE_VENUES=[];
       const st=document.getElementById("status");
-      if(st&&!/取得中|取得完了/.test(st.textContent||"")){
-        st.textContent="開催場取得失敗：日付を選び直して再取得";
-      }
+      if(st)st.textContent=`開催場取得待ち：${e.message}。「開催場を再取得」を押してください`;
+      const dateStatus=document.getElementById('bh586DateStatus');
+      if(dateStatus)dateStatus.textContent=`${chosenDate} の開催場はまだ取得できません。公開後に再取得してください`;
       console.warn("loadTodayVenues",e);
     }finally{
       /* 重複取得時も最後の処理が必ず操作可能な状態に戻す。 */
@@ -18561,6 +18562,7 @@ $('top').classList.remove('hide');
   }
 
   window.loadTodayVenues=loadTodayVenues;
+  document.getElementById("venueRetry657")?.addEventListener("click",loadTodayVenues);
 
   function ensureTodayDate(){
     const date=document.getElementById("date");
@@ -25192,6 +25194,34 @@ window.BH_V584_RUN=run;
 })();
 </script>
 
+<script id="bh657DayProgramFallback">(()=>{'use strict';
+ const jst=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+ async function getDay(date){
+  const chosen=String(date||'').trim(),ymd=chosen.replaceAll('-','');
+  if(!/^20\d{6}$/.test(ymd))throw Error('日付を確認してください');
+  const year=ymd.slice(0,4),today=chosen===jst(),urls=[
+   ...(today?[['https://boatraceopenapi.github.io/api/v1/today.json',true]]:[]),
+   [`https://boatraceopenapi.github.io/api/v1/${year}/${ymd}.json`,false],
+   [`https://boatraceopenapi.github.io/programs/v3/${year}/${ymd}.json`,false],
+   [`https://boatraceopenapi.github.io/programs/v2/${year}/${ymd}.json`,false]
+  ];
+  let reason='対象日のデータが公開されていません';
+  for(const [url,alias] of urls){try{
+   const response=await fetch(url,{cache:'no-store'});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const json=await response.json(),stadiums=json?.programs?.stadiums;
+   if(!stadiums||typeof stadiums!=='object'||!Object.keys(stadiums).length)throw Error('開催場データなし');
+   if(alias){
+    const dates=Object.values(stadiums).flatMap(st=>Object.values(st?.races||{}))
+     .map(r=>String(r?.date||r?.result?.date||'').slice(0,10)).filter(Boolean);
+    if(!dates.length||!dates.some(d=>d.replaceAll('-','')===ymd))throw Error('当日用データが別の日付');
+   }
+   return json;
+  }catch(e){reason=e.message}}
+  throw Error(`開催場・出走表を取得できません：${reason}`);
+ }
+ window.BH_V657_GET_DAY=getDay;
+})();</script>
 <script id="bh586DateLogic">
 (()=>{
  "use strict";
@@ -25237,11 +25267,10 @@ window.BH_V584_RUN=run;
  }).map(([key,st])=>Number(st?.stadium_number||st?.number||key)).filter(n=>labels[n]).sort((a,b)=>a-b)};
  async function reload(){
   const token=++generation,chosen=date.value,ymd=chosen.replaceAll('-','');if(!/^\d{8}$/.test(ymd))return;
-  const urls=[`https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v3/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v2/${ymd.slice(0,4)}/${ymd}.json`];
   let codes=[],lastError;
-  for(const url of urls){try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();codes=held(j);if(codes.length)break;}catch(e){lastError=e}if(token!==generation||date.value!==chosen)return}
+  try{codes=held(await window.BH_V657_GET_DAY(chosen))}catch(e){lastError=e}
   if(token!==generation||date.value!==chosen)return;
-  if(!codes.length){const st=document.getElementById('status');if(st)st.textContent=`${chosen} の開催場を取得できませんでした${lastError?'（通信・データを確認）':''}`;return}
+  if(!codes.length){const st=document.getElementById('status');if(st&&!String(st.textContent||'').includes('開催場取得待ち'))st.textContent=`${chosen} の開催場を取得できませんでした${lastError?'（通信・データを確認）':''}`;return}
   // 取得中に利用者が選び直した場を優先する。
   const previous=Number(venue.value);
   const current=[...venue.options].map(o=>Number(o.value)).filter(Boolean);
