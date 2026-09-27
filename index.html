@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V624</title>
+<title>BOAT HUNTER V632</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.630</div>
+  <div class="topVol">Vol.632</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18507,17 +18507,20 @@ $('top').classList.remove('hide');
     decorateVenueOptions("closed");
   }
 
+  let venueLoadGeneration=0;
   async function loadTodayVenues(){
     const sel=document.getElementById("stadium");
     if(!sel)return;
 
-    const oldDisabled=sel.disabled;
+    const generation=++venueLoadGeneration;
+    const chosenDate=dateValue();
     sel.disabled=true;
 
     try{
       const r=await fetch(apiUrl(),{cache:"no-store"});
       if(!r.ok)throw new Error(`HTTP ${r.status}`);
       const j=await r.json();
+      if(generation!==venueLoadGeneration||dateValue()!==chosenDate)return;
 
       const codes=activeVenueCodes(j);
       if(!codes.length)throw new Error("開催場0件");
@@ -18543,6 +18546,7 @@ $('top').classList.remove('hide');
         st.textContent=`開催 ${codes.length}場 / ${mode}：${codes.map(c=>ALL_VENUES[c]).join(" / ")}`;
       }
     }catch(e){
+      if(generation!==venueLoadGeneration||dateValue()!==chosenDate)return;
       /* 24場フォールバックを廃止。誤った開催場を表示しない。 */
       const st=document.getElementById("status");
       if(st&&!/取得中|取得完了/.test(st.textContent||"")){
@@ -18550,7 +18554,8 @@ $('top').classList.remove('hide');
       }
       console.warn("loadTodayVenues",e);
     }finally{
-      sel.disabled=oldDisabled;
+      /* 重複取得時も最後の処理が必ず操作可能な状態に戻す。 */
+      if(generation===venueLoadGeneration)sel.disabled=false;
     }
   }
 
@@ -24493,7 +24498,7 @@ function collect(){
  const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
  const odds=clean(txt('oddsList')).slice(0,900);
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:630,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:632,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds,courseAttackResearch:research},
@@ -25214,11 +25219,13 @@ setTimeout(run,1800);
  }).map(([key,st])=>Number(st?.stadium_number||st?.number||key)).filter(n=>labels[n]).sort((a,b)=>a-b)};
  async function reload(){
   const token=++generation,chosen=date.value,ymd=chosen.replaceAll('-','');if(!/^\d{8}$/.test(ymd))return;
-  const previous=Number(venue.value),urls=[`https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v3/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v2/${ymd.slice(0,4)}/${ymd}.json`];
+  const urls=[`https://boatraceopenapi.github.io/api/v1/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v3/${ymd.slice(0,4)}/${ymd}.json`,`https://boatraceopenapi.github.io/programs/v2/${ymd.slice(0,4)}/${ymd}.json`];
   let codes=[],lastError;
   for(const url of urls){try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();codes=held(j);if(codes.length)break;}catch(e){lastError=e}if(token!==generation||date.value!==chosen)return}
   if(token!==generation||date.value!==chosen)return;
   if(!codes.length){const st=document.getElementById('status');if(st)st.textContent=`${chosen} の開催場を取得できませんでした${lastError?'（通信・データを確認）':''}`;return}
+  // 取得中に利用者が選び直した場を優先する。
+  const previous=Number(venue.value);
   const current=[...venue.options].map(o=>Number(o.value)).filter(Boolean);
   if(current.length!==codes.length||codes.some(n=>!current.includes(n))){venue.innerHTML=codes.map(n=>`<option value="${n}">${labels[n]}</option>`).join('')}
   venue.value=String(codes.includes(previous)?previous:codes[0]);
@@ -25593,11 +25600,54 @@ function selected(p,od){
    const rest=popular.slice(5).map(combo=>({combo,kind:'extra'}));return {narrow:true,items:[...main,...rest.slice(0,2)],box:distinctBet3([...main,...rest.slice(0,2)]),boxBoats:p.boxBoats||[]};}}
  return {narrow:false,items:[...p.main.map(combo=>({combo,kind:'main'})),...p.counter.map(combo=>({combo,kind:'counter'}))].slice(0,14),box:distinctBet3([...p.main.map(combo=>({combo,kind:'main'})),...p.counter.map(combo=>({combo,kind:'counter'}))].slice(0,14)),boxBoats:p.boxBoats||[]};
 }
+const LAB_RULES_KEY='DEME_LAB_ATTACK_RULES_V1';
+function readLabRules(){
+ try{
+  if(location.hash.startsWith('#labRules=')){
+   const encoded=decodeURIComponent(location.hash.slice(10));
+   const data=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+   if(data?.schema==='DEME_LAB_ATTACK_RULES_V1'&&Array.isArray(data.rules))localStorage.setItem(LAB_RULES_KEY,JSON.stringify(data));
+   history.replaceState(null,'',location.pathname+location.search);
+  }
+  const data=JSON.parse(localStorage.getItem(LAB_RULES_KEY)||'null');
+  return data?.schema==='DEME_LAB_ATTACK_RULES_V1'&&Array.isArray(data.rules)?data:null;
+ }catch(e){console.warn('研究所候補の受信失敗',e);return null}
+}
+function currentLabPattern(){
+ const rows=window.BH_V630_COURSE?.snapshot?.();if(!Array.isArray(rows)||rows.length!==6)return null;
+ const escape=rows[0].attack?.find(a=>a.method==='逃げ')?.rate;
+ const band=escape==null?'不明':escape>=55?'高（55%以上）':escape>=40?'中（40〜54%）':'低（40%未満）';
+ const outer=rows.slice(1).flatMap((row,i)=>(row.attack||[]).filter(a=>Number.isFinite(a.rate)).map(a=>({course:i+2,method:a.method,rate:a.rate}))).sort((a,b)=>b.rate-a.rate);
+ if(!outer.length||outer[0].rate<=0||outer[1]&&outer[0].rate-outer[1].rate<2)return null;
+ return `${band}|${outer[0].course}C${outer[0].method}`;
+}
+function mergeLabBets(result,data,od){
+ if(result.narrow||!data?.rules?.length)return result;
+ const key=currentLabPattern();if(!key)return result;
+ const venue=String(Number($('stadium')?.value||0)).padStart(2,'0');
+ const occupied=new Set([...result.items.map(x=>x.combo),...(result.box||[])]);
+ const oddsByCombo=new Map(od.map(x=>[x.combo,x.rank]));
+ const risk=insideRisk(),lab=[],meta={};
+ const rules=data.rules.filter(x=>x.key===key&&(x.venue===venue||x.venue===''))
+  .sort((a,b)=>(a.venue===venue?0:1)-(b.venue===venue?0:1)||Number(b.n)-Number(a.n)||Number(b.lift)-Number(a.lift));
+ for(const rule of rules){
+  if(lab.length>=4)break;
+  const c=combo(rule.combo),ns=c?.split('-').map(Number),rank=oddsByCombo.get(c);
+  if(!c||!ns||occupied.has(c)||!Number.isFinite(rank)||rank>70||Number(rule.n)<30||Number(rule.count)<3||Number(rule.rate)<.08||Number(rule.lift)<1.3)continue;
+  if(window.BH_V622_GUARD?.canHead(ns[0])===false||risk.headCut&&ns[0]===1||risk.fullCut&&ns.includes(1))continue;
+  occupied.add(c);lab.push({combo:c,kind:'lab'});meta[c]=`${rule.n}件中${rule.count}件｜同条件 ${(Number(rule.rate)*100).toFixed(1)}%`;
+ }
+ if(!lab.length)return result;
+ const kept=result.items.slice(0,Math.max(0,14-lab.length));
+ const items=[...kept,...lab];
+ return {...result,items,labMeta:meta};
+}
+
 let rendering=false,previous='';
 function render(){
  if(rendering)return;
  const box=$('bhEscapeBet530');if(!box)return;
- const p=getPrediction(),od=odds(),sig=JSON.stringify([p,od,window.__BH_RACE_FLOW_ROWS?.map(x=>[x.boat,x.score,x.st,x.best?.name,x.techs?.map(t=>[t.name,t.score])])]);
+ const p=getPrediction(),od=odds(),labData=readLabRules(),sig=JSON.stringify([p,od,labData?.rules,currentLabPattern(),window.__BH_RACE_FLOW_ROWS?.map(x=>[x.boat,x.score,x.st,x.best?.name,x.techs?.map(t=>[t.name,t.score])])]);
  if(sig===previous&&box.querySelector('.bh590Root'))return;
  previous=sig;rendering=true;
  try{
@@ -25607,7 +25657,7 @@ function render(){
  const root=document.createElement('div');root.className='bh590Root';box.append(root);
  if(p.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div><div class="bh590Status">頭候補を絞れないため買い目は表示しません。</div>';return}
  if(!p.bets.length){root.innerHTML='<div class="bh590Status">買い目生成待ち：6艇比較データの連動を確認してください。取得済みデータが揃い次第、自動で再表示します。</div>';return}
- const result=selected(p,od),m=new Map(od.map(x=>[x.combo,x]));
+ const result=mergeLabBets(selected(p,od),labData,od),m=new Map(od.map(x=>[x.combo,x]));
  if(result.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return;}
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
  const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
@@ -25616,11 +25666,11 @@ function render(){
  if((window.__BH_RACE_FLOW_ROWS||[]).some(x=>/まくり差し/.test(String(x.best?.name||x.technique||x.tech||''))))alerts.push('まくり差し巧者存在');
  if(alerts.length){const ab=document.createElement('div');ab.className='bh590Alerts';alerts.forEach(t=>{const x=document.createElement('span');x.className='bh590Alert';x.textContent=t;ab.append(x)});root.append(ab)}
  if(od.length<110){const st=document.createElement('div');st.className='bh590Status';st.textContent='オッズ未取得：倍率・世間人気順位は取得後に反映。';root.append(st)}
- const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],['買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true]];
- for(const [name,items,isExtra] of groups){if(!items.length){const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目2：採用条件を満たす別展開なし（無理な補充はしません）';root.append(notice);continue;}const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
+ const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],['買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true],['研究所｜攻めパターン',result.items.filter(x=>x.kind==='lab'),true]];
+ for(const [name,items,isExtra] of groups){if(!items.length){if(name.startsWith('研究所'))continue;const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目2：採用条件を満たす別展開なし（無理な補充はしません）';root.append(notice);continue;}const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');const o=m.get(x.combo),t=technique(Number(x.combo[0]));
  const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
- for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
+ for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(x.kind==='lab'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='研究所候補｜'+(result.labMeta?.[x.combo]||'');card.append(e)}else if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
  // V620: bet 3 is a separate six-ticket reversal formation, outside the 14-ticket limit.
  if(result.box?.length>0){
@@ -25637,6 +25687,7 @@ function render(){
 function boot(){const box=$('bhEscapeBet530');if(!box)return false;new MutationObserver(()=>{if(!rendering)queueMicrotask(render)}).observe(box,{childList:true,subtree:true,characterData:true});render();return true}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{if(!boot()){const m=new MutationObserver(()=>{if(boot())m.disconnect()});m.observe(document.body,{childList:true,subtree:true})}},{once:true});else if(!boot()){const m=new MutationObserver(()=>{if(boot())m.disconnect()});m.observe(document.body,{childList:true,subtree:true})}
 document.addEventListener('click',e=>{if(e.target.closest('#aiAnalyzeTop503,#aiAnalyze,#bhOutlookRun469,#get,#getOdds120'))[500,1400,3000,5500].forEach(t=>setTimeout(render,t))},true);
+window.addEventListener('storage',e=>{if(e.key===LAB_RULES_KEY)setTimeout(render,0)});
 window.BH_V592_RENDER_BETS=render;
 })();
 </script>
@@ -25798,7 +25849,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:630,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:632,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
@@ -25840,8 +25891,9 @@ const num=v=>{if(v===null||v===undefined||v==='')return null;const n=Number(Stri
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function source(){const a=window.__BH_LAST_ANALYSIS||window.__BH_ANALYSIS||window.__HUNTER_ANALYSIS||{};return a.boats||a.racers||window.__BH_BOATS||[]}
 function snapshot(){const arr=source();const cards=[...document.querySelectorAll('.cards .card')].slice(0,6);return Array.from({length:6},(_,i)=>{const b=arr[i]||{},st=b.stats||{},c=i+1,paths=k=>[k,'stats.'+k,'attack.'+k,'attackRates.'+k,'techniques.'+k,'decidingMoves.'+k];const attack=(c===1?methods.slice(0,1):methods.slice(1)).map(method=>({method,rate:num(pick(b,aliases[method].flatMap(paths)))}));const dkeys=c===1?['sashisareRate','makurarareRate','makurizashisareRate']:c===2?['outerAttackRate','outerMakurarareRate']:c===3?['outerAttackRate','outerMakurarareRate']:[];const defense=c<=3?{scope:c===1?'差され・まくられ・まくり差され':c===2?'3〜6Cからの攻撃':'4〜6Cからの攻撃',values:dkeys.map(k=>({key:k,rate:num(pick(b,[k,'defense.'+k]))})).filter(x=>x.rate!==null)}:null;return {course:c,name:String(pick(b,['name','racerName'])||cards[i]?.querySelector('.name')?.textContent||'').trim(),grade:pick(b,['class','racerClass','rank','grade','stats.grade'])||null,nationalWinRate:num(pick(b,['nationalWinRate','nationalRate','national.winRate','winRate','stats.nationalWinRate'])),attack,defense,st:num(pick(b,['currentST','fAfterST','averageST','avgST','st']))}})}
-function show(){const outlook=$('outlookPanel');if(!outlook)return;let box=$('bhV630Course');if(!box){box=document.createElement('section');box.id='bhV630Course'}if(box.parentElement!==outlook||outlook.lastElementChild!==box)outlook.appendChild(box);const bs=snapshot();window.__BH_V630_COURSE_RESEARCH={boats:bs,at:new Date().toISOString()};const fmt=v=>v===null?'未取得':v+'%';box.innerHTML='<h4>コース並び・攻め手調査</h4><p class="hint">研究所への蓄積用｜現在の買い目には反映しません。未取得の数値は推測しません。</p>'+bs.map(b=>'<div class="lane"><div class="head">'+b.course+'C '+escapeHtml(b.name)+(b.course<=3?'｜'+escapeHtml(b.grade||'階級未取得')+'｜全国勝率 '+(b.nationalWinRate??'未取得'):'')+'</div><div class="line">攻撃：'+b.attack.map(a=>escapeHtml(a.method)+' '+fmt(a.rate)).join(' ／ ')+'</div>'+(b.defense?'<div class="line">防御（'+b.defense.scope+'）：'+(b.defense.values.length?b.defense.values.map(v=>escapeHtml(v.key)+' '+fmt(v.rate)).join(' ／ '):'<span class="unknown">数値未取得</span>')+'</div>':'')+'</div>').join('');}
+function show(){const outlook=$('outlookPanel');if(!outlook)return;let box=$('bhV630Course');if(!box){box=document.createElement('section');box.id='bhV630Course'}if(box.parentElement!==outlook||outlook.lastElementChild!==box)outlook.appendChild(box);const bs=snapshot();window.__BH_V630_COURSE_RESEARCH={boats:bs,at:new Date().toISOString()};const fmt=v=>v===null?'未取得':v+'%';box.innerHTML='<h4>コース並び・攻め手調査</h4><p class="hint">研究所で条件が確認された候補は、買い目1・2の最大4点に反映します。未取得の数値は推測しません。</p>'+bs.map(b=>'<div class="lane"><div class="head">'+b.course+'C '+escapeHtml(b.name)+(b.course<=3?'｜'+escapeHtml(b.grade||'階級未取得')+'｜全国勝率 '+(b.nationalWinRate??'未取得'):'')+'</div><div class="line">攻撃：'+b.attack.map(a=>escapeHtml(a.method)+' '+fmt(a.rate)).join(' ／ ')+'</div>'+(b.defense?'<div class="line">防御（'+b.defense.scope+'）：'+(b.defense.values.length?b.defense.values.map(v=>escapeHtml(v.key)+' '+fmt(v.rate)).join(' ／ '):'<span class="unknown">数値未取得</span>')+'</div>':'')+'</div>').join('');}
 window.BH_V630_COURSE={snapshot,show};
+setTimeout(()=>window.BH_V592_RENDER_BETS?.(),0);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
 document.addEventListener('click',e=>{if(/AI解析|展望解析|出走表取得/.test(e.target?.textContent||''))setTimeout(show,900)},true);
 window.addEventListener('bh:history20-ready',()=>setTimeout(show,0));
