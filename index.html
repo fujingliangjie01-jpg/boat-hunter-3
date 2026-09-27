@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.666</div>
+  <div class="topVol">Vol.667</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24595,7 +24595,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:666,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:667,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research},
@@ -25911,7 +25911,10 @@ function updateOdds(root,od){
   if(v&&v.textContent!==oddsText)v.textContent=oddsText;
   if(r&&r.textContent!==rankText)r.textContent=rankText;
   const stake=card.querySelector('.bh664Stake'),units=Number(card.dataset.units);
-  if(stake&&Number.isInteger(units)&&units>0)stake.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');
+  if(stake&&Number.isInteger(units)&&units>0){
+   const stakeText=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');
+   if(stake.textContent!==stakeText)stake.textContent=stakeText;
+  }
  });
  const status=root.querySelector('.bh590OddsStatus');
  const statusText=od.length>=110?'オッズ取得済み：倍率・世間人気順位を反映。':'オッズ未取得：倍率・世間人気順位は取得後に反映。';
@@ -26174,7 +26177,7 @@ function payload(){
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const plan=window.__BH_V653_BET_LOCK?.result||null;const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:666,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:667,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
