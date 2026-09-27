@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V651</title>
+<title>BOAT HUNTER V652</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.651</div>
+  <div class="topVol">Vol.652</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24357,7 +24357,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    }
  }
  window.BH_ESCAPE_BET_V533={make,render};
- // V651: legacy V533 tickets must never replace the canonical ticket DOM after analysis.
+ // V652: legacy V533 tickets must never replace the canonical ticket DOM after analysis.
  // The canonical V592 renderer handles AI completion and race changes.
 })();
 </script>
@@ -24369,7 +24369,7 @@ window.__BH_V396_FORCE_2BOX__=true;
  const flows=()=>Array.isArray(window.__BH_RACE_FLOW_ROWS)?window.__BH_RACE_FLOW_ROWS:[];
  const tech=x=>{const t=String(x?.technique||x?.move||x?.best?.technique||x?.best?.move||"");return /まくり差し/.test(t)?"まくり差し":/まくり/.test(t)?"まくり":/差し/.test(t)?"差し":/逃げ/.test(t)?"逃げ":t||"展開"};
  function headSingles(){
-  const locked=window.__BH_V651_BET_LOCK;
+  const locked=window.__BH_V652_BET_LOCK;
   if(locked?.key===key()&&Array.isArray(locked.singles))return locked.singles.map(x=>({...x}));
   const rr=ranks(),ff=flows(),out=[];
   for(let b=1;b<=6;b++){const r=rr.find(x=>+x.boat===b),f=ff.find(x=>+x.boat===b);if(!r)continue;
@@ -24516,7 +24516,7 @@ function collect(){
  const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
  const odds=clean(txt('oddsList')).slice(0,900);
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:651,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:652,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds,courseAttackResearch:research},
@@ -25594,26 +25594,25 @@ function selected(p,od){
  const items=[...main.map(c=>({combo:c,kind:'main'})),...counter.map(c=>({combo:c,kind:'counter'}))];
  // A boat ranked last in both ability and flow must not enter the third section.
  const lastBoats=new Set([1,2,3,4,5,6].filter(n=>{const row=T(n);return Number(row.ability)===6&&Number(row.flow)===6}));
- const anchorA=secondaryHead,anchorB=[1,2,3,4,5,6].filter(n=>n!==anchorA&&!lastBoats.has(n))
-  .sort((a,b)=>rank(a,'axis')-rank(b,'axis')||axisScore(b)-axisScore(a))[0];
- const middle=[1,2,3,4,5,6].filter(n=>n!==anchorA&&n!==anchorB&&!lastBoats.has(n))
-  .sort((a,b)=>rank(a,'flow')-rank(b,'flow')||rank(a,'ability')-rank(b,'ability')||rank(a,'axis')-rank(b,'axis'));
- let box=[],boxMode='折り返し';
- // Second head and first axis alternate between first and third; select three middle boats.
- for(const h of [anchorA,anchorB])for(const n of middle){
-  const c=`${h}-${n}-${h===anchorA?anchorB:anchorA}`;
-  if(box.length>=6)break;
-  if(valid(c)&&!used.has(c)){box.push(c);used.add(c)}
- }
- if(box.length<6){
-  boxMode='評価艇から補充';
-  const evaluated=new Set(items.flatMap(x=>x.combo.split('-').map(Number)));
-  const supplement=candidates.filter(x=>!used.has(x.combo)&&!x.combo.split('-').some(n=>lastBoats.has(+n)))
-   .sort((a,b)=>Number(b.combo.split('-').every(n=>evaluated.has(+n)))-Number(a.combo.split('-').every(n=>evaluated.has(+n)))||
-    Number([anchorA,anchorB].includes(b.h))-Number([anchorA,anchorB].includes(a.h))||
-    Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score);
-  for(const x of supplement){if(box.length>=6)break;used.add(x.combo);box.push(x.combo)}
- }
+ const buy3Heads=singleHeads.slice(0,2).length?singleHeads.slice(0,2):orderedHeads.slice(0,2);
+ const improvement=n=>{
+  const r=T(n),market=[Number(r.head),Number(r.axis)].filter(v=>v>=1&&v<=6);
+  const hunter=[Number(r.ability),Number(r.flow)].filter(v=>v>=1&&v<=6);
+  if(!market.length||!hunter.length||Math.max(...market)<4)return 0;
+  return Math.max(0,Math.max(...market)-Math.min(...hunter)-1);
+ };
+ const evaluated=new Set(items.flatMap(x=>x.combo.split('-').map(Number)));
+ const supplement=candidates.filter(x=>buy3Heads.includes(x.h)&&!used.has(x.combo)&&
+  !x.combo.split('-').some(n=>lastBoats.has(+n)));
+ supplement.sort((a,b)=>{
+  const ta=Number(a.combo.split('-')[2]),tb=Number(b.combo.split('-')[2]);
+  return Number(improvement(tb)>0)-Number(improvement(ta)>0)||
+   improvement(tb)-improvement(ta)||
+   Number(b.combo.split('-').every(n=>evaluated.has(+n)))-Number(a.combo.split('-').every(n=>evaluated.has(+n)))||
+   Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score;
+ });
+ const box=[],boxMode='単勝上位頭・評価上昇艇を3着';
+ for(const x of supplement){if(box.length>=6)break;used.add(x.combo);box.push(x.combo)}
  return {narrow:false,items,box,boxMode,boxBoats:p.boxBoats||[],primaryHead:mainHead};
 }
 const LAB_RULES_KEY='DEME_LAB_ATTACK_RULES_V1';
@@ -25686,14 +25685,14 @@ function render(){
  const box=ensureBetBox();
  if(refreshPending){
   if($('aiAnalyzeTop503')?.classList.contains('running'))return;
-  refreshPending=false;window.__BH_V651_BET_LOCK=null;previous='';
+  refreshPending=false;window.__BH_V652_BET_LOCK=null;previous='';
  }
- const key=raceKey(),locked=window.__BH_V651_BET_LOCK?.key===key?window.__BH_V651_BET_LOCK:null;
+ const key=raceKey(),locked=window.__BH_V652_BET_LOCK?.key===key?window.__BH_V652_BET_LOCK:null;
  const od=odds(),p=locked?.prediction??getPrediction();
  const hasSixCards=document.querySelectorAll("#cards .card,#cards .compactRacerCard").length>=6;
- const analysisReady=hasSixCards && ($("aiAnalyzeTop503")?.dataset.analysisDone==="1" || !!window.__BH_V651_BET_LOCK?.result);
+ const analysisReady=hasSixCards && ($("aiAnalyzeTop503")?.dataset.analysisDone==="1" || !!window.__BH_V652_BET_LOCK?.result);
  const result=analysisReady?(locked?.result??mergeLabBets(selected(p,od),readLabRules(),od,p)):null;
- if(!locked&&result)window.__BH_V651_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
+ if(!locked&&result)window.__BH_V652_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
  const sig=JSON.stringify([key,analysisReady,result?.items,result?.box,result?.boxMode,result?.labMeta]);
  const existing=box.querySelector('.bh590Root');
  if(sig===previous&&existing){updateOdds(existing,od);return}
@@ -25722,7 +25721,7 @@ function render(){
  }
  // Bet 3 uses a six-ticket BOX, or six fresh evaluated combinations if no BOX is distinct.
  if(result.box?.length>0){
-  const title=document.createElement('div');title.className='bh590Section extra';title.textContent=result.boxMode==='折り返し'?'買い目3｜頭候補2・軸候補1の折り返し（6点）':'買い目3｜評価艇から未採用6点';root.append(title);
+  const title=document.createElement('div');title.className='bh590Section extra';title.textContent='買い目3｜単勝上位頭・評価上昇艇を3着（'+result.box.length+'点）';root.append(title);
   const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
   for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';card.dataset.combo=c;const o=m.get(c);
    for(const [cl,val] of [['bh590Combo',c],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']]){
@@ -25747,8 +25746,8 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#aiAnalyzeTop503,#aiAnalyze,#bhOutlookRun469,#get'))refreshPending=true
  else if(e.target.closest('#getOdds120'))queueMicrotask(render);
 },true);
-document.addEventListener('change',e=>{if(e.target?.matches?.('#date,#stadium,#race')){window.__BH_V651_BET_LOCK=null;previous='';setTimeout(render,0)}},true);
-window.addEventListener('storage',e=>{if(e.key===LAB_RULES_KEY){window.__BH_V651_BET_LOCK=null;previous='';setTimeout(render,0)}});
+document.addEventListener('change',e=>{if(e.target?.matches?.('#date,#stadium,#race')){window.__BH_V652_BET_LOCK=null;previous='';setTimeout(render,0)}},true);
+window.addEventListener('storage',e=>{if(e.key===LAB_RULES_KEY){window.__BH_V652_BET_LOCK=null;previous='';setTimeout(render,0)}});
 window.BH_V592_RENDER_BETS=render;
 })();
 </script>
@@ -25915,7 +25914,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:651,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:652,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
