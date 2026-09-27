@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.653</div>
+  <div class="topVol">Vol.656</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -17730,6 +17730,7 @@ $('top').classList.remove('hide');
 
     window.__HUNTER_ENTRY=JSON.parse(JSON.stringify(entryState));
     saveEntryState();
+    window.dispatchEvent(new Event("bh:entrychange"));
   }
 
   function setEntrySource(text){
@@ -25553,9 +25554,10 @@ function selected(p,od){
  const rank=(n,k)=>{const v=Number(T(n)[k]);return v>=1&&v<=6?v:6};
  const grade=g=>({S:5,A:4,B:3,C:2,D:1}[String(g||'').toUpperCase()]||0);
  const risk=insideRisk(),oddsRank=new Map(od.map(x=>[x.combo,x.rank]));
+ const research=readLabRules(),excluded=annualWorstSet(research);
  const headOK=n=>Number.isInteger(n)&&n>=1&&n<=6&&!(n===1&&risk.headCut)&&window.BH_V622_GUARD?.canHead(n)!==false;
  const moveValid=a=>a[0]!==2||(technique(2)==='差し'?a.includes(1):technique(2)==='まくり'?!a.includes(1):true);
- const valid=c=>{const a=combo(c)?.split('-').map(Number);return a?.length===3&&a.every(n=>n>=1&&n<=6)&&new Set(a).size===3&&headOK(a[0])&&!(risk.fullCut&&a.includes(1))&&moveValid(a)};
+ const valid=c=>{const a=combo(c)?.split('-').map(Number);return a?.length===3&&a.every(n=>n>=1&&n<=6)&&new Set(a).size===3&&headOK(a[0])&&!(risk.fullCut&&a.includes(1))&&moveValid(a)&&!excluded.has(c)};
  const headScore=n=>(7-rank(n,'head'))*35+(7-rank(n,'ability'))*11+(7-rank(n,'flow'))*10+grade(F(n).grade)*4+grade(D(n).grade)*3;
  const axisScore=n=>(7-rank(n,'axis'))*22+(7-rank(n,'flow'))*7+grade(F(n).grade)*5+grade(D(n).grade)*3;
  // Use the displayed single-win candidates in their actual order. The other
@@ -25582,6 +25584,8 @@ function selected(p,od){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
  fill(main,6,[mainHead].filter(Boolean));
+ // When a head loses candidates to the 2026 blacklist, preserve six tickets.
+ fill(main,6,orderedHeads);
  // Single-win order is authoritative: the second candidate owns the counter scenario.
  const secondaryHead=singleHeads[1]??orderedHeads.find(n=>n!==mainHead);
  const tertiaryHead=singleHeads[2]??orderedHeads.find(n=>n!==mainHead&&n!==secondaryHead);
@@ -25591,11 +25595,12 @@ function selected(p,od){
  // The third candidate remains a small hedge, never the dominant second section.
  for(const c of p.counter||[])if(Number(c[0])===tertiaryHead)append(counter,c,8);
  fill(counter,8,[tertiaryHead,secondaryHead].filter(Boolean));
+ fill(counter,8,[...orderedHeads.filter(n=>n!==mainHead),mainHead].filter(Boolean));
  const items=[...main.map(c=>({combo:c,kind:'main'})),...counter.map(c=>({combo:c,kind:'counter'}))];
  // A boat ranked last in both ability and flow must not enter the third section.
  const lastBoats=new Set([1,2,3,4,5,6].filter(n=>{const row=T(n);return Number(row.ability)===6&&Number(row.flow)===6}));
  const buy3Heads=singleHeads.slice(0,2).length?singleHeads.slice(0,2):orderedHeads.slice(0,2);
- const box=[],boxMeta={},research=readLabRules(),pattern=currentLabPattern();
+ const box=[],boxMeta={},pattern=currentLabPattern();
  const labRank=new Map(od.map(x=>[x.combo,x.rank]));
  const venue=String(Number($('stadium')?.value||0)).padStart(2,'0');
  if(mainHead===1&&pattern&&research?.rules?.length){
@@ -25629,10 +25634,37 @@ function selected(p,od){
   !x.combo.split('-').some(n=>lastBoats.has(+n))&&scenario(x).allowed)
   .sort((a,b)=>scenario(b).priority-scenario(a).priority||Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score);
  for(const x of supplement){if(box.length>=6)break;used.add(x.combo);box.push(x.combo)}
+ // Keep 6 + 8 + 6 unique bets: relax only the third-section preference
+ // after exhausting the original theory, never the annual blacklist.
+ const addBox=rows=>{for(const x of rows){if(box.length>=6)break;if(!used.has(x.combo)){used.add(x.combo);box.push(x.combo)}}};
+ addBox(candidates.filter(x=>buy3Heads.includes(x.h)&&scenario(x).allowed));
+ addBox(candidates.filter(x=>scenario(x).allowed));
+ addBox(candidates.filter(x=>buy3Heads.includes(x.h)));
+ addBox(candidates);
  const boxMode=mainHead===1?(Object.keys(boxMeta).length?'研究所候補＋不足分補充':'研究所該当なし・評価艇補充'):'展開理論';
  return {narrow:false,items,box,boxMode,boxBoats:p.boxBoats||[],boxMeta,primaryHead:mainHead};
 }
 const LAB_RULES_KEY='DEME_LAB_ATTACK_RULES_V1';
+function isStandardEntry(){
+ const entries=window.__HUNTER_ENTRY;
+ return Array.isArray(entries)&&entries.length===6&&entries.every((row,i)=>
+  Number(row?.course)===i+1&&Number(row?.boat)===i+1);
+}
+function annualWorstSet(data){
+ const record=data?.annualWorst,excluded=new Set();
+ // 2026 rankings assume the standard course order; front placement suspends this filter.
+ if(!isStandardEntry())return excluded;
+ if(record?.year!==2026||!Number.isInteger(record.days)||record.days<1||
+    !/^2026\d{4}$/.test(String(record.through))||!record.excluded)return excluded;
+ for(let h=1;h<=6;h++){
+  const list=record.excluded[h];if(!Array.isArray(list)||list.length!==8)return new Set();
+  for(const c of list){const a=String(c).split('-').map(Number);
+   if(a.length!==3||a[0]!==h||a.some(n=>!Number.isInteger(n)||n<1||n>6)||new Set(a).size!==3)return new Set();
+   excluded.add(c);
+  }
+ }
+ return excluded;
+}
 function readLabRules(){
  try{
   if(location.hash.startsWith('#labRules=')){
@@ -25661,13 +25693,13 @@ function mergeLabBets(result,data,od,p){
  const occupied=new Set([...counter.map(x=>x.combo),...(result.box||[])]);
  const activeHeads=new Set(result.items.map(x=>Number(x.combo[0])));
  const oddsByCombo=new Map(od.map(x=>[x.combo,x.rank]));
- const risk=insideRisk(),lab=[],meta={};
+ const risk=insideRisk(),lab=[],meta={},excluded=annualWorstSet(data);
  const rules=data.rules.filter(x=>x.key===key&&(x.venue===venue||x.venue===''))
   .sort((a,b)=>(a.venue===venue?0:1)-(b.venue===venue?0:1)||Number(b.n)-Number(a.n)||Number(b.lift)-Number(a.lift));
  for(const rule of rules){
   if(lab.length>=6)break;
   const c=combo(rule.combo),ns=c?.split('-').map(Number),rank=oddsByCombo.get(c);
-  if(!c||!ns||occupied.has(c)||!Number.isFinite(rank)||rank>70||Number(rule.n)<30||Number(rule.count)<3||Number(rule.rate)<.08||Number(rule.lift)<1.3)continue;
+  if(!c||!ns||excluded.has(c)||occupied.has(c)||!Number.isFinite(rank)||rank>70||Number(rule.n)<30||Number(rule.count)<3||Number(rule.rate)<.08||Number(rule.lift)<1.3)continue;
   if(ns[0]===2&&(technique(2)==='差し'?!ns.includes(1):technique(2)==='まくり'?ns.includes(1):false))continue;
   if(window.BH_V622_GUARD?.canHead(ns[0])===false||risk.headCut&&ns[0]===1||risk.fullCut&&ns.includes(1))continue;
   if(!activeHeads.has(ns[0])&&activeHeads.size>=3)continue;
@@ -25765,6 +25797,7 @@ document.addEventListener('click',e=>{
 },true);
 document.addEventListener('change',e=>{if(e.target?.matches?.('#date,#stadium,#race')){window.__BH_V653_BET_LOCK=null;previous='';setTimeout(render,0)}},true);
 window.addEventListener('storage',e=>{if(e.key===LAB_RULES_KEY){window.__BH_V653_BET_LOCK=null;previous='';setTimeout(render,0)}});
+window.addEventListener('bh:entrychange',()=>{window.__BH_V653_BET_LOCK=null;previous='';queueMicrotask(render)});
 window.BH_V592_RENDER_BETS=render;
 })();
 </script>
