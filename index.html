@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V633</title>
+<title>BOAT HUNTER V634</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.633</div>
+  <div class="topVol">Vol.634</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24498,7 +24498,7 @@ function collect(){
  const buy=clean(txt('bhEscapeBet530')||txt('hunterFinalBuyBlock'));
  const odds=clean(txt('oddsList')).slice(0,900);
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:633,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:634,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,oddsSummary:odds,courseAttackResearch:research},
@@ -25438,7 +25438,11 @@ function getPrediction(){
  // Counter scenario: failure of the main attack. First escape, then the boat behind it
  // with a credible makuri-sashi; only then a qualified #2 sashi.
  const counterHeads=[];
- if(mainHead!==1&&!risk.headCut&&gr(F(1).grade)>=3&&gr(D(1).grade)>=3)counterHeads.push(1);
+ // 2C差しが主攻撃で単勝候補2位が1C逃げなら、1C逃げを差し不発時の反転頭にする。
+ const singles=window.BH_DEEP_LEARNING_V535?.headSingles?.()||[];
+ const escapeCounter=mainHead===2&&mainTech==='差し'&&Number(singles[1]?.boat)===1&&
+  singles[1]?.tech==='逃げ'&&!risk.headCut&&window.BH_V622_GUARD?.canHead(1)!==false;
+ if(mainHead!==1&&!risk.headCut&&(escapeCounter||gr(F(1).grade)>=3&&gr(D(1).grade)>=3))counterHeads.push(1);
  const behind=mainHead>=2&&mainHead<=5?mainHead+1:0;
  if(behind&&!counterHeads.includes(behind)&&eligible(behind)&&technique(behind)==='まくり差し')counterHeads.push(behind);
  if(!counterHeads.includes(2)&&mainHead!==2&&eligible(2)&&technique(2)==='差し'&&Number.isFinite(st(2))&&st(2)<=.16)counterHeads.push(2);
@@ -25506,7 +25510,7 @@ function getPrediction(){
   !(risk.headCut&&boxHead===1)
   ?secondBoats.flatMap(n=>[`${boxHead}-${n}-${boxAxis}`,`${boxAxis}-${n}-${boxHead}`]):[];
  const bets=[...main,...counter].slice(0,14);
- return {watch:false,heads,bets,main:main.filter(c=>bets.includes(c)),counter:counter.filter(c=>bets.includes(c)),box,boxBoats,mainHead,mainTech,rated:heads.map(n=>({n,score:headScore(n)}))};
+ return {watch:false,heads,bets,main:main.filter(c=>bets.includes(c)),counter:counter.filter(c=>bets.includes(c)),box,boxBoats,mainHead,mainTech,escapeCounter,rated:heads.map(n=>({n,score:headScore(n)}))};
 }
 // 買い目と展望は同じ予測を使う。実績欠損時もコース・ST・風・チルトで暫定決まり手を選ぶ。
 function technique(n){
@@ -25625,7 +25629,7 @@ function currentLabPattern(){
  if(!outer.length||outer[0].rate<=0||outer[1]&&outer[0].rate-outer[1].rate<2)return null;
  return `${band}|${outer[0].course}C${outer[0].method}`;
 }
-function mergeLabBets(result,data,od){
+function mergeLabBets(result,data,od,p){
  if(result.narrow||!data?.rules?.length)return result;
  const key=currentLabPattern();if(!key)return result;
  const venue=String(Number($('stadium')?.value||0)).padStart(2,'0');
@@ -25642,7 +25646,14 @@ function mergeLabBets(result,data,od){
   occupied.add(c);lab.push({combo:c,kind:'lab'});meta[c]=`${rule.n}件中${rule.count}件｜同条件 ${(Number(rule.rate)*100).toFixed(1)}%`;
  }
  if(!lab.length)return result;
- const kept=result.items.slice(0,Math.max(0,14-lab.length));
+ const room=Math.max(0,14-lab.length);
+ let kept=result.items.slice(0,room);
+ if(p?.escapeCounter){
+  // 研究所4点を入れても、2差し不発時の1逃げシナリオを削り切らない。
+  const counters=result.items.filter(x=>x.kind==='counter');
+  const mains=result.items.filter(x=>x.kind==='main');
+  kept=[...mains.slice(0,Math.max(0,room-counters.length)),...counters.slice(0,room)];
+ }
  const items=[...kept,...lab];
  return {...result,items,labMeta:meta};
 }
@@ -25661,7 +25672,7 @@ function render(){
  const root=document.createElement('div');root.className='bh590Root';box.append(root);
  if(p.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div><div class="bh590Status">頭候補を絞れないため買い目は表示しません。</div>';return}
  if(!p.bets.length){root.innerHTML='<div class="bh590Status">買い目生成待ち：6艇比較データの連動を確認してください。取得済みデータが揃い次第、自動で再表示します。</div>';return}
- const result=mergeLabBets(selected(p,od),labData,od),m=new Map(od.map(x=>[x.combo,x]));
+ const result=mergeLabBets(selected(p,od),labData,od,p),m=new Map(od.map(x=>[x.combo,x]));
  if(result.watch){root.innerHTML='<div class="bh590Alert watch">見 推奨｜頭候補複数存在！</div>';return;}
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
  const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
@@ -25670,7 +25681,7 @@ function render(){
  if((window.__BH_RACE_FLOW_ROWS||[]).some(x=>/まくり差し/.test(String(x.best?.name||x.technique||x.tech||''))))alerts.push('まくり差し巧者存在');
  if(alerts.length){const ab=document.createElement('div');ab.className='bh590Alerts';alerts.forEach(t=>{const x=document.createElement('span');x.className='bh590Alert';x.textContent=t;ab.append(x)});root.append(ab)}
  if(od.length<110){const st=document.createElement('div');st.className='bh590Status';st.textContent='オッズ未取得：倍率・世間人気順位は取得後に反映。';root.append(st)}
- const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],['買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true],['研究所｜攻めパターン',result.items.filter(x=>x.kind==='lab'),true]];
+ const groups=result.narrow?[['本線 5点',result.items.filter(x=>x.kind==='main'),false],['追加 2点',result.items.filter(x=>x.kind==='extra'),true]]:[['買い目1｜本線',result.items.filter(x=>x.kind==='main'),false],[p.escapeCounter?'買い目2｜2差し不発→1逃げ':'買い目2｜攻め失敗時',result.items.filter(x=>x.kind==='counter'),true],['研究所｜攻めパターン',result.items.filter(x=>x.kind==='lab'),true]];
  for(const [name,items,isExtra] of groups){if(!items.length){if(name.startsWith('研究所'))continue;const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目2：採用条件を満たす別展開なし（無理な補充はしません）';root.append(notice);continue;}const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');const o=m.get(x.combo),t=technique(Number(x.combo[0]));
  const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
@@ -25853,7 +25864,7 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:633,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:634,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
