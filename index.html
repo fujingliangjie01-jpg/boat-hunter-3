@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.670</div>
+  <div class="topVol">Vol.671</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24611,7 +24611,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:670,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:671,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research},
@@ -25743,6 +25743,17 @@ function selected(p,od){
  candidates.sort((a,b)=>focus?.active?(b.score-a.score||Number(b.eligibleOdds)-Number(a.eligibleOdds)||a.combo.localeCompare(b.combo)):(Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score||a.combo.localeCompare(b.combo)));
  const used=new Set(),main=[],counter=[];
  function append(target,c,limit){if(target.length>=limit||!valid(c)||used.has(c))return false;used.add(c);target.push(c);return true}
+ // Preserve a strong inside-escape axis reversal before filling all six places.
+ // valid() keeps the annual worst-eight and entry rules in force.
+ if(mainHead===1){
+  const reversals=(p.main||[]).map(c=>combo(c)?.split('-').map(Number))
+   .filter(a=>a?.length===3&&a[0]===1&&a[1]!==a[2]&&
+    rank(a[2],'ability')<=2&&rank(a[2],'axis')<=4&&rank(a[1],'flow')<=2)
+   .map(a=>({combo:`1-${a[2]}-${a[1]}`,ability:rank(a[2],'ability'),flow:rank(a[1],'flow')}))
+   .filter(x=>valid(x.combo))
+   .sort((a,b)=>a.ability-b.ability||a.flow-b.flow||a.combo.localeCompare(b.combo));
+  if(reversals.length)append(main,reversals[0].combo,6);
+ }
  if(!focus?.active)for(const c of p.main||[])if(Number(c[0])===mainHead)append(main,c,6);
  function fill(target,limit,headOrder){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
@@ -26204,7 +26215,7 @@ function payload(){
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const plan=window.__BH_V653_BET_LOCK?.result||null;const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:670,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:671,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
