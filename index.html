@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.668</div>
+  <div class="topVol">Vol.670</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24433,7 +24433,8 @@ window.__BH_V396_FORCE_2BOX__=true;
   if(Number.isFinite(speed))evidence.push('風 '+speed.toFixed(1)+'m/s'+(/向かい風|追い風/.exec(windText)?.[0]||''));
   if(night)evidence.push('日没後のイン補正');
   if(noOutsideAttack)evidence.push('外側の攻撃実績が乏しい');
-  return {active,weakSix:weak(6),turnBest:ranks.turn[3]===1,ranks,confidence,evidence};
+  const axes=[2,3].filter(n=>n===2?(ranks.lap[n]===1||ranks.straight[n]===1):ranks.turn[n]===1);
+  return {active,axes,weakSix:weak(6),turnBest:ranks.turn[3]===1,ranks,confidence,evidence};
  }
  function headEvidence(n){
   if(n===1)return true;
@@ -24610,7 +24611,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:668,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:670,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research},
@@ -24705,28 +24706,40 @@ $('bh599Send').addEventListener('click',()=>{
   return /^[1-6]-[1-6]-[1-6]$/.test(c)?c:"";
  }
  function buyTickets(){
-  // V606: 判定対象は実際に画面に表示された買い目。旧V533の再生成結果は使わない。
+  // A yellow bet-narrowing alert is not a race pass. Only the actual 見 card is.
   const panel=$("bhEscapeBet530");
   const root=panel?.querySelector(".bh590Root");
-  if(!root || root.querySelector(".bh590Alert.watch"))return [];
-  const cards=[...root.querySelectorAll(".bh590Ticket .bh590Combo")];
+  if(isWatch())return [];
+  const cards=[...(root?.querySelectorAll(".bh590Ticket .bh590Combo")||[])];
   const bets=cards.map(e=>String(e.textContent||"").trim().replace(/[－ー–—]/g,"-"))
    .filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x)&&new Set(x.split("-")).size===3);
-  return [...new Set(bets)];
+  if(bets.length)return [...new Set(bets)];
+  const q=sel(),key=[q.date,q.venue,q.race].join('_'),lock=window.__BH_V653_BET_LOCK;
+  if(lock?.key!==key||lock.result?.narrow)return [];
+  return [...new Set([...(lock.result?.items||[]).map(x=>x.combo),...(lock.result?.box||[])])]
+   .filter(x=>/^[1-6]-[1-6]-[1-6]$/.test(x));
+ }
+ function isWatch(){
+  const root=$("bhEscapeBet530")?.querySelector(".bh590Root");
+  if(root?.querySelector(".bh660Watch"))return true;
+  const q=sel(),lock=window.__BH_V653_BET_LOCK;
+  return lock?.key===[q.date,q.venue,q.race].join('_')&&lock.result?.narrow===true;
  }
  async function check(){
   const m=$("bhV571Msg");m.textContent="結果取得中…";$("bhV571Send").disabled=true;last=null;
-  const checkedRace=sel(), displayedBets=buyTickets();
+  const checkedRace=sel(),watch=isWatch(),displayedBets=buyTickets();
   try{
    const q=checkedRace,j=await daily(q.date),r=raceNode(j,q.venue,q.race);
    if(!r){m.textContent="レースデータを取得できませんでした";return}
    const res=resultNode(r),tf=trifecta(r,res),out=combo(r,res,tf);
    if(!out){m.textContent="結果はまだ公開されていません";return}
    const payout=Number(tf?.amount),tech=TECH[Number(res?.technique_number??res?.technique)]||res?.technique_number_source||res?.technique_name||"—";
-   const bets=displayedBets,judge=bets.length?(bets.includes(out)?"的中":"ハズレ"):"判定なし";
+   const bets=displayedBets;
+   if(!watch&&!bets.length){m.textContent="買い目を読み取れません。AI解析後に再確認してください";return}
+   const judge=watch?"判定なし":bets.includes(out)?"的中":"ハズレ";
    last={out,way:tech,pay:Number.isFinite(payout)?payout:null,judge};
    $("bhV571Out").textContent=out;$("bhV571Way").textContent=tech;$("bhV571Pay").textContent=Number.isFinite(payout)?`¥${payout.toLocaleString("ja-JP")}`:"—";$("bhV571Judge").textContent=judge;
-   $("bhV571Send").disabled=false;m.textContent=bets.length?`✓ 結果取得完了｜表示中の${bets.length}点と照合`:`✓ 結果取得完了｜表示買い目がないため判定なし`;
+   $("bhV571Send").disabled=false;m.textContent=watch?"✓ 結果取得完了｜見送り":`✓ 結果取得完了｜表示中の${bets.length}点と照合`;
   }catch(e){console.warn("V574 result",e);m.textContent="結果取得に失敗しました"}
  }
  function collectHunter(){
@@ -25694,20 +25707,18 @@ function selected(p,od){
  // The visible single-win list owns the candidate count; p.heads can be a broader fallback list.
  const focus=window.BH_V663_ESCAPE_FOCUS?.assess?.();
  if(focus?.active){
-  // Two trusted second-place axes, four distinct third-place boats each.
-  // Twenty means 20 x 100-yen units, not 20 unrelated combinations.
-  const first=[2,3].map(b=>[1,2,3,4,5,6].filter(c=>c!==1&&c!==b).map(c=>`1-${b}-${c}`));
-  const a=first[0].filter(valid),b=first[1].filter(valid),bets=[...a,...b];
-  if(!bets.length)return {narrow:true,reason:'1号艇頭の採用可能な出目なし',watchHeads:[1],items:[],box:[]};
+  // Add a second group only when its second-place axis has independent evidence.
+  const axes=focus.axes||[];
+  const first=axes.map(axis=>[1,2,3,4,5,6].filter(c=>c!==1&&c!==axis).map(c=>`1-${axis}-${c}`).filter(valid));
+  const a=first[0]||[],b=first[1]||[],bets=[...a,...b];
+  if(!bets.length)return {narrow:true,reason:'軸の根拠が未確認',watchHeads:[1],items:[],box:[]};
   const units=Object.fromEntries(bets.map(c=>[c,1]));let left=20-bets.length;
   const byCombo=new Map(od.map(x=>[x.combo,x.odds]));
   const priority=c=>{const v=Number(c.split('-')[1]);return v===3&&focus.turnBest?3:v===2?2:1};
-  // First improve low-odds gross returns toward 20x the 100-yen base where possible.
-  while(left>0){
-   const short=bets.filter(c=>Number.isFinite(byCombo.get(c))&&byCombo.get(c)>0&&units[c]*byCombo.get(c)<20)
-    .sort((x,y)=>priority(y)-priority(x)||units[x]*byCombo.get(x)-units[y]*byCombo.get(y)||x.localeCompare(y));
-   if(!short.length)break;units[short[0]]++;left--;
-  }
+  // Complete attainable 20x gross-return targets before confidence stakes.
+  const targets=bets.filter(c=>Number.isFinite(byCombo.get(c))&&byCombo.get(c)>0&&units[c]*byCombo.get(c)<20)
+   .sort((x,y)=>Math.ceil(20/byCombo.get(x))-Math.ceil(20/byCombo.get(y))||priority(y)-priority(x)||x.localeCompare(y));
+  for(const c of targets){const need=Math.ceil(20/byCombo.get(c))-units[c];if(need<=left){units[c]+=need;left-=need}}
   const strong=bets.slice().sort((x,y)=>priority(y)-priority(x)||
    Number(byCombo.get(x)??Infinity)-Number(byCombo.get(y)??Infinity)||x.localeCompare(y));
   for(let i=0;left>0;i++,left--)units[strong[i%strong.length]]++;
@@ -25737,12 +25748,11 @@ function selected(p,od){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
  fill(main,6,[mainHead].filter(Boolean));
- // When a head loses candidates to the 2026 blacklist, preserve six tickets.
- fill(main,6,[mainHead,counterHead].filter(Boolean));
+ // A missing main scenario is not filled with an unrelated head.
  // The second candidate is the only alternative head. Never add a third head to fill tickets.
  const secondaryHead=counterHead;
  if(!focus?.active)for(const c of p.counter||[])if(Number(c[0])===secondaryHead)append(counter,c,8);
- fill(counter,8,[secondaryHead,mainHead].filter(Boolean));
+ fill(counter,8,[secondaryHead].filter(Boolean));
  const items=[...main.map(c=>({combo:c,kind:'main'})),...counter.map(c=>({combo:c,kind:'counter'}))];
  // A boat ranked last in both ability and flow must not enter the third section.
  const lastBoats=new Set([1,2,3,4,5,6].filter(n=>{const row=T(n);return Number(row.ability)===6&&Number(row.flow)===6}));
@@ -25778,17 +25788,11 @@ function selected(p,od){
   return {allowed:true,priority:(one||behind?12:0)+improvement(c)*15};
  };
  const supplement=candidates.filter(x=>buy3Heads.includes(x.h)&&!used.has(x.combo)&&
-  !x.combo.split('-').some(n=>lastBoats.has(+n))&&scenario(x).allowed)
+  !x.combo.split('-').some(n=>lastBoats.has(+n))&&scenario(x).allowed&&scenario(x).priority>0)
   .sort((a,b)=>scenario(b).priority-scenario(a).priority||Number(b.eligibleOdds)-Number(a.eligibleOdds)||b.score-a.score);
  for(const x of supplement){if(box.length>=6)break;used.add(x.combo);box.push(x.combo)}
- // Keep 6 + 8 + 6 unique bets: relax only the third-section preference
- // after exhausting the original theory, never the annual blacklist.
- const addBox=rows=>{for(const x of rows){if(box.length>=6)break;if(!used.has(x.combo)){used.add(x.combo);box.push(x.combo)}}};
- addBox(candidates.filter(x=>buy3Heads.includes(x.h)&&scenario(x).allowed));
- addBox(candidates.filter(x=>scenario(x).allowed));
- addBox(candidates.filter(x=>buy3Heads.includes(x.h)));
- addBox(candidates);
- if(items.length+box.length<20&&!focus?.active)return {narrow:true,reason:'採用条件内で20点を組めません',watchHeads:allowedHeads,items:[],box:[]};
+ // No third section when the lab and the comparison reveal no supported addition.
+ if(!items.length&&!box.length)return {narrow:true,reason:'採用可能な買い目なし',watchHeads:allowedHeads,items:[],box:[]};
  const boxMode=mainHead===1?(Object.keys(boxMeta).length?'研究所候補＋不足分補充':'研究所該当なし・評価艇補充'):'展開理論';
  return {narrow:false,items,box,boxMode,boxBoats:p.boxBoats||[],boxMeta,primaryHead:mainHead,headsAllowed:allowedHeads,escapeFocus:!!focus?.active};
 }
@@ -25867,12 +25871,10 @@ function mergeLabBets(result,data,od,p){
 function allocateStake(result,od){
  if(!result||result.narrow||result.escapeFocus)return result;
  const all=[...result.items.map(x=>x.combo),...(result.box||[])];
- if(all.length!==20)return result;
+ if(!all.length)return result;
  const odds=new Map(od.map(x=>[x.combo,x.odds]));
  const cheap=all.filter(c=>Number.isFinite(odds.get(c))&&odds.get(c)<=10);
- if(!cheap.length)return result;
  const cutCount=Math.min(4,cheap.length,Math.max(0,result.box.length-2));
- if(!cutCount)return result;
  const reduced=result.box.slice().sort((a,b)=>{
   const av=odds.get(a),bv=odds.get(b);
   const as=Number.isFinite(av)?av<=10?0:1:2,bs=Number.isFinite(bv)?bv<=10?0:1:2;
@@ -25881,18 +25883,22 @@ function allocateStake(result,od){
  const box=result.box.filter(c=>!reduced.includes(c));
  const remaining=[...result.items.map(x=>x.combo),...box];
  const units=Object.fromEntries(remaining.map(c=>[c,1]));
- const supported=result.items.map(x=>x.combo).sort((a,b)=>{
+ const supported=(result.items.length?result.items.map(x=>x.combo):box).sort((a,b)=>{
   const x=odds.get(a),y=odds.get(b);
   const xa=Number.isFinite(x)&&x>=20?0:1,ya=Number.isFinite(y)&&y>=20?0:1;
-  return xa-ya||(Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||a.localeCompare(b);
+  const ax=result.items.find(z=>z.combo===a)?.kind,by=result.items.find(z=>z.combo===b)?.kind;
+  const ac=ax==='main'||ax==='lab'?0:1,bc=by==='main'||by==='lab'?0:1;
+  return ac-bc||xa-ya||(Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||a.localeCompare(b);
  });
  let extra=20-remaining.length;
- // Raise a supported ticket toward a 2,000-yen gross return, then double the best evidence.
- for(const c of supported){const v=odds.get(c);if(!Number.isFinite(v)||v<=0)continue;
-  while(extra>0&&units[c]*v<20){units[c]++;extra--}
+ // Complete attainable 20x gross-return targets before adding confidence stakes.
+ const targets=supported.filter(c=>Number.isFinite(odds.get(c))&&odds.get(c)>0&&units[c]*odds.get(c)<20)
+  .sort((a,b)=>Math.ceil(20/odds.get(a))-Math.ceil(20/odds.get(b))||supported.indexOf(a)-supported.indexOf(b));
+ for(const c of targets){const v=odds.get(c),need=Math.ceil(20/v)-units[c];
+  if(need<=extra){units[c]+=need;extra-=need}
  }
  for(let i=0;extra>0;i++,extra--)units[supported[i%supported.length]]++;
- return {...result,box,units,unitTotal:20,stakeYen:2000,stakeNarrow:true,trimmedBets:reduced};
+ return {...result,box,units,unitTotal:20,stakeYen:2000,stakeNarrow:reduced.length>0||remaining.length<20,trimmedBets:reduced};
 }
 
 function groupReason(items,focus){
@@ -25978,12 +25984,12 @@ function render(){
  }
  const m=new Map(od.map(x=>[x.combo,x]));
  if(result.escapeFocus){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='買い目絞り｜20口・2,000円';root.append(summary)}
- else if(result.stakeNarrow){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='買い目絞り｜買い目3を'+result.trimmedBets.length+'通り減らし、合計20口・2,000円に再配分';root.append(summary)}
+ else if(result.stakeNarrow){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='買い目絞り｜根拠ある出目に20口・2,000円を配分';root.append(summary)}
 
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
  const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
- if(result.escapeFocus)alerts.push('買い目絞り｜1号艇頭・2着軸は2号艇と3号艇');
- if(result.stakeNarrow)alerts.push('買い目絞り｜低払戻を警戒・買い目3を縮小');
+ if(result.escapeFocus)alerts.push('買い目絞り｜イン逃げ頭・根拠ある軸に集中');
+ if(result.stakeNarrow)alerts.push('買い目絞り｜買い目を増やさず投資枚数へ');
  if(result.escapeFocus&&result.items.length<8)alerts.push('2026年ワースト出目を除外｜残る出目へ20口を配分');
  if(p.watch&&!result.escapeFocus||heads.length>=4)alerts.push('頭候補が拮抗｜点数を広げて評価');
 
@@ -25991,8 +25997,9 @@ function render(){
 
 
  const buy1=result.items.filter(x=>x.kind==='lab'||x.kind==='main'),buy2=result.items.filter(x=>x.kind==='counter');
- const groups=result.escapeFocus?[[`買い目1｜1-2-全（${buy1.length}通り）`,buy1,false],[`買い目2｜1-3-全（${buy2.length}通り）`,buy2,true]]:[['買い目1｜研究所優先（'+buy1.length+'点）',buy1,false],[(p.escapeCounter?'買い目2｜2差し不発→1逃げ':'買い目2｜攻め失敗時')+'（'+buy2.length+'点）',buy2,true]];
- for(const [name,items,isExtra] of groups){if(!items.length){const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目2：採用条件を満たす別展開なし（無理な補充はしません）';root.append(notice);continue;}const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const why=groupReason(items,result.escapeFocus);const whyBox=document.createElement('div');whyBox.className='bh666Reason';
+ const axisOf=items=>items[0]?.combo?.split('-')[1]||'';
+ const groups=result.escapeFocus?[[`買い目1｜1-${axisOf(buy1)}-全（${buy1.length}通り）`,buy1,false],[`買い目2｜1-${axisOf(buy2)}-全（${buy2.length}通り）`,buy2,true]]:[['買い目1｜研究所優先（'+buy1.length+'点）',buy1,false],[(p.escapeCounter?'買い目2｜2差し不発→1逃げ':'買い目2｜攻め失敗時')+'（'+buy2.length+'点）',buy2,true]];
+ for(const [name,items,isExtra] of groups){if(!items.length)continue;const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const why=groupReason(items,result.escapeFocus);const whyBox=document.createElement('div');whyBox.className='bh666Reason';
  const patch=document.createElement('span');patch.className='bh666Patch';patch.textContent=`頭${why.head} ${technique(why.head)}`;
  const axisPatch=document.createElement('span');axisPatch.className='bh666Patch';axisPatch.textContent=`軸${why.axis}`;
  const reason=document.createElement('div');reason.textContent=`頭：${why.headWhy}｜軸：${why.axisWhy}`;whyBox.append(patch,axisPatch,reason);root.append(whyBox);
@@ -26008,8 +26015,7 @@ function render(){
   for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';card.dataset.combo=c;if(result.units)card.dataset.units=String(result.units[c]||1);const o=m.get(c);if(result.boxMeta?.[c]){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent='研究';card.append(patch)}
    for(const [cl,val] of [['bh590Combo',c],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']]){
     const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[c]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}grid.append(card)}
-  if(result.box.length<6&&!result.stakeNarrow){const note=document.createElement('div');note.className='bh590Status';note.textContent='買い目3：有効な未採用出目が'+result.box.length+'点のみです';root.append(note)}
- }else if(!result.escapeFocus){const notice=document.createElement('div');notice.className='bh590Status';notice.textContent='買い目3：有効な未採用出目を取得できません';root.append(notice)}
+ }
  window.__BH_V592_DISPLAY_BETS=[...new Set([...result.items.map(x=>x.combo),...(result.box||[])])];
  }finally{rendering=false}
 }
@@ -26198,7 +26204,7 @@ function payload(){
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const plan=window.__BH_V653_BET_LOCK?.result||null;const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:668,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:670,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
