@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V672</title>
+<title>BOAT HUNTER V675</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.672</div>
+  <div class="topVol">Vol.675</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18044,20 +18044,50 @@ $('top').classList.remove('hide');
     tideKey=key;
     const xy=VENUE_COORDS[j];
     if(!xy)return null;
+    window.__BH_TIDE_ESTIMATE_ONLY=true;
     try{
       const ctrl=new AbortController();
-      const tm=setTimeout(()=>ctrl.abort(),4500);
-      const r=await fetch(`https://tideturtle.com/api/v1/tides?lat=${xy[0]}&lon=${xy[1]}`,{
+      const tm=setTimeout(()=>ctrl.abort(),2200);
+      let r;
+      try{r=await fetch(`https://tideturtle.com/api/v1/tides?lat=${xy[0]}&lon=${xy[1]}`,{
         cache:"no-store",signal:ctrl.signal
-      });
-      clearTimeout(tm);
-      if(!r.ok)throw 0;
-      tideCache=await r.json();
+      })}finally{clearTimeout(tm)}
+      if(!r.ok)throw Error(`tide ${r.status}`);
+      const raw=await r.json();
+      if(extractTideEvents(raw).length<2)throw Error('潮汐時刻が不足');
+      tideCache={...raw,source:'tideturtle'};
+      window.__BH_TIDE_ESTIMATE_ONLY=false;
+      queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
       return tideCache;
-    }catch(e){return tideCache=null}
+    }catch(e){
+      // Open-Meteo is a model at roughly 8 km resolution: display as an estimate only.
+      try{
+        const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),4500);
+        let r;
+        try{r=await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${xy[0]}&longitude=${xy[1]}&hourly=sea_level_height_msl&past_days=1&forecast_days=2&timezone=Asia%2FTokyo&cell_selection=sea`,{cache:'no-store',signal:ctrl.signal})}finally{clearTimeout(tm)}
+        if(!r.ok)throw Error(`marine ${r.status}`);
+        const data=await r.json(),times=data?.hourly?.time,heights=data?.hourly?.sea_level_height_msl;
+        if(!Array.isArray(times)||!Array.isArray(heights)||times.length!==heights.length)throw Error('潮位予測の形式が違います');
+        const hours=times.map((time,i)=>({time:String(time),height:heights[i]==null?NaN:Number(heights[i])})).filter(x=>Number.isFinite(x.height)&&x.time);
+        if(hours.length<8)throw Error('潮位予測が不足');
+        tideCache={modelHours:hours,source:'open-meteo-marine',estimated:true};
+        queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
+        return tideCache;
+      }catch(err){console.warn('潮位取得不可',e,err);queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());return tideCache=null}
+    }
   }
 
   function extractTideEvents(data){
+    if(Array.isArray(data?.modelHours)){
+      const rows=data.modelHours.map(x=>({time:new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(x.time)?x.time:x.time+'+09:00'),height:Number(x.height)}))
+       .filter(x=>!isNaN(x.time)&&Number.isFinite(x.height));
+      return rows.slice(1,-1).flatMap((x,i)=>{
+        const before=rows[i].height,after=rows[i+2].height;
+        if(x.height>=before&&x.height>after)return [{...x,type:'high'}];
+        if(x.height<=before&&x.height<after)return [{...x,type:'low'}];
+        return [];
+      });
+    }
     const arr=[];
     const stack=[data];
     while(stack.length){
@@ -18076,20 +18106,50 @@ $('top').classList.remove('hide');
     return arr.sort((a,b)=>a.time-b.time);
   }
 
+  function tideSnapshot(){
+    const venue=String($("stadium")?.value||'').padStart(2,'0'),key=codeKey();
+    if(!TIDAL_VENUES.has(venue))return {required:false,usable:true,venue};
+    const raw=currentRace?.closed_at??currentRace?.close_at??currentRace?.deadline_at??currentRace?.start_at;
+    const date=$("date")?.value||'';
+    const stamp=String(raw||'');
+    const timeOnly=stamp.match(/^(\d{1,2}):(\d{2})/);
+    const raceAt=timeOnly&&date?new Date(`${date}T${timeOnly[1].padStart(2,'0')}:${timeOnly[2]}:00+09:00`):new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(stamp)?stamp:stamp.includes('T')?stamp+'+09:00':stamp);
+    const basic={required:true,usable:false,venue,raceAt:Number.isFinite(raceAt.getTime())?raceAt.toISOString():null,
+      source:tideCache?.source||null,estimated:!!tideCache?.estimated,phase:null,position:null};
+    if(tideKey!==key||!tideCache||tideCache.estimated||!basic.raceAt)return basic;
+    const events=extractTideEvents(tideCache);let prev=null,next=null;
+    for(const event of events){if(event.time<=raceAt)prev=event;else if(!next)next=event}
+    if(!prev||!next||!Number.isFinite(prev.time.getTime())||!Number.isFinite(next.time.getTime())||
+       next.time-prev.time<90*60000||next.time-prev.time>10*3600000)return basic;
+    const rising=/low|干潮/i.test(prev.type)&&/high|満潮/i.test(next.type);
+    const falling=/high|満潮/i.test(prev.type)&&/low|干潮/i.test(next.type);
+    if(!rising&&!falling)return basic;
+    return {...basic,usable:true,phase:rising?'上げ':'下げ',
+      position:Math.max(0,Math.min(100,Math.round(100*(raceAt-prev.time)/(next.time-prev.time)))),
+      beforeAt:prev.time.toISOString(),afterAt:next.time.toISOString(),capturedAt:new Date().toISOString()};
+  }
+  window.BH_TIDE_SNAPSHOT=tideSnapshot;
+  window.BH_TIDE_REQUIRED=venue=>TIDAL_VENUES.has(String(venue||'').padStart(2,'0'));
+
   function tideHtml(data){
     const j=String($("stadium").value).padStart(2,"0");
     if(data?.none)return `<span class="strong">潮汐補正なし</span><br><span class="muted">この場は潮位をHUNTER補正の主対象にしません</span>`;
-    if(!data)return `<span class="muted">潮位データ取得不可</span>`;
+    const official=j==='19'?`<br><a href="https://www.boatrace-shimonoseki.jp/sp/index.php?page=datafile-tide_table" target="_blank" rel="noopener noreferrer">下関公式の潮見表を確認</a>`:'';
+    if(!data)return `<span class="muted">潮位データ取得不可${official}</span>`;
     const ev=extractTideEvents(data);
-    if(ev.length<2)return `<span class="muted">潮位データ取得済み（無料潮汐API） / 位相判定待ち</span>`;
-    const now=new Date();
+    const model=!!data.estimated;
+    if(ev.length<2)return `<span class="muted">${model?'潮位のモデル予測':'潮位データ'}は取得済み / 位相判定待ち${official}</span>`;
+    const raw=currentRace?.closed_at??currentRace?.close_at??currentRace?.deadline_at??currentRace?.start_at;
+    const when=raw?new Date(raw):null;
+    const now=when&&!isNaN(when)?when:new Date();
     let prev=null,next=null;
     for(const e of ev){if(e.time<=now)prev=e; if(e.time>now&&!next)next=e}
-    if(!prev||!next)return `<span class="muted">潮位データ取得済み（無料潮汐API） / 当該時刻の判定外</span>`;
+    if(!prev||!next)return `<span class="muted">${model?'潮位のモデル予測':'潮位データ'}は取得済み / 当該時刻の判定外${official}</span>`;
     const rising=/low|干潮/i.test(prev.type)&&/high|満潮/i.test(next.type);
     const phase=rising?"上げ潮":"下げ潮";
     const pct=Math.max(0,Math.min(100,Math.round((now-prev.time)/(next.time-prev.time)*100)));
-    return `<span class="strong">${phase} ${pct}%</span><br>${rising?"干潮→満潮へ上昇中":"満潮→干潮へ下降中"}<br><span class="muted">無料潮汐API / 潮位は場特性と合わせて補正。単独で頭固定には使わない</span>`;
+    if(model)return `<span class="strong">${phase}の参考推定 ${pct}%</span><br><span class="muted">Open-Meteo海洋モデル。沿岸の精度に限界があるため買い目補正には使用しません${official}</span>`;
+    return `<span class="strong">${phase} ${pct}%</span><br>${rising?"干潮→満潮へ上昇中":"満潮→干潮へ下降中"}<br><span class="muted">無料潮汐API / 潮位は場特性と合わせて補正。単独で頭固定には使わない${official}</span>`;
   }
 
   async function getTokuten(){
@@ -18868,7 +18928,10 @@ $('top').classList.remove('hide');
 <script>
 /* ===== Vol.215 BoatraceCSV od3 / 世間順位 ===== */
 (function(){
-  let oddsSnapshot=null;
+  let oddsSnapshot=null,analysisOdds=null,oddsRequest=null;
+  const selectedKey=()=>raceCode();
+  function markAnalysis(){analysisOdds=null;oddsSnapshot=null;window.__HUNTER_ODDS120=null;window.__HUNTER_MARKET_RANK=null;window.__BH_ANALYSIS_ODDS=null;window.__BH_ANALYSIS_ODDS_KEY=selectedKey()}
+  document.getElementById('aiAnalyzeTop503')?.addEventListener('click',markAnalysis,true);
 
   function parseCSV(text){
     text=String(text||"").replace(/^\uFEFF/,"");
@@ -18989,6 +19052,10 @@ function renderOdds(odds){
     const toggle=document.getElementById("oddsToggle");
     if(!state)return;
 
+    const requested=selectedKey();
+    if(analysisOdds?.key===requested){state.textContent='AI解析時の120通りを固定表示中';return analysisOdds.snapshot}
+    if(oddsRequest?.key===requested)return oddsRequest.promise;
+    const request=(async()=>{
     if(btn)btn.disabled=true;
     state.textContent="3連単120通りを取得中…";
     try{
@@ -18996,6 +19063,12 @@ function renderOdds(odds){
       if(!r.ok)throw new Error("od3");
       const snap=extractOdds(parseCSV(await r.text()));
       if(!snap)throw new Error("race");
+      if(requested!==selectedKey())return null;
+      if(analysisOdds?.key===requested)return analysisOdds.snapshot;
+      snap.raceKey=requested;snap.fetchedAt=new Date().toISOString();
+      if(window.__BH_ANALYSIS_ODDS_KEY===requested&&snap.odds.length===120){
+       analysisOdds={key:requested,snapshot:snap};window.__BH_ANALYSIS_ODDS=snap;
+      }
       oddsSnapshot=snap;
 
       const valid=snap.odds.filter(x=>x.odds!=null).length;
@@ -19016,7 +19089,8 @@ function renderOdds(odds){
       renderMarket(marketNow);
       renderOdds(snap.odds);
       toggle.disabled=false;
-      stamp.textContent=snap.acquired?`取得 ${snap.acquired}`:"取得時刻あり";
+      const local=new Date(snap.fetchedAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      stamp.textContent=`画面取得 ${local}｜配信元 ${snap.acquired||'時刻未記載'}`;
       return window.__HUNTER_ODDS120;
 
     }catch(e){
@@ -19034,6 +19108,8 @@ function renderOdds(odds){
     }finally{
       if(btn)btn.disabled=false;
     }
+    })();oddsRequest={key:requested,promise:request};
+    try{return await request}finally{if(oddsRequest?.promise===request)oddsRequest=null}
   }
 
   window.getOdds120=getOdds120;
@@ -19049,7 +19125,8 @@ function renderOdds(odds){
 
   /* レース変更時は前レースの世間順位を残さない */
   function resetOdds(){
-    oddsSnapshot=null;
+    oddsSnapshot=null;analysisOdds=null;oddsRequest=null;
+    window.__BH_ANALYSIS_ODDS=null;window.__BH_ANALYSIS_ODDS_KEY=null;
     document.getElementById("marketRank")?.replaceChildren();
     document.getElementById("oddsList")?.replaceChildren();
     const st=document.getElementById("oddsState"); if(st)st.textContent="AI解析時に120通りを取得します";
@@ -22497,12 +22574,7 @@ window.__BH_V396_FORCE_2BOX__=true;
    if(/追い風/.test(t))return /差し/.test(name)?6:/逃げ/.test(name)?-5:0;
    return 0;
  }
- function tideBias(boat,name){
-   const t=(document.getElementById('tideOutlook')?.textContent||'');
-   if(/高い|満潮|上げ/.test(t))return (boat>=3&&/まくり差し|差し/.test(name))?2:0;
-   if(/低い|干潮|下げ/.test(t))return /逃げ|まくり/.test(name)?2:0;
-   return 0;
- }
+ function tideBias(){return 0;} // Venue tide results determine preference.
  function venueBias(boat,name){
    const j=String(Number(document.getElementById('stadium')?.value||0)).padStart(2,'0');
    const p1=N(window.VENUE_BASE_202606_08?.[j]?.['1']?.p1);
@@ -23805,14 +23877,15 @@ window.__BH_V396_FORCE_2BOX__=true;
      const A=pick(ability,b),F=pick(flow,b),as=score(A),fs=score(F);
      return `<tr><td class="boat b${b}">${b}</td><td class="rank r${m.rank[b-1]}">${m.rank[b-1]}位</td><td>${m.head[b-1].toFixed(1)}%</td><td class="rank r${m.axisRank[b-1]} axisStart514">${m.axisRank[b-1]}位</td><td>${m.axis[b-1].toFixed(1)}%</td><td class="grade g${grade(A)}">${ar[b]?ar[b]+"位 / ":"未取得 / "}${grade(A)}</td><td class="grade g${grade(F)}">${fr[b]?fr[b]+"位 / ":"未取得 / "}${grade(F)}</td><td class="changeCell">${arrow(m.axisRank[b-1],ar[b])}</td><td class="changeCell">${arrow(m.axisRank[b-1],fr[b])}</td></tr>`;
    }).join("");
-   $("rc510State").textContent="世間評価＝120通りオッズのみ / ↑↓は世間の軸順位と能力・展開の評価順位との差";
+   const when=snap?.fetchedAt?new Date(snap.fetchedAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'}):'取得時刻未記録';
+   $("rc510State").textContent=`世間評価＝120通りオッズ（画面取得 ${when}／配信元 ${snap?.acquired||'時刻未記載'}）。締切時の確定オッズとは異なる場合があります。`;
    window.__BH_MARKET_COMPARE510={market:m,abilityRank:ar,flowRank:fr,updatedAt:Date.now(),raceKey:cacheKey()};
  }
  async function run(forceFresh=false){
    ensure();let snap=forceFresh?null:load(),refreshFailed=false;
    if(!snap){
      $("rc510State").textContent="AI解析：3連単120通り取得中…";
-     try{const fetched=await window.getOdds120?.();refreshFailed=forceFresh&&!valid(fetched);snap=valid(fetched)?fetched:load();if(valid(fetched))save(fetched)}catch(_){refreshFailed=forceFresh}
+     try{const fetched=await window.getOdds120?.();refreshFailed=forceFresh&&!valid(fetched);snap=valid(fetched)?fetched:null;if(valid(fetched))save(fetched)}catch(_){refreshFailed=forceFresh}
    }else window.__HUNTER_ODDS120=snap;
    if(valid(snap)){render(snap);if(refreshFailed)$("rc510State").textContent="オッズ再取得失敗：前回の評価を表示中"}
    else $("rc510State").textContent="120通りオッズ未取得 / 未公開";
@@ -24420,11 +24493,22 @@ window.__BH_V396_FORCE_2BOX__=true;
   const windText=String(document.getElementById('windOutlook')?.textContent||'');
   const strongHeadwind=Number.isFinite(speed)&&speed>=5&&/向かい風/.test(windText);
   const courseWin=num(risk?.courseWin),night=window.BH_V658_AFTER_SUNSET?.()?.active===true;
+  const inner=Array.isArray(course)?course[0]:null;
+  const escape=inner?.attack?.find(x=>x.method==='逃げ');
+  const escapeSample=Number(inner?.sample),escapeRate=num(escape?.rate),insideST=st(1);
+  const credibleRival=[2,3,4,5,6].some(n=>{
+   const r=row(n),a=course?.[n-1],rate=Math.max(...(a?.attack||[]).map(x=>Number(x.rate)).filter(Number.isFinite),0);
+   return window.BH_V622_GUARD?.canHead(n)!==false&&Number.isFinite(st(n))&&st(n)>0&&st(n)<=.18&&
+    (Number(r.head)<=2||Number(r.ability)<=2)&&Number(a?.sample)>=10&&rate>=8;
+  });
   // A clear inside favorite and two measured slow inner challengers; outside boats
   // need real preview support before adding another winning scenario.
-  const active=!risk?.headCut&&!clearAttack&&(!strongHeadwind||courseWin>=55)&&
-   (!Number.isFinite(courseWin)||courseWin>=30)&&+row(1).head===1&&+row(1).ability<=3&&
-   ['A','B','S'].includes(String(diag(1).grade))&&st(2)>=.20&&st(3)>=.20&&
+  const active=!risk?.headCut&&!clearAttack&&!credibleRival&&
+   Number.isFinite(escapeSample)&&escapeSample>=10&&Number.isFinite(escapeRate)&&escapeRate>=55&&
+   Number.isFinite(insideST)&&insideST>0&&insideST<=.18&&
+   (!strongHeadwind||escapeRate>=65)&&Number.isFinite(courseWin)&&courseWin>=50&&
+   +row(1).head===1&&+row(1).ability<=2&&
+   ['A','S'].includes(String(diag(1).grade))&&st(2)>=.20&&st(3)>=.20&&
    (noOutsideAttack||+row(4).ability>=5&&weak(5)&&weak(6));
   const confidence=(night?2:0)+(courseWin>=55?2:courseWin>=40?1:courseWin<40?-1:0)
    +(Number.isFinite(speed)&&speed>=3&&/向かい風/.test(windText)?-2:0);
@@ -24433,6 +24517,7 @@ window.__BH_V396_FORCE_2BOX__=true;
   if(Number.isFinite(speed))evidence.push('風 '+speed.toFixed(1)+'m/s'+(/向かい風|追い風/.exec(windText)?.[0]||''));
   if(night)evidence.push('日没後のイン補正');
   if(noOutsideAttack)evidence.push('外側の攻撃実績が乏しい');
+  if(credibleRival)evidence.push('外側に頭候補が残るため、1頭への絞りを解除');
   const axes=[2,3].filter(n=>n===2?(ranks.lap[n]===1||ranks.straight[n]===1):ranks.turn[n]===1);
   return {active,axes,weakSix:weak(6),turnBest:ranks.turn[3]===1,ranks,confidence,evidence};
  }
@@ -24611,9 +24696,9 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:672,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:675,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
- race:{date,stadium,stadiumName:name,raceNo},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
+ race:{date,stadium,stadiumName:name,raceNo},environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research},
  result:/^[1-6]-[1-6]-[1-6]$/.test(res)?{confirmed:true,trifecta:res,order:res.split('-').map(Number),winningMove:way}: {confirmed:false}};
 }
@@ -25444,7 +25529,8 @@ const $=id=>document.getElementById(id),uniq=a=>[...new Set(a)];
 const combo=s=>{const m=String(s||'').match(/([1-6])\s*[-=]\s*([1-6])\s*[-=]\s*([1-6])/);return m&&new Set(m.slice(1)).size===3?m.slice(1).join('-'):null};
 const valid=a=>uniq((a||[]).map(combo).filter(Boolean));
 function odds(){
- const raw=window.__HUNTER_ODDS120?.odds||[];
+ const key=[$('date')?.value?.replaceAll('-','')||'',String(Number($('stadium')?.value||0)).padStart(2,'0'),String(Number($('race')?.value||0)).padStart(2,'0')].join('');
+ const raw=(window.__BH_ANALYSIS_ODDS?.raceKey===key?window.__BH_ANALYSIS_ODDS:window.__HUNTER_ODDS120)?.odds||[];
  const rows=Array.isArray(raw)?raw:Object.entries(raw).map(([key,value])=>({combo:key,odds:value}));
  return rows.map(x=>{const c=combo(x.combo||x.key||x.bet||x.number||x.kumi||x[0]);const v=Number(x.odds??x.value??x.rate??x[1]);return {combo:c,odds:v}}).filter(x=>x.combo&&Number.isFinite(x.odds)&&x.odds>0).sort((a,b)=>a.odds-b.odds).map((x,i)=>({...x,rank:i+1}));
 }
@@ -25896,6 +25982,19 @@ function mergeLabBets(result,data,od,p){
  return {...result,items,box:(result.box||[]).filter(c=>!labSet.has(c)),labMeta:meta};
 }
 
+function tidePreference(c,rule){
+ if(!rule)return 0;const head=Number(c[0]),move=technique(head);
+ return (head===1&&move==='逃げ'?rule.escape:move==='まくり'?rule.sweep:0)||0;
+}
+function applyTideResearch(result,data,tide){
+ if(!result||result.narrow||!tide?.usable||!data?.tideRules)return result;
+ const rule=data.tideRules.find(x=>x.venue===tide.venue&&x.phase===tide.phase&&x.n>=30&&x.baselineN>=30);
+ if(!rule)return result;
+ const all=[...result.items.map(x=>x.combo),...(result.box||[])],seen=new Set(all);
+ if(!seen.size)return result;
+ return {...result,tideRule:rule,tidePhase:tide.phase};
+}
+
 // Preserve the 20 x 100-yen budget when cheap returns make a wide third group wasteful.
 function allocateStake(result,od){
  if(!result||result.narrow||result.escapeFocus)return result;
@@ -25917,7 +26016,7 @@ function allocateStake(result,od){
   const xa=Number.isFinite(x)&&x>=20?0:1,ya=Number.isFinite(y)&&y>=20?0:1;
   const ax=result.items.find(z=>z.combo===a)?.kind,by=result.items.find(z=>z.combo===b)?.kind;
   const ac=ax==='main'||ax==='lab'?0:1,bc=by==='main'||by==='lab'?0:1;
-  return ac-bc||xa-ya||(Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||a.localeCompare(b);
+  return ac-bc||xa-ya||tidePreference(b,result.tideRule)-tidePreference(a,result.tideRule)||(Number.isFinite(x)?x:Infinity)-(Number.isFinite(y)?y:Infinity)||a.localeCompare(b);
  });
  let extra=20-remaining.length;
  // Complete attainable 20x gross-return targets before adding confidence stakes.
@@ -25927,6 +26026,12 @@ function allocateStake(result,od){
   if(need<=extra){units[c]+=need;extra-=need}
  }
  for(let i=0;extra>0;i++,extra--)units[supported[i%supported.length]]++;
+ const positive=supported.find(c=>tidePreference(c,result.tideRule)>0);
+ if(positive){
+  const donor=remaining.slice().reverse().find(c=>c!==positive&&tidePreference(c,result.tideRule)<tidePreference(positive,result.tideRule)&&units[c]>1&&
+   (!Number.isFinite(odds.get(c))||(units[c]-1)*odds.get(c)>=20));
+  if(donor){units[donor]--;units[positive]++}
+ }
  return {...result,box,units,unitTotal:20,stakeYen:2000,stakeNarrow:reduced.length>0||remaining.length<20,trimmedBets:reduced};
 }
 
@@ -25969,7 +26074,8 @@ function updateOdds(root,od){
   }
  });
  const status=root.querySelector('.bh590OddsStatus');
- const statusText=od.length>=110?'オッズ取得済み：倍率・世間人気順位を反映。':'オッズ未取得：倍率・世間人気順位は取得後に反映。';
+ const snap=window.__BH_ANALYSIS_ODDS;
+ const statusText=od.length>=110?`AI解析時のオッズ固定｜${snap?.fetchedAt?new Date(snap.fetchedAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'}):'取得時刻未確認'}｜配信元 ${snap?.acquired||'時刻未記載'}。締切時の最終オッズとは異なります。`:'オッズ未取得：倍率・世間人気順位は取得後に反映。';
  if(status&&status.textContent!==statusText)status.textContent=statusText;
 }
 function render(){
@@ -25988,9 +26094,11 @@ function render(){
  const hasSixCards=document.querySelectorAll("#cards .card,#cards .compactRacerCard").length>=6;
  const analysisReady=hasSixCards && ($("aiAnalyzeTop503")?.dataset.analysisDone==="1" || !!window.__BH_V653_BET_LOCK?.result);
  const labData=analysisReady?readLabRules():null;
- const result=analysisReady?(locked?.result??allocateStake(mergeLabBets(selected(p,od),labData,od,p),od)):null;
- if(!locked&&result)window.__BH_V653_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
- const sig=JSON.stringify([key,analysisReady,result?.escapeFocus,result?.stakeNarrow,result?.units,result?.narrow,result?.reason,result?.watchHeads,result?.items,result?.box,result?.boxMode,result?.labMeta]);
+ const tide=window.BH_TIDE_SNAPSHOT?.()||null;
+ const tideBlocked=window.BH_TIDE_REQUIRED?.($('stadium')?.value)===true && tide?.usable!==true;
+ const result=analysisReady?(tideBlocked?{narrow:true,reason:'レース時刻の潮位を確認できません。潮位取得後に再解析してください。',watchHeads:[],items:[],box:[]}:locked?.result??allocateStake(applyTideResearch(mergeLabBets(selected(p,od),labData,od,p),labData,tide),od)):null;
+ if(!locked&&result&&!tideBlocked)window.__BH_V653_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
+ const sig=JSON.stringify([key,analysisReady,tideBlocked,tide?.phase,result?.escapeFocus,result?.stakeNarrow,result?.units,result?.narrow,result?.reason,result?.watchHeads,result?.items,result?.box,result?.boxMode,result?.labMeta,result?.tideRule]);
  const existing=box.querySelector('.bh590Root');
  if(sig===previous&&existing){updateOdds(existing,od);return}
  previous=sig;rendering=true;
@@ -26023,6 +26131,7 @@ function render(){
   '研究所に同条件の採用候補なし｜HUNTER評価を使用';root.append(labNote);
 
  const heads=uniq(result.items.map(x=>Number(x.combo[0])));const alerts=[];
+ if(result.tideRule)alerts.push('潮汐研究｜'+result.tidePhase+'潮・場別実績を配分順に反映');
  const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
  if(result.escapeFocus)alerts.push('買い目絞り｜イン逃げ頭・根拠ある軸に集中');
  if(result.stakeNarrow)alerts.push('買い目絞り｜買い目を増やさず投資枚数へ');
@@ -26042,13 +26151,13 @@ function render(){
  const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');card.dataset.combo=x.combo;if(result.units)card.dataset.units=String(result.units[x.combo]||1);const o=m.get(x.combo),t=technique(Number(x.combo[0]));
  const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
- for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[x.combo]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}if(x.kind==='lab'||x.researchLab){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent=x.researchAxis?'研究軸':'研究';card.append(patch)}else if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
+ for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[x.combo]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}if(result.tideRule&&tidePreference(x.combo,result.tideRule)>0){const tidePatch=document.createElement('div');tidePatch.className='bhLabResearchPatch';tidePatch.textContent='潮汐研究';card.append(tidePatch)}if(x.kind==='lab'||x.researchLab){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent=x.researchAxis?'研究所・軸':'研究所';card.append(patch)}else if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
  // Bet 3 uses a six-ticket BOX, or six fresh evaluated combinations if no BOX is distinct.
  if(result.box?.length>0){
   const title=document.createElement('div');title.className='bh590Section extra';title.textContent='買い目3｜'+(result.boxMode==='展開理論'?'展開理論':result.boxMode)+'（'+result.box.length+'点）';root.append(title);
   const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
-  for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';card.dataset.combo=c;if(result.units)card.dataset.units=String(result.units[c]||1);const o=m.get(c);if(result.boxMeta?.[c]){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent='研究';card.append(patch)}
+  for(const c of result.box){const card=document.createElement('div');card.className='bh590Ticket extra';card.dataset.combo=c;if(result.units)card.dataset.units=String(result.units[c]||1);const o=m.get(c);if(result.tideRule&&tidePreference(c,result.tideRule)>0){const tidePatch=document.createElement('div');tidePatch.className='bhLabResearchPatch';tidePatch.textContent='潮汐研究';card.append(tidePatch)}if(result.boxMeta?.[c]){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent='研究所';card.append(patch)}
    for(const [cl,val] of [['bh590Combo',c],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']]){
     const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[c]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}grid.append(card)}
  }
@@ -26240,9 +26349,10 @@ function payload(){
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const plan=window.__BH_V653_BET_LOCK?.result||null;const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:672,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:675,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
+  environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
   hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
   result:{confirmed:true,order:combo.split('-').map(Number),combo,trifecta:combo,technique:way,winningMove:way,payout:Number.isFinite(payout)?payout:0,verdict:clean($('bhV571Judge')?.textContent,25)}};
 }
