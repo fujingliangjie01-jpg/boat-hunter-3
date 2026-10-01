@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V677</title>
+<title>BOAT HUNTER V678</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.677</div>
+  <div class="topVol">Vol.678</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -17893,6 +17893,17 @@ $('top').classList.remove('hide');
     "21":[33.883,130.664],"22":[33.593,130.403],"23":[33.457,129.966],"24":[32.910,129.940]
   };
   const TIDAL_VENUES=new Set(["03","04","06","07","08","09","14","15","16","17","18","19","20","22","23","24"]);
+  // V678 気象庁「潮位表」最寄り観測点。確認できた場から公式表を優先使用。
+  // 場そのものの観測点ではない場合があるため、表示には観測点名を必ず明記する。
+  const BH_JMA_TIDE_STATIONS={
+    "06":{stn:"MI",name:"舞阪"},      // 浜名湖
+    "15":{stn:"TA",name:"高松"},      // 丸亀・最寄り公式潮位表
+    "16":{stn:"UN",name:"宇野"},      // 児島
+    "17":{stn:"Q8",name:"広島"},      // 宮島
+    "18":{stn:"QA",name:"徳山"},      // 徳山
+    "19":{stn:"A1",name:"弟子待"},    // 下関（2013年以降の公式推奨点）
+    "22":{stn:"QF",name:"博多"}       // 福岡
+  };
   const VENUE_COORDS={
     "03":[35.678,139.884],"04":[35.583,139.742],"06":[34.718,137.596],"07":[34.808,137.221],
     "08":[34.890,136.835],"09":[34.706,136.519],"14":[34.199,134.608],"15":[34.299,133.790],
@@ -18037,6 +18048,83 @@ $('top').classList.remove('hide');
       <div class="windMeta">${windLabel}　/　風補正 ${strength}${w.gust!=null?`　/　最大瞬間 ${w.gust}m/s`:""}　/　無料気象データ</div>`;
   }
 
+  function bhJmaDateParts(dateStr){
+    const m=String(dateStr||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?{y:Number(m[1]),m:Number(m[2]),d:Number(m[3])}:null;
+  }
+
+  function bhParseJmaTideRow(text,dateStr){
+    const p=bhJmaDateParts(dateStr); if(!p)return null;
+    const label=`${p.y}/${String(p.m).padStart(2,"0")}/${String(p.d).padStart(2,"0")}`;
+    const lines=String(text||"").split(/\r?\n/);
+    const line=lines.find(x=>x.includes(label));
+    if(!line)return null;
+
+    // JMA table order: high1/high2/... then low1/low2/...
+    const cells=line.split("|").map(x=>x.trim()).filter(Boolean);
+    const idx=cells.findIndex(x=>x.includes(label));
+    const tail=(idx>=0?cells.slice(idx+1):cells).filter(x=>x!=="*"&&!/Image:|朔|望|上弦|下弦/.test(x));
+    const pairs=[];
+    for(let i=0;i<tail.length-1;i++){
+      const tm=tail[i].match(/^(\d{1,2}):(\d{2})$/);
+      const h=Number(String(tail[i+1]).replace(/[^\d.-]/g,""));
+      if(tm&&Number.isFinite(h)){pairs.push({hh:Number(tm[1]),mm:Number(tm[2]),height:h});i++}
+    }
+    if(pairs.length<2)return null;
+    const events=[];
+    // 通常は先頭2組が満潮、その後2組が干潮。1組しかない側にも対応。
+    const hiCount=Math.min(2,Math.max(1,Math.ceil(pairs.length/2)));
+    pairs.forEach((x,i)=>{
+      const t=new Date(`${dateStr}T${String(x.hh).padStart(2,"0")}:${String(x.mm).padStart(2,"0")}:00+09:00`);
+      events.push({time:t.toISOString(),type:i<hiCount?"high":"low",height:x.height});
+    });
+    return events;
+  }
+
+  async function bhFetchJmaTide(station,dateStr){
+    if(!station)return null;
+    const p=bhJmaDateParts(dateStr); if(!p)return null;
+    const q=new URLSearchParams({
+      LV:"DL",S_HILO:"on",S_HOUR:"on",
+      ds:String(p.d).padStart(2,"0"),ms:String(p.m).padStart(2,"0"),
+      de:String(p.d).padStart(2,"0"),me:String(p.m).padStart(2,"0"),
+      ys:String(p.y),ye:String(p.y),stn:station.stn
+    });
+    const jmaUrl=`https://www.data.jma.go.jp/kaiyou/db/tide/suisan/suisan.php?${q.toString()}`;
+    const urls=[
+      jmaUrl,
+      `https://r.jina.ai/${jmaUrl}`
+    ];
+    let lastErr=null;
+    for(const url of urls){
+      try{
+        const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),5000);
+        let r;
+        try{r=await fetch(url,{cache:"no-store",signal:ctrl.signal})}finally{clearTimeout(tm)}
+        if(!r.ok)throw Error(`JMA tide ${r.status}`);
+        const text=await r.text();
+        let events=null;
+        if(/<html|<table|<tr/i.test(text)){
+          const doc=new DOMParser().parseFromString(text,"text/html");
+          const p2=bhJmaDateParts(dateStr);
+          const label=`${p2.y}/${String(p2.m).padStart(2,"0")}/${String(p2.d).padStart(2,"0")}`;
+          const tr=[...doc.querySelectorAll("tr")].find(x=>x.textContent.includes(label));
+          if(tr){
+            const cells=[...tr.querySelectorAll("th,td")].map(x=>x.textContent.trim());
+            const flat=cells.join(" | ");
+            events=bhParseJmaTideRow(flat,dateStr);
+          }
+        }
+        if(!events)events=bhParseJmaTideRow(text,dateStr);
+        if(events?.length>=2){
+          return {events,source:"jma-tide-table",station:station.name,stationCode:station.stn,jmaUrl,estimated:false,official:true};
+        }
+        throw Error("JMA当日潮位行を解析できません");
+      }catch(e){lastErr=e}
+    }
+    throw lastErr||Error("JMA潮位取得失敗");
+  }
+
   async function getTide(){
     const j=String($("stadium").value).padStart(2,"0"),key=codeKey();
     if(!TIDAL_VENUES.has(j))return {none:true};
@@ -18045,6 +18133,23 @@ $('top').classList.remove('hide');
     const xy=VENUE_COORDS[j];
     if(!xy)return null;
     window.__BH_TIDE_ESTIMATE_ONLY=true;
+
+    // V678: まず気象庁の「今日の潮位表（満潮・干潮）」を使う。
+    // リアルタイム観測値ではなく、レース時刻が満潮→干潮 / 干潮→満潮のどこにいるかを判定。
+    const dateStr=$("date")?.value||new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Tokyo"});
+    const station=BH_JMA_TIDE_STATIONS[j];
+    if(station){
+      try{
+        tideCache=await bhFetchJmaTide(station,dateStr);
+        window.__BH_TIDE_ESTIMATE_ONLY=false;
+        queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
+        return tideCache;
+      }catch(e){
+        console.warn("JMA潮位表取得不可",station,e);
+      }
+    }
+
+    // 公式表が取れない場合のみ既存の無料潮汐APIへフォールバック。
     try{
       const ctrl=new AbortController();
       const tm=setTimeout(()=>ctrl.abort(),2200);
@@ -18055,12 +18160,12 @@ $('top').classList.remove('hide');
       if(!r.ok)throw Error(`tide ${r.status}`);
       const raw=await r.json();
       if(extractTideEvents(raw).length<2)throw Error('潮汐時刻が不足');
-      tideCache={...raw,source:'tideturtle'};
+      tideCache={...raw,source:'tideturtle',estimated:false};
       window.__BH_TIDE_ESTIMATE_ONLY=false;
       queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
       return tideCache;
     }catch(e){
-      // Open-Meteo is a model at roughly 8 km resolution: display as an estimate only.
+      // Open-Meteo は最終参考表示のみ。estimated=true のため潮位必須場では買い目を止める。
       try{
         const ctrl=new AbortController(),tm=setTimeout(()=>ctrl.abort(),4500);
         let r;
@@ -18078,6 +18183,10 @@ $('top').classList.remove('hide');
   }
 
   function extractTideEvents(data){
+    if(Array.isArray(data?.events)){
+      return data.events.map(x=>({time:new Date(x.time),type:String(x.type||''),height:outlookNum(x.height)}))
+       .filter(x=>!isNaN(x.time)).sort((a,b)=>a.time-b.time);
+    }
     if(Array.isArray(data?.modelHours)){
       const rows=data.modelHours.map(x=>({time:new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(x.time)?x.time:x.time+'+09:00'),height:Number(x.height)}))
        .filter(x=>!isNaN(x.time)&&Number.isFinite(x.height));
@@ -18149,6 +18258,11 @@ $('top').classList.remove('hide');
     const phase=rising?"上げ潮":"下げ潮";
     const pct=Math.max(0,Math.min(100,Math.round((now-prev.time)/(next.time-prev.time)*100)));
     if(model)return `<span class="strong">${phase}の参考推定 ${pct}%</span><br><span class="muted">Open-Meteo海洋モデル。沿岸の精度に限界があるため買い目補正には使用しません${official}</span>`;
+    const fmt=e=>`${e.time.toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit",hour12:false})}${Number.isFinite(e.height)?` ${Math.round(e.height)}cm`:""}`;
+    if(data?.source==="jma-tide-table"){
+      const st=data.station?`気象庁 ${data.station}`:"気象庁";
+      return `<span class="strong">${phase} ${pct}%</span><br>${fmt(prev)} → ${fmt(next)}<br><span class="muted">${st}の当日潮位表からレース時刻を判定。リアルタイム実測ではありません。</span>`;
+    }
     return `<span class="strong">${phase} ${pct}%</span><br>${rising?"干潮→満潮へ上昇中":"満潮→干潮へ下降中"}<br><span class="muted">無料潮汐API / 潮位は場特性と合わせて補正。単独で頭固定には使わない${official}</span>`;
   }
 
@@ -25811,7 +25925,7 @@ function selected(p,od){
    box:[],boxMode:'',boxMeta:{},headsAllowed:[1],primaryHead:1,escapeFocus:true,focusEvidence:focus.evidence,
    units,unitTotal:20,stakeYen:2000};
  }
- // V677: 絞りは点数ではなく「頭の確信度」で判定する。
+ // V678: 気象庁の当日潮位表（満潮・干潮）を優先し、レース時刻の上げ/下げを判定。
  // 主頭が能力/展開で弱く、別艇が能力1位+展開1位なら、その艇を対抗頭として必ず残す。
  // これにより「研究所優先6点=1頭固定」の見かけ上の絞りを禁止する。
  let displayedHeads=focus?.active?[1]:(singleHeads.length?singleHeads:fallbackHeads);
