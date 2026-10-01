@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V678</title>
+<title>BOAT HUNTER V680</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.678</div>
+  <div class="topVol">Vol.680</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25910,18 +25910,44 @@ function selected(p,od){
   // Add a second group only when its second-place axis has independent evidence.
   const axes=focus.axes||[];
   const first=axes.map(axis=>[1,2,3,4,5,6].filter(c=>c!==1&&c!==axis).map(c=>`1-${axis}-${c}`).filter(valid));
-  const a=first[0]||[],b=first[1]||[],bets=[...new Set([...a,...b])].slice(0,8);
-  if(bets.length<8)return {narrow:true,reason:'絞り8点の根拠が不足',watchHeads:[1],items:[],box:[]};
+  const a=first[0]||[],b=first[1]||[];
   const byCombo=new Map(od.map(x=>[x.combo,x.odds]));
   const priority=c=>{const v=Number(c.split('-')[1]);return v===3&&focus.turnBest?3:v===2?2:1};
-  // V677 絞り：8点×最低2口=16口。残り4口は「期待値 proxy → 低オッズ」の順で1口ずつ追加。
+
+  // V679 絞り：最大9点。
+  // まず従来候補の先頭5点を本線として残し、その5点の「2着⇔3着」折り返しを追加。
+  // 折り返し候補が多い場合は高オッズ側を優先し、合計9点まで。
+  const seed=[...new Set([...a,...b])].slice(0,5);
+  if(seed.length<5)return {narrow:true,reason:'絞り本線5点の根拠が不足',watchHeads:[1],items:[],box:[]};
+  const reverse23=c=>{
+    const p=String(c).split('-');
+    return p.length===3?`${p[0]}-${p[2]}-${p[1]}`:'';
+  };
+  const rev=seed.map(reverse23).filter(c=>valid(c)&&!seed.includes(c));
+  rev.sort((x,y)=>Number(byCombo.get(y)??0)-Number(byCombo.get(x)??0)||priority(y)-priority(x)||x.localeCompare(y));
+  const bets=[...seed];
+  for(const c of rev){
+    if(bets.length>=9)break;
+    if(!bets.includes(c))bets.push(c);
+  }
+
+  // 折り返しが不足する場合だけ、元候補の次順位から補充。9点は上限であり必須ではない。
+  for(const c of [...a,...b]){
+    if(bets.length>=9)break;
+    if(valid(c)&&!bets.includes(c))bets.push(c);
+  }
+
+  // 20口・2,000円は維持。各点最低2口、残りは「期待値 proxy → 同条件なら低オッズ」を優先。
+  // 9点なら18口+追加2口。8点なら16口+追加4口。
   const units=Object.fromEntries(bets.map(c=>[c,2]));
+  let left=Math.max(0,20-bets.length*2);
   const evProxy=c=>{const o=Number(byCombo.get(c));return (Number.isFinite(o)&&o>0?o:0)*priority(c)};
   const extraOrder=bets.slice().sort((x,y)=>evProxy(y)-evProxy(x)||
    Number(byCombo.get(x)??Infinity)-Number(byCombo.get(y)??Infinity)||x.localeCompare(y));
-  for(let i=0;i<4;i++)units[extraOrder[i%extraOrder.length]]++;
-  const a8=bets.filter(c=>a.includes(c)),b8=bets.filter(c=>b.includes(c));
-  return {narrow:false,items:[...a8.map(combo=>({combo,kind:'main'})),...b8.map(combo=>({combo,kind:'counter'}))],
+  for(let i=0;left>0;i++,left--)units[extraOrder[i%extraOrder.length]]++;
+
+  const mainSet=new Set(a);
+  return {narrow:false,items:bets.map(combo=>({combo,kind:mainSet.has(combo)?'main':'counter'})),
    box:[],boxMode:'',boxMeta:{},headsAllowed:[1],primaryHead:1,escapeFocus:true,focusEvidence:focus.evidence,
    units,unitTotal:20,stakeYen:2000};
  }
@@ -25998,7 +26024,78 @@ function selected(p,od){
   }
   if(formed.length)counterV677=formed.slice(0,14);
  }
- const items=[...main.map(c=>({combo:c,kind:'main'})),...counterV677.map(c=>({combo:c,kind:'counter'}))];
+ // V680 買い目2：
+ // ・切り艇は「2着」から除外
+ // ・ただし 1コース艇 と 買い目2頭の1個後ろのコース艇 は保護して除外しない
+ // ・減った点数は買い目1の「2着⇔3着」折り返しで補充
+ // ・通常レースは買い目1+買い目2で合計20通りを維持
+ const primaryCut=(()=>{
+  const direct=Number(window.__HUNTER_SECOND_CUT);
+  if(Number.isInteger(direct)&&direct>=1&&direct<=6)return direct;
+  const learned=(window.BH_BET_LEARNING_V517?.predict?.()?.cuts||[]).map(Number).find(n=>Number.isInteger(n)&&n>=1&&n<=6);
+  return learned||0;
+ })();
+ const buy2Head=Number(secondaryHead)||0;
+ const protectedSecond=new Set();
+ if(buy2Head){
+  protectedSecond.add(1);
+  protectedSecond.add(buy2Head===6?2:nextCourseBoatFor(buy2Head));
+ }
+ const activeCut=(primaryCut&&!protectedSecond.has(primaryCut)&&primaryCut!==buy2Head)?primaryCut:0;
+
+ let counterV680=[...counterV677];
+ if(activeCut){
+  counterV680=counterV680.filter(c=>{
+   const ns=String(c).split('-').map(Number);
+   return ns.length===3&&ns[1]!==activeCut;
+  });
+ }
+
+ // 買い目1の折り返し候補。研究所優先の6点を基準に2着と3着を反転。
+ const usedV680=new Set([...main,...counterV680]);
+ const mainReversals=main.map(c=>{
+  const ns=String(c).split('-').map(Number);
+  return ns.length===3?`${ns[0]}-${ns[2]}-${ns[1]}`:'';
+ }).filter(c=>c&&valid(c)&&!usedV680.has(c));
+
+ const needV680=Math.max(0,20-(main.length+counterV680.length));
+ const addedReversals=[];
+ for(const c of mainReversals){
+  if(addedReversals.length>=needV680)break;
+  if(!usedV680.has(c)){
+   usedV680.add(c);
+   addedReversals.push(c);
+  }
+ }
+
+ // 通常想定では切り艇1艇につき買い目2から最大2点減るため、上の折り返しで20点へ戻る。
+ // 万一まだ不足する場合は、買い目1頭固定の反転候補を評価順から補い、20点を維持する。
+ if(main.length+counterV680.length+addedReversals.length<20&&mainHead){
+  const shortage=20-(main.length+counterV680.length+addedReversals.length);
+  const refill=candidates.filter(x=>x.h===mainHead)
+   .map(x=>x.combo)
+   .filter(c=>{
+    const ns=String(c).split('-').map(Number);
+    if(ns.length!==3)return false;
+    const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
+    return valid(rev)&&!usedV680.has(rev);
+   });
+  for(const c of refill){
+   if(addedReversals.length>=needV680+shortage)break;
+   const ns=String(c).split('-').map(Number),rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
+   if(!usedV680.has(rev)){
+    usedV680.add(rev);
+    addedReversals.push(rev);
+   }
+  }
+ }
+
+ const items=[
+  ...main.map(c=>({combo:c,kind:'main'})),
+  ...counterV680.map(c=>({combo:c,kind:'counter'})),
+  ...addedReversals.map(c=>({combo:c,kind:'main-reversal'}))
+ ].slice(0,20);
+
  // A boat ranked last in both ability and flow must not enter the third section.
  const lastBoats=new Set([1,2,3,4,5,6].filter(n=>{const row=T(n);return Number(row.ability)===6&&Number(row.flow)===6}));
  const buy3Heads=allowedHeads;
@@ -26126,7 +26223,13 @@ function mergeLabBets(result,data,od,p){
  let buy1=[...lab,...main.filter(x=>!labSet.has(x.combo))].slice(0,6);
  const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]),leadTicket=main.find(x=>Number(x.combo[0])===lead);
  if(leadTicket&&!buy1.some(x=>Number(x.combo[0])===lead))buy1=[...buy1.slice(0,5),leadTicket];
- const items=[...buy1,...counter.slice(0,14)];
+ // V680: 研究所で買い目1の並びを更新しても、買い目2の切り艇処理と
+ // 買い目1折り返し補充で作った20点構成は崩さない。
+ const existingCounter=result.items.filter(x=>x.kind==='counter');
+ const existingReversal=result.items.filter(x=>x.kind==='main-reversal');
+ const occupiedV680=new Set(buy1.map(x=>x.combo));
+ const mergedTail=[...existingCounter,...existingReversal].filter(x=>!occupiedV680.has(x.combo));
+ const items=[...buy1,...mergedTail].slice(0,20);
  return {...result,items,box:[],labMeta:meta};
 }
 
@@ -26143,10 +26246,16 @@ function applyTideResearch(result,data,tide){
  return {...result,tideRule:rule,tidePhase:tide.phase};
 }
 
-// V677 通常レース：買い目1=6点、買い目2=14点、買い目3なし。最大20点を各1口。
+// V680 通常レース：合計20通りを維持。
+// 買い目2で2着切りした分は、買い目1の2着⇔3着折り返しに移す。各1口。
 function allocateStake(result,od){
  if(!result||result.narrow||result.escapeFocus)return result;
- const items=(result.items||[]).slice(0,20);
+ const seen=new Set(),items=[];
+ for(const x of result.items||[]){
+  if(!x?.combo||seen.has(x.combo))continue;
+  seen.add(x.combo);items.push(x);
+  if(items.length>=20)break;
+ }
  const units=Object.fromEntries(items.map(x=>[x.combo,1]));
  return {...result,items,box:[],units,unitTotal:items.length,stakeYen:items.length*100,stakeNarrow:false,trimmedBets:[]};
 }
@@ -26237,7 +26346,7 @@ function render(){
   card.append(mark,title,why,label,heads);root.append(card);return;
  }
  const m=new Map(od.map(x=>[x.combo,x]));
- if(result.escapeFocus){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='絞りレース｜8点・20口・2,000円';root.append(summary)}
+ if(result.escapeFocus){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent=`絞りレース｜${(result.items||[]).length}点・20口・2,000円`;root.append(summary)}
  else if(result.stakeNarrow){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='投資配分｜買い目を増やさず20口・2,000円を配分';root.append(summary)}
  const labNote=document.createElement('div');labNote.className='bh590OddsStatus';
  const applied=Object.keys(result.labMeta||{}).length;
