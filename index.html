@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V689</title>
+<title>BOAT HUNTER V690</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.689</div>
+  <div class="topVol">Vol.690</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24961,7 +24961,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:689,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:690,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26730,7 +26730,7 @@ window.BH_V592_RENDER_BETS=render;
    totalCount:items.length
   };
  }
- window.BH_V687_BET_GROUPS_SNAPSHOT=currentGroups;
+ window.BH_V687_BET_GROUPS_SNAPSHOT=currentGroups;window.BH_V690_BET_GROUPS_SNAPSHOT=currentGroups;
 
  function parseStored(r){
   const resultCombo=String(r?.result?.combo||r?.result?.trifecta||'').replace(/[－ー–—]/g,'-');
@@ -26804,14 +26804,34 @@ window.BH_V592_RENDER_BETS=render;
   return [...map.values()].map(parseStored).filter(Boolean);
  }
 
+ // V690 的中率の母数は「その買い目が負けたレース」だけを数える。
+ // 例：買い目1が的中したレースでは、買い目2はハズレ扱いにせず母数から除外。
+ //     買い目2が的中したレースでは、買い目1を母数から除外。
+ //     両方とも外れたレースは、買い目1/2の双方に1敗として入る。
+ // 絞りは通常買い目1/2と同時に出ないので、絞りレースだけで独立集計。
+ function eligibleForMetric(r,metric){
+  if(metric==='narrow')return r.mode==='narrow'&&Array.isArray(r.narrow)&&r.narrow.length>0;
+  if(r.mode!=='normal')return false;
+  const hit1=Array.isArray(r.buy1)&&r.buy1.includes(r.resultCombo);
+  const hit2=Array.isArray(r.buy2)&&r.buy2.includes(r.resultCombo);
+  if(metric==='buy1'){
+   if(!Array.isArray(r.buy1)||!r.buy1.length)return false;
+   return !(hit2&&!hit1); // 買い目2だけ的中なら買い目1の母数に入れない
+  }
+  if(metric==='buy2'){
+   if(!Array.isArray(r.buy2)||!r.buy2.length)return false;
+   return !(hit1&&!hit2); // 買い目1だけ的中なら買い目2の母数に入れない
+  }
+  return false;
+ }
  const stat=(rows,listKey)=>{
-  const x=rows.filter(r=>Array.isArray(r[listKey])&&r[listKey].length);
-  const hits=x.filter(r=>r[listKey].includes(r.resultCombo)).length;
+  const x=rows.filter(r=>eligibleForMetric(r,listKey));
+  const hits=x.filter(r=>Array.isArray(r[listKey])&&r[listKey].includes(r.resultCombo)).length;
   return {n:x.length,hits,rate:x.length?hits/x.length*100:null};
  };
  function tier(rows,metric,cur){
   if(metric==='buy1'){
-   const all=rows.filter(r=>r.mode==='normal'&&r.buy1.length);
+   const all=rows.filter(r=>eligibleForMetric(r,'buy1'));
    const exact=all.filter(r=>r.buy1Head===cur.buy1Head&&r.buy1Count===cur.buy1Count);
    if(exact.length>=3)return {rows:exact,label:'今回型'};
    const head=all.filter(r=>r.buy1Head===cur.buy1Head);
@@ -26819,14 +26839,14 @@ window.BH_V592_RENDER_BETS=render;
    return {rows:all,label:'研究所全体'};
   }
   if(metric==='buy2'){
-   const all=rows.filter(r=>r.mode==='normal'&&r.buy2.length);
+   const all=rows.filter(r=>eligibleForMetric(r,'buy2'));
    const exact=all.filter(r=>r.buy2Head===cur.buy2Head&&r.buy2Count===cur.buy2Count);
    if(exact.length>=3)return {rows:exact,label:'今回型'};
    const head=all.filter(r=>r.buy2Head===cur.buy2Head);
    if(head.length>=3)return {rows:head,label:`頭${cur.buy2Head}`};
    return {rows:all,label:'研究所全体'};
   }
-  const all=rows.filter(r=>r.mode==='narrow'&&r.narrow.length);
+  const all=rows.filter(r=>eligibleForMetric(r,'narrow'));
   if(cur.mode==='narrow'){
    const exact=all.filter(r=>r.narrowHead===cur.narrowHead&&r.narrowCount===cur.narrowCount);
    if(exact.length>=3)return {rows:exact,label:'今回型'};
@@ -26846,25 +26866,37 @@ window.BH_V592_RENDER_BETS=render;
   if(!root||!cur)return;
   let box=root.querySelector('.bh687Rates');
   if(!box){box=document.createElement('div');box.className='bh687Rates';root.prepend(box)}
-  box.innerHTML='<div class="bh687RatesTitle">研究所｜今回買い目の事前的中率 <small>過去結果を集計中…</small></div>';
+  box.innerHTML='<div class="bh687RatesTitle">研究所｜買い目確定時の的中率 <small>過去結果を集計中…</small></div>';
   const rows=await history();if(token!==seq||!box.isConnected)return;
   const a=tier(rows,'buy1',cur),b=tier(rows,'buy2',cur),n=tier(rows,'narrow',cur);
   const s1=stat(a.rows,'buy1'),s2=stat(b.rows,'buy2'),sn=stat(n.rows,'narrow');
-  box.innerHTML=`<div class="bh687RatesTitle">研究所｜今回買い目の事前的中率 <small>レース前表示・過去の確定結果のみ</small></div>
+  box.innerHTML=`<div class="bh687RatesTitle">研究所｜買い目確定時の的中率 <small>買い目表示と同時・過去の確定結果のみ</small></div>
    <div class="bh687RateGrid">
     ${card('買い目1',s1,a.label,cur.mode==='normal')}
     ${card('買い目2',s2,b.label,cur.mode==='normal')}
     ${card('絞り',sn,n.label,cur.mode==='narrow')}
    </div>`;
  }
- let t=0;
- function schedule(){clearTimeout(t);t=setTimeout(mount,80)}
+ let t=0,lastPlanSig='';
+ function schedule(){clearTimeout(t);t=setTimeout(mount,40)}
  const host=document.getElementById('bhEscapeBet530');
- if(host)new MutationObserver(schedule).observe(host,{childList:true,subtree:true});
+ if(host)new MutationObserver(muts=>{
+  // 買い目の表示が書き換わった瞬間に的中率を出す。
+  // 自分自身の的中率ボックス更新だけでは再計算しない。
+  if(muts.some(m=>[...m.addedNodes,...m.removedNodes].some(n=>!(n.nodeType===1&&n.closest?.('.bh687Rates')))))schedule();
+ }).observe(host,{childList:true,subtree:true});
+
+ // 買い目ロックが確定した瞬間も監視。結果確認を待たない。
+ setInterval(()=>{
+  const cur=currentGroups();
+  const sig=cur?JSON.stringify([cur.mode,cur.buy1,cur.buy2,cur.narrow]):'';
+  if(sig&&sig!==lastPlanSig){lastPlanSig=sig;schedule()}
+ },180);
+
  document.addEventListener('click',e=>{
   if(e.target.closest('#aiAnalyzeTop503,#get')){
-   // AI解析直後に、今回の買い目構成を使って過去実績を表示。
-   setTimeout(schedule,250);setTimeout(schedule,900);setTimeout(schedule,1800);
+   // AI解析→買い目生成直後の描画タイミングを拾う。
+   setTimeout(schedule,120);setTimeout(schedule,420);setTimeout(schedule,900);
   }
   if(e.target.closest('#bhV571Check'))setTimeout(schedule,250);
  },true);
@@ -27043,7 +27075,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:689,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:690,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
