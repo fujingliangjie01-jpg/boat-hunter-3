@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V680</title>
+<title>BOAT HUNTER V681</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.680</div>
+  <div class="topVol">Vol.681</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25994,11 +25994,58 @@ function selected(p,od){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
  fill(main,6,[mainHead].filter(Boolean));
- // A missing main scenario is not filled with an unrelated head.
- // The second candidate is the only alternative head. Never add a third head to fill tickets.
- const secondaryHead=counterHead;
- if(!focus?.active)for(const c of p.counter||[])if(Number(c[0])===secondaryHead)append(counter,c,8);
- fill(counter,8,[secondaryHead].filter(Boolean));
+ // V681 買い目2頭：
+ // 「単勝候補が1艇だけ」の場合でも、従来の展開エンジン p.counter が持つ
+ // 対抗シナリオ頭を最優先で復元する。買い目2を単勝候補数だけで消さない。
+ const legacyCounterHead=(()=>{
+  for(const c of p.counter||[]){
+   const ns=combo(c)?.split('-').map(Number);
+   const h=ns?.[0];
+   if(!Number.isInteger(h)||h<1||h>6||h===mainHead)continue;
+   if(risk.headCut&&h===1)continue;
+   if(window.BH_V622_GUARD?.canHead(h)===false)continue;
+   return h;
+  }
+  const ph=(p.heads||[]).map(Number).find(h=>Number.isInteger(h)&&h>=1&&h<=6&&h!==mainHead&&
+   !(risk.headCut&&h===1)&&window.BH_V622_GUARD?.canHead(h)!==false);
+  return ph||0;
+ })();
+ const secondaryHead=legacyCounterHead||counterHead||
+  [1,2,3,4,5,6].filter(h=>h!==mainHead&&!(risk.headCut&&h===1)&&window.BH_V622_GUARD?.canHead(h)!==false)
+   .sort((a,b)=>headScore(b)-headScore(a)||a-b)[0]||0;
+
+ // 買い目2は「対抗展開」なので、V663の単勝頭証拠フィルターだけでは消さない。
+ // ただし安全ガード・1号艇頭切り・年間除外は維持。
+ const validBuy2=c=>{
+  const a=combo(c)?.split('-').map(Number);
+  return a?.length===3&&a.every(n=>n>=1&&n<=6)&&new Set(a).size===3&&
+   a[0]===secondaryHead&&!(risk.headCut&&a[0]===1)&&
+   window.BH_V622_GUARD?.canHead(a[0])!==false&&!(risk.fullCut&&a.includes(1))&&
+   moveValid(a)&&!excluded.has(c);
+ };
+
+ if(!focus?.active&&secondaryHead){
+  for(const c of p.counter||[]){
+   if(counter.length>=8)break;
+   if(Number(combo(c)?.split('-')?.[0])!==secondaryHead)continue;
+   const cc=combo(c);
+   if(!cc||!validBuy2(cc)||used.has(cc))continue;
+   used.add(cc);counter.push(cc);
+  }
+ }
+ if(counter.length<8&&secondaryHead){
+  const rows=[];
+  for(let b=1;b<=6;b++)for(let c=1;c<=6;c++){
+   const key=`${secondaryHead}-${b}-${c}`;
+   if(!validBuy2(key)||used.has(key))continue;
+   rows.push({combo:key,score:axisScore(b)+axisScore(c)*.45+axisAdjustment(b)});
+  }
+  rows.sort((a,b)=>b.score-a.score||a.combo.localeCompare(b.combo));
+  for(const row of rows){
+   if(counter.length>=8)break;
+   used.add(row.combo);counter.push(row.combo);
+  }
+ }
  // V677 買い目2：頭の選び方は従来通り。2・3着だけ新フォーメーション。
  // 2〜5頭：1号艇＋「頭の次コース艇」。6頭だけ：1号艇＋2号艇。
  // 例 5頭 → 5-16-12346 / 5-12346-16 = 重複除外14点。
@@ -26014,7 +26061,7 @@ function selected(p,od){
  if(secondaryHead&&secondaryHead!==1){
   const anchors=secondaryHead===6?[1,2]:[1,nextCourseBoatFor(secondaryHead)];
   const formed=[],seenV677=new Set();
-  const addV677=c=>{if(valid(c)&&!seenV677.has(c)){seenV677.add(c);formed.push(c)}};
+  const addV677=c=>{if(validBuy2(c)&&!seenV677.has(c)){seenV677.add(c);formed.push(c)}};
   for(const a of [...new Set(anchors)]){
    for(let x=1;x<=6;x++){
     if(x===secondaryHead||x===a)continue;
@@ -26090,11 +26137,33 @@ function selected(p,od){
   }
  }
 
- const items=[
+ let items=[
   ...main.map(c=>({combo:c,kind:'main'})),
   ...counterV680.map(c=>({combo:c,kind:'counter'})),
   ...addedReversals.map(c=>({combo:c,kind:'main-reversal'}))
- ].slice(0,20);
+ ];
+
+ // V681 通常レースは必ず20通りを構成する。
+ // 買い目2が切り艇処理で減った場合も、買い目1折り返し→買い目1頭固定候補の順で補完。
+ if(items.length<20){
+  const seenItems=new Set(items.map(x=>x.combo));
+  const oddsMapV681=new Map(od.map(x=>[x.combo,x.odds]));
+  const extraMain=[];
+  for(const row of candidates.filter(x=>x.h===mainHead)){
+   const ns=row.combo.split('-').map(Number);
+   const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
+   for(const c of [rev,row.combo]){
+    if(items.length+extraMain.length>=20)break;
+    if(!valid(c)||seenItems.has(c))continue;
+    seenItems.add(c);extraMain.push({combo:c,kind:'main-reversal'});
+   }
+   if(items.length+extraMain.length>=20)break;
+  }
+  extraMain.sort((a,b)=>Number(oddsMapV681.get(b.combo)??0)-Number(oddsMapV681.get(a.combo)??0));
+  items=[...items,...extraMain].slice(0,20);
+ }else{
+  items=items.slice(0,20);
+ }
 
  // A boat ranked last in both ability and flow must not enter the third section.
  const lastBoats=new Set([1,2,3,4,5,6].filter(n=>{const row=T(n);return Number(row.ability)===6&&Number(row.flow)===6}));
