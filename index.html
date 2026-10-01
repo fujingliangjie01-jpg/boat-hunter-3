@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V685</title>
+<title>BOAT HUNTER V687</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.685</div>
+  <div class="topVol">Vol.687</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24961,10 +24961,12 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:575,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:687,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
-   hunter:collectHunter(),
+   hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
+    buy1Hit:betGroups.buy1?.includes(last.out)||false,buy2Hit:betGroups.buy2?.includes(last.out)||false,narrowHit:betGroups.narrow?.includes(last.out)||false
+   }:null}})(),
    result:{
     confirmed:true,
     order:String(last.out||"").split("-").map(Number).filter(Boolean),
@@ -26053,8 +26055,14 @@ function selected(p,od){
   return Number(nr?.boat)||(head<6?head+1:2);
  }
  let counterV677=counter;
- if(secondaryHead&&secondaryHead!==1){
-  const anchors=secondaryHead===6?[1,2]:[1,nextCourseBoatFor(secondaryHead)];
+ if(secondaryHead){
+  // V686 買い目2フォーメーション
+  // 2〜5頭：1号艇＋頭の次コース艇
+  // 6頭：1号艇＋2号艇
+  // 1頭：2号艇＋3号艇（自分自身の1号艇を軸にできないため次の2コースを使用）
+  const anchors=secondaryHead===1?[2,3]:
+   secondaryHead===6?[1,2]:
+   [1,nextCourseBoatFor(secondaryHead)];
   const formed=[],seenV677=new Set();
   const addV677=c=>{if(validBuy2(c)&&!seenV677.has(c)){seenV677.add(c);formed.push(c)}};
   for(const a of [...new Set(anchors)]){
@@ -26074,8 +26082,13 @@ function selected(p,od){
  const buy2Head=Number(secondaryHead)||0;
  const protectedSecond=new Set();
  if(buy2Head){
-  protectedSecond.add(1);
-  protectedSecond.add(buy2Head===6?2:nextCourseBoatFor(buy2Head));
+  if(buy2Head===1){
+   protectedSecond.add(2);
+   protectedSecond.add(3);
+  }else{
+   protectedSecond.add(1);
+   protectedSecond.add(buy2Head===6?2:nextCourseBoatFor(buy2Head));
+  }
  }
 
  // V682 買い目2は「2着切り艇を必ず1艇作る」。
@@ -26116,10 +26129,12 @@ function selected(p,od){
 
  // 買い目1の折り返し候補。研究所優先の6点を基準に2着と3着を反転。
  const usedV680=new Set([...main,...counterV680]);
+ const oddsMapV686=new Map(od.map(x=>[x.combo,Number(x.odds)||0]));
  const mainReversals=main.map(c=>{
   const ns=String(c).split('-').map(Number);
   return ns.length===3?`${ns[0]}-${ns[2]}-${ns[1]}`:'';
- }).filter(c=>c&&valid(c)&&!usedV680.has(c));
+ }).filter(c=>c&&valid(c)&&!usedV680.has(c))
+   .sort((a,b)=>(oddsMapV686.get(b)||0)-(oddsMapV686.get(a)||0)||a.localeCompare(b));
 
  const needV680=Math.max(0,20-(main.length+counterV680.length));
  const addedReversals=[];
@@ -26142,6 +26157,11 @@ function selected(p,od){
     if(ns.length!==3)return false;
     const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
     return valid(rev)&&!usedV680.has(rev);
+   })
+   .sort((a,b)=>{
+    const an=String(a).split('-').map(Number),bn=String(b).split('-').map(Number);
+    const ar=`${an[0]}-${an[2]}-${an[1]}`,br=`${bn[0]}-${bn[2]}-${bn[1]}`;
+    return (oddsMapV686.get(br)||0)-(oddsMapV686.get(ar)||0)||ar.localeCompare(br);
    });
   for(const c of refill){
    if(addedReversals.length>=needV680+shortage)break;
@@ -26165,7 +26185,12 @@ function selected(p,od){
   const seenItems=new Set(items.map(x=>x.combo));
   const oddsMapV681=new Map(od.map(x=>[x.combo,x.odds]));
   const extraMain=[];
-  for(const row of candidates.filter(x=>x.h===mainHead)){
+  const orderedMainCandidates=candidates.filter(x=>x.h===mainHead).slice().sort((a,b)=>{
+   const an=a.combo.split('-').map(Number),bn=b.combo.split('-').map(Number);
+   const ar=`${an[0]}-${an[2]}-${an[1]}`,br=`${bn[0]}-${bn[2]}-${bn[1]}`;
+   return Number(oddsMapV681.get(br)??0)-Number(oddsMapV681.get(ar)??0)||a.combo.localeCompare(b.combo);
+  });
+  for(const row of orderedMainCandidates){
    const ns=row.combo.split('-').map(Number);
    const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
    for(const c of [rev,row.combo]){
@@ -26175,7 +26200,6 @@ function selected(p,od){
    }
    if(items.length+extraMain.length>=20)break;
   }
-  extraMain.sort((a,b)=>Number(oddsMapV681.get(b.combo)??0)-Number(oddsMapV681.get(a.combo)??0));
   items=[...items,...extraMain].slice(0,20);
  }else{
   items=items.slice(0,20);
@@ -26534,6 +26558,202 @@ window.BH_V592_RENDER_BETS=render;
 })();
 </script>
 
+<style id="bhV687ResearchRateStyle">
+#bhEscapeBet530 .bh687Rates{
+ margin:0 0 9px;padding:9px;border:1px solid rgba(112,196,235,.40);
+ border-radius:11px;background:#0e2a39;color:#eaf8ff;
+}
+#bhEscapeBet530 .bh687RatesTitle{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ margin:0 0 7px;font-size:12px;font-weight:1000;color:#cceeff;
+}
+#bhEscapeBet530 .bh687RatesTitle small{font-size:9px;color:#8fb4c6;font-weight:800}
+#bhEscapeBet530 .bh687RateGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#bhEscapeBet530 .bh687Rate{
+ min-width:0;padding:7px 5px;border-radius:9px;background:#15384b;
+ border:1px solid rgba(121,185,216,.24);text-align:center;
+}
+#bhEscapeBet530 .bh687Rate.current{border-color:#f1cb61;box-shadow:inset 0 0 0 1px rgba(241,203,97,.22)}
+#bhEscapeBet530 .bh687Rate span{display:block;font-size:10px;font-weight:900;color:#a9c9d8;white-space:nowrap}
+#bhEscapeBet530 .bh687Rate b{display:block;margin:2px 0 1px;font-size:19px;line-height:1.05;color:#fff}
+#bhEscapeBet530 .bh687Rate small{display:block;font-size:8px;line-height:1.25;color:#91adbb}
+</style>
+<script id="bhV687ResearchHitRate">
+(()=>{'use strict';
+ const DB='BH_CYCLE_TRANSFER_V1',STORE='inbox',LEGACY='BH_DEME_LAB_INBOX_V3';
+ const comboRe=/\b([1-6])\s*[-－]\s*([1-6])\s*[-－]\s*([1-6])\b/g;
+ let seq=0;
+
+ const uniq=a=>[...new Set((a||[]).filter(Boolean))];
+ const validCombo=c=>{
+  const p=String(c||'').split('-').map(Number);
+  return p.length===3&&p.every(n=>n>=1&&n<=6)&&new Set(p).size===3;
+ };
+ const combos=text=>{
+  const out=[];let m;
+  comboRe.lastIndex=0;
+  while((m=comboRe.exec(String(text||'')))){
+   const c=`${m[1]}-${m[2]}-${m[3]}`;
+   if(validCombo(c))out.push(c);
+  }
+  return uniq(out);
+ };
+ const firstHead=a=>Number(String(a?.[0]||'').split('-')[0])||0;
+
+ function currentGroups(){
+  const plan=window.__BH_V653_BET_LOCK?.result;
+  if(!plan||plan.narrow)return null; // 見送り
+  const items=Array.isArray(plan.items)?plan.items:[];
+  const mode=plan.escapeFocus?'narrow':'normal';
+  const buy1=mode==='normal'?uniq(items.filter(x=>['lab','main','main-reversal'].includes(x?.kind)).map(x=>x.combo)):[];
+  const buy2=mode==='normal'?uniq(items.filter(x=>x?.kind==='counter').map(x=>x.combo)):[];
+  const narrow=mode==='narrow'?uniq(items.map(x=>x?.combo)):[];
+  return {
+   mode,buy1,buy2,narrow,
+   buy1Head:firstHead(buy1),buy2Head:firstHead(buy2),narrowHead:firstHead(narrow),
+   buy1Count:buy1.length,buy2Count:buy2.length,narrowCount:narrow.length,
+   buy2SecondCut:Number(plan.buy2SecondCut)||0,
+   totalCount:items.length
+  };
+ }
+ window.BH_V687_BET_GROUPS_SNAPSHOT=currentGroups;
+
+ function parseStored(r){
+  const resultCombo=String(r?.result?.combo||r?.result?.trifecta||'').replace(/[－ー–—]/g,'-');
+  if(!validCombo(resultCombo))return null;
+
+  const bg=r?.hunter?.betGroups;
+  if(bg&&typeof bg==='object'){
+   const mode=bg.mode==='narrow'?'narrow':'normal';
+   const buy1=uniq(bg.buy1||[]).filter(validCombo);
+   const buy2=uniq(bg.buy2||[]).filter(validCombo);
+   const narrow=uniq(bg.narrow||[]).filter(validCombo);
+   return {
+    key:r.key||'',mode,buy1,buy2,narrow,resultCombo,
+    buy1Head:Number(bg.buy1Head)||firstHead(buy1),
+    buy2Head:Number(bg.buy2Head)||firstHead(buy2),
+    narrowHead:Number(bg.narrowHead)||firstHead(narrow),
+    buy1Count:buy1.length,buy2Count:buy2.length,narrowCount:narrow.length
+   };
+  }
+
+  // 旧HUNTER_CYCLEは画面文字列から復元できるものだけ利用。
+  const text=String(r?.hunter?.betPrediction||'');
+  if(!text)return null;
+  const strategy=String(r?.hunter?.betStrategy?.mode||'');
+  const isNarrow=/絞りレース|買い目絞り/.test(text+' '+strategy);
+  if(isNarrow){
+   const narrow=combos(text);
+   if(!narrow.length)return null;
+   return {key:r.key||'',mode:'narrow',buy1:[],buy2:[],narrow,resultCombo,
+    buy1Head:0,buy2Head:0,narrowHead:firstHead(narrow),buy1Count:0,buy2Count:0,narrowCount:narrow.length};
+  }
+  const i1=text.indexOf('買い目1'),i2=text.indexOf('買い目2');
+  if(i1<0)return null;
+  const b1seg=text.slice(i1,i2>i1?i2:text.length);
+  const b2seg=i2>=0?text.slice(i2):'';
+  const buy1=combos(b1seg),buy2=combos(b2seg);
+  if(!buy1.length&&!buy2.length)return null;
+  return {key:r.key||'',mode:'normal',buy1,buy2,narrow:[],resultCombo,
+   buy1Head:firstHead(buy1),buy2Head:firstHead(buy2),narrowHead:0,
+   buy1Count:buy1.length,buy2Count:buy2.length,narrowCount:0};
+ }
+
+ async function readIDB(){
+  return new Promise(resolve=>{
+   try{
+    const q=indexedDB.open(DB,1);
+    q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains(STORE))q.result.createObjectStore(STORE,{keyPath:'key'})};
+    q.onerror=()=>resolve([]);
+    q.onsuccess=()=>{
+     const db=q.result;
+     if(!db.objectStoreNames.contains(STORE)){db.close();resolve([]);return}
+     const tx=db.transaction(STORE,'readonly'),g=tx.objectStore(STORE).getAll();
+     g.onsuccess=()=>{const a=Array.isArray(g.result)?g.result:[];db.close();resolve(a)};
+     g.onerror=()=>{db.close();resolve([])};
+    };
+   }catch(_){resolve([])}
+  });
+ }
+ function readLegacy(){
+  try{const x=JSON.parse(localStorage.getItem(LEGACY)||'[]');return Array.isArray(x)?x:(x?[x]:[])}catch(_){return []}
+ }
+ async function history(){
+  const rows=[...(await readIDB()),...readLegacy()];
+  const map=new Map();
+  for(const r of rows){
+   if(!r?.key)continue;
+   const old=map.get(r.key);
+   // structured record wins over old text-only record.
+   if(!old||(!old?.hunter?.betGroups&&r?.hunter?.betGroups))map.set(r.key,r);
+  }
+  return [...map.values()].map(parseStored).filter(Boolean);
+ }
+
+ const stat=(rows,listKey)=>{
+  const x=rows.filter(r=>Array.isArray(r[listKey])&&r[listKey].length);
+  const hits=x.filter(r=>r[listKey].includes(r.resultCombo)).length;
+  return {n:x.length,hits,rate:x.length?hits/x.length*100:null};
+ };
+ function tier(rows,metric,cur){
+  if(metric==='buy1'){
+   const all=rows.filter(r=>r.mode==='normal'&&r.buy1.length);
+   const exact=all.filter(r=>r.buy1Head===cur.buy1Head&&r.buy1Count===cur.buy1Count);
+   if(exact.length>=3)return {rows:exact,label:'今回型'};
+   const head=all.filter(r=>r.buy1Head===cur.buy1Head);
+   if(head.length>=3)return {rows:head,label:`頭${cur.buy1Head}`};
+   return {rows:all,label:'研究所全体'};
+  }
+  if(metric==='buy2'){
+   const all=rows.filter(r=>r.mode==='normal'&&r.buy2.length);
+   const exact=all.filter(r=>r.buy2Head===cur.buy2Head&&r.buy2Count===cur.buy2Count);
+   if(exact.length>=3)return {rows:exact,label:'今回型'};
+   const head=all.filter(r=>r.buy2Head===cur.buy2Head);
+   if(head.length>=3)return {rows:head,label:`頭${cur.buy2Head}`};
+   return {rows:all,label:'研究所全体'};
+  }
+  const all=rows.filter(r=>r.mode==='narrow'&&r.narrow.length);
+  if(cur.mode==='narrow'){
+   const exact=all.filter(r=>r.narrowHead===cur.narrowHead&&r.narrowCount===cur.narrowCount);
+   if(exact.length>=3)return {rows:exact,label:'今回型'};
+   const head=all.filter(r=>r.narrowHead===cur.narrowHead);
+   if(head.length>=3)return {rows:head,label:`頭${cur.narrowHead}`};
+  }
+  return {rows:all,label:'絞り全体'};
+ }
+ function fmt(x){return x.rate==null?'—':`${x.rate.toFixed(1)}%`}
+ function card(label,x,scope,current){
+  return `<div class="bh687Rate${current?' current':''}"><span>${label}</span><b>${fmt(x)}</b><small>${x.n?`${x.hits}/${x.n}R・${scope}`:`データ蓄積待ち`}</small></div>`;
+ }
+
+ async function mount(){
+  const token=++seq,root=document.querySelector('#bhEscapeBet530 .bh590Root');
+  const cur=currentGroups();
+  if(!root||!cur)return;
+  let box=root.querySelector('.bh687Rates');
+  if(!box){box=document.createElement('div');box.className='bh687Rates';root.prepend(box)}
+  box.innerHTML='<div class="bh687RatesTitle">研究所｜今回買い目の的中率 <small>集計中…</small></div>';
+  const rows=await history();if(token!==seq||!box.isConnected)return;
+  const a=tier(rows,'buy1',cur),b=tier(rows,'buy2',cur),n=tier(rows,'narrow',cur);
+  const s1=stat(a.rows,'buy1'),s2=stat(b.rows,'buy2'),sn=stat(n.rows,'narrow');
+  box.innerHTML=`<div class="bh687RatesTitle">研究所｜今回買い目の的中率 <small>確定結果のみ</small></div>
+   <div class="bh687RateGrid">
+    ${card('買い目1',s1,a.label,cur.mode==='normal')}
+    ${card('買い目2',s2,b.label,cur.mode==='normal')}
+    ${card('絞り',sn,n.label,cur.mode==='narrow')}
+   </div>`;
+ }
+ let t=0;
+ function schedule(){clearTimeout(t);t=setTimeout(mount,80)}
+ const host=document.getElementById('bhEscapeBet530');
+ if(host)new MutationObserver(schedule).observe(host,{childList:true,subtree:true});
+ document.addEventListener('click',e=>{if(e.target.closest('#aiAnalyzeTop503,#bhV571Check,#get'))setTimeout(schedule,250)},true);
+ window.addEventListener('storage',e=>{if(e.key===LEGACY)setTimeout(schedule,50)});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,400),{once:true});else setTimeout(mount,400);
+ window.BH_V687_REFRESH_HIT_RATES=mount;
+})();
+</script>
+
 <style id="bhV609BetJumpStyle">
 /* Vol.609: top controls -> the currently visible HUNTER tickets */
 #main .controls #bh609GoBets{
@@ -26696,12 +26916,18 @@ function payload(){
  const compare=$('comparePanel')?.innerText||'',outlook=$('outlookPanel')?.innerText||$('raceOutlook')?.innerText||'';
  const bets=$('bhEscapeBet530')?.innerText||$('hunterFinalBuyBlock')?.innerText||'';
  const plan=window.__BH_V653_BET_LOCK?.result||null;const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
+ const betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;
+ const betOutcome=betGroups?{
+  buy1Hit:betGroups.buy1?.includes(combo)||false,
+  buy2Hit:betGroups.buy2?.includes(combo)||false,
+  narrowHit:betGroups.narrow?.includes(combo)||false
+ }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:675,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:687,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
-  hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
+  hunter:{boats:cards,marketComparison:clean(compare,1700),sixBoatEvaluation:clean(compare,1700),developmentEvaluation:clean(outlook,1500),betPrediction:clean(bets,2200),betStrategy,betGroups,betOutcome,beforeInfo:clean($('beforeInfoPanel')?.innerText,700),courseAttackResearch:research},
   result:{confirmed:true,order:combo.split('-').map(Number),combo,trifecta:combo,technique:way,winningMove:way,payout:Number.isFinite(payout)?payout:0,verdict:clean($('bhV571Judge')?.textContent,25)}};
 }
 async function send(){
