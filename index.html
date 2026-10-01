@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V683</title>
+<title>BOAT HUNTER V684</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.683</div>
+  <div class="topVol">Vol.684</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -26311,8 +26311,41 @@ function mergeLabBets(result,data,od,p){
  const existingCounter=result.items.filter(x=>x.kind==='counter');
  const existingReversal=result.items.filter(x=>x.kind==='main-reversal');
  const occupiedV680=new Set(buy1.map(x=>x.combo));
- const mergedTail=[...existingCounter,...existingReversal].filter(x=>!occupiedV680.has(x.combo));
- const items=[...buy1,...mergedTail].slice(0,20);
+ let mergedTail=[...existingCounter,...existingReversal].filter(x=>!occupiedV680.has(x.combo));
+ let items=[...buy1,...mergedTail];
+
+ // V684: 研究所が買い目1を差し替えた後でも20通りを再保証。
+ // 不足分は、最終買い目1の2着⇔3着折り返しを最優先で追加。
+ if(items.length<20){
+  const seen=new Set(items.map(x=>x.combo));
+  const oddsMap=new Map(od.map(x=>[x.combo,x.odds]));
+  const reversals=buy1.map(x=>{
+   const ns=String(x.combo).split('-').map(Number);
+   return ns.length===3?`${ns[0]}-${ns[2]}-${ns[1]}`:'';
+  }).filter(c=>c&&usable(c)&&!seen.has(c))
+   .sort((a,b)=>Number(oddsMap.get(b)??0)-Number(oddsMap.get(a)??0));
+  for(const c of reversals){
+   if(items.length>=20)break;
+   if(seen.has(c))continue;
+   seen.add(c);items.push({combo:c,kind:'main-reversal'});
+  }
+ }
+
+ // まだ不足する場合も、買い目1頭固定の反転候補だけで20点まで補う。
+ if(items.length<20){
+  const seen=new Set(items.map(x=>x.combo));
+  const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]);
+  const byOdds=[...od].sort((a,b)=>Number(b.odds||0)-Number(a.odds||0));
+  for(const row of byOdds){
+   if(items.length>=20)break;
+   const ns=String(row.combo||'').split('-').map(Number);
+   if(ns.length!==3||ns[0]!==lead)continue;
+   const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
+   if(!usable(rev)||seen.has(rev))continue;
+   seen.add(rev);items.push({combo:rev,kind:'main-reversal'});
+  }
+ }
+ items=items.slice(0,20);
  return {...result,items,box:[],labMeta:meta};
 }
 
@@ -26443,6 +26476,7 @@ function render(){
  const risk=insideRisk();if(risk.headCut)alerts.push(risk.fullCut?'1号艇 完全切り候補｜内側ST遅れ＋成績差':risk.diagnosedMismatch?'1号艇 頭切り｜現在ST遅れ＋逃げ率低下＋2C能力差':'1号艇 頭切り｜ST遅れ＋能力差');
  if(result.escapeFocus)alerts.push('買い目絞り｜イン逃げ頭・根拠ある軸に集中');
  if(!result.escapeFocus&&Number(result.buy2SecondCut)>0)alerts.push(`買い目2｜${result.buy2SecondCut}号艇を2着切り`);
+ if(!result.escapeFocus)alerts.push(`通常買い目｜合計${(result.items||[]).length}通り`);
  if(result.stakeNarrow)alerts.push('投資配分｜買い目を増やさず投資枚数へ');
  if(result.escapeFocus&&result.items.length<8)alerts.push('2026年ワースト出目を除外｜残る出目へ20口を配分');
  if(p.watch&&!result.escapeFocus||heads.length>=4)alerts.push('頭候補が拮抗｜点数を広げて評価');
@@ -26450,7 +26484,9 @@ function render(){
  if(alerts.length){const ab=document.createElement('div');ab.className='bh590Alerts';alerts.forEach(t=>{const x=document.createElement('span');x.className='bh590Alert'+(t.startsWith('買い目絞り')?' watch':'');x.textContent=t;ab.append(x)});root.append(ab)}
 
 
- const buy1=result.items.filter(x=>x.kind==='lab'||x.kind==='main'),buy2=result.items.filter(x=>x.kind==='counter');
+ // V684: 買い目2の2着切りで減らした分を補う「買い目1の2着⇔3着折り返し」も買い目1に表示。
+   const buy1=result.items.filter(x=>x.kind==='lab'||x.kind==='main'||x.kind==='main-reversal'),
+         buy2=result.items.filter(x=>x.kind==='counter');
  const axisOf=items=>items[0]?.combo?.split('-')[1]||'';
  const groups=result.escapeFocus?[[`買い目1｜1-${axisOf(buy1)}-全（${buy1.length}通り）`,buy1,false],[`買い目2｜1-${axisOf(buy2)}-全（${buy2.length}通り）`,buy2,true]]:[['買い目1｜研究所優先（'+buy1.length+'点）',buy1,false],[(p.escapeCounter?'買い目2｜2差し不発→1逃げ':'買い目2｜攻め失敗時')+'（'+buy2.length+'点）',buy2,true]];
  for(const [name,items,isExtra] of groups){if(!items.length)continue;const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);const why=groupReason(items,result.escapeFocus);const whyBox=document.createElement('div');whyBox.className='bh666Reason';
