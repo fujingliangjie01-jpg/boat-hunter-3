@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V684</title>
+<title>BOAT HUNTER V685</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.684</div>
+  <div class="topVol">Vol.685</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25986,9 +25986,9 @@ function selected(p,od){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
  fill(main,6,[mainHead].filter(Boolean));
- // V681 買い目2頭：
- // 「単勝候補が1艇だけ」の場合でも、従来の展開エンジン p.counter が持つ
- // 対抗シナリオ頭を最優先で復元する。買い目2を単勝候補数だけで消さない。
+ // V685 買い目2頭：
+ // 単勝候補2位を最優先。候補2位が取れない場合のみ、
+ // 従来の展開エンジン p.counter から対抗シナリオ頭を復元する。
  const legacyCounterHead=(()=>{
   for(const c of p.counter||[]){
    const ns=combo(c)?.split('-').map(Number);
@@ -26002,7 +26002,10 @@ function selected(p,od){
    !(risk.headCut&&h===1)&&window.BH_V622_GUARD?.canHead(h)!==false);
   return ph||0;
  })();
- const secondaryHead=legacyCounterHead||counterHead||
+ // V685 買い目2の頭は「単勝候補2位」を最優先。
+ // p.counter の対抗シナリオ頭は、単勝候補2位が取れない場合だけフォールバックに使う。
+ const singleSecondHead=Number(singleHeads.find(h=>h!==mainHead))||0;
+ const secondaryHead=singleSecondHead||counterHead||legacyCounterHead||
   [1,2,3,4,5,6].filter(h=>h!==mainHead&&!(risk.headCut&&h===1)&&window.BH_V622_GUARD?.canHead(h)!==false)
    .sort((a,b)=>headScore(b)-headScore(a)||a-b)[0]||0;
 
