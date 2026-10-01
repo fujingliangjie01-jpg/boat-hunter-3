@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V687</title>
+<title>BOAT HUNTER V689</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.687</div>
+  <div class="topVol">Vol.689</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24961,7 +24961,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:687,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:689,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -25988,6 +25988,47 @@ function selected(p,od){
   for(const h of headOrder){for(const row of candidates){if(target.length>=limit)return;if(row.h===h)append(target,row.combo,limit)}}
  }
  fill(main,6,[mainHead].filter(Boolean));
+
+ // V688 買い目1：イン逃げ以外の頭は、軸を
+ // 「1コース艇」と「頭の1個後ろのコース艇」に固定して6点を組む。
+ // 6頭だけは従来例外と同じく 1号艇＋2号艇。
+ if(!focus?.active&&mainHead&&mainHead!==1){
+  const flowRows=window.__BH_RACE_FLOW_ROWS||[];
+  const behindForMain=(()=>{
+   if(mainHead===6)return 2;
+   const hr=flowRows.find(x=>Number(x.boat)===mainHead);
+   const hc=Number(hr?.course??mainHead);
+   const nr=flowRows.find(x=>Number(x.course)===hc+1);
+   return Number(nr?.boat)||(mainHead<6?mainHead+1:2);
+  })();
+  const mainAnchors=[1,behindForMain].filter(n=>n&&n!==mainHead);
+  const rebuilt=[],seenMain=new Set();
+  const addMain=c=>{
+   if(rebuilt.length>=6||!valid(c)||seenMain.has(c))return;
+   const ns=String(c).split('-').map(Number);
+   if(ns[0]!==mainHead||!mainAnchors.some(a=>ns[1]===a||ns[2]===a))return;
+   seenMain.add(c);rebuilt.push(c);
+  };
+
+  // 研究所/従来本命を優先。ただし新しい軸条件に合うものだけ残す。
+  for(const c of p.main||[])addMain(combo(c));
+
+  // 1コース艇と「頭の1個後ろ」をそれぞれ2・3着側に置く候補から補充。
+  const mainAxisRows=candidates.filter(x=>x.h===mainHead).slice().sort((a,b)=>{
+   const an=a.combo.split('-').map(Number),bn=b.combo.split('-').map(Number);
+   const aBoth=mainAnchors.every(z=>an.includes(z))?1:0;
+   const bBoth=mainAnchors.every(z=>bn.includes(z))?1:0;
+   return bBoth-aBoth||b.score-a.score||a.combo.localeCompare(b.combo);
+  });
+  for(const row of mainAxisRows)addMain(row.combo);
+
+  if(rebuilt.length){
+   main.splice(0,main.length,...rebuilt.slice(0,6));
+   // used を再構成。買い目2生成時の重複判定も新しい買い目1に合わせる。
+   used.clear();
+   main.forEach(c=>used.add(c));
+  }
+ }
  // V685 買い目2頭：
  // 単勝候補2位を最優先。候補2位が取れない場合のみ、
  // 従来の展開エンジン p.counter から対抗シナリオ頭を復元する。
@@ -26329,51 +26370,118 @@ function mergeLabBets(result,data,od,p){
   const marked=result.items.map(x=>{const y=lab.find(z=>z.combo===x.combo);return y?{...x,kind:x.kind,researchAxis:!!y.researchAxis,researchLab:true}:x});
   return {...result,items:marked,labMeta:meta};
  }
- const labSet=new Set(lab.map(x=>x.combo));
- let buy1=[...lab,...main.filter(x=>!labSet.has(x.combo))].slice(0,6);
- const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]),leadTicket=main.find(x=>Number(x.combo[0])===lead);
- if(leadTicket&&!buy1.some(x=>Number(x.combo[0])===lead))buy1=[...buy1.slice(0,5),leadTicket];
- // V680: 研究所で買い目1の並びを更新しても、買い目2の切り艇処理と
- // 買い目1折り返し補充で作った20点構成は崩さない。
+ const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]);
  const existingCounter=result.items.filter(x=>x.kind==='counter');
- const existingReversal=result.items.filter(x=>x.kind==='main-reversal');
- const occupiedV680=new Set(buy1.map(x=>x.combo));
- let mergedTail=[...existingCounter,...existingReversal].filter(x=>!occupiedV680.has(x.combo));
- let items=[...buy1,...mergedTail];
+ const buy1Target=Math.max(0,20-existingCounter.length); // 通常6点、買い目2切り分だけ最大8点へ拡張
 
- // V684: 研究所が買い目1を差し替えた後でも20通りを再保証。
- // 不足分は、最終買い目1の2着⇔3着折り返しを最優先で追加。
- if(items.length<20){
-  const seen=new Set(items.map(x=>x.combo));
-  const oddsMap=new Map(od.map(x=>[x.combo,x.odds]));
-  const reversals=buy1.map(x=>{
-   const ns=String(x.combo).split('-').map(Number);
-   return ns.length===3?`${ns[0]}-${ns[2]}-${ns[1]}`:'';
-  }).filter(c=>c&&usable(c)&&!seen.has(c))
-   .sort((a,b)=>Number(oddsMap.get(b)??0)-Number(oddsMap.get(a)??0));
-  for(const c of reversals){
-   if(items.length>=20)break;
-   if(seen.has(c))continue;
-   seen.add(c);items.push({combo:c,kind:'main-reversal'});
+ // V689 買い目1は研究所から選ぶ。
+ // ・イン逃げ(頭1)：研究所の同条件出目/軸データをそのまま優先
+ // ・頭1以外：1コース艇＋「頭の1個後ろ艇」を基準に研究所候補を選ぶ
+ // ・買い目2が2着切りで減った分も、同じ基準で研究所候補を追加して最大8点へ
+ const flowRows689=window.__BH_RACE_FLOW_ROWS||[];
+ const behind689=(()=>{
+  if(!lead||lead===1)return 0;
+  if(lead===6)return 2;
+  const hr=flowRows689.find(x=>Number(x.boat)===lead);
+  const hc=Number(hr?.course??lead);
+  const nr=flowRows689.find(x=>Number(x.course)===hc+1);
+  return Number(nr?.boat)||(lead<6?lead+1:2);
+ })();
+ const anchors689=lead===1?[]:[1,behind689].filter(n=>n&&n!==lead);
+ const anchorOK689=c=>{
+  const ns=String(c||'').split('-').map(Number);
+  if(ns.length!==3||ns[0]!==lead)return false;
+  if(lead===1)return true;
+  return anchors689.some(a=>ns[1]===a||ns[2]===a);
+ };
+ const anchorBoth689=c=>{
+  if(lead===1)return 0;
+  const ns=String(c||'').split('-').map(Number);
+  return anchors689.every(a=>ns.includes(a))?1:0;
+ };
+ const oddsMap689=new Map(od.map(x=>[x.combo,Number(x.odds)||0]));
+ const ruleMap689=new Map();
+ for(const r of rules){
+  const c=combo(r.combo);
+  if(!c||Number(c.split('-')[0])!==lead||!usable(c))continue;
+  const score=(Number(r.rate)||0)*(Number(r.lift)||0)*1000+(Number(r.count)||0)*10+(Number(r.n)||0)*.01;
+  if(score>(ruleMap689.get(c)||-Infinity))ruleMap689.set(c,score);
+ }
+ const axisMap689=new Map();
+ for(const r of axisRules){
+  if(Number(r.head)!==lead)continue;
+  const axis=Number(r.axis);
+  const score=(Number(r.rate)||0)*(Number(r.lift)||0)*800+(Number(r.count)||0)*8+(Number(r.n)||0)*.01;
+  for(const row of od){
+   const ns=String(row.combo||'').split('-').map(Number);
+   if(ns.length===3&&ns[0]===lead&&ns[1]===axis&&usable(row.combo)){
+    if(score>(axisMap689.get(row.combo)||-Infinity))axisMap689.set(row.combo,score);
+   }
   }
  }
 
- // まだ不足する場合も、買い目1頭固定の反転候補だけで20点まで補う。
+ const pool689=new Map();
+ const addPool689=(c,kind='lab',extra=0)=>{
+  c=combo(c);if(!c||!usable(c)||!anchorOK689(c)||existingCounter.some(x=>x.combo===c))return;
+  const evidence=Math.max(ruleMap689.get(c)||0,axisMap689.get(c)||0);
+  const researchFlag=evidence>0?1:0;
+  const score=researchFlag*100000+anchorBoth689(c)*10000+evidence+extra;
+  const old=pool689.get(c);
+  if(!old||score>old.score)pool689.set(c,{combo:c,kind,researchLab:!!researchFlag,score});
+ };
+
+ // 研究所で直接裏付けがある出目を最優先。
+ for(const [c,score] of ruleMap689)addPool689(c,'lab',score);
+ for(const [c,score] of axisMap689)addPool689(c,'lab',score);
+
+ // 現在の研究所採用候補も残す。
+ for(const x of lab)addPool689(x.combo,'lab',500);
+
+ // 研究所証拠が付いた候補だけでは不足する場合、
+ // 現行本命・その折り返しを「軸基準を守る」範囲で補完。
+ for(const x of main)addPool689(x.combo,'main',0);
+ for(const x of main){
+  const ns=String(x.combo).split('-').map(Number);
+  if(ns.length===3)addPool689(`${ns[0]}-${ns[2]}-${ns[1]}`,'main-reversal',0);
+ }
+
+ // オッズ全候補も最後の安全補完に使うが、研究所証拠のある候補より必ず後順位。
+ for(const row of od){
+  const c=String(row.combo||'');
+  if(Number(c.split('-')[0])===lead)addPool689(c,'main',0);
+ }
+
+ const ordered689=[...pool689.values()].sort((a,b)=>
+  b.score-a.score ||
+  // 同じ研究所優先度なら、補充の折り返しは高オッズ側を優先
+  (oddsMap689.get(b.combo)||0)-(oddsMap689.get(a.combo)||0) ||
+  a.combo.localeCompare(b.combo)
+ );
+ let buy1=ordered689.slice(0,buy1Target).map(x=>({
+  combo:x.combo,
+  kind:x.kind==='main-reversal'?'main-reversal':(x.researchLab?'lab':'main'),
+  researchLab:!!x.researchLab
+ }));
+
+ // 研究所メタを表示用に引き継ぐ。
+ for(const x of buy1){
+  if(!meta[x.combo]&&ruleMap689.has(x.combo))meta[x.combo]='研究所｜同条件出目';
+  if(!meta[x.combo]&&axisMap689.has(x.combo))meta[x.combo]='研究所｜同条件の頭・軸';
+ }
+
+ // 研究所選定後も「買い目1 + 買い目2 = 20点」を維持。
+ let items=[...buy1,...existingCounter];
  if(items.length<20){
   const seen=new Set(items.map(x=>x.combo));
-  const lead=Number(result.primaryHead??p.mainHead??p.heads?.[0]);
-  const byOdds=[...od].sort((a,b)=>Number(b.odds||0)-Number(a.odds||0));
-  for(const row of byOdds){
+  for(const row of ordered689){
    if(items.length>=20)break;
-   const ns=String(row.combo||'').split('-').map(Number);
-   if(ns.length!==3||ns[0]!==lead)continue;
-   const rev=`${ns[0]}-${ns[2]}-${ns[1]}`;
-   if(!usable(rev)||seen.has(rev))continue;
-   seen.add(rev);items.push({combo:rev,kind:'main-reversal'});
+   if(seen.has(row.combo))continue;
+   seen.add(row.combo);
+   items.push({combo:row.combo,kind:row.researchLab?'lab':'main-reversal',researchLab:!!row.researchLab});
   }
  }
  items=items.slice(0,20);
- return {...result,items,box:[],labMeta:meta};
+ return {...result,items,box:[],labMeta:meta,buy1ResearchAnchors:lead===1?['研究所データ']:anchors689};
 }
 
 function tidePreference(c,rule){
@@ -26612,6 +26720,12 @@ window.BH_V592_RENDER_BETS=render;
    mode,buy1,buy2,narrow,
    buy1Head:firstHead(buy1),buy2Head:firstHead(buy2),narrowHead:firstHead(narrow),
    buy1Count:buy1.length,buy2Count:buy2.length,narrowCount:narrow.length,
+   buy1Axes:(()=>{
+    if(mode!=='normal'||!buy1.length)return [];
+    const h=firstHead(buy1),set=new Set();
+    buy1.forEach(c=>String(c).split('-').slice(1).map(Number).forEach(n=>{if(n&&n!==h)set.add(n)}));
+    return [...set];
+   })(),
    buy2SecondCut:Number(plan.buy2SecondCut)||0,
    totalCount:items.length
   };
@@ -26732,11 +26846,11 @@ window.BH_V592_RENDER_BETS=render;
   if(!root||!cur)return;
   let box=root.querySelector('.bh687Rates');
   if(!box){box=document.createElement('div');box.className='bh687Rates';root.prepend(box)}
-  box.innerHTML='<div class="bh687RatesTitle">研究所｜今回買い目の的中率 <small>集計中…</small></div>';
+  box.innerHTML='<div class="bh687RatesTitle">研究所｜今回買い目の事前的中率 <small>過去結果を集計中…</small></div>';
   const rows=await history();if(token!==seq||!box.isConnected)return;
   const a=tier(rows,'buy1',cur),b=tier(rows,'buy2',cur),n=tier(rows,'narrow',cur);
   const s1=stat(a.rows,'buy1'),s2=stat(b.rows,'buy2'),sn=stat(n.rows,'narrow');
-  box.innerHTML=`<div class="bh687RatesTitle">研究所｜今回買い目の的中率 <small>確定結果のみ</small></div>
+  box.innerHTML=`<div class="bh687RatesTitle">研究所｜今回買い目の事前的中率 <small>レース前表示・過去の確定結果のみ</small></div>
    <div class="bh687RateGrid">
     ${card('買い目1',s1,a.label,cur.mode==='normal')}
     ${card('買い目2',s2,b.label,cur.mode==='normal')}
@@ -26747,7 +26861,13 @@ window.BH_V592_RENDER_BETS=render;
  function schedule(){clearTimeout(t);t=setTimeout(mount,80)}
  const host=document.getElementById('bhEscapeBet530');
  if(host)new MutationObserver(schedule).observe(host,{childList:true,subtree:true});
- document.addEventListener('click',e=>{if(e.target.closest('#aiAnalyzeTop503,#bhV571Check,#get'))setTimeout(schedule,250)},true);
+ document.addEventListener('click',e=>{
+  if(e.target.closest('#aiAnalyzeTop503,#get')){
+   // AI解析直後に、今回の買い目構成を使って過去実績を表示。
+   setTimeout(schedule,250);setTimeout(schedule,900);setTimeout(schedule,1800);
+  }
+  if(e.target.closest('#bhV571Check'))setTimeout(schedule,250);
+ },true);
  window.addEventListener('storage',e=>{if(e.key===LEGACY)setTimeout(schedule,50)});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(mount,400),{once:true});else setTimeout(mount,400);
  window.BH_V687_REFRESH_HIT_RATES=mount;
@@ -26923,7 +27043,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:687,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:689,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
