@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V691</title>
+<title>BOAT HUNTER V692</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.691</div>
+  <div class="topVol">Vol.692</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -18059,8 +18059,14 @@ $('top').classList.remove('hide');
   function bhParseJmaTideRow(text,dateStr){
     const p=bhJmaDateParts(dateStr); if(!p)return null;
     const label=`${p.y}/${String(p.m).padStart(2,"0")}/${String(p.d).padStart(2,"0")}`;
-    const lines=String(text||"").split(/\r?\n/);
-    const line=lines.find(x=>x.includes(label));
+    const raw=String(text||"");
+    const lines=raw.split(/\r?\n/);
+    let line=lines.find(x=>x.includes(label))||"";
+    // r.jina.ai のMarkdownやHTML平坦化で1行にまとまらないケースを救済。
+    if(!line){
+      const pos=raw.indexOf(label);
+      if(pos>=0)line=raw.slice(pos,Math.min(raw.length,pos+900));
+    }
     if(!line)return null;
 
     // JMA table order: high1/high2/... then low1/low2/...
@@ -18072,6 +18078,16 @@ $('top').classList.remove('hide');
       const tm=tail[i].match(/^(\d{1,2}):(\d{2})$/);
       const h=Number(String(tail[i+1]).replace(/[^\d.-]/g,""));
       if(tm&&Number.isFinite(h)){pairs.push({hh:Number(tm[1]),mm:Number(tm[2]),height:h});i++}
+    }
+    if(pairs.length<2){
+      // パイプ区切りが崩れた場合は、日付以降の「時刻 + 潮位」を直接拾う。
+      const tailText=line.slice(Math.max(0,line.indexOf(label)+label.length));
+      const re=/(\d{1,2}):(\d{2})\s*[^0-9*+-]{0,8}(-?\d{1,3}(?:\.\d+)?)/g;
+      let m;
+      while((m=re.exec(tailText))){
+        pairs.push({hh:Number(m[1]),mm:Number(m[2]),height:Number(m[3])});
+        if(pairs.length>=4)break;
+      }
     }
     if(pairs.length<2)return null;
     const events=[];
@@ -18131,7 +18147,9 @@ $('top').classList.remove('hide');
   async function getTide(){
     const j=String($("stadium").value).padStart(2,"0"),key=codeKey();
     if(!TIDAL_VENUES.has(j))return {none:true};
-    if(tideCache&&tideKey===key)return tideCache;
+    // V692: 公式/JMA潮位だけをキャッシュ確定扱いにする。
+    // Open-Meteoの参考推定(estimated)は次回JMA再取得を妨げない。
+    if(tideCache&&tideKey===key&&!tideCache.estimated)return tideCache;
     tideKey=key;
     const xy=VENUE_COORDS[j];
     if(!xy)return null;
@@ -18221,22 +18239,32 @@ $('top').classList.remove('hide');
     return arr.sort((a,b)=>a.time-b.time);
   }
 
+  function bhRaceAtForTide(){
+    const date=$("date")?.value||'';
+    const raw=currentRace?.closed_at??currentRace?.close_at??currentRace?.deadline_at??currentRace?.start_at??
+      currentRace?.race_time??currentRace?.start_time??currentRace?.deadline??'';
+    let stamp=String(raw||'').trim();
+
+    // currentRace に時刻が無い/壊れている場合は、画面右上に表示済みの締切時刻を使う。
+    if(!/(\d{1,2}):(\d{2})/.test(stamp)){
+      const ui=String(document.getElementById("currentRaceFloatTime")?.textContent||"").trim();
+      if(/^(\d{1,2}):(\d{2})$/.test(ui))stamp=ui;
+    }
+
+    const timeOnly=stamp.match(/(?:^|\D)(\d{1,2}):(\d{2})(?::\d{2})?(?:\D|$)/);
+    if(timeOnly&&date){
+      const d=new Date(`${date}T${timeOnly[1].padStart(2,'0')}:${timeOnly[2]}:00+09:00`);
+      return Number.isFinite(d.getTime())?d:null;
+    }
+    const d=new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(stamp)?stamp:stamp.includes('T')?stamp+'+09:00':stamp);
+    return Number.isFinite(d.getTime())?d:null;
+  }
+
   function tideSnapshot(){
     const venue=String($("stadium")?.value||'').padStart(2,'0'),key=codeKey();
     if(!TIDAL_VENUES.has(venue))return {required:false,usable:true,venue};
-    const raw=currentRace?.closed_at??currentRace?.close_at??currentRace?.deadline_at??currentRace?.start_at??
-      currentRace?.race_time??currentRace?.start_time??currentRace?.deadline??'';
-    const date=$("date")?.value||'';
-    const stamp=String(raw||'').trim();
-    // HH:MM / 日本語時刻入り / ISO のどれでも「選択レース当日・JST」に正規化。
-    const timeOnly=stamp.match(/(?:^|\D)(\d{1,2}):(\d{2})(?::\d{2})?(?:\D|$)/);
-    let raceAt;
-    if(timeOnly&&date){
-      raceAt=new Date(`${date}T${timeOnly[1].padStart(2,'0')}:${timeOnly[2]}:00+09:00`);
-    }else{
-      raceAt=new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(stamp)?stamp:stamp.includes('T')?stamp+'+09:00':stamp);
-    }
-    const basic={required:true,usable:false,venue,raceAt:Number.isFinite(raceAt.getTime())?raceAt.toISOString():null,
+    const raceAt=bhRaceAtForTide();
+    const basic={required:true,usable:false,venue,raceAt:raceAt?raceAt.toISOString():null,
       source:tideCache?.source||null,estimated:!!tideCache?.estimated,phase:null,position:null};
     if(tideKey!==key||!tideCache||tideCache.estimated||!basic.raceAt)return basic;
     const events=extractTideEvents(tideCache);let prev=null,next=null;
@@ -24972,7 +25000,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:691,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:692,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26589,15 +26617,19 @@ function render(){
  // 取得完了時に BH_V592_RENDER_BETS が再実行され、同じ解析結果から買い目を復帰させる。
  if(analysisReady&&tideBlocked&&typeof window.BH_V691_GET_TIDE==='function'){
   const tideReqKey=`${$('date')?.value||''}|${$('stadium')?.value||''}|${$('race')?.value||''}`;
-  if(window.__BH_V691_TIDE_REQUEST_KEY!==tideReqKey){
-   window.__BH_V691_TIDE_REQUEST_KEY=tideReqKey;
+  window.__BH_V692_TIDE_TRIES=window.__BH_V692_TIDE_TRIES||{};
+  const tries=Number(window.__BH_V692_TIDE_TRIES[tideReqKey]||0);
+  if(!window.__BH_V692_TIDE_INFLIGHT && tries<3){
+   window.__BH_V692_TIDE_INFLIGHT=true;
+   window.__BH_V692_TIDE_TRIES[tideReqKey]=tries+1;
    Promise.resolve(window.BH_V691_GET_TIDE()).finally(()=>{
-    if(window.__BH_V691_TIDE_REQUEST_KEY===tideReqKey){
-     tide=window.BH_TIDE_SNAPSHOT?.()||null;
-     window.__BH_V653_BET_LOCK=null;
-     previous='';
-     queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
-    }
+    window.__BH_V692_TIDE_INFLIGHT=false;
+    tide=window.BH_TIDE_SNAPSHOT?.()||null;
+    window.__BH_V653_BET_LOCK=null;
+    previous='';
+    const ok=tide?.usable===true;
+    if(ok)queueMicrotask(()=>window.BH_V592_RENDER_BETS?.());
+    else setTimeout(()=>window.BH_V592_RENDER_BETS?.(),650);
    });
   }
  }
@@ -26697,7 +26729,11 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#aiAnalyzeTop503,#aiAnalyze,#bhOutlookRun469,#get'))refreshPending=true
  else if(e.target.closest('#getOdds120'))queueMicrotask(render);
 },true);
-document.addEventListener('change',e=>{if(e.target?.matches?.('#date,#stadium,#race')){window.__BH_V653_BET_LOCK=null;previous='';setTimeout(render,0)}},true);
+document.addEventListener('change',e=>{if(e.target?.matches?.('#date,#stadium,#race')){
+ window.__BH_V653_BET_LOCK=null;previous='';
+ window.__BH_V692_TIDE_TRIES={};window.__BH_V692_TIDE_INFLIGHT=false;
+ setTimeout(render,0)
+}},true);
 window.addEventListener('storage',e=>{if(e.key===LAB_RULES_KEY){window.__BH_V653_BET_LOCK=null;previous='';setTimeout(render,0)}});
 window.addEventListener('bh:entrychange',()=>{window.__BH_V653_BET_LOCK=null;previous='';queueMicrotask(render)});
 window.BH_V592_RENDER_BETS=render;
@@ -27113,7 +27149,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:691,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:692,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
