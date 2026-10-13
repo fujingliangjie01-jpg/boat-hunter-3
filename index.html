@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V698</title>
+<title>BOAT HUNTER V699</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15444,7 +15444,7 @@ input,
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.698</div>
+  <div class="topVol">Vol.699</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25015,7 +25015,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:698,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:699,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26346,6 +26346,39 @@ function selected(p,od){
   buy2Head:secondaryHead||0,buy2SecondCut:activeCut||0};
 }
 const LAB_RULES_KEY='DEME_LAB_ATTACK_RULES_V1';
+// V699: AI解析後に研究所を裏で開き、保存済み研究・年間実績を自動受信。
+const labAuto699={key:'',loading:false,done:false,error:'',frame:null};
+function ensureLab699(key){
+ if(labAuto699.key===key&&(labAuto699.loading||labAuto699.done))return;
+ labAuto699.frame?.remove();
+ Object.assign(labAuto699,{key,loading:true,done:false,error:''});
+ const iframe=document.createElement('iframe');iframe.hidden=true;iframe.setAttribute('aria-hidden','true');
+ const url=new URL('/deme-lab/',location.origin);url.searchParams.set('autoSync','1');
+ const requestId=`${key}:${Date.now()}`;
+ let timer;
+ const finish=(data,error)=>{
+  clearTimeout(timer);window.removeEventListener('message',receive);iframe.remove();
+  if(labAuto699.key!==key)return;
+  Object.assign(labAuto699,{loading:false,done:true,error:error||'',frame:null});
+  if(data){try{localStorage.setItem(LAB_RULES_KEY,JSON.stringify(data))}catch(e){labAuto699.error='研究データを保存できません：'+e.message}}
+   window.__BH_V653_BET_LOCK=null;
+  window.BH_V592_RENDER_BETS?.();
+ };
+ const receive=e=>{
+  if(e.origin!==location.origin||e.source!==iframe.contentWindow||e.data?.requestId!==requestId)return;
+  if(e.data.type!=='BH_LAB_AUTO_RESULT')return;
+  const data=e.data.data;
+  if(e.data.error)return finish(null,e.data.error);
+  if(data?.schema!=='DEME_LAB_ATTACK_RULES_V1'||!Array.isArray(data.finishRules)||!Array.isArray(data.rules))return finish(null,'研究所の更新版を読み込めません。Vol.22に更新してください');
+  finish(data,'');
+ };
+ window.addEventListener('message',receive);
+ iframe.onload=()=>{try{if(typeof iframe.contentWindow?.__LAB_FINISH_PAYLOAD!=='function')return finish(null,'研究所の自動取得に対応していません。研究所をVol.22へ更新してください');iframe.contentWindow.postMessage({type:'BH_LAB_AUTO_REQUEST',requestId,requireAnnual:isStandardEntry()},location.origin)}catch(e){finish(null,'研究所を読み込めません：'+e.message)}};
+ iframe.onerror=()=>finish(null,'研究所を開けません。通信状態を確認してください');
+ timer=setTimeout(()=>finish(null,'研究データの取得が時間切れになりました。保存済み分は保持しています'),600000);
+ iframe.src=url.toString();labAuto699.frame=iframe;document.body.append(iframe);
+}
+
 function isStandardEntry(){
  const entries=window.__HUNTER_ENTRY;
  return Array.isArray(entries)&&entries.length===6&&entries.every((row,i)=>
@@ -26391,7 +26424,7 @@ function researchFormation697(p,od,data){
  const heads=[...new Set((window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]).map(x=>Number(x.boat)))].slice(0,3);
  const empty=reason=>({narrow:true,reason,watchHeads:heads,items:[],box:[],researchFormation:true});
  if(!heads.length)return empty('頭候補が未確定です');
- if(!Array.isArray(data?.finishRules))return empty('研究所の頭・決まり手別データ未受信｜Vol.20から送信してください');
+ if(!Array.isArray(data?.finishRules))return empty('研究所の頭・決まり手別データを取得できませんでした');
  const trend=window.BH_RANK_TREND_V521?.current?.()||[];
  const row=n=>trend.find(x=>Number(x.boat)===n)||{};
  const rank=(n,k)=>{const v=Number(row(n)[k]);return v>=1&&v<=6?v:6};
@@ -26686,6 +26719,7 @@ function render(){
  const od=odds(),p=locked?.prediction??getPrediction();
  const hasSixCards=document.querySelectorAll("#cards .card,#cards .compactRacerCard").length>=6;
  const analysisReady=hasSixCards && ($("aiAnalyzeTop503")?.dataset.analysisDone==="1" || !!window.__BH_V653_BET_LOCK?.result);
+ if(analysisReady)ensureLab699(key);
  const labData=analysisReady?readLabRules():null;
  let tide=window.BH_TIDE_SNAPSHOT?.()||null;
  const tideRequired=window.BH_TIDE_REQUIRED?.($('stadium')?.value)===true;
@@ -26716,8 +26750,8 @@ function render(){
   narrow:true,
   reason:tide?.source?'潮位データ取得済み・レース時刻を照合中です。自動再判定します。':'JMA潮位を取得中です。取得後に自動で買い目を表示します。',
   watchHeads:[],items:[],box:[],tideLoading:true
- }:locked?.result??allocateStake(applyTideResearch(researchFormation697(p,od,labData),labData,tide),od)):null;
- if(!locked&&result&&!tideBlocked)window.__BH_V653_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
+ }:labAuto699.loading?{narrow:true,researchLoading:true,reason:'研究データ自動取得中｜保存済み実績と2026年出目を確認しています',watchHeads:[],items:[],box:[]}:labAuto699.error?{narrow:true,researchError:true,reason:labAuto699.error,watchHeads:[],items:[],box:[]}:locked?.result??allocateStake(applyTideResearch(researchFormation697(p,od,labData),labData,tide),od)):null;
+ if(!locked&&result&&!tideBlocked&&!result.researchLoading&&!result.researchError)window.__BH_V653_BET_LOCK={key,prediction:p,result,singles:window.BH_DEEP_LEARNING_V535?.headSingles?.()||[]};
  const sig=JSON.stringify([key,analysisReady,tideBlocked,tide?.phase,result?.escapeFocus,result?.stakeNarrow,result?.units,result?.narrow,result?.reason,result?.watchHeads,result?.items,result?.box,result?.boxMode,result?.labMeta,result?.tideRule]);
  const existing=box.querySelector('.bh590Root');
  if(sig===previous&&existing){updateOdds(existing,od);return}
@@ -26730,6 +26764,11 @@ function render(){
  if(!analysisReady){root.innerHTML='<div class="bh590Status">AI解析後に買い目を表示します。</div>';return}
  if(result?.narrow){
   window.__BH_V592_DISPLAY_BETS=[];
+  if(result.researchLoading||result.researchError){
+   const message=document.createElement('div');message.className='bh590Status';message.textContent=result.reason;root.append(message);
+   if(result.researchError){const retry=document.createElement('button');retry.type='button';retry.textContent='研究データを再取得';retry.addEventListener('click',()=>{labAuto699.done=false;window.__BH_V653_BET_LOCK=null;window.BH_V592_RENDER_BETS?.()});root.append(retry);}
+   return;
+  }
   if(result.tideLoading){
    root.innerHTML='<div class="bh590Status">潮位取得中｜JMA潮位表をレース時刻に照合しています…</div>';
    return;
@@ -27230,7 +27269,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:698,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:699,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
