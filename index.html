@@ -15564,20 +15564,31 @@ function analyze(x,history=[]){
  const hole={name:'3着穴',kind:'third-hole',research:prior.length>0,items:[]};
  for(const head of heads)for(const sec of seconds)for(const third of cutEligible){if(used.size>=20)break;add(hole,head,sec,third);}
  if(hole.items.length)groups.push(hole);
- // Fill to 20 from the selected heads before inventing additional heads or duplicate stakes.
+ // Extra heads come from second-place candidates not already used as main/secondary heads.
  const extra={name:'穴目',kind:'longshot',research:prior.length>0,items:[]};
+ const beforeExtra=groups.flatMap(g=>g.items.map(i=>i.combo.split('-').map(Number)));
+ const pos=p=>new Set(beforeExtra.map(c=>c[p])),firstSet=pos(0),secondSet=pos(1),thirdSet=pos(2);
+ const extraHeads=[...secondSet].filter(n=>!firstSet.has(n)&&canHead(n));
+ const thirdOnly=[...thirdSet].filter(n=>!firstSet.has(n)&&!secondSet.has(n));
+ const firstOnly=[...firstSet].filter(n=>!secondSet.has(n)&&!thirdSet.has(n));
  const candidates=[];
- for(const g of groups.filter(g=>g.kind==='main'||g.kind==='secondary')){
-  const peers=prior.filter(r=>r.order[0]===g.head&&r.method===g.move),followers=[...follow(g.head,g.move),...nums.filter(n=>n!==g.head&&b(n).canAxis===false)];
-  for(const s of followers)for(const t of nums.filter(n=>n!==g.head&&n!==s&&n!==g.cut)){
-   if(s===g.cut)continue;
-   const combo=[g.head,s,t].join('-');if(used.has(combo))continue;
-   const observed=peers.length?peers.filter(r=>r.order[1]===s&&r.order[2]===t).length/peers.length:0;
-   candidates.push({h:g.head,s,t,score:(6-followers.indexOf(s))*2+7-(axis[t]??7)+observed*3});
+ for(const head of extraHeads){
+  const followers=follow(head,methodFor(head));
+  for(const s of thirdOnly)for(const t of firstSet){
+   if(!valid([head,s,t]))continue;
+   candidates.push({head,s,t,strict:firstOnly.includes(t),score:7-(overall[head]??7)+7-(axis[s]??7)+7-(axis[t]??7)});
   }
  }
- candidates.sort((a,c)=>c.score-a.score||a.h-c.h||a.s-c.s||a.t-c.t);
- for(const c of candidates){if(used.size>=20)break;add(extra,c.h,c.s,c.t);}
+ candidates.sort((a,c)=>Number(c.strict)-Number(a.strict)||c.score-a.score||a.head-c.head||a.s-c.s||a.t-c.t);
+ for(const c of candidates){if(used.size>=20)break;add(extra,c.head,c.s,c.t);}
+ // If the role-only combinations cannot reach 20, fill by the same selected extra heads and follow-up evidence.
+ const fallback=[];
+ for(const head of extraHeads){const followers=follow(head,methodFor(head));for(const s of followers)for(const t of nums){
+  if(!valid([head,s,t])||used.has([head,s,t].join('-')))continue;
+  fallback.push({head,s,t,score:(6-followers.indexOf(s))*2+7-(axis[t]??7)});
+ }}
+ fallback.sort((a,c)=>c.score-a.score||a.head-c.head||a.s-c.s||a.t-c.t);
+ for(const c of fallback){if(used.size>=20)break;add(extra,c.head,c.s,c.t);}
  if(extra.items.length)groups.push(extra);
  // Priority is a model ordering, distinct from market popularity and not a probability.
  let priority=0;
@@ -15593,7 +15604,7 @@ function analyze(x,history=[]){
  const items=groups.flatMap(g=>g.items).slice(0,20);
  if(items.length<20)issues.push(`採用可能な組み合わせは${items.length}点・20点未達`);
  const forecasts=Object.entries(views).map(([key,v])=>({key,label:v.label,order:nums.filter(n=>v.rank[n]!=null).sort((a,c)=>v.rank[a]-v.rank[c]||a-c).map(n=>({head:n,rank:v.rank[n],method:key==='market'?null:methodFor(n,key==='environment'),allies:follow(n,key==='market'?null:methodFor(n,key==='environment'),v).slice(0,2)}))}));
- return {key:x.key,views,overall,order,groups,items,scenarios,issues,forecasts,historyN:prior.length,environmentN:envRows.length,environmentScope:scope,methodFor:Object.fromEntries(nums.map(n=>[n,n===second?envMethods[n]:methodFor(n)]))};
+ return {key:x.key,environmentChoiceRanks:rank(secondaryScores),environmentTideN:tideRows.length,views,overall,order,groups,items,scenarios,issues,forecasts,historyN:prior.length,environmentN:envRows.length,environmentScope:scope,methodFor:Object.fromEntries(nums.map(n=>[n,n===second?envMethods[n]:methodFor(n)]))};
 }
 function render(container,report){
  if(!container||!report)return;container.replaceChildren();const doc=container.ownerDocument;
@@ -15674,7 +15685,32 @@ window.BH_COMPACT_RESEARCH705=function(source){
 
  return r;
 };
-})();</script><style>.bh705Priority{grid-column:1/-1;justify-self:start;background:#103d59;color:#fff;border:2px solid #ffd65c;border-radius:8px;padding:5px 12px;font-size:18px;font-weight:900;margin-bottom:4px}.bh590Rank{font-size:12px!important;opacity:.85}</style></head>
+})();</script><style>.bh705Priority{grid-column:1/-1;justify-self:start;background:#103d59;color:#fff;border:2px solid #ffd65c;border-radius:8px;padding:5px 12px;font-size:18px;font-weight:900;margin-bottom:4px}.bh590Rank{font-size:12px!important;opacity:.85}</style><style>.bh708Criteria{padding:12px;background:#092431;border:1px solid #3b91b3;border-radius:12px;color:#fff;margin:10px 0}.bh708Criteria h3{font-size:17px;margin:0 0 10px}.bh708View{padding:9px 0;border-top:1px solid #365366}.bh708View strong{display:block;color:#8ad9f5}.bh708View small{display:block;font-size:11px;color:#b7cbd6;margin:4px 0;line-height:1.5}.bh708Ranks{display:flex;flex-wrap:wrap;gap:5px}.bh708Boat{padding:5px 7px;border-radius:5px;border:1px solid #8797a0;font-size:12px;font-weight:900}.bh708Boat1{background:#fff;color:#111}.bh708Boat2{background:#111;color:#fff}.bh708Boat3{background:#ce1834;color:#fff}.bh708Boat4{background:#0868d1;color:#fff}.bh708Boat5{background:#f5d518;color:#111}.bh708Boat6{background:#099750;color:#fff}</style><script id="bhFourCriteria708">(()=>{'use strict';
+window.BH_SHOW_FOUR_CRITERIA708=(root,report)=>{
+ const section=document.createElement('section');section.className='bh708Criteria';
+ const title=document.createElement('h3');title.textContent='4観点の評価基準・順位';section.append(title);
+ const defs=[
+ ['environment','風・場・潮位','同場の過去結果・場特性・風向と風速・同じ潮位局面の結果'],
+ ['ability','実力','全国勝率・同コース勝率・モーター・一周／回り足／直線'],
+ ['condition','機力・選手状態','モーター・近走着順・採用ST（F艇はF後ST）'],
+ ['market','世間評価','AI解析時の120通りオッズから算出した頭支持順位']
+ ];
+ for(const [key,label,criteria] of defs){
+  const box=document.createElement('div');box.className='bh708View';
+  const heading=document.createElement('strong');heading.textContent=label;
+  const detail=document.createElement('small');detail.textContent=criteria;box.append(heading,detail);
+  if(key==='environment'){const state=document.createElement('small');state.textContent=`同場実績 ${report.environmentN}件／同潮位局面 ${report.environmentTideN||0}件`;box.append(state);}
+  const ranks=key==='environment'?report.environmentChoiceRanks:report.views[key]?.rank;
+  const list=document.createElement('div');list.className='bh708Ranks';
+  for(const n of [1,2,3,4,5,6].sort((a,b)=>(ranks?.[a]??99)-(ranks?.[b]??99)||a-b)){
+   const badge=document.createElement('span');badge.className='bh708Boat bh708Boat'+n;
+   badge.textContent=`${n}号艇 ${ranks?.[n]==null?'未確認':ranks[n]+'位'}`;list.append(badge);
+  }
+  box.append(list);section.append(box);
+ }
+ root.append(section);
+};
+})();</script></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15684,7 +15720,7 @@ window.BH_COMPACT_RESEARCH705=function(source){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.707</div>
+  <div class="topVol">Vol.708</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25122,7 +25158,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:707,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:708,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null,windSpeed:window.BH_FOUR_INPUT_V702?.()?.windSpeed??null,windDirection:window.BH_FOUR_INPUT_V702?.()?.windDir||''},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research,forecastInput:window.BH_FOUR_INPUT_V702?.()||null},
@@ -25271,7 +25307,7 @@ $('bh599Send').addEventListener('click',async()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:707,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:708,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26723,7 +26759,7 @@ function fourViewBets702(p,od,data){
  window.BH_RENDER_SINGLES703?.();
  const primary=report.groups.find(g=>g.kind==='main'),secondary=report.groups.find(g=>g.kind==='secondary');
  return {narrow:!report.items.length,reason:report.items.length?'':'実力比較に必要なデータが不足しています',items:report.items,box:[],boxMeta:{},primaryHead:primary?.head||0,buy2Head:secondary?.head||0,
-  headsAllowed:[primary?.head,secondary?.head].filter(Boolean),researchFormation:false,fourPerspective:true,fourReport:report,groupPlan:report.groups,
+  headsAllowed:[...new Set(report.items.map(item=>Number(item.combo[0])))],researchFormation:false,fourPerspective:true,fourReport:report,groupPlan:report.groups,
   escapeFocus:false,fourInput:snapshot,labMeta:Object.fromEntries(report.items.filter(x=>x.researchLab).map(x=>[x.combo,'4観点・研究所実績'])),warnings:report.issues};
 }
 
@@ -27092,7 +27128,7 @@ function render(){
   card.append(mark,title,why,label,heads);root.append(card);return;
  }
  const m=new Map(od.map(x=>[x.combo,x]));
- // V703: 4観点の順位表は研究所側で表示。ハンターは単勝候補と買い目に集約。
+ if(result.fourPerspective)window.BH_SHOW_FOUR_CRITERIA708(root,result.fourReport);
  if(result.escapeFocus){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent=`絞りレース｜${(result.items||[]).length}点・20口・2,000円`;root.append(summary)}
  else if(result.stakeNarrow){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='投資配分｜買い目を増やさず20口・2,000円を配分';root.append(summary)}
  const labNote=document.createElement('div');labNote.className='bh590OddsStatus';
@@ -27578,7 +27614,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:707,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:708,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
