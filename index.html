@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V702</title>
+<title>BOAT HUNTER V703</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15499,7 +15499,9 @@ function analyze(x,history=[]){
  }
  views.condition={label:'機力・選手状態・F後ST',rank:rank(state),axisRank:rank(state),reasons:stateReason};
  const market={},marketAxis={};for(const n of nums){if(finite(b(n).marketHead))market[n]=b(n).marketHead;if(finite(b(n).marketAxis))marketAxis[n]=b(n).marketAxis;}
- views.market={label:'世間評価',rank:rank(market),axisRank:rank(marketAxis)};
+ const marketRank=rank(market),marketAxisRank=rank(marketAxis);
+ for(const n of nums){if(Number.isInteger(b(n).marketHeadRank)&&b(n).marketHeadRank>=1&&b(n).marketHeadRank<=6)marketRank[n]=b(n).marketHeadRank;if(Number.isInteger(b(n).marketAxisRank)&&b(n).marketAxisRank>=1&&b(n).marketAxisRank<=6)marketAxisRank[n]=b(n).marketAxisRank;}
+ views.market={label:'世間評価',rank:marketRank,axisRank:marketAxisRank};
  const combined={},axis={};for(const n of nums){const rr=Object.values(views).map(v=>v.rank[n]).filter(finite),ar=Object.values(views).map(v=>v.axisRank[n]).filter(finite);if(rr.length)combined[n]=mean(rr);if(ar.length)axis[n]=mean(ar);}
  const overall=rank(combined,false),order=nums.filter(n=>overall[n]!=null).sort((a,c)=>overall[a]-overall[c]||(views.ability.rank[a]??7)-(views.ability.rank[c]??7)||a-c);
  const canHead=n=>b(n).canHead!==false;
@@ -15561,6 +15563,20 @@ window.BH_FOUR_VIEW_V702={input,archive,analyze,render};
 })();
 
 </script>
+<style id="bh703CandidateStyle">
+#comparePanel,#bhRankCompare510{display:none!important}
+#bhHeadSingles535 .singles703{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+#bhHeadSingles535 .single703{flex:1 1 100px;min-width:90px;border-radius:12px;padding:12px 10px;border:2px solid #ffffff55;display:flex;flex-direction:column;gap:5px;box-shadow:0 3px 8px #0004}
+#bhHeadSingles535 .single703 strong{font-size:27px;line-height:1.2}
+#bhHeadSingles535 .single703 small{font-size:12px;font-weight:800}
+#bhHeadSingles535 .single703 span{font-size:16px;font-weight:900}
+#bhHeadSingles535 .boat703-1{background:#fff;color:#111}
+#bhHeadSingles535 .boat703-2{background:#151515;color:#fff}
+#bhHeadSingles535 .boat703-3{background:#d51d32;color:#fff}
+#bhHeadSingles535 .boat703-4{background:#1267c5;color:#fff}
+#bhHeadSingles535 .boat703-5{background:#f4d51c;color:#111}
+#bhHeadSingles535 .boat703-6{background:#078d49;color:#fff}
+</style>
 </head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
@@ -15571,7 +15587,7 @@ window.BH_FOUR_VIEW_V702={input,archive,analyze,render};
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.702</div>
+  <div class="topVol">Vol.703</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -24863,7 +24879,22 @@ window.__BH_V396_FORCE_2BOX__=true;
   patterns:{oneSurvives:o.includes(1),oneFollowsWinner:o[0]!==1&&o[1]===1,fastestStartTop3:fast?o.includes(fast.boat):null,sixTop3:o.includes(6),sixPosition:o.includes(6)?o.indexOf(6)+1:null,headAxisPair:`${o[0]}-${o[1]}`,winnerTechnique:res.technique||w?.technique||""}
  }}
  function save(){const res=result();if(!res)return false;const f=snapshot();if(f.length<6)return false;const db=read(),k=key(),rec={key:k,savedAt:new Date().toISOString(),features:f,result:res,analysis:derive(f,res),predictedHeads:headSingles()};const i=db.findIndex(x=>x.key===k);if(i>=0)db[i]=rec;else db.push(rec);localStorage.setItem(DB,JSON.stringify(db));return true}
- function render(){const box=$("bhEscapeBet530");if(!box)return;let p=$("bhHeadSingles535");if(!p){p=document.createElement("div");p.id="bhHeadSingles535";box.insertBefore(p,box.querySelector(".bets")||null)}const a=headSingles(),html=`<div class="h">単勝候補｜決まり手</div><div class="x">${a.length?a.map(x=>`${x.boat} / ${x.tech}`).join("　"):"—"}</div>`;if(p.innerHTML!==html)p.innerHTML=html}
+ function render(){
+  const box=$("bhEscapeBet530");if(!box)return;
+  let p=$("bhHeadSingles535");if(!p){p=document.createElement('div');p.id='bhHeadSingles535';box.insertBefore(p,box.firstChild)}
+  const a=headSingles(),signature=JSON.stringify(a.map(x=>[x.boat,x.tech]));if(p.dataset.singles703===signature)return;p.dataset.singles703=signature;
+  p.replaceChildren();const title=document.createElement('div');title.className='h';title.textContent='単勝候補｜決まり手';p.append(title);
+  const list=document.createElement('div');list.className='x singles703';
+  for(const [i,x] of a.entries()){
+   const card=document.createElement('div');card.className='single703 boat703-'+Number(x.boat);
+   const pos=document.createElement('small');pos.textContent=`候補${i+1}`;
+   const boat=document.createElement('strong');boat.textContent=x.boat+'号艇';
+   const move=document.createElement('span');move.textContent=x.tech||'決まり手未確認';
+   card.append(pos,boat,move);list.append(card);
+  }
+  if(!a.length)list.textContent='AI解析後に表示します';p.append(list);
+ }
+ window.BH_RENDER_SINGLES703=render;
  function bind(){render();const l=$("bhResultLearnButton525");if(l&&!l.dataset.bh535){l.dataset.bh535=1;l.addEventListener("click",()=>setTimeout(save,80))}const c=[...document.querySelectorAll("button")].find(b=>/結果を確認/.test(b.textContent||""));if(c&&!c.dataset.bh535){c.dataset.bh535=1;c.addEventListener("click",()=>setTimeout(save,1100))}}
  window.BH_DEEP_LEARNING_V535={headSingles,snapshot,derive,save,read};
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{render();setTimeout(bind,1300)},{once:true});else{render();setTimeout(bind,1300)}
@@ -24994,7 +25025,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:702,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:703,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null,windSpeed:window.BH_FOUR_INPUT_V702?.()?.windSpeed??null,windDirection:window.BH_FOUR_INPUT_V702?.()?.windDir||''},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research,forecastInput:window.BH_FOUR_INPUT_V702?.()||null},
@@ -25145,7 +25176,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:702,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:703,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26577,7 +26608,7 @@ function fourViewInput702(){
  const date=document.getElementById('date')?.value||'',stadium=String(Number(document.getElementById('stadium')?.value||0)).padStart(2,'0'),race=document.getElementById('race')?.value||'';
  return {key:`${date}_${stadium}_${race}R`,capturedAt:new Date().toISOString(),date,venue:stadium,raceNo:Number(race),tide:window.BH_TIDE_SNAPSHOT?.()||null,venueTraits:window.__BH_VENUE_TRAITS||window.__HUNTER_VENUE_TRAITS||null,windSpeed:first(c.wind_speed,c.windSpeed,window.__BH_WIND_SPEED),windDir,
  boats:[1,2,3,4,5,6].map(boat=>{
-  const r=get(racers,boat),p=get(pv,boat),a=course[boat-1]||{},f=get(flow,boat),t=get(trend,boat);
+  const r=get(racers,boat),p=get(pv,boat),a=course[boat-1]||{},f=get(flow,boat),t=get(trend,boat),market=window.__BH_MARKET_COMPARE510?.market;
   const history=window.__BH_HISTORY20_SHARED?.get?.(Number(r.number??p.registration_number))?.rows||p.recent20||p.history20||[];
   const places=(Array.isArray(history)?history:[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(x=>first(x.place,x.finish,x.rank,x.resultRank)).filter(x=>x!==null);
   const fc=first(r.flying_count,r.f_count,p.flying_count,p.f_count,p.fCount,p.F,f.fc,f.fCount)||0;
@@ -26585,7 +26616,7 @@ function fourViewInput702(){
   const attack=Object.fromEntries((a.attack||[]).map(x=>[x.method,n(x.rate)]));
   return {boat,course:first(p.course,f.course,a.course,boat),national:first(a.nationalWinRate,r.national_win_rate,p.nationalWinRate),courseWin:first(p.courseWinRate,p.course1Rate),motor:first(r.motor_top_2_percent,r.motor_quinella_rate,r.motor_2ren_rate,p.motor2Rate,p.motor2),motor3:first(r.motor_top_3_percent,r.motor_trifecta_rate,p.motor3Rate),nationalClass:a.grade||r.current_class||null,historyScope:'同コース過去20走',history20:(Array.isArray(history)?history:[]).map(z=>({date:z.date||null,place:first(z.place,z.finish,z.rank),st:first(z.st,z.start_timing),winnerCourse:first(z.winnerCourse,z.winner),method:z.tech??z.technique??null})),
    lap:first(p.lap,p.lap_time,p.lapTime),turn:first(p.turn,p.turn_time,p.turnTime),straight:first(p.straight,p.straight_time,p.straightTime),
-   st:first(p.currentST,r.average_start_timing,f.st,p.st),f:fc,postFST:post,places,attack,marketHead:n(t.headSupport),marketAxis:n(t.axisSupport),
+   st:first(p.currentST,r.average_start_timing,f.st,p.st),f:fc,postFST:post,places,attack,marketHead:first(market?.head?.[boat-1],t.headSupport),marketAxis:first(market?.axis?.[boat-1],t.axisSupport),marketHeadRank:first(market?.rank?.[boat-1],t.head),marketAxisRank:first(market?.axisRank?.[boat-1],t.axis),
    canHead:window.BH_V622_GUARD?.canHead(boat)!==false,canAxis:window.BH_V622_GUARD?.canTrustedAxis(boat)!==false};
  })};
 }
@@ -26594,7 +26625,7 @@ function fourViewBets702(p,od,data){
  const engine=window.BH_FOUR_VIEW_V702;if(!engine)return {narrow:true,reason:'4観点の研究処理を読み込めません',items:[],box:[]};
  const snapshot=fourViewInput702(),report=engine.analyze(snapshot,data?.perspectiveHistory||[]);
  window.__BH_FOUR_REPORT_V702=report;
- const singles=document.querySelector('#bhHeadSingles535 .x');if(singles)singles.textContent=report.scenarios.map(x=>`${x.head} / ${x.method||'未確認'}`).join('　')||'—';
+ window.BH_RENDER_SINGLES703?.();
  const primary=report.groups.find(g=>g.kind==='main'),secondary=report.groups.find(g=>g.kind==='secondary');
  return {narrow:!report.items.length,reason:report.items.length?'':'実力比較に必要なデータが不足しています',items:report.items,box:[],boxMeta:{},primaryHead:primary?.head||0,buy2Head:secondary?.head||0,
   headsAllowed:[primary?.head,secondary?.head].filter(Boolean),researchFormation:false,fourPerspective:true,fourReport:report,groupPlan:report.groups,
@@ -26966,7 +26997,7 @@ function render(){
   card.append(mark,title,why,label,heads);root.append(card);return;
  }
  const m=new Map(od.map(x=>[x.combo,x]));
- if(result.fourPerspective){const panel=document.createElement('section');panel.className='bhFourResearchPanel';window.BH_FOUR_VIEW_V702.render(panel,result.fourReport);root.append(panel);}
+ // V703: 4観点の順位表は研究所側で表示。ハンターは単勝候補と買い目に集約。
  if(result.escapeFocus){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent=`絞りレース｜${(result.items||[]).length}点・20口・2,000円`;root.append(summary)}
  else if(result.stakeNarrow){const summary=document.createElement('div');summary.className='bh664Summary';summary.textContent='投資配分｜買い目を増やさず20口・2,000円を配分';root.append(summary)}
  const labNote=document.createElement('div');labNote.className='bh590OddsStatus';
@@ -27458,7 +27489,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:702,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:703,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
