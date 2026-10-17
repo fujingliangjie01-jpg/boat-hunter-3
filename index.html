@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BOAT HUNTER V703</title>
+<title>BOAT HUNTER V704</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#07131d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 button,select,input{font:inherit}.hide{display:none!important}.wrap{max-width:900px;margin:auto;padding:14px}
@@ -15545,6 +15545,17 @@ function analyze(x,history=[]){
  const hh=[...sec].filter(n=>!first.has(n)),ss=[...third].filter(n=>!first.has(n)&&!sec.has(n)),tt=[...first].filter(n=>!sec.has(n)&&!third.has(n));
  for(const head of hh)for(const se of ss)for(const th of tt){if(used.size>=20)break;add(longshot,head,se,th);}
  if(longshot.items.length)groups.push(longshot);
+ // Priority is a model ordering, distinct from market popularity and not a probability.
+ let priority=0;
+ for(const g of groups){
+  const peerRows=prior.filter(r=>r.order[0]===g.head&&r.method===g.move);
+  const score=item=>{const [head,s,t]=item.combo.split('-').map(Number),seconds=follow(head,g.move);
+   const observed=peerRows.length?peerRows.filter(r=>r.order[1]===s&&r.order[2]===t).length/peerRows.length:0;
+   return (6-seconds.indexOf(s))*2+(7-(axis[t]??7))+observed*3;
+  };
+  g.items.sort((a,b)=>score(b)-score(a)||a.combo.localeCompare(b.combo));
+  for(const item of g.items)item.priority=++priority;
+ }
  const items=groups.flatMap(g=>g.items).slice(0,20);
  if(items.length<20)issues.push(`指定条件に合う重複なしの出目は${items.length}点・20点まで${20-items.length}点不足`);
  const forecasts=Object.entries(views).map(([key,v])=>({key,label:v.label,order:nums.filter(n=>v.rank[n]!=null).sort((a,c)=>v.rank[a]-v.rank[c]||a-c).map(n=>({head:n,rank:v.rank[n],method:key==='market'?null:methodFor(n,key==='environment'),allies:follow(n,key==='market'?null:methodFor(n,key==='environment'),v).slice(0,2)}))}));
@@ -15577,7 +15588,59 @@ window.BH_FOUR_VIEW_V702={input,archive,analyze,render};
 #bhHeadSingles535 .boat703-5{background:#f4d51c;color:#111}
 #bhHeadSingles535 .boat703-6{background:#078d49;color:#fff}
 </style>
-</head>
+<script id="bh704LargeTransfer">
+(()=>{'use strict';
+window.BH_SEND_LAB_DATA_704=payload=>new Promise((resolve,reject)=>{
+ payload=window.BH_COMPACT_RESEARCH705(payload);
+ const frame=document.createElement('iframe');frame.hidden=true;frame.setAttribute('aria-hidden','true');
+ const requestId='store704-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+ const url=new URL('/deme-lab/',location.origin);url.searchParams.set('receive','1');
+ const timer=setTimeout(()=>finish(new Error('研究所への保存が時間切れになりました。再送信できます')),45000);
+ let settled=false;
+ function finish(error,result){if(settled)return;settled=true;clearTimeout(timer);window.removeEventListener('message',receive);frame.remove();error?reject(error):resolve(result)}
+ function receive(e){
+  if(e.origin!==location.origin||e.source!==frame.contentWindow||e.data?.type!=='BH_LAB_STORE_RESULT'||e.data.requestId!==requestId)return;
+  if(e.data.ok!==true)return finish(new Error(e.data.error||'研究所で保存できませんでした'));
+  finish(null,e.data);
+ }
+ window.addEventListener('message',receive);
+ frame.onload=()=>{try{
+  if(typeof frame.contentWindow?.BH_LAB_STORE_25!=='function')return finish(new Error('研究所をVol.25へ更新してください'));
+  frame.contentWindow.postMessage({type:'BH_LAB_STORE_REQUEST',requestId,payload},location.origin);
+ }catch(error){finish(error)}};
+ frame.onerror=()=>finish(new Error('研究所を読み込めません。通信状態を確認してください'));
+ frame.src=url.toString();document.body.append(frame);
+});
+})();
+
+</script>
+<script id="compactResearch705">(()=>{'use strict';
+// Keep research values, prediction snapshots and results; remove only page dumps and exact duplicates.
+window.BH_COMPACT_RESEARCH705=function(source){
+ const r=JSON.parse(JSON.stringify(source));
+ function clean(h){
+  if(!h||typeof h!=='object')return;
+  delete h.pageText;
+  if(h.sixBoatEvaluation===h.marketComparison)delete h.sixBoatEvaluation;
+ }
+ delete r.pageText;clean(r.hunter);clean(r.hunterInput);
+ const h=r.hunterInput||r.hunter;
+ if(h?.raw&&typeof h.raw==='object'){
+  const raw=h.raw;delete raw.pageText;clean(raw.hunter);clean(raw.hunterInput);
+  const same=(a,b)=>a!==undefined&&JSON.stringify(a)===JSON.stringify(b);
+  for(const k of Object.keys(raw))if(k!=='hunter'&&k!=='hunterInput'&&same(raw[k],r[k]))delete raw[k];
+  for(const key of ['hunter','hunterInput'])if(raw[key]){
+   for(const k of Object.keys(raw[key]))if(same(raw[key][k],h[k]))delete raw[key][k];
+   if(!Object.keys(raw[key]).length)delete raw[key];
+  }
+  if(!Object.keys(raw).length)delete h.raw;
+ }
+ // Canonical container retains unique legacy fields as well as current structured inputs.
+ if(r.hunter&&r.hunterInput){r.hunterInput={...r.hunterInput,...r.hunter};delete r.hunter;}
+
+ return r;
+};
+})();</script><style>.bh705Priority{grid-column:1/-1;justify-self:start;background:#103d59;color:#fff;border:2px solid #ffd65c;border-radius:8px;padding:5px 12px;font-size:18px;font-weight:900;margin-bottom:4px}.bh590Rank{font-size:12px!important;opacity:.85}</style></head>
 <body>
 <div id="currentRaceFloat" class="currentRaceFloat hide">
   <div class="currentRaceFloatMain">
@@ -15587,7 +15650,7 @@ window.BH_FOUR_VIEW_V702={input,archive,analyze,render};
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.703</div>
+  <div class="topVol">Vol.705</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25025,22 +25088,20 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:703,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:705,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null,windSpeed:window.BH_FOUR_INPUT_V702?.()?.windSpeed??null,windDirection:window.BH_FOUR_INPUT_V702?.()?.windDir||''},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research,forecastInput:window.BH_FOUR_INPUT_V702?.()||null},
  result:/^[1-6]-[1-6]-[1-6]$/.test(res)?{confirmed:true,trifecta:res,order:res.split('-').map(Number),winningMove:way}: {confirmed:false}};
 }
-$('bh599Send').addEventListener('click',()=>{
- const state=$('bh599State');try{const p=collect();
- // Small, structured URL payload works even when Safari PWA and browser storage are isolated.
- const json=JSON.stringify(p),encoded=btoa(unescape(encodeURIComponent(json)));
- const url=new URL('/deme-lab/',location.origin);url.searchParams.set('hunterReturn',location.origin+location.pathname);url.hash='hunter599='+encodeURIComponent(encoded);
- if(url.toString().length>16000)throw Error('送信データが大きすぎます。詳細を閉じて再試行してください');
- try{let a=JSON.parse(localStorage.getItem('BH_DEME_LAB_INBOX_V3')||'[]');if(!Array.isArray(a))a=[];
- const i=a.findIndex(x=>x.key===p.key);if(i>=0)a[i]=p;else a.push(p);localStorage.setItem('BH_DEME_LAB_INBOX_V3',JSON.stringify(a));}catch(e){console.warn('local backup',e)}
- state.textContent='研究所を開いています…';location.assign(url.toString());
- }catch(e){state.textContent='転送できません：'+e.message;console.error(e)}
+$('bh599Send').addEventListener('click',async()=>{
+ const state=$('bh599State'),button=$('bh599Send');if(button.disabled)return;
+ button.disabled=true;state.textContent='研究所へ保存しています…';
+ try{
+  const record=collect();await window.BH_SEND_LAB_DATA_704(record);
+  state.textContent='✓ 研究所への保存完了（画面移動なし）';
+ }catch(error){state.textContent='転送できません：'+error.message;console.error(error)}
+ finally{button.disabled=false;}
 });
 })();</script>
 <script id="bhV573ResultPositionFix">
@@ -25176,7 +25237,7 @@ $('bh599Send').addEventListener('click',()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:703,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:705,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -27038,7 +27099,7 @@ function render(){
  }
  const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');card.dataset.combo=x.combo;if(result.units)card.dataset.units=String(result.units[x.combo]||1);const o=m.get(x.combo),t=result.fourPerspective?(result.groupPlan.find(g=>g.items.some(i=>i.combo===x.combo))?.move||result.fourReport.methodFor[Number(x.combo[0])]||'未確認'):technique(Number(x.combo[0]));
- const parts=[['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
+ const parts=[...(x.priority?[['bh705Priority','優先 '+x.priority+'位']]:[]),['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
  for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[x.combo]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}if(result.tideRule&&tidePreference(x.combo,result.tideRule)>0){const tidePatch=document.createElement('div');tidePatch.className='bhLabResearchPatch';tidePatch.textContent='潮汐研究';card.append(tidePatch)}if(x.kind==='lab'||x.researchLab){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent=x.researchAxis?'研究所・軸':'研究所';card.append(patch)}else if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
  }
  // Bet 3 uses a six-ticket BOX, or six fresh evaluated combinations if no BOX is distinct.
@@ -27489,7 +27550,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:703,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:705,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
