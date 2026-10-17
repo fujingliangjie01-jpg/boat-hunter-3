@@ -15447,7 +15447,7 @@ const venue=v=>{const n=String(v??'').replace(/\D/g,'');return n?String(Number(n
 function input(record){
  const h=record?.hunter||record?.hunterInput||{},raw=h.forecastInput||record?.forecastInput;if(raw?.boats?.length===6)return raw;
  const e=record?.environment||{},boats=h.boats||[],weatherText=String(h.developmentEvaluation||h.outlook||''),windMatch=weatherText.match(/(向かい風|追い風|横風)\s*([0-9]+(?:\.[0-9]+)?)\s*m\/s/);
- return {key:record?.key||'',date:record?.race?.date||'',venue:venue(record?.race?.stadium),windSpeed:N(e.windSpeed??e.wind?.speed??windMatch?.[2]),windDir:String(e.windDirection??e.wind?.direction??windMatch?.[1]??''),boats:nums.map((n,i)=>{
+ return {key:record?.key||'',date:record?.race?.date||'',venue:venue(record?.race?.stadium),tide:e.tide||null,venueTraits:e.venueTraits||null,windSpeed:N(e.windSpeed??e.wind?.speed??windMatch?.[2]),windDir:String(e.windDirection??e.wind?.direction??windMatch?.[1]??''),boats:nums.map((n,i)=>{
  const b=boats[i]||{},s=b.stats||{},attack=b.attack||{};
  return {boat:n,course:N(b.course)||n,national:N(b.nationalWinRate??s.nationalWinRate??s.national_win_rate),courseWin:N(s.courseWinRate),motor:N(s.motor2Rate),st:N(s.currentST??s.avgST),f:N(b.fCount??s.fCount)||0,postFST:N(s.fAfterST),places:[],attack:Array.isArray(attack)?Object.fromEntries(attack.map(a=>[a.method,N(a.rate)])):{逃げ:N(attack.nigeRate),差し:N(attack.sashiRate??attack.sashiRate),まくり:N(attack.makuriRate),'まくり差し':N(attack.makurizashiRate)},marketHead:N(b.headSupport),marketAxis:N(b.axisSupport)};
  })};
@@ -15456,7 +15456,7 @@ function archive(records){const seen=new Set(),out=[];for(const r of records||[]
  if(!r?.result?.confirmed||!r.key||seen.has(r.key))continue;seen.add(r.key);
  let order=r.result.order||r.result.trifecta||r.result.combo;if(typeof order==='string')order=order.match(/[1-6]/g)?.map(Number);order=Array.isArray(order)?order.slice(0,3).map(Number):[];
  const move=method(r.result.winningMove||r.result.technique||r.result.move);if(!valid(order)||!move)continue;
- const x=input(r);out.push({key:r.key,date:x.date,venue:x.venue,windSpeed:x.windSpeed,windDir:x.windDir,order,method:move});
+ const x=input(r);out.push({key:r.key,date:x.date,venue:x.venue,windSpeed:x.windSpeed,windDir:x.windDir,tide:x.tide||null,order,method:move});
  }return out;}
 function analyze(x,history=[]){
  const b=n=>x.boats.find(b=>b.boat===n)||{},issues=[],views={};
@@ -15520,7 +15520,32 @@ function analyze(x,history=[]){
   }
   return nums.filter(n=>n!==head&&(view===views.environment||b(n).canAxis!==false)).sort((a,c)=>score[c]-score[a]||a-c);
  };
- const second=possible.filter(n=>n!==main&&order.indexOf(n)<4&&views.environment.rank[n]!=null&&methodFor(n,true)).sort((a,c)=>views.environment.rank[a]-views.environment.rank[c]||overall[a]-overall[c])[0]||null;
+ // Secondary choice uses venue, wind and observed tide-phase results. Missing tide effects are never invented.
+ const envMethods={},secondaryScores={};
+ const tideRows=x.tide?.usable&&x.tide?.phase?prior.filter(r=>r.tide?.usable&&r.tide.phase===x.tide.phase):[];
+ const traits=x.venueTraits||{},text=String(typeof traits==='string'?traits:traits.text||'');
+ for(const n of possible){
+  const course=b(n).course||n,allowed=course===1?['逃げ']:course===2?['差し','まくり']:['差し','まくり','まくり差し'];
+  const scores={};
+  for(const m of allowed){
+   let v=(methods[n]?.[m]||0)*2;
+   const adj=N(traits.technique?.[m]);if(adj!=null)v+=adj;
+   const ca=N(traits[`course${course}`]??traits.course?.[course]);if(ca!=null)v+=ca;
+   if(course===1&&/イン優勢|イン・スロー|インとセンター/.test(text))v+=1;
+   if(course===2&&/2コース差し|スロー優勢/.test(text)&&m==='差し')v+=1;
+   if(course>=3&&course<=4&&/センター/.test(text)&&m==='まくり')v+=1;
+   if(course>=4&&/ダッシュ|外の/.test(text)&&/まくり/.test(m))v+=1;
+   if(finite(x.windSpeed)&&x.windSpeed>=3){const k=Math.min(3,(x.windSpeed-2)/2);
+    if(/向か/.test(x.windDir)&&course>=3&&/まくり/.test(m))v+=k;
+    if(/追/.test(x.windDir)&&course<=2&&/逃げ|差し/.test(m))v+=k;
+   }
+   if(tideRows.length)v+=tideRows.filter(r=>r.order[0]===n&&r.method===m).length/tideRows.length*6;
+   scores[m]=v;
+  }
+  envMethods[n]=allowed.sort((a,c)=>scores[c]-scores[a]||(b(n).attack?.[c]??-1)-(b(n).attack?.[a]??-1))[0];
+  secondaryScores[n]=scores[envMethods[n]]+(7-(overall[n]??7))*.25;
+ }
+ const second=possible.filter(n=>n!==main&&order.indexOf(n)<4).sort((a,c)=>secondaryScores[c]-secondaryScores[a]||overall[a]-overall[c]||a-c)[0]||null;
  const groups=[],used=new Set(),cuts=[],scenarios=[];
  const add=(g,h,s,t)=>{const c=[h,s,t];if(!valid(c)||used.has(c.join('-')))return false;used.add(c.join('-'));g.items.push({combo:c.join('-'),kind:g.kind,researchLab:g.research});return true;};
  const makeGroup=(head,kind,seconds,move)=>{
@@ -15532,19 +15557,28 @@ function analyze(x,history=[]){
   if(g.items.length){groups.push(g);cuts.push(cut);scenarios.push({head,method:move,allies:seconds,cut});}
  };
  if(main&&views.ability.rank[main]!=null){const move=methodFor(main);makeGroup(main,'main',follow(main,move).slice(0,2),move);}
- if(second){const move=methodFor(second,true),other=follow(second,move).find(n=>n!==main);if(other)makeGroup(second,'secondary',[main,other],move);}
- else issues.push('次点は風・場から決まり手を確認できず保留');
+ if(second){const move=envMethods[second]||methodFor(second,true),other=follow(second,move).find(n=>n!==main);if(other)makeGroup(second,'secondary',[main,other],move);}
+ else issues.push('採用可能な次点の頭候補がありません');
  const base=groups.flatMap(g=>g.items.map(i=>i.combo.split('-').map(Number))),heads=[...new Set(base.map(x=>x[0]))],seconds=[...new Set(base.map(x=>x[1]))];
  const cutEligible=[...new Set(cuts)].filter(n=>{const ranks=Object.values(views).map(v=>v.axisRank[n]).filter(finite);return ranks.some(r=>r<=4)&&!(views.ability.axisRank[n]===6&&views.condition.axisRank[n]>=5);});
  const hole={name:'3着穴',kind:'third-hole',research:prior.length>0,items:[]};
  for(const head of heads)for(const sec of seconds)for(const third of cutEligible){if(used.size>=20)break;add(hole,head,sec,third);}
  if(hole.items.length)groups.push(hole);
- const existing=groups.flatMap(g=>g.items.map(i=>i.combo.split('-').map(Number)));
- const at=pos=>new Set(existing.map(c=>c[pos]));const first=at(0),sec=at(1),third=at(2);
- const longshot={name:'穴目',kind:'longshot',research:false,items:[]};
- const hh=[...sec].filter(n=>!first.has(n)),ss=[...third].filter(n=>!first.has(n)&&!sec.has(n)),tt=[...first].filter(n=>!sec.has(n)&&!third.has(n));
- for(const head of hh)for(const se of ss)for(const th of tt){if(used.size>=20)break;add(longshot,head,se,th);}
- if(longshot.items.length)groups.push(longshot);
+ // Fill to 20 from the selected heads before inventing additional heads or duplicate stakes.
+ const extra={name:'穴目',kind:'longshot',research:prior.length>0,items:[]};
+ const candidates=[];
+ for(const g of groups.filter(g=>g.kind==='main'||g.kind==='secondary')){
+  const peers=prior.filter(r=>r.order[0]===g.head&&r.method===g.move),followers=[...follow(g.head,g.move),...nums.filter(n=>n!==g.head&&b(n).canAxis===false)];
+  for(const s of followers)for(const t of nums.filter(n=>n!==g.head&&n!==s&&n!==g.cut)){
+   if(s===g.cut)continue;
+   const combo=[g.head,s,t].join('-');if(used.has(combo))continue;
+   const observed=peers.length?peers.filter(r=>r.order[1]===s&&r.order[2]===t).length/peers.length:0;
+   candidates.push({h:g.head,s,t,score:(6-followers.indexOf(s))*2+7-(axis[t]??7)+observed*3});
+  }
+ }
+ candidates.sort((a,c)=>c.score-a.score||a.h-c.h||a.s-c.s||a.t-c.t);
+ for(const c of candidates){if(used.size>=20)break;add(extra,c.h,c.s,c.t);}
+ if(extra.items.length)groups.push(extra);
  // Priority is a model ordering, distinct from market popularity and not a probability.
  let priority=0;
  for(const g of groups){
@@ -15557,9 +15591,9 @@ function analyze(x,history=[]){
   for(const item of g.items)item.priority=++priority;
  }
  const items=groups.flatMap(g=>g.items).slice(0,20);
- if(items.length<20)issues.push(`指定条件に合う重複なしの出目は${items.length}点・20点まで${20-items.length}点不足`);
+ if(items.length<20)issues.push(`採用可能な組み合わせは${items.length}点・20点未達`);
  const forecasts=Object.entries(views).map(([key,v])=>({key,label:v.label,order:nums.filter(n=>v.rank[n]!=null).sort((a,c)=>v.rank[a]-v.rank[c]||a-c).map(n=>({head:n,rank:v.rank[n],method:key==='market'?null:methodFor(n,key==='environment'),allies:follow(n,key==='market'?null:methodFor(n,key==='environment'),v).slice(0,2)}))}));
- return {key:x.key,views,overall,order,groups,items,scenarios,issues,forecasts,historyN:prior.length,environmentN:envRows.length,environmentScope:scope,methodFor:Object.fromEntries(nums.map(n=>[n,methodFor(n)]))};
+ return {key:x.key,views,overall,order,groups,items,scenarios,issues,forecasts,historyN:prior.length,environmentN:envRows.length,environmentScope:scope,methodFor:Object.fromEntries(nums.map(n=>[n,n===second?envMethods[n]:methodFor(n)]))};
 }
 function render(container,report){
  if(!container||!report)return;container.replaceChildren();const doc=container.ownerDocument;
@@ -15650,7 +15684,7 @@ window.BH_COMPACT_RESEARCH705=function(source){
 </div>
 
 <section id="top" class="top top-normal">
-  <div class="topVol">Vol.705</div>
+  <div class="topVol">Vol.707</div>
   <div id="topEventVenue" class="topEventVenue hide"></div>
   <div class="content">
     <div class="boat">🚤</div>
@@ -25088,7 +25122,7 @@ function collect(){
  const plan=window.__BH_V653_BET_LOCK?.result||null;
  const betStrategy=plan&&!plan.narrow?{mode:plan.escapeFocus?'買い目絞り・1頭':plan.stakeNarrow?'買い目絞り・買い目3縮小':'通常2頭',units:plan.units||null,unitTotal:plan.unitTotal||20,trimmedBets:plan.trimmedBets||[],evidence:plan.focusEvidence||[]}:null;
  const res=txt('bhV571Out'),way=txt('bhV571Way');
- return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:705,
+ return {schemaVersion:4,schema:'HUNTER_LAB_600',source:'BOAT_HUNTER',sourceVersion:707,
  key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
  race:{date,stadium,stadiumName:name,raceNo},environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null,windSpeed:window.BH_FOUR_INPUT_V702?.()?.windSpeed??null,windDirection:window.BH_FOUR_INPUT_V702?.()?.windDir||''},hunter:{boats,marketComparison:comparison,sixBoatEvaluation:comparison,
  developmentEvaluation:outlook,beforeInfo:before,betPrediction:buy,betStrategy,oddsSummary:odds,courseAttackResearch:research,forecastInput:window.BH_FOUR_INPUT_V702?.()||null},
@@ -25237,7 +25271,7 @@ $('bh599Send').addEventListener('click',async()=>{
   const q=sel(), stadium=String(q.venue||"").padStart(2,"0"), raceNo=Number(q.race||0);
   const key=`${q.date}_${stadium}_${raceNo}R`;
   const payload={
-   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:705,hunterCycle:true,
+   schemaVersion:3,schema:"HUNTER_CYCLE_V3",source:"BOAT_HUNTER",sourceVersion:707,hunterCycle:true,
    key,sentAt:new Date().toISOString(),
    race:{date:q.date,stadium,stadiumName:q.venueName||"",raceNo},
    hunter:(()=>{const h=collectHunter(),betGroups=window.BH_V687_BET_GROUPS_SNAPSHOT?.()||null;return {...h,betGroups,betOutcome:betGroups?{
@@ -26667,7 +26701,7 @@ function fourViewInput702(){
  const windText=document.getElementById('windOutlook')?.textContent||'';
  const windDir=/向かい風|追い風|横風/.exec(windText)?.[0]||String(c.wind_direction??c.windDirection??window.__BH_WIND_DIR??'');
  const date=document.getElementById('date')?.value||'',stadium=String(Number(document.getElementById('stadium')?.value||0)).padStart(2,'0'),race=document.getElementById('race')?.value||'';
- return {key:`${date}_${stadium}_${race}R`,capturedAt:new Date().toISOString(),date,venue:stadium,raceNo:Number(race),tide:window.BH_TIDE_SNAPSHOT?.()||null,venueTraits:window.__BH_VENUE_TRAITS||window.__HUNTER_VENUE_TRAITS||null,windSpeed:first(c.wind_speed,c.windSpeed,window.__BH_WIND_SPEED),windDir,
+ return {key:`${date}_${stadium}_${race}R`,capturedAt:new Date().toISOString(),date,venue:stadium,raceNo:Number(race),tide:window.BH_TIDE_SNAPSHOT?.()||null,venueTraits:window.__BH_VENUE_TRAITS||window.__HUNTER_VENUE_TRAITS||c.venue_traits||{text:document.getElementById('venueOutlook')?.textContent||''},windSpeed:first(c.wind_speed,c.windSpeed,window.__BH_WIND_SPEED,windText.match(/([0-9]+(?:\.[0-9]+)?)\s*m\/s/)?.[1]),windDir,
  boats:[1,2,3,4,5,6].map(boat=>{
   const r=get(racers,boat),p=get(pv,boat),a=course[boat-1]||{},f=get(flow,boat),t=get(trend,boat),market=window.__BH_MARKET_COMPARE510?.market;
   const history=window.__BH_HISTORY20_SHARED?.get?.(Number(r.number??p.registration_number))?.rows||p.recent20||p.history20||[];
@@ -27087,20 +27121,14 @@ function render(){
    const buy1=result.items.filter(x=>x.kind==='lab'||x.kind==='main'||x.kind==='main-reversal'),
          buy2=result.items.filter(x=>x.kind==='counter');
  const axisOf=items=>items[0]?.combo?.split('-')[1]||'';
+ const ticketPriority=new Map(result.items.map((item,index)=>[item.combo,index+1]));
  // V701: 買い目を一つの一覧で表示。表示点数は実際の採用数。
  const groups=result.fourPerspective?result.groupPlan.filter(g=>g.items.length).map(g=>[`買い目（${g.name}）｜${g.items.length}点`,g.items,g.kind==='longshot']):[[`買い目｜${result.items.length}点`,result.items,false]];
  for(const [name,items,isExtra] of groups){if(!items.length)continue;const title=document.createElement('div');title.className='bh590Section'+(isExtra?' extra':'');title.textContent=name;root.append(title);// 頭ごとの根拠は一覧の上に簡潔に表示し、買い目の枠は分けない。
- for(const head of uniq(items.map(x=>Number(x.combo[0])))){
-  const sameHead=items.filter(x=>Number(x.combo[0])===head),why=groupReason(sameHead,result.escapeFocus);
-  const whyBox=document.createElement('div');whyBox.className='bh666Reason';
-  const patch=document.createElement('span');patch.className='bh666Patch';patch.textContent=`頭${head} ${result.fourPerspective?(result.groupPlan.find(g=>g.head===head)?.move||result.fourReport.methodFor[head]||'未確認'):technique(head)}`;
-  const reason=document.createElement('div');reason.textContent=result.fourPerspective?`頭：${name.includes('本命')?'4観点の総合評価が最上位':name.includes('次点')?'風と場の実績で決まり手が合う':'指定した着順の組み替え'}｜相手：展開と着順実績から選定`:`頭：${why.headWhy}｜相手：${result.researchFormation?'同じ頭・決まり手の着順実績を優先':why.axisWhy}`;
-  whyBox.append(patch,reason);root.append(whyBox);
- }
  const grid=document.createElement('div');grid.className='bh590Grid';root.append(grid);
  for(const x of items){const card=document.createElement('div');card.className='bh590Ticket'+(isExtra?' extra':'');card.dataset.combo=x.combo;if(result.units)card.dataset.units=String(result.units[x.combo]||1);const o=m.get(x.combo),t=result.fourPerspective?(result.groupPlan.find(g=>g.items.some(i=>i.combo===x.combo))?.move||result.fourReport.methodFor[Number(x.combo[0])]||'未確認'):technique(Number(x.combo[0]));
- const parts=[...(x.priority?[['bh705Priority','優先 '+x.priority+'位']]:[]),['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
- for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[x.combo]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}if(result.tideRule&&tidePreference(x.combo,result.tideRule)>0){const tidePatch=document.createElement('div');tidePatch.className='bhLabResearchPatch';tidePatch.textContent='潮汐研究';card.append(tidePatch)}if(x.kind==='lab'||x.researchLab){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent=x.researchAxis?'研究所・軸':'研究所';card.append(patch)}else if(isExtra&&x.kind==='extra'){const e=document.createElement('div');e.className='bh590Reason';e.textContent='追加候補';card.append(e)}grid.append(card)}
+ const parts=[['bh705Priority','第'+ticketPriority.get(x.combo)+'位'],['bh590Combo',x.combo],['bh590Odds',o?o.odds.toFixed(1)+'倍':'倍率取得待ち'],['bh590Patch '+(t==='逃げ'?'tech-escape':t==='差し'?'tech-sashi':t==='まくり'?'tech-makuri':t==='まくり差し'?'tech-makurisashi':'tech-pending'),'予測決まり手：'+t],['bh590Rank',o?'世間 '+o.rank+'番人気':'人気順位取得待ち']];
+ for(const [cl,val] of parts){const e=document.createElement('div');e.className=cl;e.textContent=val;card.append(e)}if(result.units){const e=document.createElement('div');e.className='bh664Stake';const units=result.units[x.combo]||1;e.textContent=`${units}口｜${units*100}円`+(o?`｜的中時 ${Math.round(units*100*o.odds).toLocaleString()}円`:'');card.append(e)}if(result.tideRule&&tidePreference(x.combo,result.tideRule)>0){const tidePatch=document.createElement('div');tidePatch.className='bhLabResearchPatch';tidePatch.textContent='潮汐研究';card.append(tidePatch)}if(x.kind==='lab'||x.researchLab){card.classList.add('research');const patch=document.createElement('div');patch.className='bhLabResearchPatch';patch.textContent=x.researchAxis?'研究所・軸':'研究所';card.append(patch)}grid.append(card)}
  }
  // Bet 3 uses a six-ticket BOX, or six fresh evaluated combinations if no BOX is distinct.
  if(false&&result.box?.length>0){
@@ -27550,7 +27578,7 @@ function payload(){
   narrowHit:betGroups.narrow?.includes(combo)||false
  }:null;
  const research=window.BH_V630_COURSE?.snapshot?.()||[];const cards=[...document.querySelectorAll('.cards .card')].slice(0,6).map((c,i)=>{const r=research[i]||{};return {...r,number:i+1,name:r.name||clean(c.querySelector('.name')?.textContent,60),stats:{rawText:clean(c.innerText,450)},attack:Object.fromEntries((r.attack||[]).map(a=>[({逃げ:'nigeRate',差し:'sashiRate',まくり:'makuriRate','まくり差し':'makurizashiRate'})[a.method],a.rate]))}});
- return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:705,hunterCycle:true,
+ return {schema:'HUNTER_CYCLE_V3',schemaVersion:3,source:'BOAT_HUNTER',sourceVersion:707,hunterCycle:true,
   key:`${date}_${stadium}_${raceNo}R`,sentAt:new Date().toISOString(),
   race:{date,stadium,stadiumName:clean(st.selectedOptions?.[0]?.textContent,40),raceNo},
   environment:{tide:window.BH_TIDE_SNAPSHOT?.()||null},
